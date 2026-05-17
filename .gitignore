@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.output/
+
+# Environment files (NEVER commit these)
+.env
+.env.local
+.env.production
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Uploads (user content)
+backend/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
