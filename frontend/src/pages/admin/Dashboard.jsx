@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { bookingsAPI } from '../../services/api';
+import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { format } from 'date-fns';
 
@@ -20,10 +20,22 @@ export default function Dashboard() {
   const { business } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [checklist, setChecklist] = useState(null);
 
   useEffect(() => {
     bookingsAPI.list({ limit: 5 }).then(setData).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!business) return;
+    Promise.all([servicesAPI.list(), availabilityAPI.get()]).then(([svcs, avail]) => {
+      const hasServices = svcs?.length > 0;
+      const hasAvailability = !!avail?.working_days?.length;
+      if (!hasServices || !hasAvailability) {
+        setChecklist({ hasServices, hasAvailability });
+      }
+    }).catch(() => {});
+  }, [business]);
 
   const stats = data?.stats;
 
@@ -42,6 +54,28 @@ export default function Dashboard() {
           </a>
         )}
       </div>
+
+      {/* Go-live checklist for new businesses */}
+      {checklist && (
+        <div className="card p-5 border-l-4 border-l-primary-500">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900 mb-1">Finish setting up your page</p>
+              <p className="text-sm text-gray-500 mb-4">Complete these steps before sharing your booking link.</p>
+              <div className="space-y-2.5">
+                <ChecklistItem done label="Account created" />
+                <ChecklistItem done label="Business profile set up" />
+                <ChecklistItem done={checklist.hasServices} label="Add at least one service" linkTo="/admin/services" linkLabel="Add service" />
+                <ChecklistItem done={checklist.hasAvailability} label="Set your working hours" linkTo="/admin/settings" linkLabel="Set availability" />
+                <ChecklistItem done={checklist.hasServices && checklist.hasAvailability} label="Share your booking link" linkTo={`/book/${business?.slug}`} linkLabel="Open link" external />
+              </div>
+            </div>
+            <button onClick={() => setChecklist(null)} className="text-gray-400 hover:text-gray-600 transition-colors mt-1">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       {loading ? (
@@ -107,6 +141,24 @@ export default function Dashboard() {
     </div>
   );
 }
+
+const ChecklistItem = ({ done, label, linkTo, linkLabel, external }) => (
+  <div className="flex items-center gap-3">
+    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${done ? 'bg-green-500' : 'bg-gray-200'}`}>
+      {done && (
+        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      )}
+    </div>
+    <span className={`text-sm flex-1 ${done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{label}</span>
+    {!done && linkTo && (
+      external
+        ? <a href={linkTo} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-600 font-medium hover:underline">{linkLabel} →</a>
+        : <Link to={linkTo} className="text-xs text-primary-600 font-medium hover:underline">{linkLabel} →</Link>
+    )}
+  </div>
+);
 
 const QuickLink = ({ to, label, desc }) => (
   <Link to={to} className="card p-4 hover:border-primary-200 hover:shadow-md transition-all group">

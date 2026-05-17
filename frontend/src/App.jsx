@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Public pages
+import Landing from './pages/public/Landing';
 import BookingPage from './pages/public/BookingPage';
 import BookingSuccess from './pages/public/BookingSuccess';
 
@@ -68,8 +69,8 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
 
-          {/* Fallback */}
-          <Route path="/" element={<Navigate to="/admin/login" replace />} />
+          {/* Landing */}
+          <Route path="/" element={<Landing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
