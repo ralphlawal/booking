@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -17,6 +17,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [business, setBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Tracks whether login/register already synced to avoid double-calling firebase-sync
+  const syncedUidRef = useRef(null);
 
   // Keep stored token fresh — Firebase rotates ID tokens every hour
   useEffect(() => {
@@ -31,22 +33,33 @@ export const AuthProvider = ({ children }) => {
     return unsub;
   }, []);
 
-  // Restore session on mount
+  // Primary auth state listener — handles page refresh and initial load
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
         setUser(null);
         setBusiness(null);
+        syncedUidRef.current = null;
         setLoading(false);
         return;
       }
+
+      // Already synced during login/register — skip the extra firebase-sync call
+      if (syncedUidRef.current === fbUser.uid) {
+        setLoading(false);
+        return;
+      }
+
+      // Page refresh or new session — sync with our backend
       try {
         const token = await fbUser.getIdToken();
         localStorage.setItem('fbToken', token);
         const data = await authAPI.firebaseSync(token, fbUser.displayName);
+        syncedUidRef.current = fbUser.uid;
         setUser(data.user);
         setBusiness(data.business || null);
-      } catch {
+      } catch (err) {
+        console.error('Session restore failed:', err.message);
         setUser(null);
         setBusiness(null);
       } finally {
@@ -61,6 +74,7 @@ export const AuthProvider = ({ children }) => {
     const token = await cred.user.getIdToken();
     localStorage.setItem('fbToken', token);
     const data = await authAPI.firebaseSync(token, cred.user.displayName);
+    syncedUidRef.current = cred.user.uid; // Prevent onAuthStateChanged from double-syncing
     setUser(data.user);
     setBusiness(data.business || null);
     return data;
@@ -69,15 +83,17 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, full_name) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: full_name });
-    const token = await cred.user.getIdToken();
+    const token = await cred.user.getIdToken(true); // force refresh after profile update
     localStorage.setItem('fbToken', token);
     const data = await authAPI.firebaseSync(token, full_name);
+    syncedUidRef.current = cred.user.uid;
     setUser(data.user);
     setBusiness(data.business || null);
     return data;
   };
 
   const logout = async () => {
+    syncedUidRef.current = null;
     await signOut(auth);
     localStorage.removeItem('fbToken');
     setUser(null);

@@ -44,8 +44,14 @@ const authenticate = async (req, res, next) => {
     if (decoded?.payload?.iss?.includes('securetoken.google.com')) {
       // Firebase ID token
       const payload = await verifyFirebaseToken(token);
-      const user = await User.findByFirebaseUid(payload.uid);
-      if (!user) return res.status(401).json({ error: 'Session expired. Please sign in again.' });
+
+      // Look up by firebase_uid first; fall back to email and link uid automatically
+      let user = await User.findByFirebaseUid(payload.uid);
+      if (!user && payload.email) {
+        user = await User.findByEmail(payload.email);
+        if (user) await User.linkFirebaseUid(user.id, payload.uid);
+      }
+      if (!user) return res.status(401).json({ error: 'Account not found. Please register.' });
       req.user = user;
     } else {
       // Legacy JWT (backward compat for any existing sessions)

@@ -96,8 +96,8 @@ exports.firebaseSync = async (req, res) => {
       onboardingComplete: !!business,
     });
   } catch (err) {
-    console.error('Firebase sync error:', err.message);
-    res.status(401).json({ error: 'Invalid or expired Firebase token' });
+    console.error('Firebase sync error:', err.message, err.stack?.split('\n')[1]);
+    res.status(401).json({ error: `Authentication failed: ${err.message}` });
   }
 };
 
