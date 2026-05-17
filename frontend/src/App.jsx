@@ -10,6 +10,8 @@ import BookingSuccess from './pages/public/BookingSuccess';
 // Auth pages
 import Login from './pages/admin/Login';
 import Register from './pages/admin/Register';
+import ForgotPassword from './pages/admin/ForgotPassword';
+import ResetPassword from './pages/admin/ResetPassword';
 
 // Admin pages
 import AdminLayout from './components/layout/AdminLayout';
@@ -56,6 +58,8 @@ export default function App() {
           {/* Auth */}
           <Route path="/admin/login" element={<GuestRoute><Login /></GuestRoute>} />
           <Route path="/admin/register" element={<GuestRoute><Register /></GuestRoute>} />
+          <Route path="/admin/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
           {/* Admin Dashboard */}

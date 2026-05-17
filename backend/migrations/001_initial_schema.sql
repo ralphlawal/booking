@@ -124,6 +124,14 @@ CREATE TABLE IF NOT EXISTS notification_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Password reset columns (safe to run multiple times)
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='reset_token') THEN
+    ALTER TABLE users ADD COLUMN reset_token VARCHAR(255);
+    ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMPTZ;
+  END IF;
+END $$;
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_bookings_business_id ON bookings(business_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_booking_date ON bookings(booking_date);

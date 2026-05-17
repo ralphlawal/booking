@@ -2,19 +2,37 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bookingsAPI } from '../../services/api';
 import { format, parseISO } from 'date-fns';
+import toast from 'react-hot-toast';
 
 export default function BookingSuccess() {
   const { ref } = useParams();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelled, setCancelled] = useState(false);
 
   useEffect(() => {
     bookingsAPI.getByRef(ref)
-      .then(setBooking)
+      .then(b => { setBooking(b); if (b.status === 'cancelled') setCancelled(true); })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [ref]);
+
+  const handleCancel = async () => {
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    setCancelling(true);
+    try {
+      await bookingsAPI.cancelByCustomer(ref);
+      setCancelled(true);
+      setBooking(b => ({ ...b, status: 'cancelled' }));
+      toast.success('Booking cancelled successfully');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   if (loading) return <LoadingScreen />;
   if (notFound) return (
@@ -102,6 +120,16 @@ export default function BookingSuccess() {
             <Link to={`/book/${booking.slug}`} className="btn-secondary w-full justify-center">
               Book Another Appointment
             </Link>
+          )}
+
+          {!cancelled && booking.status !== 'completed' && (
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="w-full py-2.5 text-sm text-red-600 hover:text-red-700 font-medium transition-colors disabled:opacity-50"
+            >
+              {cancelling ? 'Cancelling…' : 'Cancel this booking'}
+            </button>
           )}
         </div>
 

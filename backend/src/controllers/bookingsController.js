@@ -142,3 +142,25 @@ exports.reschedule = async (req, res) => {
     res.status(500).json({ error: 'Reschedule failed' });
   }
 };
+
+exports.cancelByCustomer = async (req, res) => {
+  try {
+    const booking = await Booking.findByReference(req.params.ref);
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (['cancelled', 'completed'].includes(booking.status)) {
+      return res.status(400).json({ error: `Booking is already ${booking.status}` });
+    }
+
+    // Prevent cancellation less than 2 hours before appointment
+    const apptDateTime = new Date(`${booking.booking_date}T${booking.start_time}`);
+    const hoursUntil = (apptDateTime - Date.now()) / (1000 * 60 * 60);
+    if (hoursUntil < 2) {
+      return res.status(400).json({ error: 'Bookings cannot be cancelled less than 2 hours before the appointment' });
+    }
+
+    await Booking.updateStatus(booking.id, booking.business_id, 'cancelled', 'Cancelled by customer');
+    res.json({ message: 'Booking cancelled successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Cancellation failed' });
+  }
+};

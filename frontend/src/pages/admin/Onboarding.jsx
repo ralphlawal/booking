@@ -4,7 +4,15 @@ import { businessAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const CATEGORIES = ['barber','makeup artist','nail tech','photographer','tutor','massage therapist','fitness trainer','hair stylist','other'];
+const CATEGORIES = [
+  'barber', 'hair stylist', 'nail tech', 'makeup artist', 'esthetician', 'tattoo artist', 'lash tech',
+  'massage therapist', 'fitness trainer', 'yoga instructor', 'personal coach',
+  'photographer', 'videographer',
+  'tutor', 'music teacher', 'driving instructor', 'language teacher',
+  'consultant', 'therapist / counselor', 'accountant', 'lawyer',
+  'cleaning service', 'mechanic', 'electrician', 'plumber',
+  'chef / cooking class', 'event planner', 'other',
+];
 const STEPS = ['Business Info', 'Contact & Location', 'Your Page'];
 
 export default function Onboarding() {

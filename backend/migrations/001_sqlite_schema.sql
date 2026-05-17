@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   full_name TEXT NOT NULL,
   is_verified INTEGER DEFAULT 0,
+  reset_token TEXT,
+  reset_token_expires TEXT,
   created_at TEXT DEFAULT (NOW()),
   updated_at TEXT DEFAULT (NOW())
 );

@@ -64,6 +64,7 @@ export const availabilityAPI = {
 export const bookingsAPI = {
   create: (slug, data) => api.post(`/bookings/public/${slug}`, data),
   getByRef: (ref) => api.get(`/bookings/ref/${ref}`),
+  cancelByCustomer: (ref) => api.post(`/bookings/ref/${ref}/cancel`),
   list: (params) => api.get('/bookings', { params }),
   getById: (id) => api.get(`/bookings/${id}`),
   updateStatus: (id, status, cancelled_reason) =>

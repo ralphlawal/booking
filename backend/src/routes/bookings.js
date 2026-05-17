@@ -32,6 +32,9 @@ router.post(
 // Public: get booking by reference
 router.get('/ref/:ref', ctrl.getByReference);
 
+// Public: customer cancels their own booking
+router.post('/ref/:ref/cancel', ctrl.cancelByCustomer);
+
 // Admin routes
 router.get('/', authenticate, attachBusiness, ctrl.list);
 router.get('/:id', authenticate, attachBusiness, ctrl.getById);

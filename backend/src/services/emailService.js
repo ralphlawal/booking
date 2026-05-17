@@ -110,4 +110,4 @@ const sendOwnerNewBooking = (booking, ownerEmail) =>
       </div>`,
   });
 
-module.exports = { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking };
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking };
