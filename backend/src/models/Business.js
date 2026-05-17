@@ -23,7 +23,7 @@ const Business = {
 
   async findBySlug(slug) {
     const { rows } = await db.query(
-      'SELECT * FROM businesses WHERE slug = $1 AND is_active = 1',
+      'SELECT * FROM businesses WHERE slug = $1 AND is_active = TRUE',
       [slug.toLowerCase()]
     );
     return rows[0] || null;

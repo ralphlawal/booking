@@ -14,7 +14,7 @@ const Service = {
 
   async findByBusinessId(business_id, activeOnly = false) {
     const sql = activeOnly
-      ? 'SELECT * FROM services WHERE business_id = $1 AND is_active = 1 ORDER BY created_at'
+      ? 'SELECT * FROM services WHERE business_id = $1 AND is_active = TRUE ORDER BY created_at'
       : 'SELECT * FROM services WHERE business_id = $1 ORDER BY created_at';
     const { rows } = await db.query(sql, [business_id]);
     return rows;
@@ -33,7 +33,7 @@ const Service = {
     for (const key of allowed) {
       if (fields[key] !== undefined) {
         // Convert boolean is_active to 1/0 for SQLite
-        const val = key === 'is_active' ? (fields[key] ? 1 : 0) : fields[key];
+        const val = fields[key];
         updates.push(`${key} = $${idx++}`);
         values.push(val);
       }
