@@ -4,21 +4,22 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
 // Security
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-// Allow multiple origins: local dev + deployed frontend
+
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
   'http://localhost:4173',
+  'https://booking-sepia-nu.vercel.app',
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return cb(null, true);
     if (allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true);
     cb(new Error(`CORS: ${origin} not allowed`));
@@ -34,7 +35,7 @@ app.use('/api/bookings/public', rateLimit({ windowMs: 60 * 1000, max: 10, messag
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Static files (uploads)
+// Static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
@@ -45,21 +46,52 @@ app.use('/api/availability', require('./routes/availability'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/customers', require('./routes/customers'));
 
-// Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// 404
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
-
-// Error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Bookly API running on port ${PORT}`);
-});
+// Auto-migrate then start
+async function start() {
+  try {
+    if (process.env.DATABASE_URL) {
+      const { pool } = require('./config/database.pg');
+      const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_initial_schema.sql'), 'utf8');
+      await pool.query(sql);
+      console.log('PostgreSQL migrations applied.');
 
+      // Seed demo account if no users exist
+      const { rows } = await pool.query('SELECT COUNT(*) AS c FROM users');
+      if (parseInt(rows[0].c) === 0) {
+        console.log('Empty database — seeding demo account...');
+        const bcrypt = require('bcryptjs');
+        const crypto = require('crypto');
+        const hash = await bcrypt.hash('demo1234', 12);
+        const uid = crypto.randomUUID(), bid = crypto.randomUUID();
+        await pool.query(`INSERT INTO users (id,email,password_hash,full_name) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`, [uid,'demo@bookly.com',hash,'Demo Owner']);
+        const { rows: [user] } = await pool.query('SELECT id FROM users WHERE email=$1',['demo@bookly.com']);
+        await pool.query(`INSERT INTO businesses (id,user_id,name,slug,description,phone,email,location,category) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING`,[bid,user.id,'Smooth Cuts Barbershop','smoothcuts','Premium haircuts and grooming services','+1-555-0100','smoothcuts@demo.com','123 Main St, New York','barber']);
+        const { rows: [biz] } = await pool.query('SELECT id FROM businesses WHERE slug=$1',['smoothcuts']);
+        const svcData = [['Classic Haircut','Clean fade with edge up',30,30],['Beard Trim','Shape and clean beard trim',20,20],['Full Grooming Package','Haircut + Beard + Wash',65,75]];
+        for (const [n,d,p,dur] of svcData) await pool.query(`INSERT INTO services (id,business_id,name,description,price,duration_minutes) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,[crypto.randomUUID(),biz.id,n,d,p,dur]);
+        await pool.query(`INSERT INTO availability_settings (id,business_id,working_days,opening_time,closing_time,slot_interval_minutes) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,[crypto.randomUUID(),biz.id,JSON.stringify(['monday','tuesday','wednesday','thursday','friday','saturday']),'09:00','18:00',30]);
+        console.log('Demo account seeded: demo@bookly.com / demo1234');
+      }
+    } else {
+      const { db } = require('./config/database.sqlite');
+      const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_sqlite_schema.sql'), 'utf8');
+      db.exec(sql);
+    }
+  } catch (err) {
+    console.error('Startup migration error:', err.message);
+  }
+
+  const PORT = process.env.PORT || 5001;
+  app.listen(PORT, () => console.log(`Bookly API running on port ${PORT}`));
+}
+
+start();
 module.exports = app;
