@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_verified INTEGER DEFAULT 0,
   reset_token TEXT,
   reset_token_expires TEXT,
+  firebase_uid TEXT UNIQUE,
   created_at TEXT DEFAULT (NOW()),
   updated_at TEXT DEFAULT (NOW())
 );

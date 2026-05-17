@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { businessAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+
+const LOGO = 'https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png';
 
 const CATEGORIES = [
   'barber', 'hair stylist', 'nail tech', 'makeup artist', 'esthetician', 'tattoo artist', 'lash tech',
@@ -45,7 +47,7 @@ export default function Onboarding() {
     try {
       const biz = await businessAPI.create(form);
       updateBusiness(biz);
-      toast.success('Business created! Welcome to Bookly.');
+      toast.success('Business created! Welcome to BookAm.');
       navigate('/admin/dashboard');
     } catch (err) {
       toast.error(err.message);
@@ -58,6 +60,9 @@ export default function Onboarding() {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-lg animate-fade-in">
         <div className="text-center mb-8">
+          <Link to="/" className="inline-block mb-5">
+            <img src={LOGO} alt="BookAm" className="h-10 w-auto object-contain mx-auto" />
+          </Link>
           <h1 className="text-3xl font-bold text-gray-900">Set up your business</h1>
           <p className="text-gray-500 mt-2">Tell us about your business so customers can book you</p>
         </div>

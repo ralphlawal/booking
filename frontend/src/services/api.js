@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('fbToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -24,8 +24,7 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  register: (email, password, full_name) => api.post('/auth/register', { email, password, full_name }),
-  login: (email, password) => api.post('/auth/login', { email, password }),
+  firebaseSync: (idToken, displayName) => api.post('/auth/firebase-sync', { idToken, displayName }),
   me: () => api.get('/auth/me'),
 };
 

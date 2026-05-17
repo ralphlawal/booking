@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const LOGO = 'https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png';
+
 export default function ForgotPassword() {
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -12,62 +15,66 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/auth/forgot-password', { email });
+      await forgotPassword(email);
       setSent(true);
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Failed to send reset email');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-slide-up">
-        <Link to="/admin/login" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg>
-          Back to sign in
+        <Link to="/" className="flex items-center justify-center mb-8">
+          <img src={LOGO} alt="BookAm" className="h-12 w-auto object-contain" />
         </Link>
 
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-600 rounded-2xl mb-4 shadow-lg shadow-primary-200">
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Forgot your password?</h1>
-          <p className="text-gray-500 mt-1 text-sm">We'll send you a reset link</p>
-        </div>
-
-        <div className="card p-6">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
           {sent ? (
             <div className="text-center py-4">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-14 h-14 bg-green-500/20 border border-green-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <p className="font-semibold text-gray-900">Check your email</p>
-              <p className="text-sm text-gray-500 mt-2">If <strong>{email}</strong> has an account, you'll receive a reset link shortly.</p>
-              <Link to="/admin/login" className="btn-primary w-full mt-6">Back to sign in</Link>
+              <p className="font-bold text-white">Check your email</p>
+              <p className="text-sm text-white/50 mt-2">
+                A reset link was sent to <span className="text-white/80">{email}</span>
+              </p>
+              <Link to="/admin/login" className="inline-block mt-6 text-primary-300 text-sm font-medium hover:text-primary-200">
+                ← Back to sign in
+              </Link>
             </div>
           ) : (
-            <form onSubmit={submit} className="space-y-4">
-              <div>
-                <label className="label">Email address</label>
-                <input
-                  className="input"
-                  type="email"
-                  placeholder="you@business.com"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full">
-                {loading ? <Spinner /> : 'Send reset link'}
-              </button>
-            </form>
+            <>
+              <h1 className="text-xl font-bold text-white text-center mb-1">Forgot password?</h1>
+              <p className="text-white/50 text-sm text-center mb-6">Enter your email and we'll send a reset link</p>
+              <form onSubmit={submit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-1.5">Email address</label>
+                  <input
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                    type="email"
+                    placeholder="you@business.com"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loading ? <Spinner /> : 'Send reset link'}
+                </button>
+              </form>
+              <p className="text-center mt-4">
+                <Link to="/admin/login" className="text-sm text-white/40 hover:text-white/70 transition-colors">← Back to sign in</Link>
+              </p>
+            </>
           )}
         </div>
       </div>

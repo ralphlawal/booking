@@ -124,11 +124,14 @@ CREATE TABLE IF NOT EXISTS notification_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Password reset columns (safe to run multiple times)
+-- Safe column additions (idempotent)
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='reset_token') THEN
     ALTER TABLE users ADD COLUMN reset_token VARCHAR(255);
     ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMPTZ;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='firebase_uid') THEN
+    ALTER TABLE users ADD COLUMN firebase_uid VARCHAR(128) UNIQUE;
   END IF;
 END $$;
 

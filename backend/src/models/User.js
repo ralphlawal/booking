@@ -35,6 +35,26 @@ const User = {
     return bcrypt.compare(plainText, hash);
   },
 
+  async findByFirebaseUid(firebase_uid) {
+    const { rows } = await db.query('SELECT * FROM users WHERE firebase_uid = $1', [firebase_uid]);
+    return rows[0] || null;
+  },
+
+  async createFromFirebase({ firebase_uid, email, full_name }) {
+    const id = crypto.randomUUID();
+    const { rows } = await db.query(
+      `INSERT INTO users (id, email, password_hash, full_name, firebase_uid)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, email, full_name, firebase_uid, created_at`,
+      [id, email.toLowerCase(), 'firebase_auth', full_name, firebase_uid]
+    );
+    return rows[0];
+  },
+
+  async linkFirebaseUid(id, firebase_uid) {
+    await db.query('UPDATE users SET firebase_uid = $1 WHERE id = $2', [firebase_uid, id]);
+  },
+
   async saveResetToken(id, token, expiresAt) {
     const hash = crypto.createHash('sha256').update(token).digest('hex');
     await db.query(

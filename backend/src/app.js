@@ -84,13 +84,17 @@ async function start() {
       const { db } = require('./config/database.sqlite');
       const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_sqlite_schema.sql'), 'utf8');
       db.exec(sql);
+      // Add new columns to existing SQLite databases (ALTER TABLE ignores if column exists via try/catch)
+      for (const col of ['reset_token TEXT', 'reset_token_expires TEXT', 'firebase_uid TEXT']) {
+        try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch {}
+      }
     }
   } catch (err) {
     console.error('Startup migration error:', err.message);
   }
 
   const PORT = process.env.PORT || 5001;
-  app.listen(PORT, () => console.log(`Bookly API running on port ${PORT}`));
+  app.listen(PORT, () => console.log(`BookAm API running on port ${PORT}`));
 }
 
 start();
