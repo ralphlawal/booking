@@ -143,6 +143,16 @@ exports.reschedule = async (req, res) => {
   }
 };
 
+exports.getAnalytics = async (req, res) => {
+  try {
+    const analytics = await Booking.getAnalytics(req.business.id);
+    res.json(analytics);
+  } catch (err) {
+    console.error('Analytics error:', err);
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+};
+
 exports.cancelByCustomer = async (req, res) => {
   try {
     const booking = await Booking.findByReference(req.params.ref);

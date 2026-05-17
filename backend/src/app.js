@@ -54,6 +54,33 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+async function startReminderJob() {
+  const Booking = require('./models/Booking');
+  const { sendReminder } = require('./services/emailService');
+
+  const run = async () => {
+    try {
+      const { reminders24h, reminders1h } = await Booking.getPendingReminders();
+      for (const b of reminders24h) {
+        await sendReminder(b, 24);
+        await Booking.markReminderSent(b.id, '24h');
+        console.log(`[Reminder 24h] Sent to ${b.customer_email} for booking ${b.reference_id}`);
+      }
+      for (const b of reminders1h) {
+        await sendReminder(b, 1);
+        await Booking.markReminderSent(b.id, '1h');
+        console.log(`[Reminder 1h] Sent to ${b.customer_email} for booking ${b.reference_id}`);
+      }
+    } catch (err) {
+      console.error('[Reminder job error]', err.message);
+    }
+  };
+
+  await run();
+  setInterval(run, 15 * 60 * 1000); // every 15 minutes
+  console.log('Reminder job started (runs every 15 min)');
+}
+
 // Auto-migrate then start
 async function start() {
   try {
@@ -84,14 +111,18 @@ async function start() {
       const { db } = require('./config/database.sqlite');
       const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_sqlite_schema.sql'), 'utf8');
       db.exec(sql);
-      // Add new columns to existing SQLite databases (ALTER TABLE ignores if column exists via try/catch)
       for (const col of ['reset_token TEXT', 'reset_token_expires TEXT', 'firebase_uid TEXT']) {
         try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch {}
+      }
+      for (const col of ['reminder_24h_sent INTEGER DEFAULT 0', 'reminder_1h_sent INTEGER DEFAULT 0']) {
+        try { db.exec(`ALTER TABLE bookings ADD COLUMN ${col}`); } catch {}
       }
     }
   } catch (err) {
     console.error('Startup migration error:', err.message);
   }
+
+  startReminderJob();
 
   const PORT = process.env.PORT || 5001;
   app.listen(PORT, () => console.log(`BookAm API running on port ${PORT}`));

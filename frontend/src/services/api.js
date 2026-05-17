@@ -32,14 +32,11 @@ export const businessAPI = {
   get: () => api.get('/business/me'),
   create: (data) => api.post('/business', data),
   update: (data) => api.put('/business/me', data),
-  uploadLogo: (file) => {
-    const form = new FormData();
-    form.append('logo', file);
-    return api.post('/business/me/logo', form, { headers: { 'Content-Type': 'multipart/form-data' } });
-  },
+  updateLogoUrl: (logo_url) => api.put('/business/me', { logo_url }),
   getPublic: (slug) => api.get(`/business/${slug}`),
   checkSlug: (slug) => api.get(`/business/${slug}/check`),
   getQR: () => api.get('/business/me/qr'),
+  getAnalytics: () => api.get('/bookings/analytics'),
 };
 
 export const servicesAPI = {
@@ -69,6 +66,7 @@ export const bookingsAPI = {
   updateStatus: (id, status, cancelled_reason) =>
     api.put(`/bookings/${id}/status`, { status, cancelled_reason }),
   reschedule: (id, data) => api.put(`/bookings/${id}/reschedule`, data),
+  getAnalytics: () => api.get('/bookings/analytics'),
 };
 
 export const customersAPI = {

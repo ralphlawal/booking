@@ -1,20 +1,13 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const db = require('../config/database');
+const crypto = require('crypto');
 
-const createTransporter = () => {
-  if (!process.env.SMTP_HOST) return null;
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+const getClient = () => {
+  if (!process.env.RESEND_API_KEY) return null;
+  return new Resend(process.env.RESEND_API_KEY);
 };
 
-const crypto = require('crypto');
+const FROM = process.env.EMAIL_FROM || 'BookAm <noreply@bookam.app>';
 
 const logNotification = async (type, business_id, booking_id, recipient, subject, status) => {
   try {
@@ -26,20 +19,37 @@ const logNotification = async (type, business_id, booking_id, recipient, subject
   } catch {}
 };
 
+const baseTemplate = (content) => `
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;padding:32px 0;min-height:100vh">
+    <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+      <div style="background:linear-gradient(135deg,#4f46e5 0%,#6d28d9 100%);padding:32px 32px 28px;text-align:center">
+        <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:36px;width:auto;object-fit:contain;filter:brightness(0) invert(1)" />
+      </div>
+      <div style="padding:32px">
+        ${content}
+      </div>
+      <div style="padding:20px 32px 28px;border-top:1px solid #f1f5f9;text-align:center">
+        <p style="margin:0 0 4px;color:#94a3b8;font-size:12px">Book. Confirm. Be there.</p>
+        <p style="margin:0;color:#cbd5e1;font-size:11px">A <strong>Ralph Lawal Group</strong> product · <a href="https://booking-sepia-nu.vercel.app" style="color:#818cf8;text-decoration:none">bookam.app</a></p>
+      </div>
+    </div>
+  </div>`;
+
+const detailRow = (label, value, shade) =>
+  `<tr style="background:${shade ? '#f8fafc' : '#fff'}">
+     <td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%">${label}</td>
+     <td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${value}</td>
+   </tr>`;
+
 const sendEmail = async ({ to, subject, html, business_id, booking_id, type }) => {
-  const transporter = createTransporter();
-  if (!transporter) {
-    await logNotification(type || 'email', business_id, booking_id, to, subject, 'skipped_no_smtp');
-    console.log(`[Email skipped - no SMTP] To: ${to} | Subject: ${subject}`);
+  const client = getClient();
+  if (!client) {
+    await logNotification(type || 'email', business_id, booking_id, to, subject, 'skipped_no_key');
+    console.log(`[Email skipped – no RESEND_API_KEY] To: ${to} | ${subject}`);
     return;
   }
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'Bookly <noreply@bookly.com>',
-      to,
-      subject,
-      html,
-    });
+    await client.emails.send({ from: FROM, to, subject, html });
     await logNotification(type || 'email', business_id, booking_id, to, subject, 'sent');
   } catch (err) {
     console.error('Email send error:', err.message);
@@ -50,42 +60,53 @@ const sendEmail = async ({ to, subject, html, business_id, booking_id, type }) =
 const sendBookingConfirmation = (booking) =>
   sendEmail({
     to: booking.customer_email,
-    subject: `Booking Confirmed – ${booking.reference_id}`,
+    subject: `Booking Received – ${booking.reference_id}`,
     type: 'booking_created',
     business_id: booking.business_id,
     booking_id: booking.id,
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto">
-        <h2 style="color:#4f46e5">Booking Received!</h2>
-        <p>Hi ${booking.customer_name},</p>
-        <p>Your booking has been received and is pending confirmation.</p>
-        <table style="width:100%;border-collapse:collapse;margin:16px 0">
-          <tr><td style="padding:8px;color:#6b7280">Reference</td><td style="padding:8px;font-weight:600">${booking.reference_id}</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:8px;color:#6b7280">Business</td><td style="padding:8px">${booking.business_name}</td></tr>
-          <tr><td style="padding:8px;color:#6b7280">Service</td><td style="padding:8px">${booking.service_name}</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:8px;color:#6b7280">Date</td><td style="padding:8px">${booking.booking_date}</td></tr>
-          <tr><td style="padding:8px;color:#6b7280">Time</td><td style="padding:8px">${booking.start_time} – ${booking.end_time}</td></tr>
-        </table>
-        <p style="color:#6b7280;font-size:14px">You will be notified once your booking is confirmed.</p>
-      </div>`,
+    html: baseTemplate(`
+      <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">Booking Received! 🎉</h2>
+      <p style="margin:0 0 24px;color:#64748b;font-size:15px">Hi ${booking.customer_name}, your booking is pending confirmation. You'll hear back soon.</p>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+        ${detailRow('Reference', `<span style="font-family:monospace;color:#4f46e5">${booking.reference_id}</span>`, false)}
+        ${detailRow('Business', booking.business_name, true)}
+        ${detailRow('Service', booking.service_name, false)}
+        ${detailRow('Date', booking.booking_date, true)}
+        ${detailRow('Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, false)}
+      </table>
+      <p style="margin:24px 0 0;color:#94a3b8;font-size:13px;text-align:center">You'll receive an email once confirmed. For changes, contact the business directly.</p>
+    `),
   });
 
 const sendBookingStatusUpdate = (booking) => {
-  const statusLabels = { confirmed: 'Confirmed ✅', cancelled: 'Cancelled ❌', completed: 'Completed' };
+  const configs = {
+    confirmed: { label: 'Confirmed ✅', color: '#10b981', emoji: '✅', msg: 'Your appointment is confirmed. See you there!' },
+    cancelled: { label: 'Cancelled', color: '#ef4444', emoji: '❌', msg: 'Your booking has been cancelled.' },
+    completed: { label: 'Completed', color: '#6366f1', emoji: '✨', msg: 'Thanks for your visit! We hope to see you again.' },
+  };
+  const cfg = configs[booking.status] || { label: booking.status, color: '#64748b', emoji: '📋', msg: '' };
+
   return sendEmail({
     to: booking.customer_email,
-    subject: `Booking ${statusLabels[booking.status] || booking.status} – ${booking.reference_id}`,
+    subject: `Booking ${cfg.label} – ${booking.reference_id}`,
     type: `booking_${booking.status}`,
     business_id: booking.business_id,
     booking_id: booking.id,
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto">
-        <h2 style="color:#4f46e5">Booking ${statusLabels[booking.status] || booking.status}</h2>
-        <p>Hi ${booking.customer_name},</p>
-        <p>Your booking <strong>${booking.reference_id}</strong> has been <strong>${booking.status}</strong>.</p>
-        ${booking.cancelled_reason ? `<p>Reason: ${booking.cancelled_reason}</p>` : ''}
-        <p>For questions, contact ${booking.business_name} at ${booking.business_phone || booking.business_email || 'the business directly'}.</p>
-      </div>`,
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:${cfg.color}15;border-radius:50%;font-size:24px;margin-bottom:12px">${cfg.emoji}</div>
+        <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">Booking ${cfg.label}</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Hi ${booking.customer_name}, ${cfg.msg}</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+        ${detailRow('Reference', `<span style="font-family:monospace;color:#4f46e5">${booking.reference_id}</span>`, false)}
+        ${detailRow('Service', booking.service_name, true)}
+        ${detailRow('Date', booking.booking_date, false)}
+        ${detailRow('Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, true)}
+      </table>
+      ${booking.cancelled_reason ? `<div style="margin:16px 0 0;padding:12px 16px;background:#fef2f2;border-radius:8px;border-left:3px solid #ef4444"><p style="margin:0;color:#dc2626;font-size:13px"><strong>Reason:</strong> ${booking.cancelled_reason}</p></div>` : ''}
+      <p style="margin:20px 0 0;color:#94a3b8;font-size:13px;text-align:center">Questions? Contact ${booking.business_name}${booking.business_phone ? ` at ${booking.business_phone}` : ''}.</p>
+    `),
   });
 };
 
@@ -96,18 +117,47 @@ const sendOwnerNewBooking = (booking, ownerEmail) =>
     type: 'owner_new_booking',
     business_id: booking.business_id,
     booking_id: booking.id,
-    html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:auto">
-        <h2 style="color:#4f46e5">New Booking Received</h2>
-        <p>You have a new booking from <strong>${booking.customer_name}</strong>.</p>
-        <table style="width:100%;border-collapse:collapse;margin:16px 0">
-          <tr><td style="padding:8px;color:#6b7280">Reference</td><td style="padding:8px;font-weight:600">${booking.reference_id}</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:8px;color:#6b7280">Service</td><td style="padding:8px">${booking.service_name}</td></tr>
-          <tr><td style="padding:8px;color:#6b7280">Date</td><td style="padding:8px">${booking.booking_date}</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:8px;color:#6b7280">Time</td><td style="padding:8px">${booking.start_time} – ${booking.end_time}</td></tr>
-          <tr><td style="padding:8px;color:#6b7280">Phone</td><td style="padding:8px">${booking.customer_phone || 'N/A'}</td></tr>
-        </table>
-      </div>`,
+    html: baseTemplate(`
+      <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">New Booking 📅</h2>
+      <p style="margin:0 0 24px;color:#64748b;font-size:15px">You have a new booking request from <strong>${booking.customer_name}</strong>.</p>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+        ${detailRow('Reference', `<span style="font-family:monospace;color:#4f46e5">${booking.reference_id}</span>`, false)}
+        ${detailRow('Customer', booking.customer_name, true)}
+        ${detailRow('Phone', booking.customer_phone || 'N/A', false)}
+        ${detailRow('Service', booking.service_name, true)}
+        ${detailRow('Date', booking.booking_date, false)}
+        ${detailRow('Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, true)}
+      </table>
+      <p style="margin:20px 0 0;color:#94a3b8;font-size:13px;text-align:center">Log in to your dashboard to confirm or manage this booking.</p>
+    `),
   });
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking };
+const sendReminder = (booking, hoursUntil) => {
+  const isHour = hoursUntil <= 1;
+  const label = isHour ? '1 hour' : '24 hours';
+  return sendEmail({
+    to: booking.customer_email,
+    subject: `Reminder: Your appointment in ${label} – ${booking.reference_id}`,
+    type: isHour ? 'reminder_1h' : 'reminder_24h',
+    business_id: booking.business_id,
+    booking_id: booking.id,
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#4f46e510;border-radius:50%;font-size:28px;margin-bottom:12px">⏰</div>
+        <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">Appointment Reminder</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Hi ${booking.customer_name}, your appointment is in <strong>${label}</strong>.</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+        ${detailRow('Business', booking.business_name, false)}
+        ${detailRow('Service', booking.service_name, true)}
+        ${detailRow('Date', booking.booking_date, false)}
+        ${detailRow('Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, true)}
+      </table>
+      <div style="margin:24px 0 0;padding:16px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;text-align:center">
+        <p style="margin:0;color:#16a34a;font-size:14px;font-weight:600">Book. Confirm. Be there. ✅</p>
+      </div>
+    `),
+  });
+};
+
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder };

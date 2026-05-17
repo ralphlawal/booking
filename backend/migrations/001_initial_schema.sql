@@ -133,6 +133,10 @@ DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='firebase_uid') THEN
     ALTER TABLE users ADD COLUMN firebase_uid VARCHAR(128) UNIQUE;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='bookings' AND column_name='reminder_24h_sent') THEN
+    ALTER TABLE bookings ADD COLUMN reminder_24h_sent BOOLEAN DEFAULT FALSE;
+    ALTER TABLE bookings ADD COLUMN reminder_1h_sent BOOLEAN DEFAULT FALSE;
+  END IF;
 END $$;
 
 -- Indexes

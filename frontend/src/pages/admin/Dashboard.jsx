@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
+} from 'recharts';
 import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { format } from 'date-fns';
+
+const STATUS_COLORS = { pending: '#f59e0b', confirmed: '#10b981', cancelled: '#ef4444', completed: '#6366f1' };
+const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
 
 const StatCard = ({ label, value, color, icon }) => (
   <div className="card p-5 flex items-center gap-4">
@@ -16,14 +22,31 @@ const StatCard = ({ label, value, color, icon }) => (
   </div>
 );
 
+const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-4 py-3 text-sm">
+      <p className="font-semibold text-gray-700 mb-1">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} style={{ color: p.color }} className="font-medium">
+          {p.name}: {prefix}{typeof p.value === 'number' ? p.value.toFixed(p.name === 'Revenue' ? 0 : 0) : p.value}
+        </p>
+      ))}
+    </div>
+  );
+};
+
 export default function Dashboard() {
   const { business } = useAuth();
   const [data, setData] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [checklist, setChecklist] = useState(null);
 
   useEffect(() => {
     bookingsAPI.list({ limit: 5 }).then(setData).finally(() => setLoading(false));
+    bookingsAPI.getAnalytics().then(setAnalytics).finally(() => setAnalyticsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -31,13 +54,23 @@ export default function Dashboard() {
     Promise.all([servicesAPI.list(), availabilityAPI.get()]).then(([svcs, avail]) => {
       const hasServices = svcs?.length > 0;
       const hasAvailability = !!avail?.working_days?.length;
-      if (!hasServices || !hasAvailability) {
-        setChecklist({ hasServices, hasAvailability });
-      }
+      if (!hasServices || !hasAvailability) setChecklist({ hasServices, hasAvailability });
     }).catch(() => {});
   }, [business]);
 
   const stats = data?.stats;
+  const chartData = analytics?.daily?.map(d => ({
+    date: d.date?.slice(5),
+    Bookings: parseInt(d.bookings) || 0,
+    Revenue: parseFloat(d.revenue) || 0,
+  })) || [];
+
+  const statusData = analytics?.statusBreakdown?.map(s => ({
+    name: s.status,
+    value: parseInt(s.count) || 0,
+  })) || [];
+
+  const topServices = analytics?.topServices || [];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -45,7 +78,7 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Welcome back, here's what's happening</p>
+          <p className="text-gray-500 text-sm mt-0.5">Welcome back — here's what's happening</p>
         </div>
         {business && (
           <a href={`/book/${business.slug}`} target="_blank" rel="noopener noreferrer" className="btn-primary self-start">
@@ -55,7 +88,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Go-live checklist for new businesses */}
+      {/* Go-live checklist */}
       {checklist && (
         <div className="card p-5 border-l-4 border-l-primary-500">
           <div className="flex items-start justify-between gap-4">
@@ -90,6 +123,112 @@ export default function Dashboard() {
           <StatCard label="Revenue" value={stats?.revenue ? `$${parseFloat(stats.revenue).toFixed(0)}` : '$0'} color="bg-blue-50" icon={<DollarIcon />} />
         </div>
       )}
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Bookings trend */}
+        <div className="card p-5 lg:col-span-2">
+          <h3 className="font-semibold text-gray-900 mb-4">Bookings — Last 30 Days</h3>
+          {analyticsLoading ? (
+            <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+          ) : chartData.length === 0 ? (
+            <EmptyChart />
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="bookGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="Bookings" stroke="#6366f1" strokeWidth={2} fill="url(#bookGrad)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Status breakdown */}
+        <div className="card p-5">
+          <h3 className="font-semibold text-gray-900 mb-4">Status Breakdown</h3>
+          {analyticsLoading ? (
+            <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+          ) : statusData.length === 0 ? (
+            <EmptyChart />
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={statusData} cx="50%" cy="45%" innerRadius={48} outerRadius={72} paddingAngle={3} dataKey="value">
+                  {statusData.map((entry, i) => (
+                    <Cell key={i} fill={STATUS_COLORS[entry.name] || PIE_PALETTE[i % PIE_PALETTE.length]} />
+                  ))}
+                </Pie>
+                <Legend
+                  iconType="circle"
+                  iconSize={8}
+                  formatter={(v) => <span style={{ fontSize: 12, color: '#64748b', textTransform: 'capitalize' }}>{v}</span>}
+                />
+                <Tooltip formatter={(v, n) => [v, <span style={{ textTransform: 'capitalize' }}>{n}</span>]} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+      {/* Revenue & top services row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Revenue chart */}
+        <div className="card p-5 lg:col-span-2">
+          <h3 className="font-semibold text-gray-900 mb-4">Revenue — Last 30 Days</h3>
+          {analyticsLoading ? (
+            <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+          ) : chartData.length === 0 ? (
+            <EmptyChart />
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                <Tooltip content={<CustomTooltip prefix="$" />} />
+                <Bar dataKey="Revenue" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={32} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Top services */}
+        <div className="card p-5">
+          <h3 className="font-semibold text-gray-900 mb-4">Top Services</h3>
+          {analyticsLoading ? (
+            <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />)}</div>
+          ) : topServices.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center pt-8">No data yet</p>
+          ) : (
+            <div className="space-y-3">
+              {topServices.map((s, i) => {
+                const max = parseInt(topServices[0]?.count) || 1;
+                const pct = Math.round((parseInt(s.count) / max) * 100);
+                return (
+                  <div key={i}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700 font-medium truncate pr-2">{s.name}</span>
+                      <span className="text-gray-400 flex-shrink-0">{s.count}</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-primary-500 transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Recent bookings */}
       <div className="card overflow-hidden">
@@ -142,14 +281,14 @@ export default function Dashboard() {
   );
 }
 
+const EmptyChart = () => (
+  <div className="h-48 flex items-center justify-center text-gray-300 text-sm">No data yet</div>
+);
+
 const ChecklistItem = ({ done, label, linkTo, linkLabel, external }) => (
   <div className="flex items-center gap-3">
-    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${done ? 'bg-green-500' : 'bg-gray-200'}`}>
-      {done && (
-        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      )}
+    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${done ? 'bg-green-500' : 'bg-gray-200'}`}>
+      {done && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><polyline points="20 6 9 17 4 12" /></svg>}
     </div>
     <span className={`text-sm flex-1 ${done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{label}</span>
     {!done && linkTo && (

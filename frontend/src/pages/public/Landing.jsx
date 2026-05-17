@@ -60,6 +60,10 @@ export default function Landing() {
             Built for every service business. Let customers book themselves 24/7 — you get notified instantly and just show up.
           </p>
 
+          <p className="mt-4 text-base font-semibold text-primary-600 tracking-wide">
+            Book. Confirm. Be there.
+          </p>
+
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/admin/register" className="btn-primary px-8 py-3.5 text-base w-full sm:w-auto">
               Create my booking page
@@ -189,6 +193,7 @@ export default function Landing() {
             Ready to stop the DM chaos?
           </h2>
           <p className="text-primary-200 mt-4 text-lg">Create your free booking page today.</p>
+          <p className="text-primary-300/70 mt-2 text-base font-medium tracking-wide">Book. Confirm. Be there.</p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/admin/register"
@@ -210,13 +215,21 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <img src={LOGO} alt="BookAm" className="h-8 w-auto object-contain" />
-          <p className="text-sm text-gray-400">© {new Date().getFullYear()} BookAm. Built for service professionals.</p>
-          <Link to="/admin/login" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
-            Sign in →
-          </Link>
+      <footer className="border-t border-gray-100 py-10 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <img src={LOGO} alt="BookAm" className="h-8 w-auto object-contain" />
+            <p className="text-sm font-semibold text-primary-600 tracking-wide">Book. Confirm. Be there.</p>
+            <Link to="/admin/login" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
+              Sign in →
+            </Link>
+          </div>
+          <div className="border-t border-gray-100 pt-6 text-center">
+            <p className="text-xs text-gray-400">
+              © {new Date().getFullYear()} BookAm · A{' '}
+              <span className="font-semibold text-gray-500">Ralph Lawal Group</span> product
+            </p>
+          </div>
         </div>
       </footer>
     </div>

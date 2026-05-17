@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { businessAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
+import { storage } from '../../config/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import toast from 'react-hot-toast';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
@@ -16,7 +18,9 @@ export default function Settings() {
   const [newBlock, setNewBlock] = useState({ blocked_date: '', start_time: '', end_time: '', reason: '', is_full_day: false });
   const [saving, setSaving] = useState(false);
   const [qr, setQr] = useState(null);
-  const [logoFile, setLogoFile] = useState(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoProgress, setLogoProgress] = useState(0);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (business) {
@@ -74,17 +78,63 @@ export default function Settings() {
     } catch (err) { toast.error(err.message); }
   };
 
-  const uploadLogo = async () => {
-    if (!logoFile) return;
-    try {
-      const { business: updated } = await businessAPI.uploadLogo(logoFile);
-      updateBusiness(updated);
-      setLogoFile(null);
-      toast.success('Logo updated');
-    } catch (err) { toast.error(err.message); }
+  // Upload logo directly to Firebase Storage
+  const handleLogoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      toast.error('Please upload a JPG, PNG, or WebP image');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+
+    setLogoUploading(true);
+    setLogoProgress(0);
+
+    const path = `logos/${business.id}/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, path);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        setLogoProgress(pct);
+      },
+      (err) => {
+        console.error('Logo upload error:', err);
+        toast.error('Upload failed: ' + err.message);
+        setLogoUploading(false);
+      },
+      async () => {
+        try {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          const updated = await businessAPI.updateLogoUrl(url);
+          updateBusiness(updated);
+          toast.success('Logo updated!');
+        } catch (err) {
+          toast.error('Failed to save logo URL');
+        } finally {
+          setLogoUploading(false);
+          setLogoProgress(0);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+      }
+    );
   };
 
-  const TABS = ['business','availability','blocked','qr'];
+  const bookingUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/book/${business?.slug}`
+    : `https://bookam.app/book/${business?.slug}`;
+
+  const embedCode = `<iframe\n  src="${bookingUrl}?embed=1"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.1)"\n  title="${business?.name} Booking"\n></iframe>`;
+
+  const TABS = ['business','availability','blocked','qr','embed'];
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -95,7 +145,7 @@ export default function Settings() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit flex-wrap">
-        {['Business Info','Availability','Blocked Days','QR & Link'].map((t, i) => (
+        {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget'].map((t, i) => (
           <button key={t} onClick={() => setTab(TABS[i])}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${tab === TABS[i] ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
             {t}
@@ -106,22 +156,43 @@ export default function Settings() {
       {/* Business Info */}
       {tab === 'business' && (
         <div className="card p-6 max-w-2xl animate-slide-up">
-          {/* Logo upload */}
+          {/* Logo upload — Firebase Storage */}
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
-            <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center overflow-hidden">
-              {business?.logo_url
-                ? <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
-                : <span className="text-2xl font-bold text-primary-600">{business?.name?.[0]}</span>}
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <div className="w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-gray-100">
+                {business?.logo_url
+                  ? <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                  : <span className="text-3xl font-bold text-primary-600">{business?.name?.[0]}</span>}
+              </div>
+              {logoUploading && (
+                <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">{logoProgress}%</span>
+                </div>
+              )}
             </div>
             <div>
-              <p className="font-medium text-sm mb-1">Business Logo</p>
-              <div className="flex gap-2">
-                <input type="file" accept="image/*" className="hidden" id="logo-upload"
-                  onChange={e => setLogoFile(e.target.files[0])} />
-                <label htmlFor="logo-upload" className="btn-secondary text-xs cursor-pointer">Choose File</label>
-                {logoFile && <button onClick={uploadLogo} className="btn-primary text-xs">Upload</button>}
-              </div>
-              {logoFile && <p className="text-xs text-gray-400 mt-1">{logoFile.name}</p>}
+              <p className="font-semibold text-sm mb-0.5">Business Logo</p>
+              <p className="text-xs text-gray-400 mb-2">JPG, PNG or WebP — max 5MB. Stored securely in the cloud.</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                id="logo-upload"
+                onChange={handleLogoChange}
+                disabled={logoUploading}
+              />
+              <label
+                htmlFor="logo-upload"
+                className={`btn-secondary text-xs cursor-pointer ${logoUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {logoUploading ? `Uploading ${logoProgress}%…` : 'Upload New Logo'}
+              </label>
+              {logoUploading && (
+                <div className="mt-2 w-40 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary-600 transition-all duration-200" style={{ width: `${logoProgress}%` }} />
+                </div>
+              )}
             </div>
           </div>
 
@@ -170,9 +241,9 @@ export default function Settings() {
               <div className="flex flex-wrap gap-2">
                 {DAYS.map(day => (
                   <button key={day} type="button" onClick={() => toggleDay(day)}
-                    className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
+                    className={`px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all ${
                       avForm.working_days.includes(day)
-                        ? 'bg-primary-600 text-white border-primary-600'
+                        ? 'bg-primary-600 text-white border-primary-600 shadow-primary'
                         : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300'
                     }`}>
                     {day.slice(0,3).toUpperCase()}
@@ -244,7 +315,6 @@ export default function Settings() {
               <button type="submit" className="btn-primary">Block Date/Time</button>
             </form>
           </div>
-
           <div className="card overflow-hidden">
             <div className="p-4 border-b border-gray-100 font-semibold">Blocked Dates</div>
             {blocked.length === 0 ? (
@@ -272,22 +342,77 @@ export default function Settings() {
       {/* QR Code */}
       {tab === 'qr' && (
         <div className="card p-6 max-w-md animate-slide-up">
-          <h3 className="font-semibold mb-4">Your Booking Page</h3>
+          <h3 className="font-semibold mb-1">Your Booking Link</h3>
+          <p className="text-sm text-gray-500 mb-4">Share this link anywhere — Instagram bio, WhatsApp, email.</p>
           {business && (
             <>
-              <div className="bg-gray-50 rounded-xl p-4 mb-4 flex items-center gap-2">
-                <code className="text-sm text-primary-700 flex-1 truncate">{window.location.origin}/book/{business.slug}</code>
-                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/book/${business.slug}`); toast.success('Copied!'); }}
-                  className="text-xs btn-secondary py-1.5">Copy</button>
+              <div className="bg-primary-50 rounded-xl p-3 mb-4 flex items-center gap-2 border border-primary-100">
+                <code className="text-sm text-primary-700 flex-1 truncate">{bookingUrl}</code>
+                <button onClick={() => { navigator.clipboard.writeText(bookingUrl); toast.success('Copied!'); }}
+                  className="btn-secondary text-xs py-1.5 flex-shrink-0">Copy</button>
               </div>
-              <div className="flex justify-center p-4 bg-white border border-gray-100 rounded-xl mb-4">
-                <QRCodeSVG value={`${window.location.origin}/book/${business.slug}`} size={200} />
+              <div className="flex justify-center p-6 bg-white border border-gray-100 rounded-xl mb-4">
+                <QRCodeSVG value={bookingUrl} size={180} />
               </div>
-              <a href={`/book/${business.slug}`} target="_blank" rel="noopener noreferrer" className="btn-primary w-full justify-center">
-                Open Booking Page
-              </a>
+              <div className="flex gap-2">
+                <a href={`/book/${business.slug}`} target="_blank" rel="noopener noreferrer" className="btn-primary flex-1 justify-center">
+                  Open Booking Page
+                </a>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Book an appointment with ${business.name}: ${bookingUrl}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary px-4"
+                  title="Share on WhatsApp"
+                >
+                  <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                </a>
+              </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* Embed Widget */}
+      {tab === 'embed' && (
+        <div className="max-w-2xl animate-slide-up space-y-4">
+          <div className="card p-6">
+            <h3 className="font-semibold mb-1">Embed on Your Website</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Paste this code anywhere on your website — WordPress, Wix, Squarespace, or any HTML page.
+              Customers book without leaving your site.
+            </p>
+            <div className="bg-gray-900 rounded-xl p-4 relative mb-3">
+              <pre className="text-green-400 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap">{embedCode}</pre>
+              <button
+                onClick={() => { navigator.clipboard.writeText(embedCode); toast.success('Embed code copied!'); }}
+                className="absolute top-3 right-3 text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Copy
+              </button>
+            </div>
+            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-3">
+              <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <p className="text-xs text-blue-700">The widget automatically adjusts to fit any container width. Minimum recommended width: 400px.</p>
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <h3 className="font-semibold mb-1">Button Embed</h3>
+            <p className="text-sm text-gray-500 mb-4">Add a "Book Now" button that opens your booking page in a new tab.</p>
+            <div className="bg-gray-900 rounded-xl p-4 relative mb-3">
+              <pre className="text-green-400 text-xs leading-relaxed overflow-x-auto">{`<a href="${bookingUrl}" target="_blank"\n   style="display:inline-block;background:#5b3eea;color:white;\n          padding:12px 28px;border-radius:10px;font-weight:600;\n          text-decoration:none;font-family:sans-serif">\n  Book Now\n</a>`}</pre>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`<a href="${bookingUrl}" target="_blank" style="display:inline-block;background:#5b3eea;color:white;padding:12px 28px;border-radius:10px;font-weight:600;text-decoration:none;font-family:sans-serif">Book Now</a>`);
+                  toast.success('Button code copied!');
+                }}
+                className="absolute top-3 right-3 text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
