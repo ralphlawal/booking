@@ -136,7 +136,7 @@ export default function ConsumerProfile() {
   if (authLoading || !consumer) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -147,8 +147,9 @@ export default function ConsumerProfile() {
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+          <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors px-1">
             <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
       </nav>
@@ -172,7 +173,7 @@ export default function ConsumerProfile() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
+              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 tab === t.id
                   ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'

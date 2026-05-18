@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search } from 'lucide-react';
+import { Settings, Zap, Search, LogOut } from 'lucide-react';
 import { consumerAPI, bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -62,7 +62,7 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
         ) : (
           <>
             <Link
-              to={`/book/${booking.slug}`}
+              to={`/profile/${booking.slug}`}
               className="btn-secondary flex-1 text-sm py-2 text-center"
             >
               View business
@@ -123,7 +123,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
 }
 
 export default function CustomerDashboard() {
-  const { consumer, loading: authLoading } = useCustomerAuth();
+  const { consumer, loading: authLoading, logout } = useCustomerAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState('upcoming');
   const [bookings, setBookings] = useState([]);
@@ -180,18 +180,25 @@ export default function CustomerDashboard() {
   if (authLoading || !consumer) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <div className="flex items-center gap-2">
-            <Link to="/explore" className="text-sm text-gray-600 dark:text-gray-400 font-medium hidden sm:block">Explore</Link>
-            <Link to="/customer/profile" className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <div className="flex items-center gap-1">
+            <Link to="/explore" className="text-sm text-gray-600 dark:text-gray-400 font-medium hidden sm:block px-3 py-2">Explore</Link>
+            <Link to="/customer/profile" className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Profile settings">
               <Settings className="w-4 h-4 text-gray-500" />
             </Link>
+            <button
+              onClick={() => { logout(); navigate('/'); }}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </nav>
@@ -231,12 +238,12 @@ export default function CustomerDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5 overflow-x-auto scrollbar-hide">
+        <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 tab === t.id
                   ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'

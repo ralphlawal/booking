@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -51,12 +51,12 @@ const GuestRoute = ({ children }) => {
 };
 
 const PageLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 gap-8">
-    <div className="flex flex-col items-center gap-6 animate-fade-in">
-      <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-14 h-14 object-contain drop-shadow-sm dark:brightness-0 dark:invert" style={{ animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' }} />
+  <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-950">
+    <div className="flex flex-col items-center gap-5 animate-fade-in">
+      <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-12 h-12 object-contain dark:brightness-0 dark:invert animate-pulse" />
       <div className="flex items-center gap-1.5">
-        {[0, 150, 300].map(d => (
-          <span key={d} className="w-2 h-2 rounded-full bg-primary-500" style={{ animation: `bounce 1s ease-in-out ${d}ms infinite` }} />
+        {[0, 120, 240].map(d => (
+          <span key={d} className="w-1.5 h-1.5 rounded-full bg-primary-400" style={{ animation: `bounce 0.9s ease-in-out ${d}ms infinite` }} />
         ))}
       </div>
     </div>
@@ -122,12 +122,12 @@ export default function App() {
 }
 
 const NotFound = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-gray-50 dark:bg-gray-950 text-center px-4">
-    <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-12 h-12 object-contain opacity-40" />
+  <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-gray-50 dark:bg-gray-950 text-center px-4 animate-fade-in">
+    <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-12 h-12 object-contain opacity-40 dark:brightness-0 dark:invert dark:opacity-30" />
     <div>
       <div className="text-7xl font-black text-primary-600 dark:text-primary-400 leading-none mb-3">404</div>
       <p className="text-gray-600 dark:text-gray-400 text-lg">This page doesn't exist.</p>
     </div>
-    <a href="/" className="btn-primary">Back to home</a>
+    <Link to="/" className="btn-primary">Back to home</Link>
   </div>
 );

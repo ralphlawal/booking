@@ -4,7 +4,7 @@ import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
   Calendar, ArrowLeft, Share2, Heart, CheckCircle,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
@@ -92,7 +92,6 @@ export default function BusinessProfile() {
   const handleSave = async () => {
     if (!consumer) return navigate('/customer/login', { state: { from: `/profile/${slug}` } });
     try {
-      const { consumerAPI } = await import('../../services/api');
       await consumerAPI.savePreference({ business_id: business.id });
       setSaved(true);
       toast.success('Saved to favourites');

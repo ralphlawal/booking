@@ -174,6 +174,15 @@ export default function AdminLayout() {
                 </a>
               </>
             )}
+
+            {/* Mobile sign-out */}
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              className="lg:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <LogoutIcon className="w-5 h-5" />
+            </button>
           </div>
         </header>
 
