@@ -16,4 +16,16 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-firebase': ['firebase/app', 'firebase/auth'],
+          'vendor-ui': ['react-hot-toast', 'date-fns', 'lucide-react'],
+          'vendor-charts': ['recharts'],
+        },
+      },
+    },
+  },
 });
