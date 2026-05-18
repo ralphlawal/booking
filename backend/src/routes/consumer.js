@@ -31,6 +31,7 @@ router.get('/bookings', authenticateConsumer, ctrl.myBookings);
 router.get('/preferences', authenticateConsumer, ctrl.getPreferences);
 router.post('/preferences', authenticateConsumer, ctrl.upsertPreference);
 router.delete('/preferences/:businessId', authenticateConsumer, ctrl.removePreference);
+router.delete('/account', authenticateConsumer, ctrl.deleteAccount);
 
 module.exports = router;
 module.exports.authenticateConsumer = authenticateConsumer;

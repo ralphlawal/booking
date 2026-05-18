@@ -160,6 +160,29 @@ const sendReminder = (booking, hoursUntil) => {
   });
 };
 
+const sendBookingRescheduled = (booking) =>
+  sendEmail({
+    to: booking.customer_email,
+    subject: `Booking Rescheduled – ${booking.reference_id}`,
+    type: 'booking_rescheduled',
+    business_id: booking.business_id,
+    booking_id: booking.id,
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#4f46e510;border-radius:50%;font-size:24px;margin-bottom:12px">📅</div>
+        <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">Booking Rescheduled</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Hi ${booking.customer_name}, your appointment has been rescheduled to a new time.</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+        ${detailRow('Reference', `<span style="font-family:monospace;color:#4f46e5">${booking.reference_id}</span>`, false)}
+        ${detailRow('Service', booking.service_name, true)}
+        ${detailRow('New Date', booking.booking_date, false)}
+        ${detailRow('New Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, true)}
+      </table>
+      <p style="margin:20px 0 0;color:#94a3b8;font-size:13px;text-align:center">Questions? Contact ${booking.business_name}${booking.business_phone ? ` at ${booking.business_phone}` : ''}.</p>
+    `),
+  });
+
 const sendWelcomeEmail = (user) =>
   sendEmail({
     to: user.email,
@@ -195,4 +218,4 @@ const sendWelcomeEmail = (user) =>
     `),
   });
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail };
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled };

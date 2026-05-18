@@ -161,7 +161,7 @@ export default function Services() {
                   <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={form.deposit_required || false} onChange={set('deposit_required')} />
                   <div>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Require deposit (no-show protection)</span>
-                    <p className="text-xs text-gray-400">Customer pays a deposit when booking, charged only if they no-show</p>
+                    <p className="text-xs text-gray-400">Shows the deposit amount on your booking page — collected by you at the appointment</p>
                   </div>
                 </label>
                 {form.deposit_required && (

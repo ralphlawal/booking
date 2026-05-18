@@ -132,6 +132,13 @@ const ConsumerAccount = {
       [newPasswordHash, id]
     );
   },
+
+  async deleteById(id) {
+    // Preserve booking records for the business by nullifying consumer link
+    await db.query('UPDATE bookings SET consumer_id = NULL WHERE consumer_id = $1', [id]);
+    await db.query('DELETE FROM consumer_preferences WHERE consumer_id = $1', [id]);
+    await db.query('DELETE FROM consumer_accounts WHERE id = $1', [id]);
+  },
 };
 
 module.exports = ConsumerAccount;

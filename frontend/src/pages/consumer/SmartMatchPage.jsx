@@ -101,7 +101,7 @@ function MatchCard({ match, onBook }) {
 
           {match.deposit_required && match.deposit_amount > 0 && (
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-              🔒 £{parseFloat(match.deposit_amount).toFixed(2)} deposit required (no-show protection)
+              🔒 £{parseFloat(match.deposit_amount).toFixed(2)} deposit collected at appointment
             </p>
           )}
         </div>

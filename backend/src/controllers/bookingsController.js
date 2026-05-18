@@ -2,7 +2,7 @@ const Booking = require('../models/Booking');
 const Customer = require('../models/Customer');
 const Service = require('../models/Service');
 const generateReference = require('../utils/generateReference');
-const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking } = require('../services/emailService');
+const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled } = require('../services/emailService');
 
 exports.create = async (req, res) => {
   try {
@@ -140,6 +140,12 @@ exports.reschedule = async (req, res) => {
     if (hasConflict) return res.status(409).json({ error: 'This time slot is not available' });
 
     const booking = await Booking.reschedule(req.params.id, req.business.id, { booking_date, start_time, end_time });
+
+    const fullBooking = await Booking.findById(booking.id);
+    if (fullBooking?.customer_email) {
+      sendBookingRescheduled(fullBooking).catch(() => {});
+    }
+
     res.json(booking);
   } catch (err) {
     res.status(500).json({ error: 'Reschedule failed' });

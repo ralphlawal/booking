@@ -175,6 +175,16 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
+exports.deleteAccount = async (req, res) => {
+  try {
+    await ConsumerAccount.deleteById(req.consumer.id);
+    res.json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('[consumer/deleteAccount]', err.message);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+};
+
 exports.changePassword = async (req, res) => {
   try {
     const { current_password, new_password } = req.body;

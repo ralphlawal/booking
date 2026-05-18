@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut } from 'lucide-react';
+import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { consumerAPI, reviewsAPI } from '../../services/api';
-import { Lock } from 'lucide-react';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
@@ -98,6 +97,8 @@ export default function ConsumerProfile() {
   const [reviewedIds, setReviewedIds] = useState(new Set());
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwSaving, setPwSaving] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
@@ -160,6 +161,20 @@ export default function ConsumerProfile() {
       toast.error(err.message);
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== consumer.email) return toast.error('Email does not match');
+    setDeletingAccount(true);
+    try {
+      await consumerAPI.deleteAccount();
+      logout();
+      navigate('/');
+      toast.success('Account deleted');
+    } catch (err) {
+      toast.error(err.message);
+      setDeletingAccount(false);
     }
   };
 
@@ -294,7 +309,6 @@ export default function ConsumerProfile() {
             ))}
           </div>
         )}
-      </div>
 
         {tab === 'security' && (
           <div className="card p-6 animate-slide-up">
@@ -320,14 +334,40 @@ export default function ConsumerProfile() {
               </button>
             </form>
             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Sign out of all devices</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Sign out</p>
               <p className="text-xs text-gray-400 mb-3">This will sign you out of your current session.</p>
               <button onClick={handleLogout} className="text-sm text-red-600 dark:text-red-400 font-medium hover:underline">
                 Sign out
               </button>
             </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Trash2 className="w-4 h-4 text-red-500" />
+                <p className="text-sm font-semibold text-red-600 dark:text-red-400">Delete account</p>
+              </div>
+              <p className="text-xs text-gray-400 mb-3">
+                This permanently deletes your account and all saved preferences. Your past booking records will remain visible to businesses. This cannot be undone.
+              </p>
+              <div className="space-y-2">
+                <input
+                  className="input text-sm"
+                  placeholder={`Type ${consumer.email} to confirm`}
+                  value={deleteConfirm}
+                  onChange={e => setDeleteConfirm(e.target.value)}
+                />
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deletingAccount || deleteConfirm !== consumer.email}
+                  className="text-sm px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {deletingAccount ? 'Deleting…' : 'Delete my account'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
+      </div>
 
       {reviewModal && (
         <ReviewModal
