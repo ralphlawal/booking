@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Settings, Zap, Search } from 'lucide-react';
-import { consumerAPI } from '../../services/api';
+import { consumerAPI, bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
@@ -123,7 +123,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
 }
 
 export default function CustomerDashboard() {
-  const { consumer, logout } = useCustomerAuth();
+  const { consumer, loading: authLoading } = useCustomerAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState('upcoming');
   const [bookings, setBookings] = useState([]);
@@ -131,6 +131,7 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!consumer) { navigate('/customer/login'); return; }
     Promise.all([
       consumerAPI.myBookings(),
@@ -139,7 +140,7 @@ export default function CustomerDashboard() {
       .then(([b, p]) => { setBookings(b); setPrefs(p); })
       .catch(() => toast.error('Failed to load your data'))
       .finally(() => setLoading(false));
-  }, [consumer]);
+  }, [consumer, authLoading]);
 
   const today = new Date().toISOString().split('T')[0];
   const upcoming = bookings.filter((b) => b.booking_date >= today && !['cancelled', 'completed'].includes(b.status));
@@ -152,7 +153,6 @@ export default function CustomerDashboard() {
   const handleCancel = async (booking) => {
     if (!window.confirm('Cancel this booking?')) return;
     try {
-      const { bookingsAPI } = await import('../../services/api');
       await bookingsAPI.cancelByCustomer(booking.reference_id);
       setBookings((prev) => prev.map((b) => b.id === booking.id ? { ...b, status: 'cancelled' } : b));
       toast.success('Booking cancelled');
@@ -177,7 +177,7 @@ export default function CustomerDashboard() {
     { id: 'favourites', label: `Favourites (${prefs.length})` },
   ];
 
-  if (!consumer) return null;
+  if (authLoading || !consumer) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

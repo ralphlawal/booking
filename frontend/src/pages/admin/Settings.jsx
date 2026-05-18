@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../config/firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
+import { compressImage } from '../../utils/compressImage';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const INTERVALS = [15,30,45,60];
@@ -103,7 +104,9 @@ export default function Settings() {
     setLogoProgress(0);
 
     try {
-      const result = await businessAPI.uploadLogo(file, setLogoProgress);
+      const compressed = await compressImage(file);
+      setLogoProgress(30);
+      const result = await businessAPI.uploadLogo(compressed, (p) => setLogoProgress(30 + Math.round(p * 0.7)));
       updateBusiness(result.business);
       toast.success('Logo updated!');
     } catch (err) {
@@ -214,7 +217,7 @@ export default function Settings() {
             </div>
             <div>
               <p className="font-semibold text-sm mb-0.5">Business Logo</p>
-              <p className="text-xs text-gray-400 mb-2">JPG, PNG or WebP — max 5MB. Stored securely in the cloud.</p>
+              <p className="text-xs text-gray-400 mb-2">JPG, PNG or WebP — auto-compressed and saved instantly.</p>
               <input
                 ref={fileInputRef}
                 type="file"

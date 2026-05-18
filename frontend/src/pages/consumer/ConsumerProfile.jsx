@@ -85,7 +85,7 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 }
 
 export default function ConsumerProfile() {
-  const { consumer, update, logout } = useCustomerAuth();
+  const { consumer, update, logout, loading: authLoading } = useCustomerAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ full_name: '', phone: '' });
@@ -97,9 +97,10 @@ export default function ConsumerProfile() {
   const [reviewedIds, setReviewedIds] = useState(new Set());
 
   useEffect(() => {
+    if (authLoading) return;
     if (!consumer) { navigate('/customer/login'); return; }
     setForm({ full_name: consumer.full_name || '', phone: consumer.phone || '' });
-  }, [consumer]);
+  }, [consumer, authLoading]);
 
   useEffect(() => {
     if (tab === 'reviews') {
@@ -132,7 +133,7 @@ export default function ConsumerProfile() {
     navigate('/');
   };
 
-  if (!consumer) return null;
+  if (authLoading || !consumer) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
