@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { bookingsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
+
+const POLL_INTERVAL = 60_000; // 60 seconds
 
 const STATUS_COLORS = { pending: 'badge-pending', confirmed: 'badge-confirmed', cancelled: 'badge-cancelled', completed: 'badge-completed' };
 const STATUSES = ['all','pending','confirmed','cancelled','completed'];
@@ -15,14 +17,23 @@ export default function Bookings() {
   const [statusForm, setStatusForm] = useState({ status: '', cancelled_reason: '' });
   const [rescheduleForm, setRescheduleForm] = useState({ booking_date: '', start_time: '' });
   const [saving, setSaving] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const timerRef = useRef(null);
 
-  const load = useCallback(() => {
-    setLoading(true);
+  const load = useCallback((silent = false) => {
+    if (!silent) setLoading(true);
     bookingsAPI.list({ status: filter === 'all' ? undefined : filter })
-      .then(setData).finally(() => setLoading(false));
+      .then(d => { setData(d); setLastUpdated(new Date()); })
+      .finally(() => { if (!silent) setLoading(false); });
   }, [filter]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    timerRef.current = setInterval(() => {
+      if (!document.hidden) load(true);
+    }, POLL_INTERVAL);
+    return () => clearInterval(timerRef.current);
+  }, [load]);
 
   const openStatus = (b) => { setSelected(b); setStatusForm({ status: b.status, cancelled_reason: '', no_show: false }); setModal('status'); };
   const openReschedule = (b) => { setSelected(b); setRescheduleForm({ booking_date: b.booking_date, start_time: b.start_time?.slice(0,5) }); setModal('reschedule'); };
@@ -72,9 +83,23 @@ export default function Bookings() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold">Bookings</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Manage all your appointments</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Bookings</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Manage all your appointments</p>
+        </div>
+        <button
+          onClick={() => load(false)}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 transition-colors mt-1 flex-shrink-0"
+          title="Refresh bookings"
+        >
+          <RefreshIcon />
+          {lastUpdated && (
+            <span className="hidden sm:inline text-xs">
+              {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Stats strip */}
@@ -301,3 +326,4 @@ function Spinner() { return <div className="w-4 h-4 border-2 border-white border
 function XIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
 function XSmIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
 function SearchIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>; }
+function RefreshIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>; }

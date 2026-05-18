@@ -78,7 +78,7 @@ exports.getSlots = async (req, res) => {
       return res.status(404).json({ error: 'Service not found' });
     }
 
-    const slots = await getAvailableSlots(req.business.id, date, service.duration_minutes);
+    const slots = await getAvailableSlots(req.business.id, date, service.duration_minutes, req.business.timezone);
     res.json(slots);
   } catch (err) {
     console.error(err);

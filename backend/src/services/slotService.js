@@ -30,12 +30,39 @@ const generateSlots = (openingTime, closingTime, intervalMinutes, durationMinute
   return slots;
 };
 
-const getAvailableSlots = async (business_id, date, service_duration_minutes) => {
+const getNowInTz = (tz) => {
+  try {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: tz,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(new Date());
+    const get = (type) => parts.find(p => p.type === type)?.value || '00';
+    return {
+      dateStr: `${get('year')}-${get('month')}-${get('day')}`,
+      mins: parseInt(get('hour')) * 60 + parseInt(get('minute')),
+    };
+  } catch {
+    return { dateStr: new Date().toISOString().slice(0, 10), mins: 0 };
+  }
+};
+
+const getDayNameInTz = (date, tz) => {
+  try {
+    return new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: tz })
+      .format(new Date(date + 'T12:00:00Z'))
+      .toLowerCase();
+  } catch {
+    return DAY_NAMES[new Date(date + 'T00:00:00Z').getUTCDay()];
+  }
+};
+
+const getAvailableSlots = async (business_id, date, service_duration_minutes, timezone = 'UTC') => {
   const availability = await Availability.findByBusinessId(business_id);
   if (!availability) return [];
 
-  const dateObj = new Date(date + 'T00:00:00Z');
-  const dayName = DAY_NAMES[dateObj.getUTCDay()];
+  const tz = timezone || 'UTC';
+  const dayName = getDayNameInTz(date, tz);
 
   const workingDays = availability.working_days;
   if (!workingDays.includes(dayName)) return [];
@@ -67,7 +94,7 @@ const getAvailableSlots = async (business_id, date, service_duration_minutes) =>
 
   // Remove already-booked slots
   const bookings = await Booking.findByBusinessId(business_id, { date });
-  const available = filteredSlots.filter(slot => {
+  let available = filteredSlots.filter(slot => {
     const slotStart = timeToMinutes(slot.start);
     const slotEnd = timeToMinutes(slot.end);
     return !bookings.some(booking => {
@@ -76,6 +103,12 @@ const getAvailableSlots = async (business_id, date, service_duration_minutes) =>
       return slotStart < bEnd && slotEnd > bStart;
     });
   });
+
+  // Filter out past slots if the requested date is today in the business's timezone
+  const now = getNowInTz(tz);
+  if (date === now.dateStr) {
+    available = available.filter(slot => timeToMinutes(slot.start) > now.mins + 30);
+  }
 
   return available;
 };
