@@ -1,12 +1,11 @@
 import axios from 'axios';
 
 // Local dev: Vite proxy handles /api → localhost:5001
-// Production: call Render directly (CORS allows *.vercel.app)
-const RENDER_URL = 'https://bookly-api-3bz0.onrender.com/api';
+// Production: /api/proxy/* → Vercel edge function → Render (same-origin, no CORS)
 const BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : import.meta.env.PROD
-  ? RENDER_URL
+  ? '/api/proxy'
   : '/api';
 
 const api = axios.create({

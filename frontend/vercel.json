@@ -1,14 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://bookly-api-3bz0.onrender.com/api/:path*" },
+    { "source": "/api/proxy/:path*", "destination": "/api/proxy" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    }
   ]
 }
