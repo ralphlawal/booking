@@ -13,6 +13,8 @@ const attachBySlug = async (req, res, next) => {
 
 // Public: get available slots
 router.get('/public/:slug/slots', attachBySlug, ctrl.getSlots);
+// Public: get working hours
+router.get('/public/:slug/hours', attachBySlug, ctrl.getPublicHours);
 
 // Admin: availability settings
 router.get('/', authenticate, attachBusiness, ctrl.get);

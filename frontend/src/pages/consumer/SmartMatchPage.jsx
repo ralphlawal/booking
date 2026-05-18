@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
 
 const TIME_PREFS = [
@@ -198,7 +199,7 @@ export default function SmartMatchPage() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8">
+      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 pb-28">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-3">⚡</div>
@@ -370,6 +371,8 @@ export default function SmartMatchPage() {
           </div>
         )}
       </div>
+
+      <ConsumerBottomNav />
     </div>
   );
 }

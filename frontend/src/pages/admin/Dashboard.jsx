@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const STATUS_COLORS = { pending: '#f59e0b', confirmed: '#10b981', cancelled: '#ef4444', completed: '#6366f1' };
 const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
@@ -43,11 +44,29 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [checklist, setChecklist] = useState(null);
+  const [confirming, setConfirming] = useState(null);
+
+  const loadBookings = useCallback(() => {
+    bookingsAPI.list({ limit: 5 }).then(d => setData(d)).finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    bookingsAPI.list({ limit: 5 }).then(d => setData(d)).finally(() => setLoading(false));
+    loadBookings();
     bookingsAPI.getAnalytics().then(setAnalytics).finally(() => setAnalyticsLoading(false));
   }, []);
+
+  const quickConfirm = async (bookingId) => {
+    setConfirming(bookingId);
+    try {
+      await bookingsAPI.updateStatus(bookingId, 'confirmed');
+      toast.success('Booking confirmed');
+      loadBookings();
+    } catch {
+      toast.error('Failed to confirm');
+    } finally {
+      setConfirming(null);
+    }
+  };
 
   useEffect(() => {
     if (!business) return;
@@ -249,21 +268,30 @@ export default function Dashboard() {
         ) : (
           <div className="divide-y divide-gray-50 dark:divide-gray-800">
             {data?.bookings?.slice(0, 5).map(b => (
-              <Link key={b.id} to="/admin/bookings" className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 dark:text-primary-400">
+              <div key={b.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors gap-3">
+                <Link to="/admin/bookings" className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-9 h-9 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 dark:text-primary-400 flex-shrink-0">
                     {b.customer_name?.[0]?.toUpperCase()}
                   </div>
-                  <div>
-                    <p className="font-medium text-sm text-gray-900 dark:text-white">{b.customer_name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{b.service_name} · {b.start_time?.slice(0,5)}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{b.customer_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{b.service_name} · {b.booking_date} · {b.start_time?.slice(0,5)}</p>
                   </div>
+                </Link>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {b.status === 'pending' ? (
+                    <button
+                      onClick={() => quickConfirm(b.id)}
+                      disabled={confirming === b.id}
+                      className="text-xs px-3 py-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-semibold border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {confirming === b.id ? '…' : '✓ Confirm'}
+                    </button>
+                  ) : (
+                    <span className={`badge-${b.status}`}>{b.status}</span>
+                  )}
                 </div>
-                <div className="text-right">
-                  <span className={`badge-${b.status}`}>{b.status}</span>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{b.booking_date}</p>
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

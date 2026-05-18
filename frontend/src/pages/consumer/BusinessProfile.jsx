@@ -4,10 +4,45 @@ import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
   Calendar, ArrowLeft, Share2, Heart, CheckCircle,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI, consumerAPI } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
+import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
+
+const DAY_SHORT = { Monday:'Mon', Tuesday:'Tue', Wednesday:'Wed', Thursday:'Thu', Friday:'Fri', Saturday:'Sat', Sunday:'Sun' };
+const DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+function formatHours(avail) {
+  if (!avail?.working_days?.length) return null;
+  const days = DAY_ORDER.filter(d => avail.working_days.includes(d));
+  const fmt = (t) => {
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'pm' : 'am';
+    const h12 = h % 12 || 12;
+    return m === 0 ? `${h12}${ampm}` : `${h12}:${String(m).padStart(2,'0')}${ampm}`;
+  };
+  const timeStr = avail.opening_time && avail.closing_time
+    ? `${fmt(avail.opening_time)} – ${fmt(avail.closing_time)}`
+    : null;
+  // Compress consecutive days: Mon–Fri
+  const shorts = days.map(d => DAY_SHORT[d]);
+  let label = shorts.length === 7 ? 'Every day'
+    : shorts.length === 5 && !avail.working_days.includes('Saturday') && !avail.working_days.includes('Sunday') ? 'Mon–Fri'
+    : shorts.join(', ');
+  return timeStr ? `${label} · ${timeStr}` : label;
+}
+
+function isOpenNow(avail) {
+  if (!avail?.working_days?.length || !avail.opening_time || !avail.closing_time) return null;
+  const now = new Date();
+  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()];
+  if (!avail.working_days.includes(dayName)) return false;
+  const [oh, om] = avail.opening_time.split(':').map(Number);
+  const [ch, cm] = avail.closing_time.split(':').map(Number);
+  const mins = now.getHours() * 60 + now.getMinutes();
+  return mins >= oh * 60 + om && mins < ch * 60 + cm;
+}
 
 function StarBar({ count, total }) {
   return (
@@ -60,6 +95,7 @@ export default function BusinessProfile() {
   const [business, setBusiness] = useState(null);
   const [services, setServices] = useState([]);
   const [reviewData, setReviewData] = useState({ reviews: [], stats: null });
+  const [hours, setHours] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -69,11 +105,13 @@ export default function BusinessProfile() {
       businessAPI.getPublic(slug),
       servicesAPI.listPublic(slug),
       reviewsAPI.getForBusiness(slug),
+      availabilityAPI.getPublicHours(slug).catch(() => null),
     ])
-      .then(([biz, svcs, rev]) => {
+      .then(([biz, svcs, rev, avail]) => {
         setBusiness(biz);
         setServices((svcs.filter ? svcs.filter(s => s.is_active) : svcs));
         setReviewData(rev);
+        setHours(avail);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -190,12 +228,17 @@ export default function BusinessProfile() {
           )}
 
           {/* Contact info */}
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2.5">
             {business.location && (
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors group"
+              >
                 <MapPin className="w-4 h-4 flex-shrink-0 text-primary-500" />
-                {business.location}
-              </div>
+                <span className="group-hover:underline">{business.location}</span>
+              </a>
             )}
             {business.phone && (
               <a href={`tel:${business.phone}`} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
@@ -208,6 +251,23 @@ export default function BusinessProfile() {
                 <Mail className="w-4 h-4 flex-shrink-0 text-primary-500" />
                 {business.email}
               </a>
+            )}
+            {hours && formatHours(hours) && (
+              <div className="flex items-start gap-2 text-sm">
+                <Clock className="w-4 h-4 flex-shrink-0 text-primary-500 mt-0.5" />
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">{formatHours(hours)}</span>
+                  {isOpenNow(hours) !== null && (
+                    <span className={`ml-2 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
+                      isOpenNow(hours)
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                    }`}>
+                      {isOpenNow(hours) ? 'Open now' : 'Closed'}
+                    </span>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -300,9 +360,9 @@ export default function BusinessProfile() {
           )}
         </div>
 
-        {/* Sticky book CTA */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-          <div className="max-w-2xl mx-auto px-4 pt-4 pb-1">
+        {/* Sticky book CTA — sits above the bottom nav */}
+        <div className="fixed bottom-[57px] left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40">
+          <div className="max-w-2xl mx-auto px-4 py-3">
             <Link to={`/book/${slug}`} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 text-base">
               <CheckCircle className="w-5 h-5" />
               Book now
@@ -310,9 +370,11 @@ export default function BusinessProfile() {
           </div>
         </div>
 
-        {/* Bottom padding for sticky CTA */}
-        <div className="h-28" />
+        {/* Bottom padding for sticky CTA + bottom nav */}
+        <div className="h-36" />
       </div>
+
+      <ConsumerBottomNav />
     </div>
   );
 }

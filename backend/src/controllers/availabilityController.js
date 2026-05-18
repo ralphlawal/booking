@@ -12,6 +12,15 @@ exports.get = async (req, res) => {
   }
 };
 
+exports.getPublicHours = async (req, res) => {
+  try {
+    const availability = await Availability.findByBusinessId(req.business.id);
+    res.json(availability || null);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch hours' });
+  }
+};
+
 exports.upsert = async (req, res) => {
   try {
     const { working_days, opening_time, closing_time, slot_interval_minutes, buffer_minutes } = req.body;

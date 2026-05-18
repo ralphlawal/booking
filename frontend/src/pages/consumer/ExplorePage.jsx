@@ -4,6 +4,7 @@ import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight } from 'lucid
 import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 
 const CATEGORY_ICONS = {
   barber: '✂️', 'hair stylist': '💇', 'nail tech': '💅', 'makeup artist': '💄',
@@ -251,7 +252,7 @@ export default function ExplorePage() {
       </div>
 
       {/* Results */}
-      <div className="max-w-6xl mx-auto px-4 pb-12">
+      <div className="max-w-6xl mx-auto px-4 pb-28">
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -291,6 +292,8 @@ export default function ExplorePage() {
           </>
         )}
       </div>
+
+      <ConsumerBottomNav />
     </div>
   );
 }

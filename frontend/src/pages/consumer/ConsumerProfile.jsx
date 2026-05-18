@@ -4,6 +4,7 @@ import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2 } from '
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { consumerAPI, reviewsAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
+import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
 
 function StarPicker({ value, onChange }) {
@@ -215,7 +216,7 @@ export default function ConsumerProfile() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-6">
+      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-6 pb-28">
         {/* Avatar */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-3xl font-bold shadow-primary mb-3">
@@ -430,6 +431,8 @@ export default function ConsumerProfile() {
           onSubmitted={() => setReviewedIds(prev => new Set([...prev, reviewModal.id]))}
         />
       )}
+
+      <ConsumerBottomNav />
     </div>
   );
 }

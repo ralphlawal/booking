@@ -66,6 +66,7 @@ export const availabilityAPI = {
   save: (data) => api.post('/availability', data),
   getSlots: (slug, date, service_id) =>
     api.get(`/availability/public/${slug}/slots`, { params: { date, service_id } }),
+  getPublicHours: (slug) => api.get(`/availability/public/${slug}/hours`),
   getBlocked: () => api.get('/availability/blocked'),
   block: (data) => api.post('/availability/blocked', data),
   unblock: (id) => api.delete(`/availability/blocked/${id}`),

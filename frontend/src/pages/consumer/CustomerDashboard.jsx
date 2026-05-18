@@ -4,6 +4,7 @@ import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check } from 'lucide-reac
 import { consumerAPI, bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
+import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
 
 const STATUS_STYLES = {
@@ -261,7 +262,6 @@ export default function CustomerDashboard() {
             <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           <div className="flex items-center gap-1">
-            <Link to="/explore" className="text-sm text-gray-600 dark:text-gray-400 font-medium hidden sm:block px-3 py-2">Explore</Link>
 
             {/* Notification bell */}
             <div className="relative" ref={notifRef}>
@@ -313,7 +313,7 @@ export default function CustomerDashboard() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 py-6 pb-28">
         {/* Welcome header */}
         <div className="mb-6 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">
@@ -437,6 +437,8 @@ export default function CustomerDashboard() {
           cancelling={cancelling}
         />
       )}
+
+      <ConsumerBottomNav unreadCount={notifications.filter(n => !n.is_read).length} />
     </div>
   );
 }
