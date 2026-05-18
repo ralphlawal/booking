@@ -94,13 +94,14 @@ exports.getByReference = async (req, res) => {
 
 exports.updateStatus = async (req, res) => {
   try {
-    const { status, cancelled_reason } = req.body;
+    const { status, cancelled_reason, no_show } = req.body;
     const allowed = ['pending','confirmed','cancelled','completed'];
     if (!allowed.includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    const booking = await Booking.updateStatus(req.params.id, req.business.id, status, cancelled_reason);
+    const reason = no_show ? 'No-show' : (cancelled_reason || null);
+    const booking = await Booking.updateStatus(req.params.id, req.business.id, status, reason);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
     const fullBooking = await Booking.findById(booking.id);
@@ -109,8 +110,8 @@ exports.updateStatus = async (req, res) => {
       sendBookingStatusUpdate({ ...fullBooking, customer_email: fullBooking.customer_email });
     }
 
-    if (status === 'cancelled' && fullBooking.customer_id) {
-      const original = await Booking.findById(req.params.id);
+    if (no_show && fullBooking.customer_id) {
+      await Customer.incrementNoShows(fullBooking.customer_id).catch(() => {});
     }
 
     res.json(booking);

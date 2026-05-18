@@ -22,8 +22,11 @@ const authenticateConsumer = async (req, res, next) => {
 
 router.post('/register', ctrl.register);
 router.post('/login', ctrl.login);
+router.post('/forgot-password', ctrl.forgotPassword);
+router.post('/reset-password', ctrl.resetPassword);
 router.get('/me', authenticateConsumer, ctrl.me);
 router.put('/me', authenticateConsumer, ctrl.update);
+router.post('/change-password', authenticateConsumer, ctrl.changePassword);
 router.get('/bookings', authenticateConsumer, ctrl.myBookings);
 router.get('/preferences', authenticateConsumer, ctrl.getPreferences);
 router.post('/preferences', authenticateConsumer, ctrl.upsertPreference);

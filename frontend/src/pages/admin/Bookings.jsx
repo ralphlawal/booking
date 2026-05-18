@@ -24,7 +24,7 @@ export default function Bookings() {
 
   useEffect(() => { load(); }, [load]);
 
-  const openStatus = (b) => { setSelected(b); setStatusForm({ status: b.status, cancelled_reason: '' }); setModal('status'); };
+  const openStatus = (b) => { setSelected(b); setStatusForm({ status: b.status, cancelled_reason: '', no_show: false }); setModal('status'); };
   const openReschedule = (b) => { setSelected(b); setRescheduleForm({ booking_date: b.booking_date, start_time: b.start_time?.slice(0,5) }); setModal('reschedule'); };
   const closeModal = () => { setModal(null); setSelected(null); };
 
@@ -32,8 +32,8 @@ export default function Bookings() {
     e.preventDefault();
     setSaving(true);
     try {
-      await bookingsAPI.updateStatus(selected.id, statusForm.status, statusForm.cancelled_reason);
-      toast.success('Status updated');
+      await bookingsAPI.updateStatus(selected.id, statusForm.status, statusForm.cancelled_reason, statusForm.no_show);
+      toast.success(statusForm.no_show ? 'Marked as no-show' : 'Status updated');
       closeModal();
       load();
     } catch (err) {
@@ -162,7 +162,7 @@ export default function Bookings() {
                       </td>
                       <td className="px-4 py-3">
                         <p>{b.service_name}</p>
-                        <p className="text-xs text-gray-400">${parseFloat(b.service_price || 0).toFixed(2)}</p>
+                        <p className="text-xs text-gray-400">£{parseFloat(b.service_price || 0).toFixed(2)}</p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <p>{b.booking_date}</p>
@@ -200,7 +200,7 @@ export default function Bookings() {
                     <span className={`${STATUS_COLORS[b.status]} flex-shrink-0`}>{b.status}</span>
                   </div>
                   <div className="ml-11 space-y-1">
-                    <p className="text-sm text-gray-700">{b.service_name} · <span className="font-semibold">${parseFloat(b.service_price || 0).toFixed(2)}</span></p>
+                    <p className="text-sm text-gray-700">{b.service_name} · <span className="font-semibold">£{parseFloat(b.service_price || 0).toFixed(2)}</span></p>
                     <p className="text-xs text-gray-400">{b.booking_date} · {b.start_time?.slice(0,5)} – {b.end_time?.slice(0,5)}</p>
                     <p className="text-xs font-mono text-primary-600">{b.reference_id}</p>
                     <div className="flex gap-2 pt-1">
@@ -237,9 +237,25 @@ export default function Bookings() {
                 </select>
               </div>
               {statusForm.status === 'cancelled' && (
-                <div>
-                  <label className="label">Cancellation Reason</label>
-                  <input className="input" placeholder="Optional reason…" value={statusForm.cancelled_reason} onChange={e => setStatusForm(p => ({ ...p, cancelled_reason: e.target.value }))} />
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none p-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 accent-amber-500"
+                      checked={statusForm.no_show}
+                      onChange={e => setStatusForm(p => ({ ...p, no_show: e.target.checked, cancelled_reason: e.target.checked ? 'No-show' : '' }))}
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Mark as no-show</p>
+                      <p className="text-xs text-amber-600 dark:text-amber-400">Records a no-show on the customer's profile</p>
+                    </div>
+                  </label>
+                  {!statusForm.no_show && (
+                    <div>
+                      <label className="label">Cancellation Reason</label>
+                      <input className="input" placeholder="Optional reason…" value={statusForm.cancelled_reason} onChange={e => setStatusForm(p => ({ ...p, cancelled_reason: e.target.value }))} />
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex gap-3">

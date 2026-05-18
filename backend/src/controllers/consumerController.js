@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const ConsumerAccount = require('../models/ConsumerAccount');
+const { sendEmail } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -24,6 +26,25 @@ exports.register = async (req, res) => {
 
     const consumer = await ConsumerAccount.create({ email, password, full_name, phone });
     const token = signToken(consumer);
+
+    // Send welcome email (fire and forget)
+    const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    sendEmail({
+      to: consumer.email,
+      subject: 'Welcome to BookAm — start booking',
+      type: 'consumer_welcome',
+      html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0">
+        <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+        </div>
+        <div style="padding:32px">
+          <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Welcome, ${consumer.full_name}! 🎉</h2>
+          <p style="color:#64748b;font-size:15px;margin:0 0 20px">Your BookAm account is ready. Discover and book local services instantly.</p>
+          <a href="${FRONTEND}/explore" style="display:inline-block;background:#5b3eea;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">Browse services →</a>
+        </div>
+      </div>`,
+    }).catch(() => {});
+
     res.status(201).json({ consumer, token });
   } catch (err) {
     console.error('[consumer/register]', err.message);
@@ -101,5 +122,73 @@ exports.removePreference = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to remove preference' });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const updated = await ConsumerAccount.setResetToken(email, token, expires);
+    if (updated) {
+      await sendEmail({
+        to: email.toLowerCase().trim(),
+        subject: 'Reset your BookAm password',
+        type: 'consumer_password_reset',
+        html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e2e8f0">
+          <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+          </div>
+          <div style="padding:32px">
+            <h2 style="margin:0 0 8px;color:#1e293b;font-size:20px">Reset your password</h2>
+            <p style="color:#64748b;font-size:14px;margin:0 0 24px">Click the button below to set a new password. This link expires in 1 hour.</p>
+            <a href="${FRONTEND}/customer/reset-password?token=${token}" style="display:inline-block;background:#5b3eea;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">Reset password →</a>
+            <p style="color:#94a3b8;font-size:12px;margin:20px 0 0">If you didn't request this, ignore this email — your password won't change.</p>
+          </div>
+        </div>`,
+      });
+    }
+    // Always return success to avoid email enumeration
+    res.json({ message: 'If an account exists, a reset link has been sent' });
+  } catch (err) {
+    console.error('[consumer/forgotPassword]', err.message);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token and password required' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    const account = await ConsumerAccount.findByResetToken(token);
+    if (!account) return res.status(400).json({ error: 'Invalid or expired reset link' });
+    const hash = await bcrypt.hash(password, 12);
+    await ConsumerAccount.updatePassword(account.id, hash);
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('[consumer/resetPassword]', err.message);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password) return res.status(400).json({ error: 'Both fields required' });
+    if (new_password.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    const account = await ConsumerAccount.findByEmail(req.consumer.email);
+    if (!account) return res.status(401).json({ error: 'Account not found' });
+    const valid = await bcrypt.compare(current_password, account.password_hash);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+    const hash = await bcrypt.hash(new_password, 12);
+    await ConsumerAccount.updatePassword(account.id, hash);
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    console.error('[consumer/changePassword]', err.message);
+    res.status(500).json({ error: 'Failed to change password' });
   }
 };

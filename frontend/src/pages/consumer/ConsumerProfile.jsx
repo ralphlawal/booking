@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { consumerAPI, reviewsAPI } from '../../services/api';
+import { Lock } from 'lucide-react';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
@@ -95,6 +96,8 @@ export default function ConsumerProfile() {
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [reviewModal, setReviewModal] = useState(null);
   const [reviewedIds, setReviewedIds] = useState(new Set());
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwSaving, setPwSaving] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -106,9 +109,20 @@ export default function ConsumerProfile() {
     if (tab === 'reviews') {
       setLoadingBookings(true);
       consumerAPI.myBookings()
-        .then(data => {
+        .then(async data => {
           const completed = data.filter(b => b.status === 'completed');
           setBookings(completed);
+          // Pre-check which bookings are already reviewed
+          const checks = await Promise.allSettled(
+            completed.map(b => reviewsAPI.checkReviewable(b.id))
+          );
+          const alreadyReviewed = new Set();
+          checks.forEach((result, i) => {
+            if (result.status === 'fulfilled' && result.value?.can_review === false) {
+              alreadyReviewed.add(completed[i].id);
+            }
+          });
+          setReviewedIds(alreadyReviewed);
         })
         .catch(() => {})
         .finally(() => setLoadingBookings(false));
@@ -131,6 +145,22 @@ export default function ConsumerProfile() {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const changePassword = async (e) => {
+    e.preventDefault();
+    if (pwForm.next !== pwForm.confirm) return toast.error('Passwords do not match');
+    if (pwForm.next.length < 6) return toast.error('New password must be at least 6 characters');
+    setPwSaving(true);
+    try {
+      await consumerAPI.changePassword(pwForm.current, pwForm.next);
+      toast.success('Password updated successfully');
+      setPwForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setPwSaving(false);
+    }
   };
 
   if (authLoading || !consumer) return null;
@@ -167,8 +197,9 @@ export default function ConsumerProfile() {
         {/* Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5">
           {[
-            { id: 'profile', label: 'Edit Profile' },
-            { id: 'reviews',  label: 'Leave Reviews' },
+            { id: 'profile', label: 'Profile' },
+            { id: 'reviews', label: 'Reviews' },
+            { id: 'security', label: 'Security' },
           ].map(t => (
             <button
               key={t.id}
@@ -264,6 +295,39 @@ export default function ConsumerProfile() {
           </div>
         )}
       </div>
+
+        {tab === 'security' && (
+          <div className="card p-6 animate-slide-up">
+            <div className="flex items-center gap-2 mb-5">
+              <Lock className="w-4 h-4 text-gray-500" />
+              <h2 className="font-bold text-gray-900 dark:text-white">Change Password</h2>
+            </div>
+            <form onSubmit={changePassword} className="space-y-4">
+              <div>
+                <label className="label">Current password</label>
+                <input className="input" type="password" placeholder="Your current password" required value={pwForm.current} onChange={e => setPwForm(p => ({ ...p, current: e.target.value }))} />
+              </div>
+              <div>
+                <label className="label">New password</label>
+                <input className="input" type="password" placeholder="Min. 6 characters" required value={pwForm.next} onChange={e => setPwForm(p => ({ ...p, next: e.target.value }))} />
+              </div>
+              <div>
+                <label className="label">Confirm new password</label>
+                <input className="input" type="password" placeholder="Repeat new password" required value={pwForm.confirm} onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))} />
+              </div>
+              <button type="submit" disabled={pwSaving} className="btn-primary">
+                {pwSaving ? 'Updating…' : 'Update password'}
+              </button>
+            </form>
+            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Sign out of all devices</p>
+              <p className="text-xs text-gray-400 mb-3">This will sign you out of your current session.</p>
+              <button onClick={handleLogout} className="text-sm text-red-600 dark:text-red-400 font-medium hover:underline">
+                Sign out
+              </button>
+            </div>
+          </div>
+        )}
 
       {reviewModal && (
         <ReviewModal

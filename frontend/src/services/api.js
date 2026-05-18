@@ -76,8 +76,8 @@ export const bookingsAPI = {
   cancelByCustomer: (ref) => api.post(`/bookings/ref/${ref}/cancel`),
   list: (params) => api.get('/bookings', { params }),
   getById: (id) => api.get(`/bookings/${id}`),
-  updateStatus: (id, status, cancelled_reason) =>
-    api.put(`/bookings/${id}/status`, { status, cancelled_reason }),
+  updateStatus: (id, status, cancelled_reason, no_show) =>
+    api.put(`/bookings/${id}/status`, { status, cancelled_reason, no_show: !!no_show }),
   reschedule: (id, data) => api.put(`/bookings/${id}/reschedule`, data),
   getAnalytics: () => api.get('/bookings/analytics'),
 };
@@ -102,6 +102,9 @@ consumerAxios.interceptors.response.use(
 export const consumerAPI = {
   register: (data) => consumerAxios.post('/consumer/register', data),
   login: (email, password) => consumerAxios.post('/consumer/login', { email, password }),
+  forgotPassword: (email) => consumerAxios.post('/consumer/forgot-password', { email }),
+  resetPassword: (token, password) => consumerAxios.post('/consumer/reset-password', { token, password }),
+  changePassword: (current_password, new_password) => consumerAxios.post('/consumer/change-password', { current_password, new_password }),
   me: () => consumerAxios.get('/consumer/me'),
   updateMe: (data) => consumerAxios.put('/consumer/me', data),
   myBookings: () => consumerAxios.get('/consumer/bookings'),

@@ -53,12 +53,19 @@ export default function CustomerLogin() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-5">
-            New to BookAm?{' '}
-            <Link to="/customer/signup" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
-              Create account
-            </Link>
-          </p>
+          <div className="mt-5 space-y-2 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              <Link to="/customer/forgot-password" className="text-primary-600 dark:text-primary-400 hover:underline text-sm">
+                Forgot your password?
+              </Link>
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              New to BookAm?{' '}
+              <Link to="/customer/signup" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
+                Create account
+              </Link>
+            </p>
+          </div>
           <p className="text-center text-xs text-gray-400 mt-3">
             Business owner?{' '}
             <Link to="/admin/login" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">

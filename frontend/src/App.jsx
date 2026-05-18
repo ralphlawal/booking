@@ -16,6 +16,8 @@ import ExplorePage from './pages/consumer/ExplorePage';
 import SmartMatchPage from './pages/consumer/SmartMatchPage';
 import CustomerLogin from './pages/consumer/CustomerLogin';
 import CustomerSignup from './pages/consumer/CustomerSignup';
+import CustomerForgotPassword from './pages/consumer/CustomerForgotPassword';
+import CustomerResetPassword from './pages/consumer/CustomerResetPassword';
 import CustomerDashboard from './pages/consumer/CustomerDashboard';
 import BusinessProfile from './pages/consumer/BusinessProfile';
 import ConsumerProfile from './pages/consumer/ConsumerProfile';
@@ -107,6 +109,8 @@ export default function App() {
             <Route path="/profile/:slug" element={<BusinessProfile />} />
             <Route path="/customer/login" element={<CustomerLogin />} />
             <Route path="/customer/signup" element={<CustomerSignup />} />
+            <Route path="/customer/forgot-password" element={<CustomerForgotPassword />} />
+            <Route path="/customer/reset-password" element={<CustomerResetPassword />} />
             <Route path="/customer/dashboard" element={<CustomerDashboard />} />
             <Route path="/customer/profile" element={<ConsumerProfile />} />
 

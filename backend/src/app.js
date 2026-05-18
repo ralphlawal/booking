@@ -96,6 +96,8 @@ async function start() {
       await pool.query(sql);
       const sql2 = fs.readFileSync(path.join(__dirname, '../migrations/002_consumer_discovery.sql'), 'utf8');
       await pool.query(sql2);
+      const sql3 = fs.readFileSync(path.join(__dirname, '../migrations/003_consumer_auth_extras.sql'), 'utf8');
+      await pool.query(sql3);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');

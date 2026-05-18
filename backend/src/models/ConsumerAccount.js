@@ -106,6 +106,32 @@ const ConsumerAccount = {
       [consumer_id, business_id]
     );
   },
+
+  async setResetToken(email, token, expiresAt) {
+    const { rows } = await db.query(
+      `UPDATE consumer_accounts SET reset_token = $1, reset_token_expires = $2
+       WHERE email = $3 RETURNING id`,
+      [token, expiresAt, email.toLowerCase().trim()]
+    );
+    return rows[0] || null;
+  },
+
+  async findByResetToken(token) {
+    const { rows } = await db.query(
+      `SELECT id, email, reset_token_expires FROM consumer_accounts
+       WHERE reset_token = $1 AND reset_token_expires > NOW()`,
+      [token]
+    );
+    return rows[0] || null;
+  },
+
+  async updatePassword(id, newPasswordHash) {
+    await db.query(
+      `UPDATE consumer_accounts SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL, updated_at = NOW()
+       WHERE id = $2`,
+      [newPasswordHash, id]
+    );
+  },
 };
 
 module.exports = ConsumerAccount;
