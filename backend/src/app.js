@@ -46,6 +46,9 @@ app.use('/api/services', require('./routes/services'));
 app.use('/api/availability', require('./routes/availability'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/customers', require('./routes/customers'));
+app.use('/api/consumer', require('./routes/consumer'));
+app.use('/api/discover', require('./routes/discover'));
+app.use('/api/payments', require('./routes/payments'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
@@ -90,6 +93,8 @@ async function start() {
       const { pool } = require('./config/database.pg');
       const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_initial_schema.sql'), 'utf8');
       await pool.query(sql);
+      const sql2 = fs.readFileSync(path.join(__dirname, '../migrations/002_consumer_discovery.sql'), 'utf8');
+      await pool.query(sql2);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');

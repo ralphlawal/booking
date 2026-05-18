@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
 
 const FEATURES = [
@@ -19,6 +19,9 @@ const TYPES = [
 ];
 
 export default function Landing() {
+  const navigate = useNavigate();
+  const [searchQ, setSearchQ] = useState('');
+
   return (
     <div className="min-h-screen bg-white">
 
@@ -27,8 +30,11 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
+            <Link to="/explore" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 hidden sm:block">
+              Find services
+            </Link>
             <Link to="/admin/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2">
-              Sign in
+              Business sign in
             </Link>
             <Link to="/admin/register" className="btn-primary text-sm">
               Get started free
@@ -118,6 +124,55 @@ export default function Landing() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Consumer discovery banner */}
+      <section className="py-16 bg-gradient-to-br from-gray-900 to-primary-900">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-primary-300 text-xs font-bold uppercase tracking-widest mb-3">For customers</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">Find and book any service</h2>
+          <p className="text-gray-300 text-base mb-8">
+            Search thousands of local businesses and book instantly — barbers, stylists, trainers, tutors and more.
+          </p>
+
+          {/* Search bar */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); navigate(`/explore?q=${encodeURIComponent(searchQ)}`); }}
+            className="flex gap-2 max-w-md mx-auto mb-6"
+          >
+            <input
+              className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
+              placeholder="Haircut, massage, personal trainer…"
+              value={searchQ}
+              onChange={(e) => setSearchQ(e.target.value)}
+            />
+            <button type="submit" className="bg-primary-500 hover:bg-primary-400 text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors">
+              Search
+            </button>
+          </form>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              to="/explore"
+              className="inline-flex items-center gap-2 bg-white text-gray-900 font-bold px-6 py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors"
+            >
+              🔍 Browse all services
+            </Link>
+            <Link
+              to="/match"
+              className="inline-flex items-center gap-2 border border-white/30 text-white font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/10 transition-colors"
+            >
+              ⚡ Smart Match — find best available
+            </Link>
+          </div>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap justify-center gap-2 mt-8">
+            {['📍 Near me', '⚡ Instant booking', '💳 No-show protection', '↩ One-tap rebook', '🕐 Available 24/7'].map(f => (
+              <span key={f} className="text-xs bg-white/10 text-gray-200 px-3 py-1.5 rounded-full">{f}</span>
+            ))}
           </div>
         </div>
       </section>

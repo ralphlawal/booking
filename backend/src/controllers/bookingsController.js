@@ -31,11 +31,13 @@ exports.create = async (req, res) => {
     });
 
     const reference_id = generateReference();
+    const { consumer_id } = req.body;
     const booking = await Booking.create({
       reference_id,
       business_id: req.business.id,
       service_id,
       customer_id: customer.id,
+      consumer_id: consumer_id || null,
       booking_date,
       start_time,
       end_time,

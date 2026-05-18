@@ -78,4 +78,39 @@ export const customersAPI = {
   list: () => api.get('/customers'),
 };
 
+const CONSUMER_TOKEN_KEY = 'customerToken';
+
+const consumerAxios = axios.create({ baseURL: BASE, timeout: 30000 });
+consumerAxios.interceptors.request.use(config => {
+  const token = localStorage.getItem(CONSUMER_TOKEN_KEY);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+consumerAxios.interceptors.response.use(
+  res => res.data,
+  err => Promise.reject(new Error(err.response?.data?.error || err.message || 'Something went wrong'))
+);
+
+export const consumerAPI = {
+  register: (data) => consumerAxios.post('/consumer/register', data),
+  login: (email, password) => consumerAxios.post('/consumer/login', { email, password }),
+  me: () => consumerAxios.get('/consumer/me'),
+  updateMe: (data) => consumerAxios.put('/consumer/me', data),
+  myBookings: () => consumerAxios.get('/consumer/bookings'),
+  getPreferences: () => consumerAxios.get('/consumer/preferences'),
+  savePreference: (data) => consumerAxios.post('/consumer/preferences', data),
+  removePreference: (businessId) => consumerAxios.delete(`/consumer/preferences/${businessId}`),
+};
+
+export const discoverAPI = {
+  search: (params) => api.get('/discover', { params }),
+  categories: () => api.get('/discover/categories'),
+  match: (params) => api.get('/discover/match', { params }),
+};
+
+export const paymentsAPI = {
+  createMandate: (data) => api.post('/payments/mandate', data),
+  getMandateForBooking: (bookingId) => api.get(`/payments/mandate/${bookingId}`),
+};
+
 export default api;

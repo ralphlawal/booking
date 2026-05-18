@@ -3,12 +3,20 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { CustomerAuthProvider } from './context/CustomerAuthContext';
 import { LOGO_BLUE_ICON } from './config/logos';
 
 // Public pages
 import Landing from './pages/public/Landing';
 import BookingPage from './pages/public/BookingPage';
 import BookingSuccess from './pages/public/BookingSuccess';
+
+// Consumer pages
+import ExplorePage from './pages/consumer/ExplorePage';
+import SmartMatchPage from './pages/consumer/SmartMatchPage';
+import CustomerLogin from './pages/consumer/CustomerLogin';
+import CustomerSignup from './pages/consumer/CustomerSignup';
+import CustomerDashboard from './pages/consumer/CustomerDashboard';
 
 // Auth pages
 import Login from './pages/admin/Login';
@@ -56,8 +64,9 @@ const PageLoader = () => (
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
+      <CustomerAuthProvider>
+        <AuthProvider>
+          <BrowserRouter>
           <Toaster
             position="top-center"
             toastOptions={{
@@ -90,12 +99,20 @@ export default function App() {
               <Route path="settings" element={<Settings />} />
             </Route>
 
+            {/* Consumer pages */}
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/match" element={<SmartMatchPage />} />
+            <Route path="/customer/login" element={<CustomerLogin />} />
+            <Route path="/customer/signup" element={<CustomerSignup />} />
+            <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+
             {/* Landing */}
             <Route path="/" element={<Landing />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+          </BrowserRouter>
+        </AuthProvider>
+      </CustomerAuthProvider>
     </ThemeProvider>
   );
 }

@@ -2,13 +2,13 @@ const db = require('../config/database');
 const crypto = require('crypto');
 
 const Booking = {
-  async create({ reference_id, business_id, service_id, customer_id, booking_date, start_time, end_time, notes }) {
+  async create({ reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes }) {
     const id = crypto.randomUUID();
     const { rows } = await db.query(
       `INSERT INTO bookings
-         (id, reference_id, business_id, service_id, customer_id, booking_date, start_time, end_time, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [id, reference_id, business_id, service_id, customer_id, booking_date, start_time, end_time, notes]
+         (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes]
     );
     return rows[0];
   },

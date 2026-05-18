@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI } from '../../services/api';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI } from '../../services/api';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -9,14 +10,35 @@ const STEPS = ['Service', 'Date', 'Time', 'Details', 'Confirm'];
 export default function BookingPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { consumer } = useCustomerAuth();
+  const prefillServiceId = location.state?.prefill_service_id;
+
   const [business, setBusiness] = useState(null);
   const [services, setServices] = useState([]);
   const [notFound, setNotFound] = useState(false);
   const [step, setStep] = useState(0);
-  const [booking, setBooking] = useState({ service: null, date: null, time: null, name: '', phone: '', email: '', notes: '' });
+  const [booking, setBooking] = useState({
+    service: null, date: null, time: null,
+    name: consumer?.full_name || '',
+    phone: consumer?.phone || '',
+    email: consumer?.email || '',
+    notes: '',
+  });
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (consumer) {
+      setBooking(p => ({
+        ...p,
+        name: p.name || consumer.full_name || '',
+        phone: p.phone || consumer.phone || '',
+        email: p.email || consumer.email || '',
+      }));
+    }
+  }, [consumer]);
 
   useEffect(() => {
     Promise.all([
@@ -24,7 +46,12 @@ export default function BookingPage() {
       servicesAPI.listPublic(slug),
     ]).then(([biz, svcs]) => {
       setBusiness(biz);
-      setServices(svcs.filter ? svcs.filter(s => s.is_active) : svcs);
+      const active = (svcs.filter ? svcs.filter(s => s.is_active) : svcs);
+      setServices(active);
+      if (prefillServiceId) {
+        const match = active.find(s => s.id === prefillServiceId);
+        if (match) { setBooking(p => ({ ...p, service: match })); setStep(1); }
+      }
     }).catch(() => setNotFound(true));
   }, [slug]);
 
@@ -52,7 +79,12 @@ export default function BookingPage() {
         customer_phone: booking.phone,
         customer_email: booking.email,
         notes: booking.notes,
+        consumer_id: consumer?.id || undefined,
       });
+      // Save to consumer favourites if logged in
+      if (consumer && business) {
+        consumerAPI.savePreference({ business_id: business.id, service_id: booking.service.id }).catch(() => {});
+      }
       navigate(`/booking-success/${result.reference_id}`);
     } catch (err) {
       toast.error(err.message);
