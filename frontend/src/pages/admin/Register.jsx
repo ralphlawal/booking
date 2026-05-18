@@ -26,7 +26,11 @@ export default function Register() {
       const msg = err.code === 'auth/email-already-in-use'
         ? 'An account with this email already exists'
         : err.code === 'auth/weak-password'
-        ? 'Password is too weak'
+        ? 'Password is too weak (min 6 characters)'
+        : err.code === 'auth/unauthorized-domain'
+        ? 'Sign-up is not enabled for this domain. Contact support.'
+        : err.code === 'auth/network-request-failed'
+        ? 'Network error — check your connection and try again'
         : err.message;
       toast.error(msg);
     } finally {

@@ -21,8 +21,14 @@ export default function Login() {
     } catch (err) {
       const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
         ? 'Invalid email or password'
+        : err.code === 'auth/user-not-found'
+        ? 'No account found with this email'
         : err.code === 'auth/too-many-requests'
         ? 'Too many attempts. Try again later.'
+        : err.code === 'auth/unauthorized-domain'
+        ? 'Sign-in is not enabled for this domain. Contact support.'
+        : err.code === 'auth/network-request-failed'
+        ? 'Network error — check your connection and try again'
         : err.message;
       toast.error(msg);
     } finally {
@@ -85,9 +91,6 @@ export default function Login() {
             </Link>
           </p>
 
-          <div className="mt-4 pt-4 border-t border-white/10 text-center">
-            <p className="text-xs text-white/30">Demo: demo@bookam.com / demo1234</p>
-          </div>
         </div>
       </div>
     </div>
