@@ -18,10 +18,11 @@ app.use(helmet({
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true);                       // server-to-server
-    if (!origin || origin.endsWith('.vercel.app')) return cb(null, true); // all Vercel deployments
-    if (origin.includes('localhost')) return cb(null, true);  // local dev
-    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) return cb(null, true);
+    if (!origin) return cb(null, true);
+    if (origin.endsWith('.vercel.app')) return cb(null, true);
+    if (origin.endsWith('.bookam.business') || origin === 'https://bookam.business' || origin === 'https://www.bookam.business') return cb(null, true);
+    if (origin.includes('localhost')) return cb(null, true);
+    if (process.env.FRONTEND_URL && origin.startsWith(process.env.FRONTEND_URL)) return cb(null, true);
     cb(new Error(`CORS: ${origin} not allowed`));
   },
   credentials: true,
