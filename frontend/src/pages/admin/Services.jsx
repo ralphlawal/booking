@@ -141,7 +141,7 @@ export default function Services() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Price ($)</label>
+                  <label className="label">Price (£)</label>
                   <input className="input" type="number" min="0" step="0.01" placeholder="0.00" value={form.price} onChange={set('price')} />
                 </div>
                 <div>

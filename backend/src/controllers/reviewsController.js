@@ -10,12 +10,9 @@ exports.create = async (req, res) => {
 
     // Fetch booking — must be completed and belong to this consumer
     const { rows: bRows } = await db.query(
-      `SELECT b.*, c.id AS customer_id FROM bookings b
-       LEFT JOIN customers c ON c.email = (
-         SELECT email FROM consumer_accounts WHERE id = $1
-       ) AND c.business_id = b.business_id
-       WHERE b.id = $2`,
-      [req.consumer.id, booking_id]
+      `SELECT id, business_id, customer_id, consumer_id, status
+       FROM bookings WHERE id = $1`,
+      [booking_id]
     );
     const booking = bRows[0];
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
@@ -35,7 +32,7 @@ exports.create = async (req, res) => {
     const { rows } = await db.query(
       `INSERT INTO reviews (id, booking_id, business_id, customer_id, rating, comment)
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [id, booking_id, booking.business_id, booking.customer_id || booking.customer_id, rating, comment || null]
+      [id, booking_id, booking.business_id, booking.customer_id, rating, comment || null]
     );
 
     res.status(201).json(rows[0]);

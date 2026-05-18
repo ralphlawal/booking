@@ -166,7 +166,7 @@ export default function BookingPage() {
                     <p className="text-sm text-gray-400 mt-1">{svc.duration_minutes} min</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-primary-700">${parseFloat(svc.price).toFixed(2)}</p>
+                    <p className="text-lg font-bold text-primary-700">£{parseFloat(svc.price).toFixed(2)}</p>
                   </div>
                 </div>
               </button>
@@ -301,7 +301,7 @@ export default function BookingPage() {
               <div className="space-y-3">
                 {[
                   ['Service', booking.service?.name],
-                  ['Price', `$${parseFloat(booking.service?.price || 0).toFixed(2)}`],
+                  ['Price', `£${parseFloat(booking.service?.price || 0).toFixed(2)}`],
                   ['Duration', `${booking.service?.duration_minutes} min`],
                   ['Date', booking.date ? format(booking.date, 'EEEE, MMMM d, yyyy') : ''],
                   ['Time', booking.time ? `${booking.time.start} – ${booking.time.end}` : ''],
