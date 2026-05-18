@@ -6,8 +6,11 @@ const BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api
 
 const api = axios.create({
   baseURL: BASE,
-  timeout: 15000,
+  timeout: 30000,
 });
+
+// Pre-warm Render on app load (free tier spins down after inactivity)
+fetch(`${BASE}/auth/me`, { method: 'GET' }).catch(() => {});
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('fbToken');
