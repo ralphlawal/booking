@@ -19,7 +19,7 @@ const BOTTOM_NAV = [
   { to: '/admin/dashboard', icon: GridIcon,         label: 'Home' },
   { to: '/admin/bookings',  icon: CalendarCheckIcon, label: 'Bookings', badge: true },
   { to: '/admin/calendar',  icon: CalendarIcon,      label: 'Calendar' },
-  { to: '/admin/services',  icon: TagIcon,            label: 'Services' },
+  { to: '/admin/customers', icon: UsersIcon,          label: 'Customers' },
   { to: '/admin/settings',  icon: SettingsIcon,       label: 'Settings' },
 ];
 
@@ -32,11 +32,8 @@ export default function AdminLayout() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    bookingsAPI.list({ status: 'pending' })
-      .then(data => {
-        const items = Array.isArray(data) ? data : (data?.bookings ?? []);
-        setPendingCount(items.length);
-      })
+    bookingsAPI.list({ status: 'pending', limit: 200 })
+      .then(data => setPendingCount(data?.total ?? data?.bookings?.length ?? 0))
       .catch(() => {});
   }, []);
 

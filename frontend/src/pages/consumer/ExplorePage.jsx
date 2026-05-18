@@ -101,6 +101,7 @@ export default function ExplorePage() {
   const [results, setResults] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const [locating, setLocating] = useState(false);
   const [coords, setCoords] = useState(null);
   const { consumer } = useCustomerAuth();
@@ -110,6 +111,7 @@ export default function ExplorePage() {
 
   const doSearch = useCallback(async (overrides = {}) => {
     setLoading(true);
+    setSearchError(false);
     try {
       const params = {
         q: overrides.q ?? q,
@@ -121,6 +123,7 @@ export default function ExplorePage() {
       const data = await discoverAPI.search(params);
       setResults(data);
     } catch {
+      setSearchError(true);
       setResults([]);
     } finally {
       setLoading(false);
@@ -260,6 +263,13 @@ export default function ExplorePage() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : searchError ? (
+          <div className="text-center py-16">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Something went wrong</h3>
+            <p className="text-gray-500 text-sm mb-4">Could not load results — please try again</p>
+            <button onClick={() => doSearch()} className="btn-primary text-sm">Retry</button>
           </div>
         ) : results.length === 0 ? (
           <div className="text-center py-16">

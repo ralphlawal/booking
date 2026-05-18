@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const Customer = require('../models/Customer');
 const Service = require('../models/Service');
+const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
 const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder } = require('../services/emailService');
 
@@ -62,9 +63,16 @@ exports.create = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     const { status, date, page, limit } = req.query;
-    const bookings = await Booking.findByBusinessId(req.business.id, { status, date, page, limit });
-    const stats = await Booking.getStats(req.business.id);
-    res.json({ bookings, stats });
+    const [{ rows: bookings, total }, stats] = await Promise.all([
+      Booking.findByBusinessId(req.business.id, {
+        status,
+        date,
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 20,
+      }),
+      Booking.getStats(req.business.id),
+    ]);
+    res.json({ bookings, total, stats });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch bookings' });
   }
@@ -131,6 +139,22 @@ exports.updateStatus = async (req, res) => {
 
     if (status === 'completed' && fullBooking.customer_email) {
       sendReviewReminder(fullBooking).catch(() => {});
+    }
+
+    if (fullBooking.consumer_id && ['confirmed','cancelled'].includes(status)) {
+      const notifTitle = status === 'confirmed'
+        ? `Booking confirmed — ${fullBooking.service_name}`
+        : `Booking cancelled — ${fullBooking.service_name}`;
+      const notifBody = status === 'confirmed'
+        ? `Your appointment at ${fullBooking.business_name} on ${fullBooking.booking_date} at ${fullBooking.start_time?.slice(0,5)} is confirmed.`
+        : `Your booking at ${fullBooking.business_name} has been cancelled.${fullBooking.cancelled_reason ? ` Reason: ${fullBooking.cancelled_reason}` : ''}`;
+      Notification.create({
+        consumer_id: fullBooking.consumer_id,
+        type: status,
+        title: notifTitle,
+        body: notifBody,
+        link: `/customer/dashboard`,
+      }).catch(() => {});
     }
 
     if (no_show && fullBooking.customer_id) {

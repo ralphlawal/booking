@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check } from 'lucide-react';
 import { consumerAPI, bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -18,6 +18,20 @@ function fmtDate(d) {
   return new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
   });
+}
+
+function CopyRefButton({ refId }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(refId); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    catch { toast.error('Could not copy'); }
+  };
+  return (
+    <button onClick={copy} className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-primary-600 transition-colors" title="Copy reference">
+      {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+      {refId}
+    </button>
+  );
 }
 
 function BookingCard({ booking, onRebook, onCancel, past }) {
@@ -52,7 +66,7 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
               </a>
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-1">Ref: {booking.reference_id}</p>
+          <p className="text-xs text-gray-400 mt-1"><CopyRefButton refId={booking.reference_id} /></p>
         </div>
       </div>
 
@@ -164,6 +178,9 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(true);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -171,11 +188,28 @@ export default function CustomerDashboard() {
     Promise.all([
       consumerAPI.myBookings(),
       consumerAPI.getPreferences(),
+      consumerAPI.getNotifications().catch(() => []),
     ])
-      .then(([b, p]) => { setBookings(b); setPrefs(p); })
+      .then(([b, p, n]) => { setBookings(b); setPrefs(p); setNotifications(n); })
       .catch(() => toast.error('Failed to load your data'))
       .finally(() => setLoading(false));
   }, [consumer, authLoading]);
+
+  useEffect(() => {
+    if (!notifOpen) return;
+    const close = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [notifOpen]);
+
+  const openNotifications = async () => {
+    setNotifOpen(v => !v);
+    const unread = notifications.filter(n => !n.is_read);
+    if (unread.length > 0) {
+      consumerAPI.markNotificationsRead().catch(() => {});
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    }
+  };
 
   const today = new Date().toISOString().split('T')[0];
   const upcoming = bookings.filter((b) => b.booking_date >= today && !['cancelled', 'completed'].includes(b.status));
@@ -228,6 +262,43 @@ export default function CustomerDashboard() {
           </Link>
           <div className="flex items-center gap-1">
             <Link to="/explore" className="text-sm text-gray-600 dark:text-gray-400 font-medium hidden sm:block px-3 py-2">Explore</Link>
+
+            {/* Notification bell */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={openNotifications}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                title="Notifications"
+              >
+                <Bell className="w-4 h-4 text-gray-500" />
+                {notifications.filter(n => !n.is_read).length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+              </button>
+              {notifOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                    <p className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</p>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet</div>
+                  ) : (
+                    <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-80 overflow-y-auto">
+                      {notifications.map(n => (
+                        <div key={n.id} className={`px-4 py-3 ${!n.is_read ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{n.title}</p>
+                          {n.body && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{n.body}</p>}
+                          <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
+                            {new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <Link to="/customer/profile" className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Profile settings">
               <Settings className="w-4 h-4 text-gray-500" />
             </Link>

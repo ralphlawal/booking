@@ -115,6 +115,8 @@ export const consumerAPI = {
   savePreference: (data) => consumerAxios.post('/consumer/preferences', data),
   removePreference: (businessId) => consumerAxios.delete(`/consumer/preferences/${businessId}`),
   deleteAccount: () => consumerAxios.delete('/consumer/account'),
+  getNotifications: () => consumerAxios.get('/consumer/notifications'),
+  markNotificationsRead: () => consumerAxios.post('/consumer/notifications/read'),
 };
 
 export const discoverAPI = {

@@ -30,10 +30,11 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
-            <Link to="/explore" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 hidden sm:block">
-              Find services
+            <Link to="/explore" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2">
+              <span className="hidden sm:inline">Find services</span>
+              <span className="sm:hidden">Explore</span>
             </Link>
-            <Link to="/admin/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2">
+            <Link to="/admin/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 hidden sm:block">
               Business sign in
             </Link>
             <Link to="/admin/register" className="btn-primary text-sm">
@@ -74,9 +75,9 @@ export default function Landing() {
               Create my booking page
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </Link>
-            <a href="/book/smoothcuts" target="_blank" rel="noopener noreferrer" className="btn-secondary px-8 py-3.5 text-base w-full sm:w-auto">
-              See a live example
-            </a>
+            <Link to="/explore" className="btn-secondary px-8 py-3.5 text-base w-full sm:w-auto">
+              Browse services
+            </Link>
           </div>
 
           {/* Browser mockup — hide on very small screens */}
@@ -256,14 +257,12 @@ export default function Landing() {
               Create my free page
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             </Link>
-            <a
-              href="/book/smoothcuts"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/explore"
               className="inline-flex items-center gap-2 border border-white/30 text-white font-semibold px-8 py-4 rounded-xl text-base hover:bg-white/10 transition-all w-full sm:w-auto justify-center"
             >
-              See live example
-            </a>
+              Browse services
+            </Link>
           </div>
         </div>
       </section>
@@ -274,9 +273,14 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
             <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 w-auto object-contain" />
             <p className="text-sm font-semibold text-primary-600 tracking-wide">Book. Confirm. Be there.</p>
-            <Link to="/admin/login" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
-              Sign in →
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link to="/booking/lookup" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+                Find my booking
+              </Link>
+              <Link to="/admin/login" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
+                Sign in →
+              </Link>
+            </div>
           </div>
           <div className="border-t border-gray-100 pt-6 text-center">
             <p className="text-xs text-gray-400">

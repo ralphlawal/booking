@@ -13,13 +13,21 @@ const Booking = {
     return rows[0];
   },
 
-  async findByBusinessId(business_id, { status, date, page = 1, limit = 200 } = {}) {
+  async findByBusinessId(business_id, { status, date, page = 1, limit = 20 } = {}) {
     const conditions = ['b.business_id = $1'];
     const values = [business_id];
     let idx = 2;
 
     if (status) { conditions.push(`b.status = $${idx++}`); values.push(status); }
     if (date) { conditions.push(`b.booking_date = $${idx++}`); values.push(date); }
+
+    const where = conditions.join(' AND ');
+
+    const countValues = [...values];
+    const { rows: countRows } = await db.query(
+      `SELECT COUNT(*) FROM bookings b WHERE ${where}`, countValues
+    );
+    const total = parseInt(countRows[0].count, 10);
 
     const offset = (page - 1) * limit;
     values.push(limit, offset);
@@ -31,12 +39,12 @@ const Booking = {
       FROM bookings b
       JOIN services s ON s.id = b.service_id
       JOIN customers c ON c.id = b.customer_id
-      WHERE ${conditions.join(' AND ')}
+      WHERE ${where}
       ORDER BY b.booking_date DESC, b.start_time DESC
       LIMIT $${idx} OFFSET $${idx + 1}`;
 
     const { rows } = await db.query(sql, values);
-    return rows;
+    return { rows, total };
   },
 
   async findById(id) {

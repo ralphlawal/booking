@@ -7,11 +7,14 @@ const POLL_INTERVAL = 60_000; // 60 seconds
 const STATUS_COLORS = { pending: 'badge-pending', confirmed: 'badge-confirmed', cancelled: 'badge-cancelled', completed: 'badge-completed' };
 const STATUSES = ['all','pending','confirmed','cancelled','completed'];
 
+const PAGE_SIZE = 20;
+
 export default function Bookings() {
-  const [data, setData] = useState({ bookings: [], stats: null });
+  const [data, setData] = useState({ bookings: [], stats: null, total: 0 });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   const [modal, setModal] = useState(null); // 'status' | 'reschedule'
   const [statusForm, setStatusForm] = useState({ status: '', cancelled_reason: '' });
@@ -22,10 +25,10 @@ export default function Bookings() {
 
   const load = useCallback((silent = false) => {
     if (!silent) setLoading(true);
-    bookingsAPI.list({ status: filter === 'all' ? undefined : filter })
+    bookingsAPI.list({ status: filter === 'all' ? undefined : filter, page, limit: PAGE_SIZE })
       .then(d => { setData(d); setLastUpdated(new Date()); })
       .finally(() => { if (!silent) setLoading(false); });
-  }, [filter]);
+  }, [filter, page]);
 
   useEffect(() => {
     load();
@@ -34,6 +37,8 @@ export default function Bookings() {
     }, POLL_INTERVAL);
     return () => clearInterval(timerRef.current);
   }, [load]);
+
+  const handleFilterChange = (s) => { setFilter(s); setPage(1); };
 
   const openStatus = (b) => { setSelected(b); setStatusForm({ status: b.status, cancelled_reason: '', no_show: false }); setModal('status'); };
   const openReschedule = (b) => { setSelected(b); setRescheduleForm({ booking_date: b.booking_date, start_time: b.start_time?.slice(0,5) }); setModal('reschedule'); };
@@ -139,7 +144,7 @@ export default function Bookings() {
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-max">
             {STATUSES.map(s => (
-              <button key={s} onClick={() => setFilter(s)}
+              <button key={s} onClick={() => handleFilterChange(s)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filter === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                 {s}
               </button>
@@ -241,6 +246,31 @@ export default function Bookings() {
           </>
         )}
       </div>
+
+      {/* Pagination */}
+      {!search && data.total > PAGE_SIZE && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-500">
+            Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, data.total)} of {data.total}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={page * PAGE_SIZE >= data.total || loading}
+              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Status modal */}
       {modal === 'status' && (

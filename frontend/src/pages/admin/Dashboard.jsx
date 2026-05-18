@@ -45,7 +45,7 @@ export default function Dashboard() {
   const [checklist, setChecklist] = useState(null);
 
   useEffect(() => {
-    bookingsAPI.list({ limit: 5 }).then(setData).finally(() => setLoading(false));
+    bookingsAPI.list({ limit: 5 }).then(d => setData(d)).finally(() => setLoading(false));
     bookingsAPI.getAnalytics().then(setAnalytics).finally(() => setAnalyticsLoading(false));
   }, []);
 
@@ -249,7 +249,7 @@ export default function Dashboard() {
         ) : (
           <div className="divide-y divide-gray-50 dark:divide-gray-800">
             {data?.bookings?.slice(0, 5).map(b => (
-              <div key={b.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <Link key={b.id} to="/admin/bookings" className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 dark:text-primary-400">
                     {b.customer_name?.[0]?.toUpperCase()}
@@ -263,7 +263,7 @@ export default function Dashboard() {
                   <span className={`badge-${b.status}`}>{b.status}</span>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{b.booking_date}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

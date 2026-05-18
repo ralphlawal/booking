@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const ConsumerAccount = require('../models/ConsumerAccount');
+const Notification = require('../models/Notification');
 const { sendEmail } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
@@ -207,6 +208,24 @@ exports.changeEmail = async (req, res) => {
   } catch (err) {
     console.error('[consumer/changeEmail]', err.message);
     res.status(500).json({ error: 'Failed to change email' });
+  }
+};
+
+exports.getNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.getForConsumer(req.consumer.id);
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load notifications' });
+  }
+};
+
+exports.markNotificationsRead = async (req, res) => {
+  try {
+    await Notification.markRead(req.consumer.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark notifications read' });
   }
 };
 

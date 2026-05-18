@@ -100,6 +100,8 @@ async function start() {
       await pool.query(sql3);
       const sql4 = fs.readFileSync(path.join(__dirname, '../migrations/004_verification.sql'), 'utf8');
       await pool.query(sql4);
+      const sql5 = fs.readFileSync(path.join(__dirname, '../migrations/005_notifications.sql'), 'utf8');
+      await pool.query(sql5);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -114,6 +116,14 @@ async function start() {
         try { db.exec(`ALTER TABLE bookings ADD COLUMN ${col}`); } catch {}
       }
       try { db.exec(`ALTER TABLE businesses ADD COLUMN is_verified INTEGER DEFAULT 0`); } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS notifications (
+          id TEXT PRIMARY KEY, consumer_id TEXT NOT NULL, type TEXT NOT NULL,
+          title TEXT NOT NULL, body TEXT, link TEXT,
+          is_read INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )`);
+      } catch {}
     }
   } catch (err) {
     console.error('Startup migration error:', err.message);
