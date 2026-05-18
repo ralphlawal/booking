@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bookingsAPI } from '../../services/api';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 
 export default function BookingSuccess() {
   const { ref } = useParams();
+  const { consumer } = useCustomerAuth();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -133,7 +135,36 @@ export default function BookingSuccess() {
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-5">
+        {/* Consumer CTA — only shown when not logged in */}
+        {!consumer && (
+          <div className="mt-5 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-2xl text-center">
+            <p className="text-sm font-semibold text-primary-800 dark:text-primary-200 mb-1">
+              Track this booking in your account
+            </p>
+            <p className="text-xs text-primary-600 dark:text-primary-400 mb-3">
+              Create a free account to manage bookings, rebook with one tap, and leave reviews.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Link to="/customer/signup" className="btn-primary text-xs py-2 px-4">
+                Create account
+              </Link>
+              <Link to="/customer/login" className="btn-secondary text-xs py-2 px-4">
+                Sign in
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {consumer && (
+          <Link
+            to="/customer/dashboard"
+            className="flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            View in My Bookings →
+          </Link>
+        )}
+
+        <p className="text-center text-xs text-gray-400 mt-4">
           Save your reference ID: <strong>{booking.reference_id}</strong>
         </p>
       </div>

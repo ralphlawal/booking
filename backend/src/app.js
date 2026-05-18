@@ -49,6 +49,7 @@ app.use('/api/customers', require('./routes/customers'));
 app.use('/api/consumer', require('./routes/consumer'));
 app.use('/api/discover', require('./routes/discover'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/reviews', require('./routes/reviews'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));

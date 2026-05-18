@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const EMPTY = { name: '', description: '', price: '', duration_minutes: 60, is_active: true };
+const EMPTY = { name: '', description: '', price: '', duration_minutes: 60, is_active: true, deposit_required: false, deposit_amount: '' };
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -15,7 +15,7 @@ export default function Services() {
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setForm(EMPTY); setModal('create'); };
-  const openEdit = (svc) => { setForm({ ...svc, price: svc.price }); setModal(svc); };
+  const openEdit = (svc) => { setForm({ ...svc, price: svc.price, deposit_amount: svc.deposit_amount || '', deposit_required: svc.deposit_required || false }); setModal(svc); };
   const closeModal = () => setModal(null);
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
@@ -97,10 +97,15 @@ export default function Services() {
                     </span>
                   </div>
                   {svc.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{svc.description}</p>}
-                  <div className="flex items-center gap-3 mt-3">
-                    <span className="text-primary-700 dark:text-primary-400 font-bold">${parseFloat(svc.price).toFixed(2)}</span>
+                  <div className="flex items-center gap-3 mt-3 flex-wrap">
+                    <span className="text-primary-700 dark:text-primary-400 font-bold">£{parseFloat(svc.price).toFixed(2)}</span>
                     <span className="text-gray-400 text-sm">·</span>
                     <span className="text-gray-600 dark:text-gray-400 text-sm">{svc.duration_minutes} min</span>
+                    {svc.deposit_required && svc.deposit_amount > 0 && (
+                      <span className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                        🔒 £{parseFloat(svc.deposit_amount).toFixed(0)} deposit
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 ml-3">
@@ -150,6 +155,22 @@ export default function Services() {
                   <span className="text-sm text-gray-700 dark:text-gray-300">Active (visible to customers)</span>
                 </label>
               )}
+              {/* No-show deposit */}
+              <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-4 space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={form.deposit_required || false} onChange={set('deposit_required')} />
+                  <div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Require deposit (no-show protection)</span>
+                    <p className="text-xs text-gray-400">Customer pays a deposit when booking, charged only if they no-show</p>
+                  </div>
+                </label>
+                {form.deposit_required && (
+                  <div>
+                    <label className="label">Deposit amount (£)</label>
+                    <input className="input" type="number" min="0" step="0.01" placeholder="10.00" value={form.deposit_amount} onChange={set('deposit_amount')} />
+                  </div>
+                )}
+              </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancel</button>
                 <button type="submit" disabled={saving} className="btn-primary flex-1">

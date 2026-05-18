@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Settings, Zap, Search } from 'lucide-react';
 import { consumerAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -186,11 +187,11 @@ export default function CustomerDashboard() {
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link to="/explore" className="text-sm text-gray-600 dark:text-gray-400 font-medium hidden sm:block">Explore</Link>
-            <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white">
-              Sign out
-            </button>
+            <Link to="/customer/profile" className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <Settings className="w-4 h-4 text-gray-500" />
+            </Link>
           </div>
         </div>
       </nav>
@@ -209,24 +210,22 @@ export default function CustomerDashboard() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <Link
-            to="/match"
-            className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow"
-          >
-            <span className="text-2xl">⚡</span>
+          <Link to="/match" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            </div>
             <div>
               <p className="font-bold text-sm text-gray-900 dark:text-white">Smart Match</p>
-              <p className="text-xs text-gray-400">Find best available</p>
+              <p className="text-xs text-gray-400">Best available</p>
             </div>
           </Link>
-          <Link
-            to="/explore"
-            className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow"
-          >
-            <span className="text-2xl">🔍</span>
+          <Link to="/explore" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+              <Search className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
             <div>
               <p className="font-bold text-sm text-gray-900 dark:text-white">Explore</p>
-              <p className="text-xs text-gray-400">Browse all services</p>
+              <p className="text-xs text-gray-400">Browse services</p>
             </div>
           </Link>
         </div>

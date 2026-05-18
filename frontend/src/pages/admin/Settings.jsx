@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { businessAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
-import { storage, auth } from '../../config/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 import toast from 'react-hot-toast';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
@@ -32,7 +31,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (business) {
-      setBizForm({ name: business.name, description: business.description || '', phone: business.phone || '', email: business.email || '', location: business.location || '', category: business.category || '' });
+      setBizForm({ name: business.name, description: business.description || '', phone: business.phone || '', email: business.email || '', location: business.location || '', category: business.category || '', latitude: business.latitude || '', longitude: business.longitude || '' });
     }
     availabilityAPI.get().then(av => {
       if (av) setAvForm({ working_days: av.working_days || [], opening_time: av.opening_time?.slice(0,5) || '09:00', closing_time: av.closing_time?.slice(0,5) || '18:00', slot_interval_minutes: av.slot_interval_minutes || 30, buffer_minutes: av.buffer_minutes || 0 });
@@ -86,7 +85,6 @@ export default function Settings() {
     } catch (err) { toast.error(err.message); }
   };
 
-  // Upload logo directly to Firebase Storage
   const handleLogoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -104,36 +102,19 @@ export default function Settings() {
     setLogoUploading(true);
     setLogoProgress(0);
 
-    const path = `logos/${business.id}/${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, path);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        setLogoProgress(pct);
-      },
-      (err) => {
-        console.error('Logo upload error:', err);
-        toast.error('Upload failed: ' + err.message);
-        setLogoUploading(false);
-      },
-      async () => {
-        try {
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
-          const updated = await businessAPI.updateLogoUrl(url);
-          updateBusiness(updated);
-          toast.success('Logo updated!');
-        } catch (err) {
-          toast.error('Failed to save logo URL');
-        } finally {
-          setLogoUploading(false);
-          setLogoProgress(0);
-          if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-      }
-    );
+    try {
+      const url = await uploadToCloudinary(file, setLogoProgress);
+      const updated = await businessAPI.updateLogoUrl(url);
+      updateBusiness(updated);
+      toast.success('Logo updated!');
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      toast.error('Upload failed: ' + err.message);
+    } finally {
+      setLogoUploading(false);
+      setLogoProgress(0);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const bookingUrl = typeof window !== 'undefined'
@@ -284,8 +265,20 @@ export default function Settings() {
               </div>
             </div>
             <div>
-              <label className="label">Location</label>
-              <input className="input" value={bizForm.location || ''} onChange={e => setBizForm(p => ({ ...p, location: e.target.value }))} />
+              <label className="label">Location / Address</label>
+              <input className="input" placeholder="123 Main St, London" value={bizForm.location || ''} onChange={e => setBizForm(p => ({ ...p, location: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label flex items-center gap-1.5">
+                GPS Coordinates <span className="text-xs text-gray-400 font-normal">(for "Near Me" search — optional)</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <input className="input" type="number" step="any" placeholder="Latitude e.g. 51.5074" value={bizForm.latitude || ''} onChange={e => setBizForm(p => ({ ...p, latitude: e.target.value }))} />
+                <input className="input" type="number" step="any" placeholder="Longitude e.g. -0.1278" value={bizForm.longitude || ''} onChange={e => setBizForm(p => ({ ...p, longitude: e.target.value }))} />
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                Find your coordinates at <a href="https://www.latlong.net" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">latlong.net</a> — paste your address and copy the numbers.
+              </p>
             </div>
             <button type="submit" disabled={saving} className="btn-primary">
               {saving ? <Spinner /> : 'Save Changes'}

@@ -113,4 +113,10 @@ export const paymentsAPI = {
   getMandateForBooking: (bookingId) => api.get(`/payments/mandate/${bookingId}`),
 };
 
+export const reviewsAPI = {
+  getForBusiness: (slug) => api.get(`/reviews/${slug}`),
+  create: (data) => consumerAxios.post('/reviews', data),
+  checkReviewable: (bookingId) => consumerAxios.get(`/reviews/check/${bookingId}`),
+};
+
 export default api;

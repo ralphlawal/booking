@@ -17,6 +17,8 @@ import SmartMatchPage from './pages/consumer/SmartMatchPage';
 import CustomerLogin from './pages/consumer/CustomerLogin';
 import CustomerSignup from './pages/consumer/CustomerSignup';
 import CustomerDashboard from './pages/consumer/CustomerDashboard';
+import BusinessProfile from './pages/consumer/BusinessProfile';
+import ConsumerProfile from './pages/consumer/ConsumerProfile';
 
 // Auth pages
 import Login from './pages/admin/Login';
@@ -102,9 +104,11 @@ export default function App() {
             {/* Consumer pages */}
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/match" element={<SmartMatchPage />} />
+            <Route path="/profile/:slug" element={<BusinessProfile />} />
             <Route path="/customer/login" element={<CustomerLogin />} />
             <Route path="/customer/signup" element={<CustomerSignup />} />
             <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+            <Route path="/customer/profile" element={<ConsumerProfile />} />
 
             {/* Landing */}
             <Route path="/" element={<Landing />} />
