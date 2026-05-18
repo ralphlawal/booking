@@ -293,8 +293,8 @@ export default function BusinessProfile() {
         </div>
 
         {/* Sticky book CTA */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40">
-          <div className="max-w-2xl mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          <div className="max-w-2xl mx-auto px-4 pt-4 pb-1">
             <Link to={`/book/${slug}`} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 text-base">
               <CheckCircle className="w-5 h-5" />
               Book now
@@ -303,7 +303,7 @@ export default function BusinessProfile() {
         </div>
 
         {/* Bottom padding for sticky CTA */}
-        <div className="h-24" />
+        <div className="h-28" />
       </div>
     </div>
   );

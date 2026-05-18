@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { businessAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { auth } from '../../config/firebase';
 import { QRCodeSVG } from 'qrcode.react';
-import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 import toast from 'react-hot-toast';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
@@ -103,9 +103,8 @@ export default function Settings() {
     setLogoProgress(0);
 
     try {
-      const url = await uploadToCloudinary(file, setLogoProgress);
-      const updated = await businessAPI.updateLogoUrl(url);
-      updateBusiness(updated);
+      const result = await businessAPI.uploadLogo(file, setLogoProgress);
+      updateBusiness(result.business);
       toast.success('Logo updated!');
     } catch (err) {
       console.error('Logo upload error:', err);

@@ -1,6 +1,12 @@
 const Business = require('../models/Business');
-const path = require('path');
 const QRCode = require('qrcode');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dco9drzzp',
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 exports.getMyBusiness = async (req, res) => {
   res.json(req.business);
@@ -34,11 +40,23 @@ exports.updateBusiness = async (req, res) => {
 exports.uploadLogo = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const logo_url = `/uploads/${req.file.filename}`;
+    if (!process.env.CLOUDINARY_API_KEY) {
+      return res.status(500).json({ error: 'Logo uploads not yet configured. Add CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET to your Render environment variables.' });
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: 'bookam/logos', resource_type: 'image', transformation: [{ width: 400, height: 400, crop: 'limit' }] },
+        (error, res) => { if (error) reject(error); else resolve(res); }
+      ).end(req.file.buffer);
+    });
+
+    const logo_url = result.secure_url;
     const updated = await Business.update(req.business.id, { logo_url });
     res.json({ logo_url, business: updated });
   } catch (err) {
-    res.status(500).json({ error: 'Upload failed' });
+    console.error('[uploadLogo]', err.message);
+    res.status(500).json({ error: 'Upload failed: ' + err.message });
   }
 };
 

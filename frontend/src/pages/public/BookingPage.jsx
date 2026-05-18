@@ -107,7 +107,7 @@ export default function BookingPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50/30">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           {business.logo_url ? (
             <img src={business.logo_url} alt={business.name} className="w-10 h-10 rounded-xl object-cover" />
           ) : (
@@ -181,7 +181,7 @@ export default function BookingPage() {
               <h2 className="font-bold text-xl text-gray-900">Pick a Date</h2>
               <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
             </div>
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {dateOptions.map(date => {
                 const isSelected = booking.date && isSameDay(date, booking.date);
                 return (

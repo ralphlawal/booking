@@ -38,6 +38,14 @@ export const businessAPI = {
   create: (data) => api.post('/business', data),
   update: (data) => api.put('/business/me', data),
   updateLogoUrl: (logo_url) => api.put('/business/me', { logo_url }),
+  uploadLogo: (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return api.post('/business/me/logo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (e) => onProgress && onProgress(Math.round((e.loaded / e.total) * 100)),
+    });
+  },
   getPublic: (slug) => api.get(`/business/${slug}`),
   checkSlug: (slug) => api.get(`/business/${slug}/check`),
   getQR: () => api.get('/business/me/qr'),

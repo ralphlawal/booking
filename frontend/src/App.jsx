@@ -53,7 +53,7 @@ const GuestRoute = ({ children }) => {
 const PageLoader = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 gap-8">
     <div className="flex flex-col items-center gap-6 animate-fade-in">
-      <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-14 h-14 object-contain drop-shadow-sm" style={{ animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' }} />
+      <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-14 h-14 object-contain drop-shadow-sm dark:brightness-0 dark:invert" style={{ animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' }} />
       <div className="flex items-center gap-1.5">
         {[0, 150, 300].map(d => (
           <span key={d} className="w-2 h-2 rounded-full bg-primary-500" style={{ animation: `bounce 1s ease-in-out ${d}ms infinite` }} />

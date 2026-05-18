@@ -54,7 +54,7 @@ export default function Landing() {
             Free to start — no credit card needed
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 leading-[1.07] tracking-tight max-w-4xl mx-auto">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-gray-900 leading-[1.07] tracking-tight max-w-4xl mx-auto">
             Your booking page,
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-400">
               live in minutes
@@ -79,8 +79,8 @@ export default function Landing() {
             </a>
           </div>
 
-          {/* Browser mockup */}
-          <div className="mt-16 max-w-2xl mx-auto">
+          {/* Browser mockup — hide on very small screens */}
+          <div className="mt-16 max-w-2xl mx-auto hidden sm:block">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary-300/20 to-indigo-300/20 rounded-3xl blur-2xl scale-105 pointer-events-none" />
               <div className="relative bg-gray-900 rounded-2xl overflow-hidden border border-gray-700/50 shadow-2xl">

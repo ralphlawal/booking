@@ -4,26 +4,13 @@ const validate = require('../middleware/validate');
 const { authenticate, attachBusiness } = require('../middleware/auth');
 const ctrl = require('../controllers/businessController');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const uploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `logo-${req.user.id}-${Date.now()}${ext}`);
-  },
-});
 
 const upload = multer({
-  storage,
-  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5242880 },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = /\.(jpg|jpeg|png|gif|webp)$/i;
-    cb(null, allowed.test(file.originalname));
+    if (/image\/(jpeg|png|gif|webp)/.test(file.mimetype)) cb(null, true);
+    else cb(new Error('Only JPG, PNG, WebP or GIF images are allowed'));
   },
 });
 

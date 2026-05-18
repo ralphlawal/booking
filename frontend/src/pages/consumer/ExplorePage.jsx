@@ -173,21 +173,22 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="bg-gradient-to-b from-primary-700 to-primary-900 px-4 py-10 text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Find services near you</h1>
-        <p className="text-primary-200 text-sm mb-6">Book barbers, stylists, trainers and more — instantly</p>
+      <div className="bg-gradient-to-b from-primary-700 to-primary-900 px-4 py-8 text-center">
+        <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">Find services near you</h1>
+        <p className="text-primary-200 text-xs sm:text-sm mb-5">Book barbers, stylists, trainers and more — instantly</p>
         <form onSubmit={handleSearch} className="max-w-lg mx-auto flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
-              className="w-full pl-9 pr-4 py-3 rounded-xl text-sm outline-none border-0 shadow-sm"
-              placeholder="Search barbers, nail techs, tutors…"
+              className="w-full pl-9 pr-3 py-3 rounded-xl text-sm outline-none border-0 shadow-sm"
+              placeholder="Search barbers, nail techs…"
               value={q}
               onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
             />
           </div>
-          <button type="submit" className="bg-white text-primary-700 font-bold px-5 py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors flex items-center gap-1.5">
-            <Search className="w-4 h-4" /> Search
+          <button type="submit" className="bg-white text-primary-700 font-bold px-4 py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors flex items-center gap-1">
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">Search</span>
           </button>
         </form>
         <button
@@ -242,7 +243,7 @@ export default function ExplorePage() {
       {/* Results */}
       <div className="max-w-6xl mx-auto px-4 pb-12">
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="card p-0 overflow-hidden animate-pulse">
                 <div className="h-28 bg-gray-200 dark:bg-gray-800" />
@@ -267,7 +268,7 @@ export default function ExplorePage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {results.length} result{results.length !== 1 ? 's' : ''} {coords ? 'near you' : 'found'}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {results.map((biz) => <BusinessCard key={biz.id} biz={biz} />)}
             </div>
           </>
