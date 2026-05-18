@@ -1,16 +1,18 @@
 import axios from 'axios';
 
-// In production: VITE_API_URL=https://bookly-api.onrender.com
-// In local dev: Vite proxy handles /api → localhost:5001
-const BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
+// Local dev: Vite proxy handles /api → localhost:5001
+// Production: call Render directly (CORS allows *.vercel.app)
+const RENDER_URL = 'https://bookly-api-3bz0.onrender.com/api';
+const BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : import.meta.env.PROD
+  ? RENDER_URL
+  : '/api';
 
 const api = axios.create({
   baseURL: BASE,
   timeout: 30000,
 });
-
-// Pre-warm Render on app load (free tier spins down after inactivity)
-fetch(`${BASE}/auth/me`, { method: 'GET' }).catch(() => {});
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('fbToken');
