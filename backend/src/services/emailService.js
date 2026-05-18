@@ -30,7 +30,7 @@ const baseTemplate = (content) => `
       </div>
       <div style="padding:20px 32px 28px;border-top:1px solid #f1f5f9;text-align:center">
         <p style="margin:0 0 4px;color:#94a3b8;font-size:12px">Book. Confirm. Be there.</p>
-        <p style="margin:0;color:#cbd5e1;font-size:11px">A <strong>Ralph Lawal Group</strong> product · <a href="https://booking-sepia-nu.vercel.app" style="color:#818cf8;text-decoration:none">bookam.app</a></p>
+        <p style="margin:0;color:#cbd5e1;font-size:11px">A <a href="https://www.ralphlawalgroup.com" style="color:#818cf8;text-decoration:none;font-weight:600">Ralph Lawal Group</a> product · <a href="https://www.bookam.business" style="color:#818cf8;text-decoration:none">bookam.business</a></p>
       </div>
     </div>
   </div>`;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { bookingsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -9,6 +9,7 @@ export default function Bookings() {
   const [data, setData] = useState({ bookings: [], stats: null });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [modal, setModal] = useState(null); // 'status' | 'reschedule'
   const [statusForm, setStatusForm] = useState({ status: '', cancelled_reason: '' });
@@ -57,6 +58,18 @@ export default function Bookings() {
     }
   };
 
+  const filtered = useMemo(() => {
+    if (!search.trim()) return data.bookings;
+    const q = search.toLowerCase();
+    return data.bookings.filter(b =>
+      b.customer_name?.toLowerCase().includes(q) ||
+      b.customer_email?.toLowerCase().includes(q) ||
+      b.customer_phone?.toLowerCase().includes(q) ||
+      b.reference_id?.toLowerCase().includes(q) ||
+      b.service_name?.toLowerCase().includes(q)
+    );
+  }, [data.bookings, search]);
+
   return (
     <div className="space-y-5 animate-fade-in">
       <div>
@@ -76,71 +89,137 @@ export default function Bookings() {
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
-        {STATUSES.map(s => (
-          <button key={s} onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-all ${filter === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-            {s}
-          </button>
-        ))}
+      {/* Search + filter row */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search */}
+        <div className="relative flex-1 max-w-sm">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+            placeholder="Search customer, reference…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <XSmIcon />
+            </button>
+          )}
+        </div>
+
+        {/* Status filter — scrollable on mobile */}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-max">
+            {STATUSES.map(s => (
+              <button key={s} onClick={() => setFilter(s)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filter === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Table */}
+      {/* Results count when searching */}
+      {search && (
+        <p className="text-sm text-gray-500">
+          {filtered.length} result{filtered.length !== 1 ? 's' : ''} for "<span className="font-medium text-gray-700">{search}</span>"
+        </p>
+      )}
+
+      {/* Desktop table / Mobile cards */}
       <div className="card overflow-hidden">
         {loading ? (
           <div className="p-5 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />)}</div>
-        ) : data.bookings.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-gray-400">
             <p className="text-4xl mb-2">📋</p>
-            <p className="font-medium">No bookings found</p>
+            <p className="font-medium">{search ? 'No matching bookings' : 'No bookings found'}</p>
+            {search && <button onClick={() => setSearch('')} className="text-sm text-primary-600 mt-1 hover:underline">Clear search</button>}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-gray-100">
-                <tr className="text-left">
-                  {['Reference','Customer','Service','Date & Time','Status','Actions'].map(h => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {data.bookings.map(b => (
-                  <tr key={b.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-primary-700 font-bold">{b.reference_id}</td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium">{b.customer_name}</p>
-                      <p className="text-xs text-gray-400">{b.customer_phone}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p>{b.service_name}</p>
-                      <p className="text-xs text-gray-400">${parseFloat(b.service_price).toFixed(2)}</p>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <p>{b.booking_date}</p>
-                      <p className="text-xs text-gray-400">{b.start_time?.slice(0,5)} – {b.end_time?.slice(0,5)}</p>
-                    </td>
-                    <td className="px-4 py-3"><span className={STATUS_COLORS[b.status]}>{b.status}</span></td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <button onClick={() => openStatus(b)} className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-primary-50 hover:text-primary-700 rounded-lg transition-colors">Status</button>
-                        {b.status !== 'cancelled' && b.status !== 'completed' && (
-                          <button onClick={() => openReschedule(b)} className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">Reschedule</button>
-                        )}
-                      </div>
-                    </td>
+          <>
+            {/* Desktop table — hidden on mobile */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-gray-100">
+                  <tr className="text-left">
+                    {['Reference','Customer','Service','Date & Time','Status','Actions'].map(h => (
+                      <th key={h} className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filtered.map(b => (
+                    <tr key={b.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 font-mono text-xs text-primary-700 font-bold">{b.reference_id}</td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium">{b.customer_name}</p>
+                        <p className="text-xs text-gray-400">{b.customer_phone}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p>{b.service_name}</p>
+                        <p className="text-xs text-gray-400">${parseFloat(b.service_price || 0).toFixed(2)}</p>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <p>{b.booking_date}</p>
+                        <p className="text-xs text-gray-400">{b.start_time?.slice(0,5)} – {b.end_time?.slice(0,5)}</p>
+                      </td>
+                      <td className="px-4 py-3"><span className={STATUS_COLORS[b.status]}>{b.status}</span></td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => openStatus(b)} className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-primary-50 hover:text-primary-700 rounded-lg transition-colors">Status</button>
+                          {b.status !== 'cancelled' && b.status !== 'completed' && (
+                            <button onClick={() => openReschedule(b)} className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">Reschedule</button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards — shown only on mobile */}
+            <div className="md:hidden divide-y divide-gray-50">
+              {filtered.map(b => (
+                <div key={b.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 bg-primary-100 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 flex-shrink-0">
+                        {b.customer_name?.[0]?.toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900">{b.customer_name}</p>
+                        <p className="text-xs text-gray-400">{b.customer_phone}</p>
+                      </div>
+                    </div>
+                    <span className={`${STATUS_COLORS[b.status]} flex-shrink-0`}>{b.status}</span>
+                  </div>
+                  <div className="ml-11 space-y-1">
+                    <p className="text-sm text-gray-700">{b.service_name} · <span className="font-semibold">${parseFloat(b.service_price || 0).toFixed(2)}</span></p>
+                    <p className="text-xs text-gray-400">{b.booking_date} · {b.start_time?.slice(0,5)} – {b.end_time?.slice(0,5)}</p>
+                    <p className="text-xs font-mono text-primary-600">{b.reference_id}</p>
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={() => openStatus(b)} className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-primary-50 hover:text-primary-700 rounded-lg transition-colors font-medium">Update Status</button>
+                      {b.status !== 'cancelled' && b.status !== 'completed' && (
+                        <button onClick={() => openReschedule(b)} className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors font-medium">Reschedule</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
       {/* Status modal */}
       {modal === 'status' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h2 className="font-semibold">Update Status</h2>
@@ -174,7 +253,7 @@ export default function Bookings() {
 
       {/* Reschedule modal */}
       {modal === 'reschedule' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h2 className="font-semibold">Reschedule Booking</h2>
@@ -204,3 +283,5 @@ export default function Bookings() {
 
 function Spinner() { return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />; }
 function XIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
+function XSmIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
+function SearchIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>; }

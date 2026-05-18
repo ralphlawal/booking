@@ -91,16 +91,16 @@ export default function Services() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900">{svc.name}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{svc.name}</h3>
                     <span className={`badge ${svc.is_active ? 'badge-confirmed' : 'bg-gray-100 text-gray-500'}`}>
                       {svc.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  {svc.description && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{svc.description}</p>}
+                  {svc.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{svc.description}</p>}
                   <div className="flex items-center gap-3 mt-3">
-                    <span className="text-primary-700 font-bold">${parseFloat(svc.price).toFixed(2)}</span>
+                    <span className="text-primary-700 dark:text-primary-400 font-bold">${parseFloat(svc.price).toFixed(2)}</span>
                     <span className="text-gray-400 text-sm">·</span>
-                    <span className="text-gray-600 text-sm">{svc.duration_minutes} min</span>
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">{svc.duration_minutes} min</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 ml-3">
@@ -120,10 +120,10 @@ export default function Services() {
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-slide-up">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="font-semibold text-lg">{modal === 'create' ? 'New Service' : 'Edit Service'}</h2>
-              <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 rounded-lg"><XIcon /></button>
+          <div className="modal-panel w-full max-w-md animate-slide-up">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="font-semibold text-lg dark:text-white">{modal === 'create' ? 'New Service' : 'Edit Service'}</h2>
+              <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400"><XIcon /></button>
             </div>
             <form onSubmit={save} className="p-5 space-y-4">
               <div>
@@ -147,7 +147,7 @@ export default function Services() {
               {modal !== 'create' && (
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={form.is_active} onChange={set('is_active')} />
-                  <span className="text-sm text-gray-700">Active (visible to customers)</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Active (visible to customers)</span>
                 </label>
               )}
               <div className="flex gap-3 pt-2">

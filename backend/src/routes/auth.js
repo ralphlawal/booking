@@ -47,4 +47,6 @@ router.post(
   ctrl.resetPassword
 );
 
+router.delete('/account', authenticate, ctrl.deleteAccount);
+
 module.exports = router;

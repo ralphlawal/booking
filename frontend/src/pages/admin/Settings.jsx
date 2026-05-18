@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { businessAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
@@ -10,7 +11,8 @@ const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sun
 const INTERVALS = [15,30,45,60];
 
 export default function Settings() {
-  const { business, updateBusiness, changePassword, resendVerificationEmail } = useAuth();
+  const { business, updateBusiness, changePassword, resendVerificationEmail, deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState('business');
   const [bizForm, setBizForm] = useState({});
   const [avForm, setAvForm] = useState({ working_days: [], opening_time: '09:00', closing_time: '18:00', slot_interval_minutes: 30, buffer_minutes: 0 });
@@ -24,6 +26,9 @@ export default function Settings() {
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwLoading, setPwLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     if (business) {
@@ -133,7 +138,7 @@ export default function Settings() {
 
   const bookingUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/book/${business?.slug}`
-    : `https://bookam.app/book/${business?.slug}`;
+    : `https://bookam.business/book/${business?.slug}`;
 
   const embedCode = `<iframe\n  src="${bookingUrl}?embed=1"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.1)"\n  title="${business?.name} Booking"\n></iframe>`;
 
@@ -170,6 +175,25 @@ export default function Settings() {
     }
   };
 
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    setDeleteLoading(true);
+    try {
+      await deleteAccount(deletePassword);
+      toast.success('Account deleted. Goodbye!');
+      navigate('/');
+    } catch (err) {
+      const msg = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+        ? 'Password is incorrect'
+        : err.code === 'auth/requires-recent-login'
+        ? 'Please sign out and sign back in first'
+        : err.message;
+      toast.error(msg);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const TABS = ['business','availability','blocked','qr','embed','security'];
 
   return (
@@ -179,14 +203,16 @@ export default function Settings() {
         <p className="text-gray-500 text-sm mt-0.5">Manage your business profile and availability</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit flex-wrap">
-        {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget','Security'].map((t, i) => (
-          <button key={t} onClick={() => setTab(TABS[i])}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${tab === TABS[i] ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-            {t}
-          </button>
-        ))}
+      {/* Tabs — horizontal scroll on mobile */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-max sm:w-fit">
+          {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget','Security'].map((t, i) => (
+            <button key={t} onClick={() => setTab(TABS[i])}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === TABS[i] ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Business Info */}
@@ -352,21 +378,21 @@ export default function Settings() {
             </form>
           </div>
           <div className="card overflow-hidden">
-            <div className="p-4 border-b border-gray-100 font-semibold">Blocked Dates</div>
+            <div className="p-4 border-b border-gray-100 dark:border-gray-800 font-semibold dark:text-white">Blocked Dates</div>
             {blocked.length === 0 ? (
-              <div className="p-8 text-center text-gray-400 text-sm">No blocked dates</div>
+              <div className="p-8 text-center text-gray-400 dark:text-gray-500 text-sm">No blocked dates</div>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-gray-50 dark:divide-gray-800">
                 {blocked.map(b => (
                   <div key={b.id} className="flex items-center justify-between px-4 py-3">
                     <div>
-                      <p className="font-medium text-sm">{b.blocked_date}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium text-sm dark:text-white">{b.blocked_date}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {b.is_full_day ? 'Full day' : `${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}`}
                         {b.reason && ` · ${b.reason}`}
                       </p>
                     </div>
-                    <button onClick={() => removeBlock(b.id)} className="text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors">Remove</button>
+                    <button onClick={() => removeBlock(b.id)} className="text-xs text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 px-2.5 py-1.5 rounded-lg transition-colors">Remove</button>
                   </div>
                 ))}
               </div>
@@ -382,8 +408,8 @@ export default function Settings() {
           <p className="text-sm text-gray-500 mb-4">Share this link anywhere — Instagram bio, WhatsApp, email.</p>
           {business && (
             <>
-              <div className="bg-primary-50 rounded-xl p-3 mb-4 flex items-center gap-2 border border-primary-100">
-                <code className="text-sm text-primary-700 flex-1 truncate">{bookingUrl}</code>
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-3 mb-4 flex items-center gap-2 border border-primary-100 dark:border-primary-800">
+                <code className="text-sm text-primary-700 dark:text-primary-300 flex-1 truncate">{bookingUrl}</code>
                 <button onClick={() => { navigator.clipboard.writeText(bookingUrl); toast.success('Copied!'); }}
                   className="btn-secondary text-xs py-1.5 flex-shrink-0">Copy</button>
               </div>
@@ -414,30 +440,26 @@ export default function Settings() {
         <div className="max-w-2xl animate-slide-up space-y-5">
           {/* Email verification */}
           <div className="card p-6">
-            <h3 className="font-semibold text-gray-900 mb-1">Email Verification</h3>
-            <p className="text-sm text-gray-500 mb-4">Verify your email address to keep your account secure.</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email Verification</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Verify your email address to keep your account secure.</p>
             {auth.currentUser?.emailVerified ? (
-              <div className="flex items-center gap-2.5 bg-green-50 border border-green-100 rounded-xl px-4 py-3">
-                <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12"/></svg>
+              <div className="flex items-center gap-2.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-xl px-4 py-3">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12"/></svg>
                 <div>
-                  <p className="text-sm font-semibold text-green-800">Email verified</p>
-                  <p className="text-xs text-green-600">{auth.currentUser.email}</p>
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-300">Email verified</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">{auth.currentUser.email}</p>
                 </div>
               </div>
             ) : (
               <div>
-                <div className="flex items-center gap-2.5 bg-yellow-50 border border-yellow-100 rounded-xl px-4 py-3 mb-3">
-                  <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <div className="flex items-center gap-2.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-xl px-4 py-3 mb-3">
+                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                   <div>
-                    <p className="text-sm font-semibold text-yellow-800">Email not verified</p>
-                    <p className="text-xs text-yellow-700">{auth.currentUser?.email}</p>
+                    <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">Email not verified</p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-400">{auth.currentUser?.email}</p>
                   </div>
                 </div>
-                <button
-                  onClick={handleResendVerification}
-                  disabled={verifyLoading}
-                  className="btn-secondary text-sm disabled:opacity-50"
-                >
+                <button onClick={handleResendVerification} disabled={verifyLoading} className="btn-secondary text-sm disabled:opacity-50">
                   {verifyLoading ? <><Spinner />&nbsp;Sending…</> : 'Send Verification Email'}
                 </button>
               </div>
@@ -446,46 +468,78 @@ export default function Settings() {
 
           {/* Change password */}
           <div className="card p-6">
-            <h3 className="font-semibold text-gray-900 mb-1">Change Password</h3>
-            <p className="text-sm text-gray-500 mb-4">Enter your current password and choose a new one.</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Change Password</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Enter your current password and choose a new one.</p>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
                 <label className="label">Current Password</label>
-                <input
-                  className="input"
-                  type="password"
-                  required
-                  placeholder="Your current password"
-                  value={pwForm.current}
-                  onChange={e => setPwForm(p => ({ ...p, current: e.target.value }))}
-                />
+                <input className="input" type="password" required placeholder="Your current password" value={pwForm.current} onChange={e => setPwForm(p => ({ ...p, current: e.target.value }))} />
               </div>
               <div>
                 <label className="label">New Password</label>
-                <input
-                  className="input"
-                  type="password"
-                  required
-                  placeholder="Min. 6 characters"
-                  value={pwForm.next}
-                  onChange={e => setPwForm(p => ({ ...p, next: e.target.value }))}
-                />
+                <input className="input" type="password" required placeholder="Min. 6 characters" value={pwForm.next} onChange={e => setPwForm(p => ({ ...p, next: e.target.value }))} />
               </div>
               <div>
                 <label className="label">Confirm New Password</label>
-                <input
-                  className="input"
-                  type="password"
-                  required
-                  placeholder="Repeat new password"
-                  value={pwForm.confirm}
-                  onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
-                />
+                <input className="input" type="password" required placeholder="Repeat new password" value={pwForm.confirm} onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))} />
               </div>
               <button type="submit" disabled={pwLoading} className="btn-primary disabled:opacity-50">
                 {pwLoading ? <><Spinner />&nbsp;Updating…</> : 'Update Password'}
               </button>
             </form>
+          </div>
+
+          {/* Danger Zone — Delete Account */}
+          <div className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-900/10 p-6">
+            <h3 className="font-semibold text-red-700 dark:text-red-400 mb-1">Danger Zone</h3>
+            <p className="text-sm text-red-600/80 dark:text-red-400/70 mb-4">
+              Permanently delete your account, business, all services, and all booking data. <strong>This cannot be undone.</strong>
+            </p>
+            <button
+              onClick={() => setDeleteModal(true)}
+              className="text-sm px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium"
+            >
+              Delete my account
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-fade-in">
+          <div className="modal-panel w-full max-w-sm animate-slide-up">
+            <div className="p-6">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+              </div>
+              <h2 className="font-bold text-lg text-gray-900 dark:text-white mb-1">Delete account?</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+                This will permanently delete your account, business profile, all services, and all booking records. There is no going back.
+              </p>
+              <form onSubmit={handleDeleteAccount} className="space-y-4">
+                <div>
+                  <label className="label">Confirm your password</label>
+                  <input
+                    className="input border-red-200 dark:border-red-800 focus:ring-red-400"
+                    type="password"
+                    required
+                    autoFocus
+                    placeholder="Enter your password"
+                    value={deletePassword}
+                    onChange={e => setDeletePassword(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => { setDeleteModal(false); setDeletePassword(''); }} className="btn-secondary flex-1">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={deleteLoading || !deletePassword} className="btn-danger flex-1">
+                    {deleteLoading ? <><Spinner />&nbsp;Deleting…</> : 'Delete forever'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

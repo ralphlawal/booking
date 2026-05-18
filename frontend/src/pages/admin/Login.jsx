@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { LOGO_WHITE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
-
-const LOGO = 'https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png';
 
 export default function Login() {
   const { login } = useAuth();
@@ -40,12 +39,12 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-slide-up">
         <Link to="/" className="flex items-center justify-center mb-8">
-          <img src={LOGO} alt="BookAm" className="h-12 w-auto object-contain" />
+          <img src={LOGO_WHITE_H} alt="BookAm" className="h-10 w-auto object-contain" />
         </Link>
 
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
           <h1 className="text-xl font-bold text-white text-center mb-1">Sign in to BookAm</h1>
-          <p className="text-white/50 text-sm text-center mb-6">Access your business dashboard</p>
+          <p className="text-white/50 text-sm text-center mb-6">Book. Confirm. Be there.</p>
 
           <form onSubmit={submit} className="space-y-4">
             <div>

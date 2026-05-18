@@ -1,11 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
-const LOGO = 'https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png';
+import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
 
 const FEATURES = [
   { emoji: '💬', title: 'No more DM chaos', desc: 'Stop managing bookings through WhatsApp. Customers book themselves — you just show up.', bg: 'bg-violet-50', border: 'border-violet-100' },
-  { emoji: '🔗', title: 'Your own booking link', desc: 'A clean page at bookam.app/book/yourbusiness. Share it anywhere — Instagram, WhatsApp, your website.', bg: 'bg-blue-50', border: 'border-blue-100' },
+  { emoji: '🔗', title: 'Your own booking link', desc: 'A clean page at bookam.business/book/yourbusiness. Share it anywhere — Instagram, WhatsApp, your website.', bg: 'bg-blue-50', border: 'border-blue-100' },
   { emoji: '⏰', title: 'Book while you sleep', desc: '24/7 online booking with automatic email confirmations. Never miss an appointment again.', bg: 'bg-emerald-50', border: 'border-emerald-100' },
   { emoji: '📊', title: 'Dashboard & insights', desc: 'See upcoming bookings, track customers, and monitor revenue — all from one dashboard.', bg: 'bg-amber-50', border: 'border-amber-100' },
   { emoji: '📅', title: 'Flexible schedule', desc: 'Set your working hours, block days off, manage slot intervals exactly how you need.', bg: 'bg-pink-50', border: 'border-pink-100' },
@@ -26,7 +25,7 @@ export default function Landing() {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <img src={LOGO} alt="BookAm" className="h-9 w-auto object-contain" />
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <Link to="/admin/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2">
               Sign in
@@ -84,7 +83,7 @@ export default function Landing() {
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                   <div className="w-3 h-3 rounded-full bg-green-500/80" />
                   <div className="flex-1 ml-3 bg-gray-700 rounded-md px-3 py-1.5 text-xs text-gray-400 text-left">
-                    bookam.app/book/your-business
+                    bookam.business/book/your-business
                   </div>
                 </div>
                 <div className="bg-white p-5 text-left">
@@ -188,7 +187,7 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary-700 to-primary-900" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08),transparent_60%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <img src={LOGO} alt="BookAm" className="h-12 w-auto object-contain mx-auto mb-8 brightness-0 invert opacity-90" />
+          <img src={LOGO_WHITE_H} alt="BookAm" className="h-10 w-auto object-contain mx-auto mb-8 opacity-95" />
           <h2 className="text-4xl sm:text-5xl font-bold text-white leading-tight">
             Ready to stop the DM chaos?
           </h2>
@@ -218,7 +217,7 @@ export default function Landing() {
       <footer className="border-t border-gray-100 py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <img src={LOGO} alt="BookAm" className="h-8 w-auto object-contain" />
+            <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 w-auto object-contain" />
             <p className="text-sm font-semibold text-primary-600 tracking-wide">Book. Confirm. Be there.</p>
             <Link to="/admin/login" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
               Sign in →
@@ -227,7 +226,7 @@ export default function Landing() {
           <div className="border-t border-gray-100 pt-6 text-center">
             <p className="text-xs text-gray-400">
               © {new Date().getFullYear()} BookAm · A{' '}
-              <span className="font-semibold text-gray-500">Ralph Lawal Group</span> product
+              <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gray-500 hover:text-primary-600 transition-colors">Ralph Lawal Group</a> product
             </p>
           </div>
         </div>

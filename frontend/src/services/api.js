@@ -30,6 +30,7 @@ api.interceptors.response.use(
 export const authAPI = {
   firebaseSync: (idToken, displayName) => api.post('/auth/firebase-sync', { idToken, displayName }),
   me: () => api.get('/auth/me'),
+  deleteAccount: () => api.delete('/auth/account'),
 };
 
 export const businessAPI = {

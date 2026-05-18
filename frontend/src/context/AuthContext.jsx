@@ -11,6 +11,7 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  deleteUser,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { authAPI } from '../services/api';
@@ -21,10 +22,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [business, setBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
-  // Tracks whether login/register already synced to avoid double-calling firebase-sync
   const syncedUidRef = useRef(null);
 
-  // Keep stored token fresh — Firebase rotates ID tokens every hour
+  // Keep stored token fresh
   useEffect(() => {
     const unsub = onIdTokenChanged(auth, async (fbUser) => {
       if (fbUser) {
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     return unsub;
   }, []);
 
-  // Primary auth state listener — handles page refresh and initial load
+  // Primary auth state listener
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
@@ -47,14 +47,10 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-
-      // Already synced during login/register — skip the extra firebase-sync call
       if (syncedUidRef.current === fbUser.uid) {
         setLoading(false);
         return;
       }
-
-      // Page refresh or new session — sync with our backend
       try {
         const token = await fbUser.getIdToken();
         localStorage.setItem('fbToken', token);
@@ -78,7 +74,7 @@ export const AuthProvider = ({ children }) => {
     const token = await cred.user.getIdToken();
     localStorage.setItem('fbToken', token);
     const data = await authAPI.firebaseSync(token, cred.user.displayName);
-    syncedUidRef.current = cred.user.uid; // Prevent onAuthStateChanged from double-syncing
+    syncedUidRef.current = cred.user.uid;
     setUser(data.user);
     setBusiness(data.business || null);
     return data;
@@ -87,7 +83,6 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, full_name) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: full_name });
-    // Send email verification (non-blocking — don't fail registration if this errors)
     sendEmailVerification(cred.user).catch(() => {});
     const token = await cred.user.getIdToken(true);
     localStorage.setItem('fbToken', token);
@@ -112,6 +107,23 @@ export const AuthProvider = ({ children }) => {
     await sendEmailVerification(fbUser);
   };
 
+  const deleteAccount = async (password) => {
+    const fbUser = auth.currentUser;
+    if (!fbUser) throw new Error('Not signed in');
+    // Reauthenticate before destructive action
+    const credential = EmailAuthProvider.credential(fbUser.email, password);
+    await reauthenticateWithCredential(fbUser, credential);
+    // Delete from our backend first
+    await authAPI.deleteAccount();
+    // Delete from Firebase
+    await deleteUser(fbUser);
+    // Clear local state
+    syncedUidRef.current = null;
+    localStorage.removeItem('fbToken');
+    setUser(null);
+    setBusiness(null);
+  };
+
   const logout = async () => {
     syncedUidRef.current = null;
     await signOut(auth);
@@ -121,11 +133,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const forgotPassword = (email) => sendPasswordResetEmail(auth, email);
-
   const updateBusiness = (biz) => setBusiness(biz);
 
   return (
-    <AuthContext.Provider value={{ user, business, loading, login, register, logout, forgotPassword, updateBusiness, changePassword, resendVerificationEmail }}>
+    <AuthContext.Provider value={{
+      user, business, loading,
+      login, register, logout, forgotPassword,
+      updateBusiness, changePassword, resendVerificationEmail, deleteAccount,
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -41,34 +41,34 @@ export default function Customers() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-gray-100">
+              <thead className="border-b border-gray-100 dark:border-gray-800">
                 <tr className="text-left">
                   {['Customer','Contact','Bookings','No-Shows','First Seen'].map(h => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                    <th key={h} className="px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                 {filtered.map(c => (
-                  <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-primary-100 rounded-full flex items-center justify-center text-sm font-bold text-primary-700">
+                        <div className="w-9 h-9 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 dark:text-primary-400">
                           {c.full_name[0].toUpperCase()}
                         </div>
-                        <span className="font-medium">{c.full_name}</span>
+                        <span className="font-medium dark:text-white">{c.full_name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 dark:text-gray-300">
                       <p>{c.phone || '—'}</p>
-                      <p className="text-xs text-gray-400">{c.email || ''}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{c.email || ''}</p>
                     </td>
-                    <td className="px-4 py-3"><span className="font-semibold text-gray-900">{c.total_bookings}</span></td>
+                    <td className="px-4 py-3"><span className="font-semibold text-gray-900 dark:text-white">{c.total_bookings}</span></td>
                     <td className="px-4 py-3">
-                      <span className={`font-semibold ${c.no_shows > 0 ? 'text-red-500' : 'text-gray-400'}`}>{c.no_shows}</span>
-                      {c.no_shows >= 2 && <span className="ml-2 text-xs text-red-500 font-medium">⚠ Flagged</span>}
+                      <span className={`font-semibold ${c.no_shows > 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>{c.no_shows}</span>
+                      {c.no_shows >= 2 && <span className="ml-2 text-xs text-red-500 dark:text-red-400 font-medium">⚠ Flagged</span>}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-sm">{c.created_at?.slice(0,10)}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-sm">{c.created_at?.slice(0,10)}</td>
                   </tr>
                 ))}
               </tbody>

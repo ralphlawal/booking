@@ -118,7 +118,7 @@ exports.forgotPassword = async (req, res) => {
 
     await sendEmail({
       to: user.email,
-      subject: 'Reset your Bookly password',
+      subject: 'Reset your BookAm password',
       type: 'password_reset',
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px">
@@ -140,6 +140,41 @@ exports.forgotPassword = async (req, res) => {
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ error: 'Failed to send reset email' });
+  }
+};
+
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    if (process.env.DATABASE_URL) {
+      const { pool } = require('../config/database.pg');
+      const { rows: bizRows } = await pool.query('SELECT id FROM businesses WHERE user_id = $1', [userId]);
+      for (const biz of bizRows) {
+        await pool.query('DELETE FROM bookings WHERE business_id = $1', [biz.id]);
+        await pool.query('DELETE FROM blocked_slots WHERE business_id = $1', [biz.id]);
+        await pool.query('DELETE FROM availability_settings WHERE business_id = $1', [biz.id]);
+        await pool.query('DELETE FROM services WHERE business_id = $1', [biz.id]);
+      }
+      await pool.query('DELETE FROM businesses WHERE user_id = $1', [userId]);
+      await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+    } else {
+      const { db } = require('../config/database.sqlite');
+      const bizRows = db.prepare('SELECT id FROM businesses WHERE user_id = ?').all(userId);
+      for (const biz of bizRows) {
+        db.prepare('DELETE FROM bookings WHERE business_id = ?').run(biz.id);
+        try { db.prepare('DELETE FROM blocked_slots WHERE business_id = ?').run(biz.id); } catch {}
+        db.prepare('DELETE FROM availability_settings WHERE business_id = ?').run(biz.id);
+        db.prepare('DELETE FROM services WHERE business_id = ?').run(biz.id);
+      }
+      db.prepare('DELETE FROM businesses WHERE user_id = ?').run(userId);
+      db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 };
 

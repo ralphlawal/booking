@@ -92,23 +92,7 @@ async function start() {
       await pool.query(sql);
       console.log('PostgreSQL migrations applied.');
 
-      // Seed demo account if no users exist
-      const { rows } = await pool.query('SELECT COUNT(*) AS c FROM users');
-      if (parseInt(rows[0].c) === 0) {
-        console.log('Empty database — seeding demo account...');
-        const bcrypt = require('bcryptjs');
-        const crypto = require('crypto');
-        const hash = await bcrypt.hash('demo1234', 12);
-        const uid = crypto.randomUUID(), bid = crypto.randomUUID();
-        await pool.query(`INSERT INTO users (id,email,password_hash,full_name) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`, [uid,'demo@bookly.com',hash,'Demo Owner']);
-        const { rows: [user] } = await pool.query('SELECT id FROM users WHERE email=$1',['demo@bookly.com']);
-        await pool.query(`INSERT INTO businesses (id,user_id,name,slug,description,phone,email,location,category) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING`,[bid,user.id,'Smooth Cuts Barbershop','smoothcuts','Premium haircuts and grooming services','+1-555-0100','smoothcuts@demo.com','123 Main St, New York','barber']);
-        const { rows: [biz] } = await pool.query('SELECT id FROM businesses WHERE slug=$1',['smoothcuts']);
-        const svcData = [['Classic Haircut','Clean fade with edge up',30,30],['Beard Trim','Shape and clean beard trim',20,20],['Full Grooming Package','Haircut + Beard + Wash',65,75]];
-        for (const [n,d,p,dur] of svcData) await pool.query(`INSERT INTO services (id,business_id,name,description,price,duration_minutes) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,[crypto.randomUUID(),biz.id,n,d,p,dur]);
-        await pool.query(`INSERT INTO availability_settings (id,business_id,working_days,opening_time,closing_time,slot_interval_minutes) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,[crypto.randomUUID(),biz.id,JSON.stringify(['monday','tuesday','wednesday','thursday','friday','saturday']),'09:00','18:00',30]);
-        console.log('Demo account seeded: demo@bookly.com / demo1234');
-      }
+      console.log('Database ready.');
     } else {
       const { db } = require('./config/database.sqlite');
       const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_sqlite_schema.sql'), 'utf8');

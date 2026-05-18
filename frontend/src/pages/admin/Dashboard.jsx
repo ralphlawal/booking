@@ -10,14 +10,14 @@ import { useAuth } from '../../context/AuthContext';
 const STATUS_COLORS = { pending: '#f59e0b', confirmed: '#10b981', cancelled: '#ef4444', completed: '#6366f1' };
 const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
 
-const StatCard = ({ label, value, color, icon }) => (
+const StatCard = ({ label, value, color, darkColor, icon }) => (
   <div className="card p-5 flex items-center gap-4">
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
+    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} ${darkColor}`}>
       {icon}
     </div>
     <div>
-      <p className="text-2xl font-bold text-gray-900">{value ?? '—'}</p>
-      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-2xl font-bold text-gray-900 dark:text-white">{value ?? '—'}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
     </div>
   </div>
 );
@@ -25,11 +25,11 @@ const StatCard = ({ label, value, color, icon }) => (
 const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-4 py-3 text-sm">
-      <p className="font-semibold text-gray-700 mb-1">{label}</p>
+    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-lg px-4 py-3 text-sm">
+      <p className="font-semibold text-gray-700 dark:text-gray-200 mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className="font-medium">
-          {p.name}: {prefix}{typeof p.value === 'number' ? p.value.toFixed(p.name === 'Revenue' ? 0 : 0) : p.value}
+          {p.name}: {prefix}{typeof p.value === 'number' ? p.value.toFixed(0) : p.value}
         </p>
       ))}
     </div>
@@ -93,8 +93,8 @@ export default function Dashboard() {
         <div className="card p-5 border-l-4 border-l-primary-500">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="font-semibold text-gray-900 mb-1">Finish setting up your page</p>
-              <p className="text-sm text-gray-500 mb-4">Complete these steps before sharing your booking link.</p>
+              <p className="font-semibold text-gray-900 dark:text-white mb-1">Finish setting up your page</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Complete these steps before sharing your booking link.</p>
               <div className="space-y-2.5">
                 <ChecklistItem done label="Account created" />
                 <ChecklistItem done label="Business profile set up" />
@@ -103,7 +103,7 @@ export default function Dashboard() {
                 <ChecklistItem done={checklist.hasServices && checklist.hasAvailability} label="Share your booking link" linkTo={`/book/${business?.slug}`} linkLabel="Open link" external />
               </div>
             </div>
-            <button onClick={() => setChecklist(null)} className="text-gray-400 hover:text-gray-600 transition-colors mt-1">
+            <button onClick={() => setChecklist(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors mt-1">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -113,14 +113,14 @@ export default function Dashboard() {
       {/* Stats */}
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => <div key={i} className="card h-24 animate-pulse bg-gray-100" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="card h-24 animate-pulse bg-gray-100 dark:bg-gray-800" />)}
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Bookings" value={stats?.total} color="bg-primary-50" icon={<CalIcon />} />
-          <StatCard label="Pending" value={stats?.pending} color="bg-yellow-50" icon={<ClockIcon />} />
-          <StatCard label="Confirmed" value={stats?.confirmed} color="bg-green-50" icon={<CheckIcon />} />
-          <StatCard label="Revenue" value={stats?.revenue ? `$${parseFloat(stats.revenue).toFixed(0)}` : '$0'} color="bg-blue-50" icon={<DollarIcon />} />
+          <StatCard label="Total Bookings" value={stats?.total} color="bg-primary-50" darkColor="dark:bg-primary-900/30" icon={<CalIcon />} />
+          <StatCard label="Pending" value={stats?.pending} color="bg-yellow-50" darkColor="dark:bg-yellow-900/30" icon={<ClockIcon />} />
+          <StatCard label="Confirmed" value={stats?.confirmed} color="bg-green-50" darkColor="dark:bg-green-900/30" icon={<CheckIcon />} />
+          <StatCard label="Revenue" value={stats?.revenue ? `$${parseFloat(stats.revenue).toFixed(0)}` : '$0'} color="bg-blue-50" darkColor="dark:bg-blue-900/30" icon={<DollarIcon />} />
         </div>
       )}
 
@@ -232,8 +232,8 @@ export default function Dashboard() {
 
       {/* Recent bookings */}
       <div className="card overflow-hidden">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">Recent Bookings</h2>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="font-semibold text-gray-900 dark:text-white">Recent Bookings</h2>
           <Link to="/admin/bookings" className="text-primary-600 text-sm font-medium hover:underline">View all</Link>
         </div>
         {loading ? (
@@ -247,21 +247,21 @@ export default function Dashboard() {
             <p className="text-sm">Share your booking page to get started</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50 dark:divide-gray-800">
             {data?.bookings?.slice(0, 5).map(b => (
-              <div key={b.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors">
+              <div key={b.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-primary-100 rounded-full flex items-center justify-center text-sm font-bold text-primary-700">
+                  <div className="w-9 h-9 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 dark:text-primary-400">
                     {b.customer_name?.[0]?.toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-medium text-sm text-gray-900">{b.customer_name}</p>
-                    <p className="text-xs text-gray-500">{b.service_name} · {b.start_time?.slice(0,5)}</p>
+                    <p className="font-medium text-sm text-gray-900 dark:text-white">{b.customer_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{b.service_name} · {b.start_time?.slice(0,5)}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className={`badge-${b.status}`}>{b.status}</span>
-                  <p className="text-xs text-gray-400 mt-1">{b.booking_date}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{b.booking_date}</p>
                 </div>
               </div>
             ))}
@@ -287,22 +287,22 @@ const EmptyChart = () => (
 
 const ChecklistItem = ({ done, label, linkTo, linkLabel, external }) => (
   <div className="flex items-center gap-3">
-    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${done ? 'bg-green-500' : 'bg-gray-200'}`}>
+    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${done ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}>
       {done && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><polyline points="20 6 9 17 4 12" /></svg>}
     </div>
-    <span className={`text-sm flex-1 ${done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{label}</span>
+    <span className={`text-sm flex-1 ${done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{label}</span>
     {!done && linkTo && (
       external
-        ? <a href={linkTo} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-600 font-medium hover:underline">{linkLabel} →</a>
-        : <Link to={linkTo} className="text-xs text-primary-600 font-medium hover:underline">{linkLabel} →</Link>
+        ? <a href={linkTo} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-600 dark:text-primary-400 font-medium hover:underline">{linkLabel} →</a>
+        : <Link to={linkTo} className="text-xs text-primary-600 dark:text-primary-400 font-medium hover:underline">{linkLabel} →</Link>
     )}
   </div>
 );
 
 const QuickLink = ({ to, label, desc }) => (
-  <Link to={to} className="card p-4 hover:border-primary-200 hover:shadow-md transition-all group">
-    <p className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">{label}</p>
-    <p className="text-xs text-gray-500 mt-1">{desc}</p>
+  <Link to={to} className="card p-4 hover:border-primary-200 dark:hover:border-primary-700 hover:shadow-md transition-all group">
+    <p className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">{label}</p>
+    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{desc}</p>
   </Link>
 );
 

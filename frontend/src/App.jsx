@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { LOGO_BLUE_ICON } from './config/logos';
 
 // Public pages
 import Landing from './pages/public/Landing';
@@ -38,54 +41,72 @@ const GuestRoute = ({ children }) => {
 };
 
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
-      <p className="text-sm text-gray-500 font-medium">Loading Bookly…</p>
+  <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 gap-8">
+    <div className="flex flex-col items-center gap-6 animate-fade-in">
+      <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-14 h-14 object-contain drop-shadow-sm" style={{ animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' }} />
+      <div className="flex items-center gap-1.5">
+        {[0, 150, 300].map(d => (
+          <span key={d} className="w-2 h-2 rounded-full bg-primary-500" style={{ animation: `bounce 1s ease-in-out ${d}ms infinite` }} />
+        ))}
+      </div>
     </div>
   </div>
 );
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public booking */}
-          <Route path="/book/:slug" element={<BookingPage />} />
-          <Route path="/booking-success/:ref" element={<BookingSuccess />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 3500,
+              style: { borderRadius: '12px', fontSize: '14px', fontWeight: 500 },
+              success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+              error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+            }}
+          />
+          <Routes>
+            {/* Public booking */}
+            <Route path="/book/:slug" element={<BookingPage />} />
+            <Route path="/booking-success/:ref" element={<BookingSuccess />} />
 
-          {/* Auth */}
-          <Route path="/admin/login" element={<GuestRoute><Login /></GuestRoute>} />
-          <Route path="/admin/register" element={<GuestRoute><Register /></GuestRoute>} />
-          <Route path="/admin/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/admin/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            {/* Auth */}
+            <Route path="/admin/login" element={<GuestRoute><Login /></GuestRoute>} />
+            <Route path="/admin/register" element={<GuestRoute><Register /></GuestRoute>} />
+            <Route path="/admin/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/admin/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
-          {/* Admin Dashboard */}
-          <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="services" element={<Services />} />
-            <Route path="bookings" element={<Bookings />} />
-            <Route path="calendar" element={<Calendar />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+            {/* Admin Dashboard */}
+            <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="services" element={<Services />} />
+              <Route path="bookings" element={<Bookings />} />
+              <Route path="calendar" element={<Calendar />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
 
-          {/* Landing */}
-          <Route path="/" element={<Landing />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            {/* Landing */}
+            <Route path="/" element={<Landing />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
 const NotFound = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50">
-    <div className="text-6xl font-bold text-primary-600">404</div>
-    <p className="text-gray-500">Page not found</p>
-    <a href="/" className="btn-primary">Go Home</a>
+  <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-gray-50 dark:bg-gray-950 text-center px-4">
+    <img src={LOGO_BLUE_ICON} alt="BookAm" className="w-12 h-12 object-contain opacity-40" />
+    <div>
+      <div className="text-7xl font-black text-primary-600 dark:text-primary-400 leading-none mb-3">404</div>
+      <p className="text-gray-600 dark:text-gray-400 text-lg">This page doesn't exist.</p>
+    </div>
+    <a href="/" className="btn-primary">Back to home</a>
   </div>
 );
