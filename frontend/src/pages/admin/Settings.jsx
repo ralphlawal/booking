@@ -221,6 +221,7 @@ export default function Settings() {
 
       {/* Business Info */}
       {tab === 'business' && (
+        <>
         <div className="card p-6 max-w-2xl animate-slide-up">
           {/* Logo upload — Firebase Storage */}
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
@@ -324,6 +325,7 @@ export default function Settings() {
 
         {/* Verification */}
         <VerificationCard business={business} />
+        </>
       )}
 
       {/* Availability */}
