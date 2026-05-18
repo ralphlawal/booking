@@ -2,7 +2,7 @@ const Booking = require('../models/Booking');
 const Customer = require('../models/Customer');
 const Service = require('../models/Service');
 const generateReference = require('../utils/generateReference');
-const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled } = require('../services/emailService');
+const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder } = require('../services/emailService');
 
 exports.create = async (req, res) => {
   try {
@@ -92,6 +92,25 @@ exports.getByReference = async (req, res) => {
   }
 };
 
+exports.lookup = async (req, res) => {
+  try {
+    const { reference_id, email } = req.body;
+    if (!reference_id || !email)
+      return res.status(400).json({ error: 'Reference ID and email are required' });
+
+    const booking = await Booking.findByReference(reference_id.trim().toUpperCase());
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    // Verify the email matches the customer who made this booking
+    if (booking.customer_email?.toLowerCase() !== email.trim().toLowerCase())
+      return res.status(404).json({ error: 'Booking not found' });
+
+    res.json(booking);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to look up booking' });
+  }
+};
+
 exports.updateStatus = async (req, res) => {
   try {
     const { status, cancelled_reason, no_show } = req.body;
@@ -108,6 +127,10 @@ exports.updateStatus = async (req, res) => {
 
     if (fullBooking.customer_email && ['confirmed','cancelled'].includes(status)) {
       sendBookingStatusUpdate({ ...fullBooking, customer_email: fullBooking.customer_email });
+    }
+
+    if (status === 'completed' && fullBooking.customer_email) {
+      sendReviewReminder(fullBooking).catch(() => {});
     }
 
     if (no_show && fullBooking.customer_id) {

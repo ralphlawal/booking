@@ -99,6 +99,8 @@ export default function ConsumerProfile() {
   const [pwSaving, setPwSaving] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [emailForm, setEmailForm] = useState({ new_email: '', password: '' });
+  const [emailSaving, setEmailSaving] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -161,6 +163,20 @@ export default function ConsumerProfile() {
       toast.error(err.message);
     } finally {
       setPwSaving(false);
+    }
+  };
+
+  const handleChangeEmail = async (e) => {
+    e.preventDefault();
+    setEmailSaving(true);
+    try {
+      await consumerAPI.changeEmail(emailForm.new_email, emailForm.password);
+      toast.success('Email updated — please sign in again');
+      logout();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setEmailSaving(false);
     }
   };
 
@@ -249,7 +265,9 @@ export default function ConsumerProfile() {
                   <Mail className="w-3.5 h-3.5" /> Email
                 </label>
                 <input className="input opacity-60 cursor-not-allowed" value={consumer.email} disabled />
-                <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                <button type="button" onClick={() => setTab('security')} className="text-xs text-primary-600 dark:text-primary-400 hover:underline mt-1 font-medium">
+                  Change email →
+                </button>
               </div>
               <div>
                 <label className="label flex items-center gap-1.5">
@@ -312,9 +330,45 @@ export default function ConsumerProfile() {
 
         {tab === 'security' && (
           <div className="card p-6 animate-slide-up">
-            <div className="flex items-center gap-2 mb-5">
-              <Lock className="w-4 h-4 text-gray-500" />
-              <h2 className="font-bold text-gray-900 dark:text-white">Change Password</h2>
+            {/* Change email */}
+            <div className="flex items-center gap-2 mb-4">
+              <Mail className="w-4 h-4 text-gray-500" />
+              <h2 className="font-bold text-gray-900 dark:text-white">Change Email</h2>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">Current: <strong className="text-gray-600 dark:text-gray-300">{consumer.email}</strong></p>
+            <form onSubmit={handleChangeEmail} className="space-y-3 mb-6">
+              <div>
+                <label className="label">New email address</label>
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="new@email.com"
+                  required
+                  value={emailForm.new_email}
+                  onChange={e => setEmailForm(p => ({ ...p, new_email: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="label">Confirm with your password</label>
+                <input
+                  className="input"
+                  type="password"
+                  placeholder="Your current password"
+                  required
+                  value={emailForm.password}
+                  onChange={e => setEmailForm(p => ({ ...p, password: e.target.value }))}
+                />
+              </div>
+              <button type="submit" disabled={emailSaving} className="btn-primary text-sm py-2">
+                {emailSaving ? 'Saving…' : 'Update email'}
+              </button>
+            </form>
+
+            <div className="border-t border-gray-100 dark:border-gray-800 pt-6 mb-5">
+              <div className="flex items-center gap-2 mb-5">
+                <Lock className="w-4 h-4 text-gray-500" />
+                <h2 className="font-bold text-gray-900 dark:text-white">Change Password</h2>
+              </div>
             </div>
             <form onSubmit={changePassword} className="space-y-4">
               <div>

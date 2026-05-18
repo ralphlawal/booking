@@ -65,8 +65,17 @@ export default function Customers() {
                     </td>
                     <td className="px-4 py-3"><span className="font-semibold text-gray-900 dark:text-white">{c.total_bookings}</span></td>
                     <td className="px-4 py-3">
-                      <span className={`font-semibold ${c.no_shows > 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>{c.no_shows}</span>
-                      {c.no_shows >= 2 && <span className="ml-2 text-xs text-red-500 dark:text-red-400 font-medium">⚠ Flagged</span>}
+                      <div className="flex items-center gap-2">
+                        <span className={`font-semibold ${c.no_shows > 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                          {c.no_shows}
+                        </span>
+                        {c.no_shows > 0 && c.total_bookings > 0 && (
+                          <span className="text-xs text-gray-400">
+                            ({Math.round((c.no_shows / c.total_bookings) * 100)}%)
+                          </span>
+                        )}
+                        {c.no_shows >= 2 && <span className="text-xs text-red-500 dark:text-red-400 font-medium">⚠</span>}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-sm">{c.created_at?.slice(0,10)}</td>
                   </tr>

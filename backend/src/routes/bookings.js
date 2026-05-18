@@ -32,6 +32,9 @@ router.post(
 // Public: get booking by reference
 router.get('/ref/:ref', ctrl.getByReference);
 
+// Public: look up booking by reference + email verification
+router.post('/lookup', ctrl.lookup);
+
 // Public: customer cancels their own booking
 router.post('/ref/:ref/cancel', ctrl.cancelByCustomer);
 

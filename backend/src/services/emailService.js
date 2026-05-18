@@ -218,4 +218,36 @@ const sendWelcomeEmail = (user) =>
     `),
   });
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled };
+const sendReviewReminder = (booking) => {
+  const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+  const reviewLink = `${FRONTEND}/profile/${booking.slug}#reviews`;
+  return sendEmail({
+    to: booking.customer_email,
+    subject: `How was your visit to ${booking.business_name}?`,
+    type: 'review_reminder',
+    business_id: booking.business_id,
+    booking_id: booking.id,
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:12px">⭐</div>
+        <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">How was your appointment?</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Hi ${booking.customer_name}, we hope your visit to <strong>${booking.business_name}</strong> went well.</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:24px">
+        ${detailRow('Service', booking.service_name, false)}
+        ${detailRow('Date', booking.booking_date, true)}
+        ${detailRow('Reference', `<span style="font-family:monospace;color:#4f46e5">${booking.reference_id}</span>`, false)}
+      </table>
+      <div style="text-align:center">
+        <p style="color:#64748b;font-size:14px;margin:0 0 16px">Your review helps others find great local services.</p>
+        <a href="${reviewLink}"
+           style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">
+          Leave a review →
+        </a>
+      </div>
+      <p style="margin:20px 0 0;color:#cbd5e1;font-size:12px;text-align:center">This is a one-time message. You won't receive reminders for this booking again.</p>
+    `),
+  });
+};
+
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder };

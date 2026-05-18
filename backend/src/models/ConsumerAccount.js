@@ -133,6 +133,31 @@ const ConsumerAccount = {
     );
   },
 
+  async changeEmail(id, newEmail) {
+    const { rows } = await db.query(
+      `UPDATE consumer_accounts SET email = $1, updated_at = NOW()
+       WHERE id = $2 RETURNING id, email, full_name, phone, avatar_url`,
+      [newEmail.toLowerCase().trim(), id]
+    );
+    return rows[0] || null;
+  },
+
+  async linkByEmail(consumer_id, email) {
+    // Find all customers with this email and link their bookings to this consumer
+    const { rows: customers } = await db.query(
+      'SELECT id FROM customers WHERE LOWER(email) = LOWER($1)',
+      [email.trim()]
+    );
+    if (!customers.length) return 0;
+    const customerIds = customers.map(c => c.id);
+    const { rowCount } = await db.query(
+      `UPDATE bookings SET consumer_id = $1
+       WHERE customer_id = ANY($2::uuid[]) AND consumer_id IS NULL`,
+      [consumer_id, customerIds]
+    );
+    return rowCount;
+  },
+
   async deleteById(id) {
     // Preserve booking records for the business by nullifying consumer link
     await db.query('UPDATE bookings SET consumer_id = NULL WHERE consumer_id = $1', [id]);

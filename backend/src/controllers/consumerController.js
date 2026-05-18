@@ -27,6 +27,9 @@ exports.register = async (req, res) => {
     const consumer = await ConsumerAccount.create({ email, password, full_name, phone });
     const token = signToken(consumer);
 
+    // Link any past guest bookings with matching email
+    ConsumerAccount.linkByEmail(consumer.id, email).catch(() => {});
+
     // Send welcome email (fire and forget)
     const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
     sendEmail({
@@ -65,6 +68,10 @@ exports.login = async (req, res) => {
 
     const { password_hash, ...safe } = consumer;
     const token = signToken(safe);
+
+    // Link any past guest bookings with matching email (fire and forget)
+    ConsumerAccount.linkByEmail(safe.id, safe.email).catch(() => {});
+
     res.json({ consumer: safe, token });
   } catch (err) {
     console.error('[consumer/login]', err.message);
@@ -182,6 +189,24 @@ exports.deleteAccount = async (req, res) => {
   } catch (err) {
     console.error('[consumer/deleteAccount]', err.message);
     res.status(500).json({ error: 'Failed to delete account' });
+  }
+};
+
+exports.changeEmail = async (req, res) => {
+  try {
+    const { new_email, password } = req.body;
+    if (!new_email || !password) return res.status(400).json({ error: 'New email and password required' });
+    const account = await ConsumerAccount.findByEmail(req.consumer.email);
+    if (!account) return res.status(401).json({ error: 'Account not found' });
+    const valid = await bcrypt.compare(password, account.password_hash);
+    if (!valid) return res.status(401).json({ error: 'Incorrect password' });
+    const existing = await ConsumerAccount.findByEmail(new_email);
+    if (existing && existing.id !== req.consumer.id) return res.status(409).json({ error: 'This email is already in use' });
+    const updated = await ConsumerAccount.changeEmail(req.consumer.id, new_email);
+    res.json(updated);
+  } catch (err) {
+    console.error('[consumer/changeEmail]', err.message);
+    res.status(500).json({ error: 'Failed to change email' });
   }
 };
 

@@ -194,6 +194,8 @@ export default function BookingSuccess() {
 
         <p className="text-center text-xs text-gray-400 mt-4">
           Save your reference ID: <strong>{booking.reference_id}</strong>
+          {' · '}
+          <Link to="/booking/lookup" className="underline hover:text-gray-600">Find booking later</Link>
         </p>
       </div>
 
