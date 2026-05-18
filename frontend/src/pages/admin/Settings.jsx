@@ -29,6 +29,7 @@ export default function Settings() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
     if (business) {
@@ -40,6 +41,26 @@ export default function Settings() {
     availabilityAPI.getBlocked().then(setBlocked).catch(() => {});
     businessAPI.getQR().then(d => setQr(d.qr)).catch(() => {});
   }, [business]);
+
+  const geocodeAddress = async () => {
+    const address = bizForm.location?.trim();
+    if (!address) return toast.error('Enter an address first');
+    setGeocoding(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      const data = await res.json();
+      if (!data.length) return toast.error('Address not found — try a more specific address');
+      setBizForm(p => ({ ...p, latitude: parseFloat(data[0].lat).toFixed(6), longitude: parseFloat(data[0].lon).toFixed(6) }));
+      toast.success('Coordinates found! Save to apply.');
+    } catch {
+      toast.error('Could not look up coordinates. Enter them manually.');
+    } finally {
+      setGeocoding(false);
+    }
+  };
 
   const saveBusiness = async (e) => {
     e.preventDefault();
@@ -272,21 +293,37 @@ export default function Settings() {
             </div>
             <div>
               <label className="label flex items-center gap-1.5">
-                GPS Coordinates <span className="text-xs text-gray-400 font-normal">(for "Near Me" search — optional)</span>
+                GPS Coordinates <span className="text-xs text-gray-400 font-normal">(for "Near Me" search)</span>
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 mb-2">
                 <input className="input" type="number" step="any" placeholder="Latitude e.g. 51.5074" value={bizForm.latitude || ''} onChange={e => setBizForm(p => ({ ...p, latitude: e.target.value }))} />
                 <input className="input" type="number" step="any" placeholder="Longitude e.g. -0.1278" value={bizForm.longitude || ''} onChange={e => setBizForm(p => ({ ...p, longitude: e.target.value }))} />
               </div>
-              <p className="text-xs text-gray-400 mt-1">
-                Find your coordinates at <a href="https://www.latlong.net" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">latlong.net</a> — paste your address and copy the numbers.
-              </p>
+              <button
+                type="button"
+                onClick={geocodeAddress}
+                disabled={geocoding}
+                className="text-xs font-semibold text-primary-600 hover:text-primary-700 disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {geocoding ? (
+                  <span className="inline-block w-3 h-3 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                )}
+                {geocoding ? 'Finding coordinates…' : 'Auto-detect from address above'}
+              </button>
             </div>
             <button type="submit" disabled={saving} className="btn-primary">
               {saving ? <Spinner /> : 'Save Changes'}
             </button>
           </form>
         </div>
+
+        {/* Verification */}
+        <VerificationCard business={business} />
       )}
 
       {/* Availability */}
@@ -581,6 +618,74 @@ export default function Settings() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function VerificationCard({ business }) {
+  const [loading, setLoading] = React.useState(false);
+  const [requested, setRequested] = React.useState(false);
+
+  if (!business) return null;
+
+  if (business.is_verified) {
+    return (
+      <div className="card p-5 max-w-2xl border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+        <div className="flex items-center gap-3">
+          <svg className="w-8 h-8 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+          <div>
+            <p className="font-bold text-blue-900 dark:text-blue-100">Verified Business</p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">Your business has been verified and displays a badge to customers.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleRequest = async () => {
+    setLoading(true);
+    try {
+      const { businessAPI } = await import('../../services/api');
+      await businessAPI.requestVerification();
+      setRequested(true);
+      toast.success('Verification request submitted!');
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit request');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="card p-5 max-w-2xl">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+          <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-gray-900 dark:text-white text-sm">Get Verified</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">
+            Verified businesses show a blue badge on their profile and in search results, building trust with customers.
+          </p>
+          {requested ? (
+            <p className="text-sm text-green-600 font-medium">Request submitted — we'll review within 2 business days.</p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleRequest}
+              disabled={loading}
+              className="text-sm font-semibold px-4 py-2 rounded-xl border border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {loading ? <span className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /> : null}
+              {loading ? 'Submitting…' : 'Request verification'}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

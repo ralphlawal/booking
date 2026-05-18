@@ -8,15 +8,17 @@ export default function CustomerForgotPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   const submit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
     try {
       await consumerAPI.forgotPassword(email);
       setSent(true);
     } catch (err) {
-      toast.error(err.message);
+      setError(err.message || 'Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -31,7 +33,7 @@ export default function CustomerForgotPassword() {
           </Link>
           <h1 className="text-2xl font-bold text-white">Reset password</h1>
           <p className="text-primary-200 text-sm mt-1">
-            {sent ? 'Check your email for the reset link' : 'Enter your email and we\'ll send a reset link'}
+            {sent ? 'Check your email for the reset link' : "Enter your email and we'll send a reset link"}
           </p>
         </div>
 
@@ -45,8 +47,15 @@ export default function CustomerForgotPassword() {
               </div>
               <p className="font-semibold text-gray-900 dark:text-white mb-1">Email sent!</p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-                If <strong>{email}</strong> has an account, you'll get a reset link within a minute. Check your spam folder too.
+                If <strong>{email}</strong> has an account, you'll get a reset link within a minute.
+                Check your spam folder too.
               </p>
+              <button
+                onClick={() => { setSent(false); setEmail(''); }}
+                className="text-sm text-primary-600 hover:underline font-medium block mb-3"
+              >
+                Try a different email
+              </button>
               <Link to="/customer/login" className="btn-primary w-full justify-center">
                 Back to sign in
               </Link>
@@ -62,9 +71,14 @@ export default function CustomerForgotPassword() {
                   required
                   autoFocus
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={e => { setEmail(e.target.value); setError(''); }}
                 />
               </div>
+              {error && (
+                <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
+                  {error}
+                </div>
+              )}
               <button type="submit" disabled={loading} className="btn-primary w-full">
                 {loading ? <Spinner /> : 'Send reset link'}
               </button>

@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const token = params.get('token');
+  const { resetPasswordWithCode } = useAuth();
+  const oobCode = params.get('oobCode');
   const [form, setForm] = useState({ password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  if (!token) {
+  if (!oobCode) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
         <div className="card p-8 text-center max-w-sm w-full">
-          <p className="text-red-600 font-medium">Invalid reset link.</p>
-          <Link to="/admin/forgot-password" className="btn-primary mt-4 w-full">Request a new one</Link>
+          <p className="text-4xl mb-4">🔗</p>
+          <p className="font-bold text-gray-900 text-lg mb-2">Invalid reset link</p>
+          <p className="text-sm text-gray-500 mb-5">
+            This link is missing or has already been used. Request a new one.
+          </p>
+          <Link to="/admin/forgot-password" className="btn-primary w-full justify-center">
+            Request a new link
+          </Link>
         </div>
       </div>
     );
@@ -23,14 +31,21 @@ export default function ResetPassword() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (form.password !== form.confirm) return toast.error('Passwords do not match');
+    setError('');
+    if (form.password !== form.confirm) return setError('Passwords do not match');
+    if (form.password.length < 6) return setError('Password must be at least 6 characters');
     setLoading(true);
     try {
-      await api.post('/auth/reset-password', { token, password: form.password });
+      await resetPasswordWithCode(oobCode, form.password);
       toast.success('Password updated! Please sign in.');
       navigate('/admin/login');
     } catch (err) {
-      toast.error(err.message);
+      const msg = err.code === 'auth/invalid-action-code'
+        ? 'This reset link has expired or already been used. Request a new one.'
+        : err.code === 'auth/weak-password'
+        ? 'Password is too weak. Use at least 6 characters.'
+        : 'Failed to reset password. Try requesting a new link.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -57,6 +72,7 @@ export default function ResetPassword() {
                 type="password"
                 placeholder="Min. 6 characters"
                 required
+                autoFocus
                 value={form.password}
                 onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
               />
@@ -72,10 +88,20 @@ export default function ResetPassword() {
                 onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))}
               />
             </div>
+            {error && (
+              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
+                {error}
+              </div>
+            )}
             <button type="submit" disabled={loading} className="btn-primary w-full">
               {loading ? <Spinner /> : 'Update password'}
             </button>
           </form>
+          <p className="text-center mt-4 text-sm">
+            <Link to="/admin/forgot-password" className="text-primary-600 hover:underline font-medium">
+              Request a new link
+            </Link>
+          </p>
         </div>
       </div>
     </div>
@@ -83,5 +109,5 @@ export default function ResetPassword() {
 }
 
 function Spinner() {
-  return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />;
+  return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />;
 }

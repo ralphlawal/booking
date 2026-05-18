@@ -70,3 +70,39 @@ exports.getQRCode = async (req, res) => {
     res.status(500).json({ error: 'QR generation failed' });
   }
 };
+
+exports.requestVerification = async (req, res) => {
+  try {
+    const biz = req.business;
+    if (biz.is_verified) return res.status(400).json({ error: 'Already verified' });
+    const { sendEmail } = require('../services/emailService');
+    const adminEmail = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
+    await sendEmail({
+      to: adminEmail,
+      subject: `Verification Request: ${biz.name}`,
+      type: 'verification_request',
+      html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e2e8f0">
+        <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+        </div>
+        <div style="padding:32px">
+          <h2 style="margin:0 0 8px;color:#1e293b;font-size:20px">Verification Request</h2>
+          <p style="color:#64748b;font-size:14px;margin:0 0 20px">A business has requested a verified badge on BookAm.</p>
+          <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+            <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%">Business</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.name}</td></tr>
+            <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Category</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.category || '—'}</td></tr>
+            <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px">Location</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.location || '—'}</td></tr>
+            <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Phone</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.phone || '—'}</td></tr>
+            <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px">Email</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.email || '—'}</td></tr>
+            <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Business ID</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-family:monospace">${biz.id}</td></tr>
+          </table>
+          <p style="color:#64748b;font-size:13px;margin:20px 0 0">To approve: run <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">UPDATE businesses SET is_verified = TRUE WHERE id = '${biz.id}';</code> in your database.</p>
+        </div>
+      </div>`,
+    });
+    res.json({ message: 'Verification request submitted. We will review and respond within 2 business days.' });
+  } catch (err) {
+    console.error('Verification request error:', err);
+    res.status(500).json({ error: 'Failed to submit request' });
+  }
+};

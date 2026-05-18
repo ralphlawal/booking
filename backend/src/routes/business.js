@@ -20,6 +20,7 @@ router.post('/', authenticate, ctrl.createBusiness);
 router.put('/me', authenticate, attachBusiness, ctrl.updateBusiness);
 router.post('/me/logo', authenticate, attachBusiness, upload.single('logo'), ctrl.uploadLogo);
 router.get('/me/qr', authenticate, attachBusiness, ctrl.getQRCode);
+router.post('/me/request-verification', authenticate, attachBusiness, ctrl.requestVerification);
 
 // Public
 router.get('/:slug', ctrl.getPublicBusiness);

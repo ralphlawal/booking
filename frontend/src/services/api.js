@@ -50,6 +50,7 @@ export const businessAPI = {
   checkSlug: (slug) => api.get(`/business/${slug}/check`),
   getQR: () => api.get('/business/me/qr'),
   getAnalytics: () => api.get('/bookings/analytics'),
+  requestVerification: () => api.post('/business/me/request-verification'),
 };
 
 export const servicesAPI = {

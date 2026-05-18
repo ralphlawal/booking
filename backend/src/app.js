@@ -98,6 +98,8 @@ async function start() {
       await pool.query(sql2);
       const sql3 = fs.readFileSync(path.join(__dirname, '../migrations/003_consumer_auth_extras.sql'), 'utf8');
       await pool.query(sql3);
+      const sql4 = fs.readFileSync(path.join(__dirname, '../migrations/004_verification.sql'), 'utf8');
+      await pool.query(sql4);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -111,6 +113,7 @@ async function start() {
       for (const col of ['reminder_24h_sent INTEGER DEFAULT 0', 'reminder_1h_sent INTEGER DEFAULT 0']) {
         try { db.exec(`ALTER TABLE bookings ADD COLUMN ${col}`); } catch {}
       }
+      try { db.exec(`ALTER TABLE businesses ADD COLUMN is_verified INTEGER DEFAULT 0`); } catch {}
     }
   } catch (err) {
     console.error('Startup migration error:', err.message);

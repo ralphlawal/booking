@@ -7,6 +7,7 @@ import {
   onIdTokenChanged,
   updateProfile,
   sendPasswordResetEmail,
+  confirmPasswordReset,
   sendEmailVerification,
   updatePassword,
   reauthenticateWithCredential,
@@ -132,13 +133,16 @@ export const AuthProvider = ({ children }) => {
     setBusiness(null);
   };
 
-  const forgotPassword = (email) => sendPasswordResetEmail(auth, email);
+  const forgotPassword = (email) => sendPasswordResetEmail(auth, email, {
+    url: `${window.location.origin}/admin/login`,
+  });
+  const resetPasswordWithCode = (oobCode, newPassword) => confirmPasswordReset(auth, oobCode, newPassword);
   const updateBusiness = (biz) => setBusiness(biz);
 
   return (
     <AuthContext.Provider value={{
       user, business, loading,
-      login, register, logout, forgotPassword,
+      login, register, logout, forgotPassword, resetPasswordWithCode,
       updateBusiness, changePassword, resendVerificationEmail, deleteAccount,
     }}>
       {children}
