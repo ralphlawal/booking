@@ -7,6 +7,10 @@ import {
   onIdTokenChanged,
   updateProfile,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { authAPI } from '../services/api';
@@ -83,13 +87,29 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, full_name) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: full_name });
-    const token = await cred.user.getIdToken(true); // force refresh after profile update
+    // Send email verification (non-blocking — don't fail registration if this errors)
+    sendEmailVerification(cred.user).catch(() => {});
+    const token = await cred.user.getIdToken(true);
     localStorage.setItem('fbToken', token);
     const data = await authAPI.firebaseSync(token, full_name);
     syncedUidRef.current = cred.user.uid;
     setUser(data.user);
     setBusiness(data.business || null);
     return data;
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    const fbUser = auth.currentUser;
+    if (!fbUser) throw new Error('Not signed in');
+    const credential = EmailAuthProvider.credential(fbUser.email, currentPassword);
+    await reauthenticateWithCredential(fbUser, credential);
+    await updatePassword(fbUser, newPassword);
+  };
+
+  const resendVerificationEmail = async () => {
+    const fbUser = auth.currentUser;
+    if (!fbUser) throw new Error('Not signed in');
+    await sendEmailVerification(fbUser);
   };
 
   const logout = async () => {
@@ -105,7 +125,7 @@ export const AuthProvider = ({ children }) => {
   const updateBusiness = (biz) => setBusiness(biz);
 
   return (
-    <AuthContext.Provider value={{ user, business, loading, login, register, logout, forgotPassword, updateBusiness }}>
+    <AuthContext.Provider value={{ user, business, loading, login, register, logout, forgotPassword, updateBusiness, changePassword, resendVerificationEmail }}>
       {children}
     </AuthContext.Provider>
   );

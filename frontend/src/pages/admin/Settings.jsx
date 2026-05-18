@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { businessAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
-import { storage } from '../../config/firebase';
+import { storage, auth } from '../../config/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import toast from 'react-hot-toast';
 
@@ -10,7 +10,7 @@ const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sun
 const INTERVALS = [15,30,45,60];
 
 export default function Settings() {
-  const { business, updateBusiness } = useAuth();
+  const { business, updateBusiness, changePassword, resendVerificationEmail } = useAuth();
   const [tab, setTab] = useState('business');
   const [bizForm, setBizForm] = useState({});
   const [avForm, setAvForm] = useState({ working_days: [], opening_time: '09:00', closing_time: '18:00', slot_interval_minutes: 30, buffer_minutes: 0 });
@@ -21,6 +21,9 @@ export default function Settings() {
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoProgress, setLogoProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwLoading, setPwLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
 
   useEffect(() => {
     if (business) {
@@ -134,7 +137,40 @@ export default function Settings() {
 
   const embedCode = `<iframe\n  src="${bookingUrl}?embed=1"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.1)"\n  title="${business?.name} Booking"\n></iframe>`;
 
-  const TABS = ['business','availability','blocked','qr','embed'];
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (pwForm.next !== pwForm.confirm) return toast.error('New passwords do not match');
+    if (pwForm.next.length < 6) return toast.error('New password must be at least 6 characters');
+    setPwLoading(true);
+    try {
+      await changePassword(pwForm.current, pwForm.next);
+      toast.success('Password updated successfully');
+      setPwForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      const msg = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+        ? 'Current password is incorrect'
+        : err.code === 'auth/requires-recent-login'
+        ? 'Please sign out and sign back in, then try again'
+        : err.message;
+      toast.error(msg);
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setVerifyLoading(true);
+    try {
+      await resendVerificationEmail();
+      toast.success('Verification email sent — check your inbox');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const TABS = ['business','availability','blocked','qr','embed','security'];
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -145,7 +181,7 @@ export default function Settings() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit flex-wrap">
-        {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget'].map((t, i) => (
+        {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget','Security'].map((t, i) => (
           <button key={t} onClick={() => setTab(TABS[i])}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${tab === TABS[i] ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
             {t}
@@ -370,6 +406,87 @@ export default function Settings() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* Security */}
+      {tab === 'security' && (
+        <div className="max-w-2xl animate-slide-up space-y-5">
+          {/* Email verification */}
+          <div className="card p-6">
+            <h3 className="font-semibold text-gray-900 mb-1">Email Verification</h3>
+            <p className="text-sm text-gray-500 mb-4">Verify your email address to keep your account secure.</p>
+            {auth.currentUser?.emailVerified ? (
+              <div className="flex items-center gap-2.5 bg-green-50 border border-green-100 rounded-xl px-4 py-3">
+                <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12"/></svg>
+                <div>
+                  <p className="text-sm font-semibold text-green-800">Email verified</p>
+                  <p className="text-xs text-green-600">{auth.currentUser.email}</p>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2.5 bg-yellow-50 border border-yellow-100 rounded-xl px-4 py-3 mb-3">
+                  <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                  <div>
+                    <p className="text-sm font-semibold text-yellow-800">Email not verified</p>
+                    <p className="text-xs text-yellow-700">{auth.currentUser?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleResendVerification}
+                  disabled={verifyLoading}
+                  className="btn-secondary text-sm disabled:opacity-50"
+                >
+                  {verifyLoading ? <><Spinner />&nbsp;Sending…</> : 'Send Verification Email'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Change password */}
+          <div className="card p-6">
+            <h3 className="font-semibold text-gray-900 mb-1">Change Password</h3>
+            <p className="text-sm text-gray-500 mb-4">Enter your current password and choose a new one.</p>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="label">Current Password</label>
+                <input
+                  className="input"
+                  type="password"
+                  required
+                  placeholder="Your current password"
+                  value={pwForm.current}
+                  onChange={e => setPwForm(p => ({ ...p, current: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="label">New Password</label>
+                <input
+                  className="input"
+                  type="password"
+                  required
+                  placeholder="Min. 6 characters"
+                  value={pwForm.next}
+                  onChange={e => setPwForm(p => ({ ...p, next: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="label">Confirm New Password</label>
+                <input
+                  className="input"
+                  type="password"
+                  required
+                  placeholder="Repeat new password"
+                  value={pwForm.confirm}
+                  onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
+                />
+              </div>
+              <button type="submit" disabled={pwLoading} className="btn-primary disabled:opacity-50">
+                {pwLoading ? <><Spinner />&nbsp;Updating…</> : 'Update Password'}
+              </button>
+            </form>
+          </div>
         </div>
       )}
 

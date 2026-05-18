@@ -7,7 +7,7 @@ const getClient = () => {
   return new Resend(process.env.RESEND_API_KEY);
 };
 
-const FROM = process.env.EMAIL_FROM || 'BookAm <noreply@bookam.app>';
+const FROM = process.env.EMAIL_FROM || 'BookAm <noreply@bookam.business>';
 
 const logNotification = async (type, business_id, booking_id, recipient, subject, status) => {
   try {
@@ -160,4 +160,39 @@ const sendReminder = (booking, hoursUntil) => {
   });
 };
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder };
+const sendWelcomeEmail = (user) =>
+  sendEmail({
+    to: user.email,
+    subject: 'Welcome to BookAm — your booking page awaits',
+    type: 'welcome',
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:40px;margin-bottom:12px">🎉</div>
+        <h2 style="margin:0 0 8px;font-size:24px;color:#1e293b">Welcome to BookAm, ${user.full_name}!</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Your account is ready. Let's get your booking page live.</p>
+      </div>
+      <div style="space-y:0">
+        ${[
+          ['1', 'Set up your business profile', 'Add your name, description, and logo.'],
+          ['2', 'Add your services', 'List what you offer with pricing and duration.'],
+          ['3', 'Set your availability', 'Choose your working days and hours.'],
+          ['4', 'Share your booking link', 'Post it anywhere — customers book 24/7.'],
+        ].map(([n, title, desc], i) => `
+          <div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;${i < 3 ? 'border-bottom:1px solid #f1f5f9;' : ''}">
+            <div style="width:28px;height:28px;background:linear-gradient(135deg,#4f46e5,#6d28d9);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;line-height:28px;text-align:center">${n}</div>
+            <div>
+              <p style="margin:0 0 2px;font-weight:600;color:#1e293b;font-size:14px">${title}</p>
+              <p style="margin:0;color:#64748b;font-size:13px">${desc}</p>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="margin:24px 0 0;text-align:center">
+        <a href="${process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app'}/admin/onboarding"
+           style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#6d28d9);color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">
+          Set Up My Page →
+        </a>
+      </div>
+    `),
+  });
+
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail };

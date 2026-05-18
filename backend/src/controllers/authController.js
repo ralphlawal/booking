@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Business = require('../models/Business');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, sendWelcomeEmail } = require('../services/emailService');
 const { verifyFirebaseToken } = require('../middleware/auth');
 
 const signToken = (userId) =>
@@ -85,6 +85,7 @@ exports.firebaseSync = async (req, res) => {
         email: firebaseUser.email,
         full_name: displayName || firebaseUser.email.split('@')[0],
       });
+      sendWelcomeEmail(user).catch(() => {});
     } else if (!user.firebase_uid) {
       await User.linkFirebaseUid(user.id, firebaseUser.uid);
     }

@@ -20,7 +20,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(form.email, form.password, form.full_name);
-      toast.success('Account created! Set up your business.');
+      toast.success('Account created! Check your email to verify.');
       navigate('/admin/onboarding');
     } catch (err) {
       const msg = err.code === 'auth/email-already-in-use'
