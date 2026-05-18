@@ -255,6 +255,12 @@ export default function BookingPage() {
               <h2 className="font-bold text-xl text-gray-900">Your Details</h2>
               <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
             </div>
+            {!consumer && (
+              <div className="mb-4 p-3.5 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-between gap-3">
+                <p className="text-sm text-primary-700 font-medium">Sign in to auto-fill your details</p>
+                <a href={`/customer/login`} className="text-xs font-semibold text-primary-600 hover:underline whitespace-nowrap">Sign in →</a>
+              </div>
+            )}
             <div className="card p-5 space-y-4">
               <div>
                 <label className="label">Full Name *</label>

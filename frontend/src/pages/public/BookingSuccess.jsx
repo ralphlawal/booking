@@ -5,6 +5,22 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 
+function buildGCalLink(booking) {
+  try {
+    const dateStr = booking.booking_date.replace(/-/g, '');
+    const startTime = booking.start_time?.slice(0, 5).replace(':', '') || '0900';
+    const endTime = booking.end_time?.slice(0, 5).replace(':', '') || '1000';
+    const start = `${dateStr}T${startTime}00`;
+    const end = `${dateStr}T${endTime}00`;
+    const title = encodeURIComponent(`${booking.service_name} @ ${booking.business_name}`);
+    const details = encodeURIComponent(`Booking ref: ${booking.reference_id}`);
+    const location = encodeURIComponent(booking.business_location || booking.business_name || '');
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+  } catch {
+    return null;
+  }
+}
+
 export default function BookingSuccess() {
   const { ref } = useParams();
   const { consumer } = useCustomerAuth();
@@ -13,6 +29,7 @@ export default function BookingSuccess() {
   const [notFound, setNotFound] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelled, setCancelled] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     bookingsAPI.getByRef(ref)
@@ -22,11 +39,11 @@ export default function BookingSuccess() {
   }, [ref]);
 
   const handleCancel = async () => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
     setCancelling(true);
     try {
       await bookingsAPI.cancelByCustomer(ref);
       setCancelled(true);
+      setShowCancelModal(false);
       setBooking(b => ({ ...b, status: 'cancelled' }));
       toast.success('Booking cancelled successfully');
     } catch (err) {
@@ -118,6 +135,18 @@ export default function BookingSuccess() {
             Message on WhatsApp
           </a>
 
+          {buildGCalLink(booking) && !cancelled && (
+            <a
+              href={buildGCalLink(booking)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-white border border-gray-200 hover:border-primary-300 text-gray-700 rounded-xl font-medium transition-colors text-sm"
+            >
+              <CalendarIcon />
+              Add to Google Calendar
+            </a>
+          )}
+
           {booking.slug && (
             <Link to={`/book/${booking.slug}`} className="btn-secondary w-full justify-center">
               Book Another Appointment
@@ -126,11 +155,10 @@ export default function BookingSuccess() {
 
           {!cancelled && booking.status !== 'completed' && (
             <button
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="w-full py-2.5 text-sm text-red-600 hover:text-red-700 font-medium transition-colors disabled:opacity-50"
+              onClick={() => setShowCancelModal(true)}
+              className="w-full py-2.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors"
             >
-              {cancelling ? 'Cancelling…' : 'Cancel this booking'}
+              Cancel this booking
             </button>
           )}
         </div>
@@ -168,6 +196,31 @@ export default function BookingSuccess() {
           Save your reference ID: <strong>{booking.reference_id}</strong>
         </p>
       </div>
+
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6">
+            <h2 className="font-bold text-gray-900 text-lg mb-2">Cancel this booking?</h2>
+            <p className="text-sm text-gray-500 mb-1">
+              <strong>{booking.service_name}</strong> at {booking.business_name}
+            </p>
+            <p className="text-sm text-gray-500 mb-4">{booking.booking_date} · {booking.start_time?.slice(0,5)}</p>
+            <p className="text-xs text-amber-600 bg-amber-50 rounded-xl p-3 mb-5">
+              Cancellations must be made at least 2 hours before the appointment.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowCancelModal(false)} className="btn-secondary flex-1">Keep it</button>
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+              >
+                {cancelling ? 'Cancelling…' : 'Yes, cancel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -177,6 +230,14 @@ function LoadingScreen() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
     </div>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
   );
 }
 

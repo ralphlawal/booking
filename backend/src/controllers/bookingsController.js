@@ -178,6 +178,39 @@ exports.cancelByCustomer = async (req, res) => {
     }
 
     await Booking.updateStatus(booking.id, booking.business_id, 'cancelled', 'Cancelled by customer');
+
+    // Notify business owner
+    if (booking.business_email) {
+      sendEmail({
+        to: booking.business_email,
+        subject: `Booking Cancelled: ${booking.customer_name} – ${booking.reference_id}`,
+        type: 'customer_cancelled',
+        business_id: booking.business_id,
+        booking_id: booking.id,
+        html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e2e8f0">
+          <div style="background:linear-gradient(135deg,#ef4444,#dc2626);padding:28px 32px;text-align:center">
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+          </div>
+          <div style="padding:32px">
+            <h2 style="margin:0 0 8px;color:#1e293b;font-size:20px">Booking Cancelled ❌</h2>
+            <p style="color:#64748b;font-size:14px;margin:0 0 20px"><strong>${booking.customer_name}</strong> has cancelled their booking.</p>
+            <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+              <tr><td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%;background:#f8fafc">Reference</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500;font-family:monospace">${booking.reference_id}</td></tr>
+              <tr><td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%">Customer</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${booking.customer_name}${booking.customer_phone ? ` · ${booking.customer_phone}` : ''}</td></tr>
+              <tr><td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%;background:#f8fafc">Service</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${booking.service_name}</td></tr>
+              <tr><td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%">Was booked for</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${booking.booking_date} at ${booking.start_time?.slice(0,5)}</td></tr>
+            </table>
+            <p style="color:#94a3b8;font-size:12px;margin:20px 0 0;text-align:center">This slot is now available again. Log in to your dashboard to rebook it.</p>
+          </div>
+        </div>`,
+      }).catch(() => {});
+    }
+
+    // Confirm cancellation to customer
+    if (booking.customer_email) {
+      sendBookingStatusUpdate({ ...booking, status: 'cancelled', cancelled_reason: 'Cancelled by customer' }).catch(() => {});
+    }
+
     res.json({ message: 'Booking cancelled successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Cancellation failed' });

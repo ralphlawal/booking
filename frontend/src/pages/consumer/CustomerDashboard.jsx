@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X } from 'lucide-react';
 import { consumerAPI, bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -46,6 +46,11 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
             <p>⏰ {booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}</p>
             {booking.price > 0 && <p>💷 £{parseFloat(booking.price).toFixed(2)}</p>}
             {booking.location && <p>📍 {booking.location}</p>}
+            {!past && booking.business_phone && (
+              <a href={`tel:${booking.business_phone}`} className="block text-primary-600 dark:text-primary-400 hover:underline">
+                📞 {booking.business_phone}
+              </a>
+            )}
           </div>
           <p className="text-xs text-gray-400 mt-1">Ref: {booking.reference_id}</p>
         </div>
@@ -53,30 +58,58 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
 
       <div className="flex gap-2 mt-4">
         {past ? (
-          <button
-            onClick={() => onRebook(booking)}
-            className="btn-primary flex-1 text-sm py-2"
-          >
+          <button onClick={() => onRebook(booking)} className="btn-primary flex-1 text-sm py-2">
             ↩ Rebook
           </button>
         ) : (
           <>
-            <Link
-              to={`/profile/${booking.slug}`}
-              className="btn-secondary flex-1 text-sm py-2 text-center"
-            >
+            <Link to={`/profile/${booking.slug}`} className="btn-secondary flex-1 text-sm py-2 text-center">
               View business
             </Link>
-            {booking.status === 'pending' || booking.status === 'confirmed' ? (
+            {(booking.status === 'pending' || booking.status === 'confirmed') && (
               <button
                 onClick={() => onCancel(booking)}
                 className="text-sm px-3 py-2 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
                 Cancel
               </button>
-            ) : null}
+            )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+function CancelModal({ booking, onConfirm, onClose, cancelling }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6">
+        <div className="flex items-start justify-between mb-4">
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Cancel booking?</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+          {fmtDate(booking.booking_date)} · {booking.start_time?.slice(0, 5)}
+        </p>
+        <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-5">
+          Cancellations must be made at least 2 hours before the appointment.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="btn-secondary flex-1">Keep it</button>
+          <button
+            onClick={onConfirm}
+            disabled={cancelling}
+            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+          >
+            {cancelling ? 'Cancelling…' : 'Yes, cancel'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -129,6 +162,8 @@ export default function CustomerDashboard() {
   const [bookings, setBookings] = useState([]);
   const [prefs, setPrefs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -150,14 +185,18 @@ export default function CustomerDashboard() {
     navigate(`/book/${booking.slug}`, { state: { prefill_service_id: booking.service_id } });
   };
 
-  const handleCancel = async (booking) => {
-    if (!window.confirm('Cancel this booking?')) return;
+  const handleCancel = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
     try {
-      await bookingsAPI.cancelByCustomer(booking.reference_id);
-      setBookings((prev) => prev.map((b) => b.id === booking.id ? { ...b, status: 'cancelled' } : b));
+      await bookingsAPI.cancelByCustomer(cancelTarget.reference_id);
+      setBookings((prev) => prev.map((b) => b.id === cancelTarget.id ? { ...b, status: 'cancelled' } : b));
       toast.success('Booking cancelled');
+      setCancelTarget(null);
     } catch (err) {
       toast.error(err.message);
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -279,7 +318,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {upcoming.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={handleCancel} past={false} />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} past={false} />
               ))}
             </div>
           )
@@ -292,7 +331,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {past.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={handleCancel} past />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} past />
               ))}
             </div>
           )
@@ -318,6 +357,15 @@ export default function CustomerDashboard() {
           )
         )}
       </div>
+
+      {cancelTarget && (
+        <CancelModal
+          booking={cancelTarget}
+          onConfirm={handleCancel}
+          onClose={() => setCancelTarget(null)}
+          cancelling={cancelling}
+        />
+      )}
     </div>
   );
 }

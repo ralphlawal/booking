@@ -60,7 +60,7 @@ const Booking = {
       `SELECT b.*,
         s.name AS service_name, s.price AS service_price,
         c.full_name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
-        bus.name AS business_name, bus.phone AS business_phone, bus.email AS business_email, bus.slug
+        bus.name AS business_name, bus.phone AS business_phone, bus.email AS business_email, bus.slug, bus.location AS business_location
        FROM bookings b
        JOIN services s ON s.id = b.service_id
        JOIN customers c ON c.id = b.customer_id
