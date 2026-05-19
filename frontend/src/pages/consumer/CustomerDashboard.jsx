@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare } from 'lucide-react';
 import { consumerAPI, bookingsAPI, reviewsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -472,6 +472,15 @@ export default function CustomerDashboard() {
             <div>
               <p className="font-bold text-sm text-gray-900 dark:text-white">Explore</p>
               <p className="text-xs text-gray-400">Browse services</p>
+            </div>
+          </Link>
+          <Link to="/customer/messages" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow col-span-2 sm:col-span-1">
+            <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
+              <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-gray-900 dark:text-white">Messages</p>
+              <p className="text-xs text-gray-400">Chat &amp; support</p>
             </div>
           </Link>
         </div>

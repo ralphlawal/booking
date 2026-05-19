@@ -52,7 +52,7 @@ app.use('/api/consumer', require('./routes/consumer'));
 app.use('/api/discover', require('./routes/discover'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/reviews', require('./routes/reviews'));
-app.use('/api/ai', require('./routes/ai'));
+app.use('/api/chat', require('./routes/chat'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
@@ -107,6 +107,10 @@ async function start() {
       await pool.query(sql5);
       const sql6 = fs.readFileSync(path.join(__dirname, '../migrations/006_email_verification.sql'), 'utf8');
       await pool.query(sql6);
+      const sql7 = fs.readFileSync(path.join(__dirname, '../migrations/007_customer_notes.sql'), 'utf8');
+      await pool.query(sql7);
+      const sql8 = fs.readFileSync(path.join(__dirname, '../migrations/008_chat.sql'), 'utf8');
+      await pool.query(sql8);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -131,6 +135,22 @@ async function start() {
           title TEXT NOT NULL, body TEXT, link TEXT,
           is_read INTEGER NOT NULL DEFAULT 0,
           created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )`);
+      } catch {}
+      try { db.exec(`ALTER TABLE customers ADD COLUMN notes TEXT`); } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS chat_rooms (
+          id TEXT PRIMARY KEY, type TEXT NOT NULL,
+          business_id TEXT, consumer_id TEXT,
+          subject TEXT, status TEXT NOT NULL DEFAULT 'open',
+          last_message_at TEXT DEFAULT (datetime('now')),
+          created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS chat_messages (
+          id TEXT PRIMARY KEY, room_id TEXT NOT NULL,
+          sender_type TEXT NOT NULL, sender_name TEXT,
+          content TEXT NOT NULL,
+          created_at TEXT DEFAULT (datetime('now'))
         )`);
       } catch {}
     }

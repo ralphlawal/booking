@@ -1,12 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CalendarDays, Search, Zap, User } from 'lucide-react';
+import { CalendarDays, Search, MessageSquare, User } from 'lucide-react';
 
 const NAV = [
-  { to: '/customer/dashboard', icon: CalendarDays, label: 'Bookings' },
-  { to: '/explore',            icon: Search,       label: 'Explore'  },
-  { to: '/match',              icon: Zap,          label: 'Match'    },
-  { to: '/customer/profile',   icon: User,         label: 'Profile'  },
+  { to: '/customer/dashboard', icon: CalendarDays,  label: 'Bookings' },
+  { to: '/explore',            icon: Search,        label: 'Explore'  },
+  { to: '/customer/messages',  icon: MessageSquare, label: 'Messages' },
+  { to: '/customer/profile',   icon: User,          label: 'Profile'  },
 ];
 
 export default function ConsumerBottomNav({ unreadCount = 0 }) {

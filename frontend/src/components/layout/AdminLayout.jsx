@@ -13,6 +13,7 @@ const NAV = [
   { to: '/admin/calendar',  icon: CalendarIcon,      label: 'Calendar' },
   { to: '/admin/services',  icon: TagIcon,            label: 'Services' },
   { to: '/admin/customers', icon: UsersIcon,          label: 'Customers' },
+  { to: '/admin/messages',  icon: MessageIcon,        label: 'Messages' },
   { to: '/admin/settings',  icon: SettingsIcon,       label: 'Settings' },
 ];
 
@@ -20,7 +21,7 @@ const BOTTOM_NAV = [
   { to: '/admin/dashboard', icon: GridIcon,         label: 'Home' },
   { to: '/admin/bookings',  icon: CalendarCheckIcon, label: 'Bookings', badge: true },
   { to: '/admin/calendar',  icon: CalendarIcon,      label: 'Calendar' },
-  { to: '/admin/customers', icon: UsersIcon,          label: 'Customers' },
+  { to: '/admin/messages',  icon: MessageIcon,        label: 'Messages' },
   { to: '/admin/settings',  icon: SettingsIcon,       label: 'Settings' },
 ];
 
@@ -271,3 +272,4 @@ function CopyIcon({ className }) { return <svg className={className} fill="none"
 function CheckIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>; }
 function MoonIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>; }
 function SunIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>; }
+function MessageIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>; }

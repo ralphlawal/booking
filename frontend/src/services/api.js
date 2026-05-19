@@ -165,8 +165,39 @@ export const reviewsAPI = {
   checkReviewable: (bookingId) => consumerAxios.get(`/reviews/check/${bookingId}`),
 };
 
-export const aiAPI = {
-  chat: (slug, messages) => api.post('/ai/chat', { slug, messages }),
+const ADMIN_TOKEN_KEY = 'adminSupportToken';
+const adminAxios = axios.create({ baseURL: BASE, timeout: 30000 });
+adminAxios.interceptors.request.use(config => {
+  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+adminAxios.interceptors.response.use(
+  res => res.data,
+  err => Promise.reject(new Error(err.response?.data?.error || err.message || 'Something went wrong'))
+);
+
+export const businessChatAPI = {
+  getRooms: () => api.get('/chat/business/rooms'),
+  createRoom: (data) => api.post('/chat/business/rooms', data),
+  getMessages: (id, since) => api.get(`/chat/business/rooms/${id}/messages`, { params: since ? { since } : {} }),
+  sendMessage: (id, content) => api.post(`/chat/business/rooms/${id}/messages`, { content }),
+};
+
+export const consumerChatAPI = {
+  getRooms: () => consumerAxios.get('/chat/consumer/rooms'),
+  createRoom: (data) => consumerAxios.post('/chat/consumer/rooms', data),
+  getMessages: (id, since) => consumerAxios.get(`/chat/consumer/rooms/${id}/messages`, { params: since ? { since } : {} }),
+  sendMessage: (id, content) => consumerAxios.post(`/chat/consumer/rooms/${id}/messages`, { content }),
+};
+
+export const adminChatAPI = {
+  login: (password) => adminAxios.post('/chat/admin/login', { password }),
+  getRooms: () => adminAxios.get('/chat/admin/rooms'),
+  createRoom: (data) => adminAxios.post('/chat/admin/rooms', data),
+  getMessages: (id, since) => adminAxios.get(`/chat/admin/rooms/${id}/messages`, { params: since ? { since } : {} }),
+  sendMessage: (id, content) => adminAxios.post(`/chat/admin/rooms/${id}/messages`, { content }),
+  getUsers: () => adminAxios.get('/chat/admin/users'),
 };
 
 export default api;

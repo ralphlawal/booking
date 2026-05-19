@@ -11,7 +11,6 @@ import Landing from './pages/public/Landing';
 import BookingPage from './pages/public/BookingPage';
 import BookingSuccess from './pages/public/BookingSuccess';
 import BookingLookup from './pages/public/BookingLookup';
-import AiBookingChat from './pages/public/AiBookingChat';
 import VerifyEmail from './pages/public/VerifyEmail';
 
 // Consumer pages
@@ -24,6 +23,13 @@ import CustomerResetPassword from './pages/consumer/CustomerResetPassword';
 import CustomerDashboard from './pages/consumer/CustomerDashboard';
 import BusinessProfile from './pages/consumer/BusinessProfile';
 import ConsumerProfile from './pages/consumer/ConsumerProfile';
+import ConsumerMessages from './pages/consumer/ConsumerMessages';
+
+// Support
+import AdminSupport from './pages/support/AdminSupport';
+
+// Admin inbox
+import AdminInbox from './pages/admin/AdminInbox';
 
 // Auth pages
 import Login from './pages/admin/Login';
@@ -86,7 +92,6 @@ export default function App() {
           <Routes>
             {/* Public booking */}
             <Route path="/book/:slug" element={<BookingPage />} />
-            <Route path="/book-ai/:slug" element={<AiBookingChat />} />
             <Route path="/booking-success/:ref" element={<BookingSuccess />} />
             <Route path="/booking/lookup" element={<BookingLookup />} />
 
@@ -105,6 +110,7 @@ export default function App() {
               <Route path="bookings" element={<Bookings />} />
               <Route path="calendar" element={<Calendar />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="messages" element={<AdminInbox />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 
@@ -121,7 +127,9 @@ export default function App() {
             <Route path="/customer/forgot-password" element={<CustomerForgotPassword />} />
             <Route path="/customer/reset-password" element={<CustomerResetPassword />} />
             <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+            <Route path="/customer/messages" element={<ConsumerMessages />} />
             <Route path="/customer/profile" element={<ConsumerProfile />} />
+            <Route path="/admin-support" element={<AdminSupport />} />
 
             {/* Landing */}
             <Route path="/" element={<Landing />} />
