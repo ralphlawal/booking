@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { ClipboardList } from 'lucide-react';
 import { bookingsAPI, exportBookingsCsv } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -337,7 +338,7 @@ export default function Bookings() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-gray-400">
-            <p className="text-4xl mb-2">📋</p>
+            <ClipboardList className="w-10 h-10 mx-auto mb-2 text-gray-300" />
             <p className="font-medium">{search ? 'No matching bookings' : 'No bookings found'}</p>
             {search && <button onClick={() => setSearch('')} className="text-sm text-primary-600 mt-1 hover:underline">Clear search</button>}
           </div>

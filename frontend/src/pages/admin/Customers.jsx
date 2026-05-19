@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { ClipboardList, Users, AlertTriangle } from 'lucide-react';
 import { customersAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -112,7 +113,7 @@ function CustomerPanel({ customer, onClose }) {
               </div>
             ) : bookings.length === 0 ? (
               <div className="card p-6 text-center text-gray-400">
-                <p className="text-2xl mb-1">📋</p>
+                <ClipboardList className="w-8 h-8 mx-auto mb-1 text-gray-300" />
                 <p className="text-sm">No bookings yet</p>
               </div>
             ) : (
@@ -183,7 +184,7 @@ export default function Customers() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-gray-400">
-            <p className="text-4xl mb-2">👥</p>
+            <Users className="w-10 h-10 mx-auto mb-2 text-gray-300" />
             <p className="font-medium">{search ? 'No matching customers' : 'No customers yet'}</p>
             <p className="text-sm mt-1">Customers are added automatically when they book</p>
           </div>
@@ -233,7 +234,7 @@ export default function Customers() {
                               ({Math.round((c.no_shows / c.total_bookings) * 100)}%)
                             </span>
                           )}
-                          {c.no_shows >= 2 && <span className="text-xs text-red-500 dark:text-red-400 font-medium">⚠</span>}
+                          {c.no_shows >= 2 && <AlertTriangle className="w-3.5 h-3.5 text-red-500 dark:text-red-400 inline-block" />}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-sm">

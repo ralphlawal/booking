@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { LinkIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -16,7 +17,7 @@ export default function ResetPassword() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
         <div className="card p-8 text-center max-w-sm w-full">
-          <p className="text-4xl mb-4">🔗</p>
+          <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4"><LinkIcon className="w-6 h-6 text-primary-400" /></div>
           <p className="font-bold text-gray-900 text-lg mb-2">Invalid reset link</p>
           <p className="text-sm text-gray-500 mb-5">
             This link is missing or has already been used. Request a new one.

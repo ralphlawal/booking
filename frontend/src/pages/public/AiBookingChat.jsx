@@ -150,7 +150,7 @@ export default function AiBookingChat() {
         // Seed with opening message
         setMessages([{
           role: 'assistant',
-          content: `Hi! I'm the AI booking assistant for ${b.name}. 👋\n\nWhat would you like to book, and when works best for you?`,
+          content: `Hi! I'm the AI booking assistant for ${b.name}.\n\nWhat would you like to book, and when works best for you?`,
           booking_data: null,
         }]);
       })

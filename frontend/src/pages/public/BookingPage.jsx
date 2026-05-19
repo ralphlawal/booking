@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { MapPin, Wrench, CalendarX, Search } from 'lucide-react';
 import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
@@ -131,7 +132,7 @@ export default function BookingPage() {
         {step === 0 && business.description && (
           <div className="mb-5 p-4 bg-white rounded-xl border border-gray-100">
             <p className="text-gray-600 text-sm">{business.description}</p>
-            {business.location && <p className="text-xs text-gray-400 mt-2">📍 {business.location}</p>}
+            {business.location && <p className="text-xs text-gray-400 mt-2 flex items-center gap-1"><MapPin className="w-3 h-3 flex-shrink-0" />{business.location}</p>}
           </div>
         )}
 
@@ -152,7 +153,7 @@ export default function BookingPage() {
             <h2 className="font-bold text-xl text-gray-900 mb-4">Choose a Service</h2>
             {services.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
-                <p className="text-4xl mb-3">🛠</p>
+                <Wrench className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p>No services available yet</p>
               </div>
             ) : services.map(svc => (
@@ -223,7 +224,7 @@ export default function BookingPage() {
               </div>
             ) : slots.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-                <p className="text-4xl mb-3">😔</p>
+                <CalendarX className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="font-semibold">No slots available</p>
                 <p className="text-sm text-gray-500 mt-1">Try another date</p>
                 <button onClick={goBack} className="btn-primary mt-4">Change Date</button>
@@ -349,7 +350,7 @@ function Loading() {
 function PageNotFound() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50 p-4 text-center">
-      <div className="text-6xl mb-2">🔍</div>
+      <Search className="w-14 h-14 mb-2 text-gray-300 mx-auto" />
       <h1 className="text-2xl font-bold text-gray-900">Business not found</h1>
       <p className="text-gray-500">This booking page doesn't exist or has been removed.</p>
     </div>

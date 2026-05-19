@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Scissors, Lock } from 'lucide-react';
 import { servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -79,7 +80,7 @@ export default function Services() {
         </div>
       ) : services.length === 0 ? (
         <div className="card p-12 text-center">
-          <p className="text-4xl mb-3">✂️</p>
+          <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3"><Scissors className="w-6 h-6 text-primary-400" /></div>
           <p className="font-semibold text-gray-700">No services yet</p>
           <p className="text-sm text-gray-500 mt-1 mb-5">Add your first service to start accepting bookings</p>
           <button onClick={openCreate} className="btn-primary">Add Service</button>
@@ -102,8 +103,8 @@ export default function Services() {
                     <span className="text-gray-400 text-sm">·</span>
                     <span className="text-gray-600 dark:text-gray-400 text-sm">{svc.duration_minutes} min</span>
                     {svc.deposit_required && svc.deposit_amount > 0 && (
-                      <span className="text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                        🔒 £{parseFloat(svc.deposit_amount).toFixed(0)} deposit
+                      <span className="inline-flex items-center gap-1 text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                        <Lock className="w-3 h-3" /> £{parseFloat(svc.deposit_amount).toFixed(0)} deposit
                       </span>
                     )}
                   </div>

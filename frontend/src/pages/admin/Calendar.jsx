@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Check, CalendarDays } from 'lucide-react';
 import { bookingsAPI } from '../../services/api';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns';
 
@@ -107,7 +108,7 @@ export default function Calendar() {
               <h3 className="font-semibold mb-4">{format(selected, 'EEEE, MMMM d')}</h3>
               {dayBookings.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
-                  <p className="text-3xl mb-2">✓</p>
+                  <Check className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">No bookings this day</p>
                 </div>
               ) : (
@@ -127,7 +128,7 @@ export default function Calendar() {
             </>
           ) : (
             <div className="text-center py-8 text-gray-400">
-              <p className="text-3xl mb-2">📅</p>
+              <CalendarDays className="w-8 h-8 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">Select a day to see bookings</p>
             </div>
           )}

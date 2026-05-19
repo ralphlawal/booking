@@ -2,7 +2,64 @@ const Business = require('../models/Business');
 const Service = require('../models/Service');
 const Availability = require('../models/Availability');
 
-const MODEL = 'google/gemini-2.0-flash-exp:free';
+// Free models tried in order — if one rate-limits or fails, the next is tried
+const FREE_MODELS = [
+  'google/gemini-2.0-flash-exp:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'deepseek/deepseek-chat-v3-0324:free',
+  'qwen/qwen3-8b:free',
+  'mistralai/mistral-7b-instruct:free',
+];
+
+async function callOpenRouter(key, systemPrompt, messages) {
+  let lastError = new Error('All AI models unavailable');
+  for (const model of FREE_MODELS) {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.FRONTEND_URL || 'https://bookam.business',
+          'X-Title': 'BookAm AI Booking',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'system', content: systemPrompt }, ...messages],
+          max_tokens: 500,
+          temperature: 0.55,
+        }),
+      });
+
+      if (response.status === 429 || response.status === 503 || response.status === 502) {
+        lastError = new Error(`${model} rate limited or unavailable`);
+        console.warn(`[AI] ${model} returned ${response.status}, trying next model`);
+        continue;
+      }
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        lastError = new Error(`${model} failed: ${response.status} ${text.slice(0, 100)}`);
+        console.warn(`[AI] ${model} error:`, lastError.message);
+        continue;
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        lastError = new Error(`${model} returned empty content`);
+        continue;
+      }
+
+      console.log(`[AI] Success with model: ${model}`);
+      return content;
+    } catch (err) {
+      lastError = err;
+      console.warn(`[AI] ${model} threw:`, err.message);
+    }
+  }
+  throw lastError;
+}
 
 exports.chat = async (req, res) => {
   try {
@@ -61,30 +118,7 @@ ${serviceIds}
 When all info is confirmed, append this on its own line at the very end of your reply — valid JSON, no markdown:
 BOOKING_READY:{"service_id":"REPLACE_WITH_UUID","service_name":"REPLACE","booking_date":"YYYY-MM-DD","start_time":"HH:MM","customer_name":"Full Name","customer_phone":"+44...","customer_email":"","notes":""}`;
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.FRONTEND_URL || 'https://bookam.business',
-        'X-Title': 'BookAm AI Booking',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [{ role: 'system', content: systemPrompt }, ...messages],
-        max_tokens: 450,
-        temperature: 0.55,
-      }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error('OpenRouter error:', text);
-      return res.status(502).json({ error: 'AI service temporarily unavailable' });
-    }
-
-    const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't process that. Could you try again?";
+    const raw = await callOpenRouter(key, systemPrompt, messages);
 
     // Extract BOOKING_READY token
     let booking_data = null;
@@ -97,6 +131,6 @@ BOOKING_READY:{"service_id":"REPLACE_WITH_UUID","service_name":"REPLACE","bookin
     res.json({ reply, booking_data });
   } catch (err) {
     console.error('AI chat error:', err);
-    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+    res.status(500).json({ error: 'The AI assistant is temporarily unavailable. Please use the standard booking form.' });
   }
 };

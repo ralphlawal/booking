@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Check, X, Rocket } from 'lucide-react';
 import { businessAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -88,7 +89,7 @@ export default function Onboarding() {
                     : i === step ? 'bg-primary-600 text-white shadow-primary'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                   }`}>
-                    {i < step ? '✓' : i + 1}
+                    {i < step ? <Check className="w-4 h-4" /> : i + 1}
                   </div>
                   <span className={`text-xs font-medium hidden sm:block ${i === step ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     {s.label}
@@ -193,7 +194,13 @@ export default function Onboarding() {
                   )}
                   {form.slug.length >= 3 && (
                     <p className={`text-xs mt-1.5 font-medium ${slugAvailable === true ? 'text-green-600 dark:text-green-400' : slugAvailable === false ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`}>
-                      {slugAvailable === true ? '✓ Available — great choice!' : slugAvailable === false ? '✗ Already taken — try another name' : '⋯ Checking availability…'}
+                      {slugAvailable === true ? (
+                        <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Available — great choice!</span>
+                      ) : slugAvailable === false ? (
+                        <span className="flex items-center gap-1"><X className="w-3.5 h-3.5" /> Already taken — try another name</span>
+                      ) : (
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" /> Checking availability…</span>
+                      )}
                     </p>
                   )}
                   {slugAvailable === true && form.slug && (
@@ -206,7 +213,7 @@ export default function Onboarding() {
                 <div className="flex gap-3 pt-1">
                   <button type="button" onClick={back} className="btn-secondary flex-1">← Back</button>
                   <button type="submit" disabled={loading || !slugAvailable} className="btn-primary flex-1">
-                    {loading ? <Spinner /> : '🚀 Launch My Page'}
+                    {loading ? <Spinner /> : <span className="flex items-center gap-2"><Rocket className="w-4 h-4" /> Launch My Page</span>}
                   </button>
                 </div>
               </div>

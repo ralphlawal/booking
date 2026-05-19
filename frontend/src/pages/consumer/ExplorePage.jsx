@@ -1,27 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight } from 'lucide-react';
+import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle } from 'lucide-react';
 import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 
-const CATEGORY_ICONS = {
-  barber: '✂️', 'hair stylist': '💇', 'nail tech': '💅', 'makeup artist': '💄',
-  esthetician: '✨', 'tattoo artist': '🖋️', 'lash tech': '👁️', 'massage therapist': '💆',
-  'fitness trainer': '💪', 'yoga instructor': '🧘', photographer: '📸', tutor: '📚',
-  consultant: '💼', therapist: '🧠', 'cleaning service': '🧹', mechanic: '🔧',
-  chef: '👨‍🍳', 'event planner': '🎉',
-};
-
-const catIcon = (cat) => {
-  if (!cat) return '🏢';
-  const lower = cat.toLowerCase();
-  for (const [k, v] of Object.entries(CATEGORY_ICONS)) {
-    if (lower.includes(k)) return v;
-  }
-  return '🏢';
-};
 
 function StarRating({ rating }) {
   const r = parseFloat(rating) || 0;
@@ -45,7 +29,7 @@ function BusinessCard({ biz }) {
         {biz.logo_url ? (
           <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover" />
         ) : (
-          <span className="text-5xl">{catIcon(biz.category)}</span>
+          <Building2 className="w-10 h-10 text-primary-300 dark:text-primary-600" />
         )}
         {biz.distance_km !== null && biz.distance_km !== undefined && (
           <span className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 text-xs font-semibold px-2 py-1 rounded-full text-gray-700 dark:text-gray-200 flex items-center gap-1">
@@ -228,7 +212,7 @@ export default function ExplorePage() {
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
-              {catIcon(c.label)} {c.label}
+              {c.label}
             </button>
           ))}
         </div>
@@ -240,7 +224,7 @@ export default function ExplorePage() {
           to="/match"
           className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-primary-600 to-indigo-600 text-white hover:opacity-95 transition-opacity"
         >
-          <span className="text-2xl">⚡</span>
+          <Zap className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">
             <p className="font-bold text-sm">Try Smart Match</p>
             <p className="text-primary-100 text-xs">Tell us what you need — we find the best available option for you</p>
@@ -267,14 +251,14 @@ export default function ExplorePage() {
           </div>
         ) : searchError ? (
           <div className="text-center py-16">
-            <div className="text-5xl mb-4">⚠️</div>
+            <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-7 h-7 text-red-400" /></div>
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">Something went wrong</h3>
             <p className="text-gray-500 text-sm mb-4">Could not load results — please try again</p>
             <button onClick={() => doSearch()} className="btn-primary text-sm">Retry</button>
           </div>
         ) : results.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-5xl mb-4">🔍</div>
+            <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4"><Search className="w-7 h-7 text-gray-400" /></div>
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">No results found</h3>
             <p className="text-gray-500 text-sm">Try a different search or browse all categories</p>
             <button onClick={() => { setSearchParams({}); doSearch({ q: '', category: 'all' }); }} className="btn-primary mt-4 text-sm">

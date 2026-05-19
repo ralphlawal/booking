@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Zap, MapPin, Check, Search, Star, Lock, Building2, Sunrise, Sun, Sunset, Clock } from 'lucide-react';
 import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -7,10 +8,10 @@ import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
 
 const TIME_PREFS = [
-  { value: 'morning',   label: 'Morning',   desc: '6am – 12pm', icon: '🌅' },
-  { value: 'afternoon', label: 'Afternoon',  desc: '12pm – 5pm', icon: '☀️' },
-  { value: 'evening',   label: 'Evening',    desc: '5pm – 10pm', icon: '🌆' },
-  { value: 'any',       label: 'Any time',   desc: 'Flexible',    icon: '🕐' },
+  { value: 'morning',   label: 'Morning',   desc: '6am – 12pm', Icon: Sunrise },
+  { value: 'afternoon', label: 'Afternoon',  desc: '12pm – 5pm', Icon: Sun },
+  { value: 'evening',   label: 'Evening',    desc: '5pm – 10pm', Icon: Sunset },
+  { value: 'any',       label: 'Any time',   desc: 'Flexible',    Icon: Clock },
 ];
 
 const DATE_OPTIONS = [
@@ -42,7 +43,7 @@ function MatchCard({ match, onBook }) {
           {match.logo_url ? (
             <img src={match.logo_url} alt={match.business_name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-2xl">🏢</span>
+            <Building2 className="w-6 h-6 text-primary-400" />
           )}
         </div>
 
@@ -60,10 +61,14 @@ function MatchCard({ match, onBook }) {
 
           <div className="flex items-center gap-3 mt-2 flex-wrap">
             {rating > 0 && (
-              <span className="text-amber-400 text-xs">★ {rating.toFixed(1)}</span>
+              <span className="flex items-center gap-0.5 text-xs text-amber-500">
+                <Star className="w-3 h-3 fill-amber-400" /> {rating.toFixed(1)}
+              </span>
             )}
             {match.location && (
-              <span className="text-xs text-gray-400">📍 {match.location}</span>
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <MapPin className="w-3 h-3 flex-shrink-0" />{match.location}
+              </span>
             )}
             {match.distance_km !== null && match.distance_km !== undefined && (
               <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
@@ -101,8 +106,9 @@ function MatchCard({ match, onBook }) {
           )}
 
           {match.deposit_required && match.deposit_amount > 0 && (
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-              🔒 £{parseFloat(match.deposit_amount).toFixed(2)} deposit collected at appointment
+            <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 mt-2">
+              <Lock className="w-3 h-3 flex-shrink-0" />
+              £{parseFloat(match.deposit_amount).toFixed(2)} deposit collected at appointment
             </p>
           )}
         </div>
@@ -202,7 +208,9 @@ export default function SmartMatchPage() {
       <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 pb-28">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-4xl mb-3">⚡</div>
+          <div className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-3">
+            <Zap className="w-7 h-7 text-primary-600 dark:text-primary-400" />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Smart Match</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             Tell us what you need — we find the best available option instantly
@@ -280,7 +288,7 @@ export default function SmartMatchPage() {
                         : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
                     }`}
                   >
-                    <div className="text-xl mb-1">{t.icon}</div>
+                    <t.Icon className="w-5 h-5 mb-1 text-primary-500 dark:text-primary-400" />
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">{t.label}</p>
                     <p className="text-xs text-gray-400">{t.desc}</p>
                   </button>
@@ -301,7 +309,13 @@ export default function SmartMatchPage() {
                     : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-300'
                 }`}
               >
-                {locating ? '⋯ Getting location…' : form.coords ? '✓ Location saved' : '📍 Use my location'}
+                {locating ? (
+                  <span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" /> Getting location…</span>
+                ) : form.coords ? (
+                  <span className="flex items-center justify-center gap-2"><Check className="w-4 h-4" /> Location saved</span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2"><MapPin className="w-4 h-4" /> Use my location</span>
+                )}
               </button>
             </div>
 
@@ -316,7 +330,7 @@ export default function SmartMatchPage() {
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Finding best match…
                 </span>
-              ) : '⚡ Find my best match'}
+              ) : <span className="flex items-center justify-center gap-2"><Zap className="w-4 h-4" /> Find my best match</span>}
             </button>
           </div>
         ) : (
@@ -340,7 +354,7 @@ export default function SmartMatchPage() {
 
             {results.length === 0 ? (
               <div className="card p-8 text-center">
-                <div className="text-4xl mb-3">🔍</div>
+                <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3"><Search className="w-7 h-7 text-gray-400" /></div>
                 <h3 className="font-bold text-gray-900 dark:text-white mb-1">No available slots found</h3>
                 <p className="text-sm text-gray-500 mb-4">Try a different date, time, or service type</p>
                 <button onClick={() => setResults(null)} className="btn-primary text-sm">
@@ -354,7 +368,7 @@ export default function SmartMatchPage() {
                     {i === 0 && (
                       <div className="absolute -top-2 left-4 z-10">
                         <span className="text-xs font-bold bg-green-500 text-white px-2.5 py-0.5 rounded-full">
-                          Best match ✓
+                          <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Best match</span>
                         </span>
                       </div>
                     )}

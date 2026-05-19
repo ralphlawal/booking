@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw } from 'lucide-react';
 import { consumerAPI, bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -43,7 +43,7 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
           {booking.logo_url ? (
             <img src={booking.logo_url} alt={booking.business_name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-lg">🏢</span>
+            <Building2 className="w-5 h-5 text-primary-400" />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -57,13 +57,13 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
             </span>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
-            <p>📅 {fmtDate(booking.booking_date)}</p>
-            <p>⏰ {booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}</p>
-            {booking.price > 0 && <p>💷 £{parseFloat(booking.price).toFixed(2)}</p>}
-            {booking.location && <p>📍 {booking.location}</p>}
+            <p className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 flex-shrink-0" />{fmtDate(booking.booking_date)}</p>
+            <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 flex-shrink-0" />{booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}</p>
+            {booking.price > 0 && <p className="flex items-center gap-1.5"><PoundSterling className="w-3.5 h-3.5 flex-shrink-0" />£{parseFloat(booking.price).toFixed(2)}</p>}
+            {booking.location && <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{booking.location}</p>}
             {!past && booking.business_phone && (
-              <a href={`tel:${booking.business_phone}`} className="block text-primary-600 dark:text-primary-400 hover:underline">
-                📞 {booking.business_phone}
+              <a href={`tel:${booking.business_phone}`} className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:underline">
+                <Phone className="w-3.5 h-3.5 flex-shrink-0" />{booking.business_phone}
               </a>
             )}
           </div>
@@ -73,8 +73,8 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
 
       <div className="flex gap-2 mt-4">
         {past ? (
-          <button onClick={() => onRebook(booking)} className="btn-primary flex-1 text-sm py-2">
-            ↩ Rebook
+          <button onClick={() => onRebook(booking)} className="btn-primary flex-1 text-sm py-2 flex items-center justify-center gap-1.5">
+            <RotateCcw className="w-3.5 h-3.5" /> Rebook
           </button>
         ) : (
           <>
@@ -138,7 +138,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
           {pref.logo_url ? (
             <img src={pref.logo_url} alt={pref.business_name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-lg">❤️</span>
+            <Heart className="w-5 h-5 text-rose-400" />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -149,7 +149,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
               {pref.price > 0 && ` · £${parseFloat(pref.price).toFixed(0)}`}
             </p>
           )}
-          {pref.location && <p className="text-xs text-gray-400 mt-0.5">📍 {pref.location}</p>}
+          {pref.location && <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3 flex-shrink-0" />{pref.location}</p>}
           <p className="text-xs text-gray-400 mt-0.5">
             Booked {pref.total_bookings}× · Last {pref.last_booked_at ? fmtDate(pref.last_booked_at.split('T')[0]) : 'N/A'}
           </p>
@@ -161,9 +161,9 @@ function PreferenceCard({ pref, onRemove, onBook }) {
         </button>
         <button
           onClick={() => onRemove(pref.business_id)}
-          className="text-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-500 transition-colors"
+          className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-500 transition-colors"
         >
-          ✕
+          <X className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -386,7 +386,9 @@ export default function CustomerDashboard() {
         ) : tab === 'upcoming' ? (
           upcoming.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-4xl mb-3">📅</div>
+              <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3">
+                <Calendar className="w-7 h-7 text-primary-400" />
+              </div>
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">No upcoming bookings</h3>
               <p className="text-sm text-gray-500 mb-4">Book a service to get started</p>
               <Link to="/explore" className="btn-primary text-sm">Explore services</Link>
@@ -401,7 +403,9 @@ export default function CustomerDashboard() {
         ) : tab === 'past' ? (
           past.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-4xl mb-3">✨</div>
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mx-auto mb-3">
+                <Sparkles className="w-7 h-7 text-indigo-400" />
+              </div>
               <p className="text-gray-500 dark:text-gray-400 text-sm">No past bookings yet</p>
             </div>
           ) : (
@@ -414,7 +418,9 @@ export default function CustomerDashboard() {
         ) : (
           prefs.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-4xl mb-3">❤️</div>
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-3">
+                <Heart className="w-7 h-7 text-rose-400" />
+              </div>
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">No favourites yet</h3>
               <p className="text-sm text-gray-500 mb-4">Businesses you book will appear here for one-tap rebooking</p>
               <Link to="/explore" className="btn-primary text-sm">Find services</Link>

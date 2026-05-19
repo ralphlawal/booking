@@ -4,6 +4,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
+import { CalendarDays, CheckCircle2 } from 'lucide-react';
 import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -261,7 +262,9 @@ export default function Dashboard() {
           </div>
         ) : data?.bookings?.length === 0 ? (
           <div className="p-10 text-center text-gray-400">
-            <p className="text-4xl mb-3">📅</p>
+            <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3">
+              <CalendarDays className="w-6 h-6 text-primary-400" />
+            </div>
             <p className="font-medium">No bookings yet</p>
             <p className="text-sm">Share your booking page to get started</p>
           </div>
@@ -285,7 +288,11 @@ export default function Dashboard() {
                       disabled={confirming === b.id}
                       className="text-xs px-3 py-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-semibold border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50 whitespace-nowrap"
                     >
-                      {confirming === b.id ? '…' : '✓ Confirm'}
+                      {confirming === b.id ? (
+                        <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
+                      ) : (
+                        <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />Confirm</span>
+                      )}
                     </button>
                   ) : (
                     <span className={`badge-${b.status}`}>{b.status}</span>
