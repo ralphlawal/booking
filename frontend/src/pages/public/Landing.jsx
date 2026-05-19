@@ -21,10 +21,6 @@ const FAQS = [
     a: 'No. Customers can book without signing up — they just enter their name, phone, and optionally an email for confirmation. Creating a free customer account lets them manage their bookings, cancel, and get notifications.',
   },
   {
-    q: 'What is the AI booking chat?',
-    a: 'The AI booking assistant lets customers describe what they want in plain English (e.g. "I need a haircut on Friday afternoon") and handles the back-and-forth automatically. It collects all the details and creates the booking — like having a receptionist available 24/7.',
-  },
-  {
     q: 'Can customers cancel or reschedule?',
     a: 'Yes. Customers can cancel using the link in their confirmation email, or by looking up their booking reference on the site. Business owners can reschedule or cancel bookings from their dashboard.',
   },

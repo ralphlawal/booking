@@ -55,10 +55,60 @@ exports.register = async (req, res) => {
       </div>`,
     }).catch(() => {});
 
+    // Notify admin of new signup
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
+    sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `New customer signup: ${consumer.full_name}`,
+      type: 'admin_notification',
+      html: `<div style="font-family:sans-serif;max-width:480px;padding:24px">
+        <h3 style="margin:0 0 8px;color:#1e293b">New customer registered</h3>
+        <p style="color:#64748b;margin:0 0 4px"><strong>Name:</strong> ${consumer.full_name}</p>
+        <p style="color:#64748b;margin:0 0 4px"><strong>Email:</strong> ${consumer.email}</p>
+        <p style="color:#64748b;margin:0"><strong>Time:</strong> ${new Date().toUTCString()}</p>
+      </div>`,
+    }).catch(() => {});
+
     res.status(201).json({ consumer, token });
   } catch (err) {
     console.error('[consumer/register]', err.message);
     res.status(500).json({ error: 'Registration failed' });
+  }
+};
+
+exports.googleAuth = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ error: 'ID token required' });
+
+    const { verifyFirebaseToken } = require('../middleware/auth');
+    const payload = await verifyFirebaseToken(idToken);
+    if (!payload.email) return res.status(400).json({ error: 'Google account must have an email' });
+
+    let consumer = await ConsumerAccount.findByEmail(payload.email);
+    const isNew = !consumer;
+    if (!consumer) {
+      consumer = await ConsumerAccount.createFromGoogle({ email: payload.email, full_name: payload.name });
+      ConsumerAccount.linkByEmail(consumer.id, payload.email).catch(() => {});
+      const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
+      sendEmail({
+        to: ADMIN_EMAIL,
+        subject: `New customer (Google): ${consumer.full_name}`,
+        type: 'admin_notification',
+        html: `<div style="font-family:sans-serif;max-width:480px;padding:24px">
+          <h3 style="margin:0 0 8px;color:#1e293b">New customer via Google Sign-In</h3>
+          <p style="color:#64748b;margin:0 0 4px"><strong>Name:</strong> ${consumer.full_name}</p>
+          <p style="color:#64748b;margin:0"><strong>Email:</strong> ${consumer.email}</p>
+        </div>`,
+      }).catch(() => {});
+    }
+
+    const safe = { id: consumer.id, email: consumer.email, full_name: consumer.full_name, phone: consumer.phone, avatar_url: consumer.avatar_url, email_verified: true };
+    const token = signToken(safe);
+    res.json({ consumer: safe, token, is_new: isNew });
+  } catch (err) {
+    console.error('[consumer/google-auth]', err.message);
+    res.status(401).json({ error: 'Google sign-in failed. Please try again.' });
   }
 };
 

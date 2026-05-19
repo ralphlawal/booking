@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { signInWithPopup, GoogleAuthProvider, getIdToken } from 'firebase/auth';
+import { auth } from '../config/firebase';
 import { consumerAPI } from '../services/api';
 
 const CustomerAuthContext = createContext(null);
@@ -32,6 +34,16 @@ export function CustomerAuthProvider({ children }) {
     return consumer;
   };
 
+  const googleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const idToken = await getIdToken(result.user);
+    const { consumer, token } = await consumerAPI.googleAuth(idToken);
+    localStorage.setItem(TOKEN_KEY, token);
+    setConsumer(consumer);
+    return consumer;
+  };
+
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
     setConsumer(null);
@@ -44,7 +56,7 @@ export function CustomerAuthProvider({ children }) {
   };
 
   return (
-    <CustomerAuthContext.Provider value={{ consumer, loading, register, login, logout, update }}>
+    <CustomerAuthContext.Provider value={{ consumer, loading, register, login, googleLogin, logout, update }}>
       {children}
     </CustomerAuthContext.Provider>
   );

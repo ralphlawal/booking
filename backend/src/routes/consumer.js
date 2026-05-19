@@ -22,6 +22,7 @@ const authenticateConsumer = async (req, res, next) => {
 
 router.post('/register', ctrl.register);
 router.post('/login', ctrl.login);
+router.post('/google-auth', ctrl.googleAuth);
 router.post('/forgot-password', ctrl.forgotPassword);
 router.post('/reset-password', ctrl.resetPassword);
 router.get('/me', authenticateConsumer, ctrl.me);

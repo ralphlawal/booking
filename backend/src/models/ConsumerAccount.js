@@ -15,6 +15,19 @@ const ConsumerAccount = {
     return rows[0];
   },
 
+  async createFromGoogle({ email, full_name }) {
+    const id = crypto.randomUUID();
+    const password_hash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+    const { rows } = await db.query(
+      `INSERT INTO consumer_accounts (id, email, password_hash, full_name, email_verified)
+       VALUES ($1,$2,$3,$4,TRUE)
+       ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
+       RETURNING id, email, full_name, phone, avatar_url, created_at, TRUE AS email_verified`,
+      [id, email.toLowerCase().trim(), password_hash, (full_name || email.split('@')[0]).trim()]
+    );
+    return rows[0];
+  },
+
   async findByEmail(email) {
     const { rows } = await db.query(
       'SELECT * FROM consumer_accounts WHERE email = $1',

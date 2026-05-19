@@ -48,9 +48,12 @@ const Chat = {
        FROM chat_rooms r
        LEFT JOIN businesses b ON b.id = r.business_id
        LEFT JOIN consumer_accounts c ON c.id = r.consumer_id
-       LEFT JOIN LATERAL (
-         SELECT content FROM chat_messages WHERE room_id=r.id ORDER BY created_at DESC LIMIT 1
-       ) m ON true
+       LEFT JOIN (
+         SELECT cm.room_id, cm.content
+         FROM chat_messages cm
+         JOIN (SELECT room_id, MAX(created_at) AS ts FROM chat_messages GROUP BY room_id) lm
+           ON cm.room_id = lm.room_id AND cm.created_at = lm.ts
+       ) m ON m.room_id = r.id
        WHERE r.business_id=$1
        ORDER BY r.last_message_at DESC`,
       [business_id]
@@ -65,9 +68,12 @@ const Chat = {
          m.content AS last_message
        FROM chat_rooms r
        LEFT JOIN businesses b ON b.id = r.business_id
-       LEFT JOIN LATERAL (
-         SELECT content FROM chat_messages WHERE room_id=r.id ORDER BY created_at DESC LIMIT 1
-       ) m ON true
+       LEFT JOIN (
+         SELECT cm.room_id, cm.content
+         FROM chat_messages cm
+         JOIN (SELECT room_id, MAX(created_at) AS ts FROM chat_messages GROUP BY room_id) lm
+           ON cm.room_id = lm.room_id AND cm.created_at = lm.ts
+       ) m ON m.room_id = r.id
        WHERE r.consumer_id=$1
        ORDER BY r.last_message_at DESC`,
       [consumer_id]
@@ -84,9 +90,12 @@ const Chat = {
        FROM chat_rooms r
        LEFT JOIN businesses b ON b.id = r.business_id
        LEFT JOIN consumer_accounts c ON c.id = r.consumer_id
-       LEFT JOIN LATERAL (
-         SELECT content FROM chat_messages WHERE room_id=r.id ORDER BY created_at DESC LIMIT 1
-       ) m ON true
+       LEFT JOIN (
+         SELECT cm.room_id, cm.content
+         FROM chat_messages cm
+         JOIN (SELECT room_id, MAX(created_at) AS ts FROM chat_messages GROUP BY room_id) lm
+           ON cm.room_id = lm.room_id AND cm.created_at = lm.ts
+       ) m ON m.room_id = r.id
        ORDER BY r.last_message_at DESC`
     );
     return rows;

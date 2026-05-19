@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import FloatingChatButton from '../../components/shared/FloatingChatButton';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -223,6 +224,7 @@ export default function BookingSuccess() {
           </div>
         </div>
       )}
+      <FloatingChatButton />
     </div>
   );
 }

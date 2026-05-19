@@ -120,6 +120,18 @@ exports.firebaseSync = async (req, res) => {
         full_name: displayName || firebaseUser.email.split('@')[0],
       });
       sendWelcomeEmail(user).catch(() => {});
+      const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
+      sendEmail({
+        to: ADMIN_EMAIL,
+        subject: `New business signup: ${user.full_name}`,
+        type: 'admin_notification',
+        html: `<div style="font-family:sans-serif;max-width:480px;padding:24px">
+          <h3 style="margin:0 0 8px;color:#1e293b">New business owner registered</h3>
+          <p style="color:#64748b;margin:0 0 4px"><strong>Name:</strong> ${user.full_name}</p>
+          <p style="color:#64748b;margin:0 0 4px"><strong>Email:</strong> ${user.email}</p>
+          <p style="color:#64748b;margin:0"><strong>Time:</strong> ${new Date().toUTCString()}</p>
+        </div>`,
+      }).catch(() => {});
     } else if (!user.firebase_uid) {
       await User.linkFirebaseUid(user.id, firebaseUser.uid);
     }

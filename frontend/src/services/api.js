@@ -131,6 +131,7 @@ consumerAxios.interceptors.response.use(
 export const consumerAPI = {
   register: (data) => consumerAxios.post('/consumer/register', data),
   login: (email, password) => consumerAxios.post('/consumer/login', { email, password }),
+  googleAuth: (idToken) => consumerAxios.post('/consumer/google-auth', { idToken }),
   forgotPassword: (email) => consumerAxios.post('/consumer/forgot-password', { email }),
   resetPassword: (token, password) => consumerAxios.post('/consumer/reset-password', { token, password }),
   changeEmail: (new_email, password) => consumerAxios.post('/consumer/change-email', { new_email, password }),
