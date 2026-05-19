@@ -87,6 +87,30 @@ export const bookingsAPI = {
 
 export const customersAPI = {
   list: () => api.get('/customers'),
+  getBookings: (id) => api.get(`/customers/${id}/bookings`),
+};
+
+export const exportBookingsCsv = () => {
+  const token = localStorage.getItem('fbToken');
+  const base = import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api`
+    : import.meta.env.PROD ? '/api/proxy' : '/api';
+  const url = `${base}/bookings/export/csv`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.rel = 'noopener';
+  // Use fetch so we can add the auth header, then trigger download
+  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    .then(r => r.blob())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      a.href = blobUrl;
+      a.download = `bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    });
 };
 
 const CONSUMER_TOKEN_KEY = 'customerToken';

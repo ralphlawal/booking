@@ -47,6 +47,20 @@ const Customer = {
       [customer_id]
     );
   },
+
+  async findBookings(customer_id, business_id) {
+    const { rows } = await db.query(
+      `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time,
+              b.status, b.notes, b.cancelled_reason, b.created_at,
+              s.name AS service_name, s.price AS service_price, s.duration_minutes
+       FROM bookings b
+       JOIN services s ON s.id = b.service_id
+       WHERE b.customer_id = $1 AND b.business_id = $2
+       ORDER BY b.booking_date DESC, b.start_time DESC`,
+      [customer_id, business_id]
+    );
+    return rows;
+  },
 };
 
 module.exports = Customer;

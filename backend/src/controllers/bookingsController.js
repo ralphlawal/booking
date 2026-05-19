@@ -199,6 +199,47 @@ exports.reschedule = async (req, res) => {
   }
 };
 
+exports.exportCsv = async (req, res) => {
+  try {
+    const { rows: bookings } = await require('../config/database').query(
+      `SELECT b.reference_id, c.full_name AS customer_name, c.phone AS customer_phone,
+              c.email AS customer_email, s.name AS service_name,
+              s.price AS service_price, b.booking_date, b.start_time, b.end_time,
+              b.status, b.notes, b.created_at
+       FROM bookings b
+       JOIN services s ON s.id = b.service_id
+       JOIN customers c ON c.id = b.customer_id
+       WHERE b.business_id = $1
+       ORDER BY b.booking_date DESC, b.start_time DESC`,
+      [req.business.id]
+    );
+
+    const escape = (v) => {
+      const s = v == null ? '' : String(v);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    };
+
+    const headers = ['Reference','Customer Name','Phone','Email','Service','Price (£)','Date','Start Time','End Time','Status','Notes','Created At'];
+    const rows = bookings.map(b => [
+      b.reference_id, b.customer_name, b.customer_phone, b.customer_email,
+      b.service_name, parseFloat(b.service_price || 0).toFixed(2),
+      b.booking_date, b.start_time?.slice(0,5), b.end_time?.slice(0,5),
+      b.status, b.notes, b.created_at?.toISOString().slice(0,10),
+    ].map(escape).join(','));
+
+    const csv = [headers.join(','), ...rows].join('\n');
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="bookings-${date}.csv"`);
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ error: 'Export failed' });
+  }
+};
+
 exports.getAnalytics = async (req, res) => {
   try {
     const analytics = await Booking.getAnalytics(req.business.id);

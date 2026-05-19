@@ -40,6 +40,7 @@ router.post('/ref/:ref/cancel', ctrl.cancelByCustomer);
 
 // Admin routes
 router.get('/analytics', authenticate, attachBusiness, ctrl.getAnalytics);
+router.get('/export/csv', authenticate, attachBusiness, ctrl.exportCsv);
 router.get('/', authenticate, attachBusiness, ctrl.list);
 router.get('/:id', authenticate, attachBusiness, ctrl.getById);
 router.put('/:id/status', authenticate, attachBusiness, ctrl.updateStatus);
