@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   ChevronDown, MessageSquare, Link2, Clock, BarChart2,
   CalendarDays, Smartphone, MapPin, Search, Zap, Shield,
-  RefreshCw, ArrowRight,
+  RefreshCw, ArrowRight, Mail,
 } from 'lucide-react';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
 
@@ -344,24 +344,84 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 sm:py-10 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5 sm:mb-6">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 sm:h-8 w-auto object-contain" />
-            <p className="text-sm font-semibold text-primary-600 tracking-wide">Book. Confirm. Be there.</p>
-            <div className="flex items-center gap-4">
-              <Link to="/booking/lookup" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                Find my booking
-              </Link>
-              <Link to="/admin/login" className="text-sm text-gray-500 hover:text-gray-900 transition-colors font-medium">
-                Sign in →
-              </Link>
+      <footer className="bg-gray-900 text-gray-300">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 mb-10 sm:mb-12">
+
+            {/* Brand */}
+            <div className="sm:col-span-2 lg:col-span-1">
+              <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-8 w-auto object-contain brightness-0 invert mb-4" />
+              <p className="text-sm text-gray-400 leading-relaxed mb-4">
+                The easiest way for service businesses to accept online bookings. Free to start — no credit card needed.
+              </p>
+              <p className="text-xs font-semibold text-primary-400 tracking-widest uppercase">Book. Confirm. Be there.</p>
+              {/* Social */}
+              <div className="flex items-center gap-3 mt-5">
+                <a href="https://instagram.com/bookambusiness" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 bg-white/10 hover:bg-primary-600 rounded-xl flex items-center justify-center transition-colors" title="Instagram">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+                </a>
+                <a href="https://twitter.com/bookambusiness" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 bg-white/10 hover:bg-primary-600 rounded-xl flex items-center justify-center transition-colors" title="X / Twitter">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://tiktok.com/@bookambusiness" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 bg-white/10 hover:bg-primary-600 rounded-xl flex items-center justify-center transition-colors" title="TikTok">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.95a8.16 8.16 0 004.77 1.52V7.02a4.85 4.85 0 01-1-.33z"/></svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Product</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li><Link to="/admin/register" className="hover:text-white transition-colors">Get started free</Link></li>
+                <li><Link to="/explore" className="hover:text-white transition-colors">Find services</Link></li>
+                <li><Link to="/match" className="hover:text-white transition-colors">Smart match</Link></li>
+                <li><Link to="/booking/lookup" className="hover:text-white transition-colors">Find my booking</Link></li>
+                <li><Link to="/admin/login" className="hover:text-white transition-colors">Business sign in</Link></li>
+                <li><Link to="/customer/login" className="hover:text-white transition-colors">Customer sign in</Link></li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Support</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <a href="mailto:hello@bookam.business" className="hover:text-white transition-colors flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 flex-shrink-0" /> hello@bookam.business
+                  </a>
+                </li>
+                <li><Link to="/customer/messages" className="hover:text-white transition-colors">Live chat</Link></li>
+                <li><Link to="/customer/messages" className="hover:text-white transition-colors">Report an issue</Link></li>
+                <li><Link to="/customer/messages" className="hover:text-white transition-colors">Make a complaint</Link></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Company</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    Ralph Lawal Group
+                  </a>
+                </li>
+                <li><a href="mailto:hello@bookam.business" className="hover:text-white transition-colors">Contact us</a></li>
+                <li><span className="text-gray-500 text-xs">@bookambusiness</span></li>
+              </ul>
             </div>
           </div>
-          <div className="border-t border-gray-100 pt-5 sm:pt-6 text-center">
-            <p className="text-xs text-gray-400">
-              © {new Date().getFullYear()} BookAm Business · A{' '}
-              <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gray-500 hover:text-primary-600 transition-colors">Ralph Lawal Group</a> product
+
+          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+            <p>© {new Date().getFullYear()} BookAm Business. All rights reserved.</p>
+            <p>
+              A{' '}
+              <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors font-medium">
+                Ralph Lawal Group
+              </a>{' '}product
             </p>
           </div>
         </div>

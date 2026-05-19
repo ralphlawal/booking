@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { MapPin, Wrench, CalendarX, Search, Lock } from 'lucide-react';
 import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI, paymentsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import FloatingChatButton from '../../components/shared/FloatingChatButton';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
@@ -411,7 +410,6 @@ export default function BookingPage() {
           </div>
         )}
       </main>
-      <FloatingChatButton />
     </div>
   );
 }

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bookingsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import FloatingChatButton from '../../components/shared/FloatingChatButton';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -107,6 +106,7 @@ export default function BookingSuccess() {
               ['Date', formatDate(booking.booking_date)],
               ['Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`],
               ['Status', <span key="s" className="badge-pending capitalize">{booking.status}</span>],
+              ...(booking.payment_status && booking.payment_status !== 'unpaid' ? [['Payment', <span key="p" className={`text-xs font-bold px-2 py-0.5 rounded-full ${booking.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>{booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status}</span>]] : []),
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between items-center text-sm">
                 <span className="text-gray-500">{k}</span>
@@ -224,7 +224,6 @@ export default function BookingSuccess() {
           </div>
         </div>
       )}
-      <FloatingChatButton />
     </div>
   );
 }

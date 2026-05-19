@@ -59,7 +59,15 @@ function BookingCard({ booking, onRebook, onCancel, onReview, past }) {
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
             <p className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 flex-shrink-0" />{fmtDate(booking.booking_date)}</p>
             <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 flex-shrink-0" />{booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}</p>
-            {booking.price > 0 && <p className="flex items-center gap-1.5"><PoundSterling className="w-3.5 h-3.5 flex-shrink-0" />£{parseFloat(booking.price).toFixed(2)}</p>}
+            {booking.price > 0 && (
+              <p className="flex items-center gap-1.5">
+                <PoundSterling className="w-3.5 h-3.5 flex-shrink-0" />
+                £{parseFloat(booking.price).toFixed(2)}
+                {booking.payment_status === 'paid' && (
+                  <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>
+                )}
+              </p>
+            )}
             {booking.location && <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{booking.location}</p>}
             {!past && booking.business_phone && (
               <a href={`tel:${booking.business_phone}`} className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:underline">
