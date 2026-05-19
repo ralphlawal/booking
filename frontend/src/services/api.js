@@ -31,6 +31,7 @@ export const authAPI = {
   firebaseSync: (idToken, displayName) => api.post('/auth/firebase-sync', { idToken, displayName }),
   me: () => api.get('/auth/me'),
   deleteAccount: () => api.delete('/auth/account'),
+  verifyEmail: (token) => api.get('/auth/verify-email', { params: { token } }),
 };
 
 export const businessAPI = {
@@ -142,6 +143,7 @@ export const consumerAPI = {
   deleteAccount: () => consumerAxios.delete('/consumer/account'),
   getNotifications: () => consumerAxios.get('/consumer/notifications'),
   markNotificationsRead: () => consumerAxios.post('/consumer/notifications/read'),
+  verifyEmail: (token) => consumerAxios.get('/consumer/verify-email', { params: { token } }),
 };
 
 export const discoverAPI = {

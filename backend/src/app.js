@@ -30,6 +30,8 @@ app.use(cors({
 
 // Rate limiting
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many requests' } }));
+app.use('/api/consumer/register', rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: { error: 'Too many registrations from this IP' } }));
+app.use('/api/consumer/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many login attempts' } }));
 app.use('/api/bookings/public', rateLimit({ windowMs: 60 * 1000, max: 10, message: { error: 'Too many bookings' } }));
 
 // Body parsing
@@ -103,6 +105,8 @@ async function start() {
       await pool.query(sql4);
       const sql5 = fs.readFileSync(path.join(__dirname, '../migrations/005_notifications.sql'), 'utf8');
       await pool.query(sql5);
+      const sql6 = fs.readFileSync(path.join(__dirname, '../migrations/006_email_verification.sql'), 'utf8');
+      await pool.query(sql6);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -117,6 +121,10 @@ async function start() {
         try { db.exec(`ALTER TABLE bookings ADD COLUMN ${col}`); } catch {}
       }
       try { db.exec(`ALTER TABLE businesses ADD COLUMN is_verified INTEGER DEFAULT 0`); } catch {}
+      try { db.exec(`ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 1`); } catch {}
+      try { db.exec(`ALTER TABLE users ADD COLUMN email_verify_token TEXT`); } catch {}
+      try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN email_verified INTEGER DEFAULT 1`); } catch {}
+      try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN email_verify_token TEXT`); } catch {}
       try {
         db.exec(`CREATE TABLE IF NOT EXISTS notifications (
           id TEXT PRIMARY KEY, consumer_id TEXT NOT NULL, type TEXT NOT NULL,

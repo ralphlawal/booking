@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Business = require('../models/Business');
-const { sendEmail, sendWelcomeEmail } = require('../services/emailService');
+const { sendEmail, sendWelcomeEmail, sendVerificationEmail } = require('../services/emailService');
 const { verifyFirebaseToken } = require('../middleware/auth');
 
 const signToken = (userId) =>
@@ -20,9 +20,15 @@ exports.register = async (req, res) => {
     const user = await User.create({ email, password, full_name });
     const token = signToken(user.id);
 
+    // Send email verification (fire-and-forget — don't block registration)
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    await User.saveVerifyToken(user.id, verifyToken).catch(() => {});
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    sendVerificationEmail(user, `${frontendUrl}/verify-email?token=${verifyToken}`).catch(() => {});
+
     res.status(201).json({
       token,
-      user: { id: user.id, email: user.email, full_name: user.full_name },
+      user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: false },
     });
   } catch (err) {
     console.error('Register error:', err);
@@ -66,6 +72,34 @@ exports.me = async (req, res) => {
     business: business || null,
     onboardingComplete: !!business,
   });
+};
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ error: 'Token required' });
+    const user = await User.findByVerifyToken(token);
+    if (!user) return res.status(400).json({ error: 'Invalid or expired verification link' });
+    await User.markEmailVerified(user.id);
+    res.json({ message: 'Email verified successfully' });
+  } catch (err) {
+    console.error('[verify-email]', err.message);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
+exports.resendVerification = async (req, res) => {
+  try {
+    const user = req.user;
+    if (user.email_verified) return res.json({ message: 'Already verified' });
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    await User.saveVerifyToken(user.id, verifyToken);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    await sendVerificationEmail(user, `${frontendUrl}/verify-email?token=${verifyToken}`);
+    res.json({ message: 'Verification email sent' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to resend' });
+  }
 };
 
 exports.firebaseSync = async (req, res) => {

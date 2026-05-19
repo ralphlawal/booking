@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const ConsumerAccount = require('../models/ConsumerAccount');
 const Notification = require('../models/Notification');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, sendVerificationEmail } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -30,6 +30,12 @@ exports.register = async (req, res) => {
 
     // Link any past guest bookings with matching email
     ConsumerAccount.linkByEmail(consumer.id, email).catch(() => {});
+
+    // Send email verification (fire-and-forget)
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    ConsumerAccount.saveVerifyToken(consumer.id, verifyToken).catch(() => {});
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    sendVerificationEmail(consumer, `${FRONTEND_URL}/customer/verify-email?token=${verifyToken}`).catch(() => {});
 
     // Send welcome email (fire and forget)
     const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
@@ -226,6 +232,20 @@ exports.markNotificationsRead = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to mark notifications read' });
+  }
+};
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ error: 'Token required' });
+    const consumer = await ConsumerAccount.findByVerifyToken(token);
+    if (!consumer) return res.status(400).json({ error: 'Invalid or expired verification link' });
+    await ConsumerAccount.markEmailVerified(consumer.id);
+    res.json({ message: 'Email verified successfully' });
+  } catch (err) {
+    console.error('[consumer/verify-email]', err.message);
+    res.status(500).json({ error: 'Verification failed' });
   }
 };
 

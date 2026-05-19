@@ -79,6 +79,28 @@ const User = {
       [password_hash, id]
     );
   },
+
+  async saveVerifyToken(id, token) {
+    await db.query(
+      'UPDATE users SET email_verified = FALSE, email_verify_token = $1 WHERE id = $2',
+      [token, id]
+    );
+  },
+
+  async findByVerifyToken(token) {
+    const { rows } = await db.query(
+      'SELECT * FROM users WHERE email_verify_token = $1',
+      [token]
+    );
+    return rows[0] || null;
+  },
+
+  async markEmailVerified(id) {
+    await db.query(
+      'UPDATE users SET email_verified = TRUE, email_verify_token = NULL WHERE id = $1',
+      [id]
+    );
+  },
 };
 
 module.exports = User;

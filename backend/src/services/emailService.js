@@ -250,4 +250,27 @@ const sendReviewReminder = (booking) => {
   });
 };
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder };
+const sendVerificationEmail = (user, verifyUrl, type = 'business') =>
+  sendEmail({
+    to: user.email,
+    subject: 'Verify your BookAm Business email',
+    type: 'email_verification',
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="width:52px;height:52px;background:linear-gradient(135deg,#4f46e5,#6d28d9);border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:24px">✉️</span>
+        </div>
+        <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b">Confirm your email</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Hi ${user.full_name || user.email}, click below to verify your email address.</p>
+      </div>
+      <div style="text-align:center;margin:24px 0">
+        <a href="${verifyUrl}"
+           style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#6d28d9);color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">
+          Verify my email →
+        </a>
+      </div>
+      <p style="color:#94a3b8;font-size:13px;text-align:center">This link expires in 24 hours. If you didn't create an account, you can safely ignore this email.</p>
+    `),
+  });
+
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendVerificationEmail };

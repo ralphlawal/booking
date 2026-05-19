@@ -12,6 +12,7 @@ import BookingPage from './pages/public/BookingPage';
 import BookingSuccess from './pages/public/BookingSuccess';
 import BookingLookup from './pages/public/BookingLookup';
 import AiBookingChat from './pages/public/AiBookingChat';
+import VerifyEmail from './pages/public/VerifyEmail';
 
 // Consumer pages
 import ExplorePage from './pages/consumer/ExplorePage';
@@ -106,6 +107,10 @@ export default function App() {
               <Route path="customers" element={<Customers />} />
               <Route path="settings" element={<Settings />} />
             </Route>
+
+            {/* Email verification */}
+            <Route path="/verify-email" element={<VerifyEmail type="business" />} />
+            <Route path="/customer/verify-email" element={<VerifyEmail type="consumer" />} />
 
             {/* Consumer pages */}
             <Route path="/explore" element={<ExplorePage />} />

@@ -29,6 +29,7 @@ export default function BookingPage() {
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
 
   useEffect(() => {
     if (consumer) {
@@ -81,6 +82,7 @@ export default function BookingPage() {
         customer_email: booking.email,
         notes: booking.notes,
         consumer_id: consumer?.id || undefined,
+        website: honeypot,
       });
       // Save to consumer favourites if logged in
       if (consumer && business) {
@@ -263,6 +265,10 @@ export default function BookingPage() {
               </div>
             )}
             <div className="card p-5 space-y-4">
+              {/* Honeypot — hidden from real users, bots fill it */}
+              <div style={{ display: 'none' }} aria-hidden="true">
+                <input tabIndex={-1} autoComplete="off" name="website" value={honeypot} onChange={e => setHoneypot(e.target.value)} />
+              </div>
               <div>
                 <label className="label">Full Name *</label>
                 <input className="input" placeholder="John Doe" required value={booking.name} onChange={e => set('name')(e.target.value)} />

@@ -6,6 +6,8 @@ const generateReference = require('../utils/generateReference');
 const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder } = require('../services/emailService');
 
 exports.create = async (req, res) => {
+  // Honeypot: bots fill hidden fields, humans don't
+  if (req.body.website) return res.status(201).json({ reference_id: 'BOT-BLOCKED', honeypot: true });
   try {
     const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes } = req.body;
 

@@ -1,5 +1,6 @@
 const Business = require('../models/Business');
 const QRCode = require('qrcode');
+const { checkAutoVerify } = require('../utils/autoVerify');
 
 exports.getMyBusiness = async (req, res) => {
   res.json(req.business);
@@ -24,6 +25,7 @@ exports.createBusiness = async (req, res) => {
 exports.updateBusiness = async (req, res) => {
   try {
     const updated = await Business.update(req.business.id, req.body);
+    checkAutoVerify(req.business.id).catch(() => {});
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update business' });

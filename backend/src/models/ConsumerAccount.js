@@ -158,6 +158,28 @@ const ConsumerAccount = {
     return rowCount;
   },
 
+  async saveVerifyToken(id, token) {
+    await db.query(
+      'UPDATE consumer_accounts SET email_verified = FALSE, email_verify_token = $1 WHERE id = $2',
+      [token, id]
+    );
+  },
+
+  async findByVerifyToken(token) {
+    const { rows } = await db.query(
+      'SELECT * FROM consumer_accounts WHERE email_verify_token = $1',
+      [token]
+    );
+    return rows[0] || null;
+  },
+
+  async markEmailVerified(id) {
+    await db.query(
+      'UPDATE consumer_accounts SET email_verified = TRUE, email_verify_token = NULL WHERE id = $1',
+      [id]
+    );
+  },
+
   async deleteById(id) {
     // Preserve booking records for the business by nullifying consumer link
     await db.query('UPDATE bookings SET consumer_id = NULL WHERE consumer_id = $1', [id]);

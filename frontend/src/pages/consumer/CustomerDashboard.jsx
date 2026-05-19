@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw } from 'lucide-react';
-import { consumerAPI, bookingsAPI } from '../../services/api';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star } from 'lucide-react';
+import { consumerAPI, bookingsAPI, reviewsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -35,7 +35,7 @@ function CopyRefButton({ refId }) {
   );
 }
 
-function BookingCard({ booking, onRebook, onCancel, past }) {
+function BookingCard({ booking, onRebook, onCancel, onReview, past }) {
   return (
     <div className="card p-4">
       <div className="flex items-start gap-3">
@@ -73,9 +73,16 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
 
       <div className="flex gap-2 mt-4">
         {past ? (
-          <button onClick={() => onRebook(booking)} className="btn-primary flex-1 text-sm py-2 flex items-center justify-center gap-1.5">
-            <RotateCcw className="w-3.5 h-3.5" /> Rebook
-          </button>
+          <div className="flex gap-2 flex-1">
+            <button onClick={() => onRebook(booking)} className="btn-secondary flex-1 text-sm py-2 flex items-center justify-center gap-1.5">
+              <RotateCcw className="w-3.5 h-3.5" /> Rebook
+            </button>
+            {booking.status === 'completed' && !booking.reviewed && (
+              <button onClick={() => onReview(booking)} className="btn-primary flex-1 text-sm py-2 flex items-center justify-center gap-1.5">
+                <Star className="w-3.5 h-3.5" /> Review
+              </button>
+            )}
+          </div>
         ) : (
           <>
             <Link to={`/profile/${booking.slug}`} className="btn-secondary flex-1 text-sm py-2 text-center">
@@ -91,6 +98,86 @@ function BookingCard({ booking, onRebook, onCancel, past }) {
             )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+function StarPicker({ value, onChange }) {
+  const [hover, setHover] = useState(0);
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onMouseEnter={() => setHover(n)}
+          onMouseLeave={() => setHover(0)}
+          onClick={() => onChange(n)}
+          className="p-0.5 transition-transform hover:scale-110"
+        >
+          <Star
+            className={`w-7 h-7 transition-colors ${(hover || value) >= n ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReviewModal({ booking, onClose, onSubmitted }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async () => {
+    if (!rating) { toast.error('Please select a rating'); return; }
+    setSubmitting(true);
+    try {
+      await reviewsAPI.create({ booking_id: booking.id, rating, comment });
+      toast.success('Review submitted — thank you!');
+      onSubmitted(booking.id);
+      onClose();
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit review');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6">
+        <div className="flex items-start justify-between mb-4">
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Leave a review</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+        </p>
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Your rating</p>
+          <StarPicker value={rating} onChange={setRating} />
+        </div>
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Comment (optional)</p>
+          <textarea
+            className="input resize-none text-sm"
+            rows={3}
+            placeholder="How was your experience?"
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            maxLength={500}
+          />
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+          <button onClick={submit} disabled={submitting || !rating} className="btn-primary flex-1 disabled:opacity-50">
+            {submitting ? 'Submitting…' : 'Submit review'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -179,6 +266,7 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(true);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef(null);
@@ -233,6 +321,10 @@ export default function CustomerDashboard() {
     } finally {
       setCancelling(false);
     }
+  };
+
+  const handleReviewSubmitted = (bookingId) => {
+    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, reviewed: true } : b));
   };
 
   const handleRemovePref = async (businessId) => {
@@ -411,7 +503,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {past.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} past />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} past />
               ))}
             </div>
           )
@@ -446,6 +538,14 @@ export default function CustomerDashboard() {
           onConfirm={handleCancel}
           onClose={() => setCancelTarget(null)}
           cancelling={cancelling}
+        />
+      )}
+
+      {reviewTarget && (
+        <ReviewModal
+          booking={reviewTarget}
+          onClose={() => setReviewTarget(null)}
+          onSubmitted={handleReviewSubmitted}
         />
       )}
 

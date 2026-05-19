@@ -1,4 +1,5 @@
 const Service = require('../models/Service');
+const { checkAutoVerify } = require('../utils/autoVerify');
 
 exports.list = async (req, res) => {
   try {
@@ -28,6 +29,7 @@ exports.create = async (req, res) => {
       price,
       duration_minutes,
     });
+    checkAutoVerify(req.business.id).catch(() => {});
     res.status(201).json(service);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create service' });
@@ -38,6 +40,7 @@ exports.update = async (req, res) => {
   try {
     const service = await Service.update(req.params.id, req.business.id, req.body);
     if (!service) return res.status(404).json({ error: 'Service not found' });
+    checkAutoVerify(req.business.id).catch(() => {});
     res.json(service);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update service' });
