@@ -77,8 +77,8 @@ export default function BookingSuccess() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-primary-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md animate-slide-up">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-primary-50 py-8 px-4">
+      <div className="w-full max-w-md mx-auto animate-slide-up">
         {/* Success Icon */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">

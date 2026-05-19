@@ -217,7 +217,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 pb-28 lg:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 lg:pb-6 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
           {emailUnverified && (
             <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
               <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
@@ -237,14 +237,17 @@ export default function AdminLayout() {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex safe-bottom">
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         {BOTTOM_NAV.map(({ to, icon: Icon, label, badge }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors relative ${
-                isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+              `flex-1 flex flex-col items-center justify-center py-2.5 min-h-[56px] gap-0.5 text-[10px] xs:text-xs font-semibold transition-colors relative ${
+                isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'
               }`
             }
           >
@@ -259,7 +262,7 @@ export default function AdminLayout() {
                     </span>
                   )}
                 </div>
-                <span>{label}</span>
+                <span className="leading-none">{label}</span>
               </>
             )}
           </NavLink>

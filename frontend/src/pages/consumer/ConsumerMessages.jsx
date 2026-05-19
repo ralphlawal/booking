@@ -83,9 +83,9 @@ export default function ConsumerMessages() {
   const showingChat = !!activeRoom;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+    <div className="flex flex-col bg-gray-50 dark:bg-gray-950" style={{ height: '100dvh' }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <nav className="flex-shrink-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
           {/* Mobile: show back to list when in a chat */}
           {showingChat ? (
@@ -107,8 +107,8 @@ export default function ConsumerMessages() {
         </div>
       </nav>
 
-      {/* Body */}
-      <div className="flex-1 flex overflow-hidden" style={{ height: 'calc(100vh - 3.5rem - 4rem)' }}>
+      {/* Body — flex-1 fills remaining space between nav and bottom nav */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
 
         {/* Room list — always visible on md+, hidden on mobile when chat open */}
         <div className={`${showingChat ? 'hidden md:flex' : 'flex'} w-full md:w-72 flex-shrink-0 flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800`}>

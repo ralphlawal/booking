@@ -129,7 +129,20 @@ img { display: block; }
 /* Prevent content from scrolling under fixed bottom navs */
 .has-bottom-nav { padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)); }
 
+/* Use dynamic viewport height to avoid iOS Safari address bar bug */
+.h-dvh { height: 100dvh; }
+
 /* Better tap targets on mobile */
 @media (max-width: 640px) {
   .btn-primary, .btn-secondary { min-height: 44px; }
+}
+
+/* Stripe Elements dark mode */
+.StripeElement {
+  background: transparent;
+}
+
+/* Prevent any fixed/sticky element from causing overflow on iOS */
+@supports (-webkit-touch-callout: none) {
+  body { -webkit-overflow-scrolling: touch; }
 }

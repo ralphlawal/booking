@@ -64,7 +64,7 @@ export default function AdminInbox() {
   const showingChat = !!activeRoom;
 
   return (
-    <div className="animate-fade-in flex h-[calc(100vh-8rem)]">
+    <div className="animate-fade-in flex" style={{ height: 'min(calc(100dvh - 8rem), 700px)', minHeight: 300 }}>
       {/* Room list — always visible on md+, hidden on mobile when chat open */}
       <div className={`${showingChat ? 'hidden md:flex' : 'flex'} w-full md:w-72 flex-shrink-0 flex-col border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-xl md:rounded-none overflow-hidden`}>
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
