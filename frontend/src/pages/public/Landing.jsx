@@ -1,6 +1,58 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
+
+const FAQS = [
+  {
+    q: 'Is BookAm really free?',
+    a: 'Yes — the core plan is completely free. Create your booking page, set your services and hours, and accept unlimited bookings at no cost. We offer optional paid features for power users, but you'll never be forced to upgrade.',
+  },
+  {
+    q: 'How do I get my booking link?',
+    a: 'Once you create an account and set up your services, your booking page is instantly live at bookam.business/book/yourname. Share it anywhere — Instagram bio, WhatsApp, your website, or print it on a business card as a QR code.',
+  },
+  {
+    q: 'Do customers need to create an account to book?',
+    a: 'No. Customers can book without signing up — they just enter their name, phone, and optionally an email for confirmation. Creating a free customer account lets them manage their bookings, cancel, and get notifications.',
+  },
+  {
+    q: 'What is the AI booking chat?',
+    a: 'The AI booking assistant lets customers describe what they want in plain English (e.g. "I need a haircut on Friday afternoon") and handles the back-and-forth automatically. It collects all the details and creates the booking — like having a receptionist available 24/7.',
+  },
+  {
+    q: 'Can customers cancel or reschedule?',
+    a: 'Yes. Customers can cancel using the link in their confirmation email, or by looking up their booking reference on the site. Business owners can reschedule or cancel bookings from their dashboard.',
+  },
+  {
+    q: 'Will I get notified about new bookings?',
+    a: 'Yes — you receive an email for every new booking, cancellation, and reminder. Customers also get a confirmation email immediately after booking, plus reminders at 24 hours and 1 hour before their appointment.',
+  },
+];
+
+function FaqAccordion() {
+  const [open, setOpen] = useState(null);
+  return (
+    <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden">
+      {FAQS.map((faq, i) => (
+        <div key={i}>
+          <button
+            onClick={() => setOpen(open === i ? null : i)}
+            className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left bg-white hover:bg-gray-50 transition-colors"
+          >
+            <span className="font-semibold text-gray-900 text-sm sm:text-base">{faq.q}</span>
+            <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${open === i ? 'rotate-180' : ''}`} />
+          </button>
+          {open === i && (
+            <div className="px-6 pb-5 bg-white">
+              <p className="text-gray-600 text-sm sm:text-base leading-relaxed">{faq.a}</p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const FEATURES = [
   { emoji: '💬', title: 'No more DM chaos', desc: 'Stop managing bookings through WhatsApp. Customers book themselves — you just show up.', bg: 'bg-violet-50', border: 'border-violet-100' },
@@ -235,6 +287,17 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Frequently asked questions</h2>
+            <p className="text-gray-500 mt-3 text-lg">Everything you need to know before getting started.</p>
+          </div>
+          <FaqAccordion />
         </div>
       </section>
 

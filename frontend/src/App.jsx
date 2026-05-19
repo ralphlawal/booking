@@ -11,6 +11,7 @@ import Landing from './pages/public/Landing';
 import BookingPage from './pages/public/BookingPage';
 import BookingSuccess from './pages/public/BookingSuccess';
 import BookingLookup from './pages/public/BookingLookup';
+import AiBookingChat from './pages/public/AiBookingChat';
 
 // Consumer pages
 import ExplorePage from './pages/consumer/ExplorePage';
@@ -84,6 +85,7 @@ export default function App() {
           <Routes>
             {/* Public booking */}
             <Route path="/book/:slug" element={<BookingPage />} />
+            <Route path="/book-ai/:slug" element={<AiBookingChat />} />
             <Route path="/booking-success/:ref" element={<BookingSuccess />} />
             <Route path="/booking/lookup" element={<BookingLookup />} />
 

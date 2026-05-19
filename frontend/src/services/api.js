@@ -161,4 +161,8 @@ export const reviewsAPI = {
   checkReviewable: (bookingId) => consumerAxios.get(`/reviews/check/${bookingId}`),
 };
 
+export const aiAPI = {
+  chat: (slug, messages) => api.post('/ai/chat', { slug, messages }),
+};
+
 export default api;

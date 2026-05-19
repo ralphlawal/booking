@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
-  Calendar, ArrowLeft, Share2, Heart, CheckCircle,
+  Calendar, ArrowLeft, Share2, Heart, CheckCircle, Sparkles,
 } from 'lucide-react';
 import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -362,9 +362,13 @@ export default function BusinessProfile() {
 
         {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
         <div className="fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40" style={{ bottom: 'calc(57px + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="max-w-2xl mx-auto px-4 py-3">
-            <Link to={`/book/${slug}`} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 text-base">
-              <CheckCircle className="w-5 h-5" />
+          <div className="max-w-2xl mx-auto px-4 py-3 flex gap-2">
+            <Link to={`/book-ai/${slug}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-xl border-2 border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
+              <Sparkles className="w-4 h-4" />
+              Chat to book
+            </Link>
+            <Link to={`/book/${slug}`} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 text-sm">
+              <CheckCircle className="w-4 h-4" />
               Book now
             </Link>
           </div>
