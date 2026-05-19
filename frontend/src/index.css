@@ -4,8 +4,16 @@
 
 @layer base {
   * { @apply box-border; }
-  html { transition: background-color 0.2s, color 0.2s; }
-  body { @apply bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased; }
+  html {
+    transition: background-color 0.2s, color 0.2s;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
   h1, h2, h3, h4, h5, h6 { @apply font-semibold; }
   :root { --radius: 0.75rem; }
 }
@@ -35,12 +43,21 @@
     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
     transition-all duration-150 placeholder:text-gray-400 dark:placeholder:text-gray-500
     hover:border-gray-300 dark:hover:border-gray-600;
+    /* Prevent iOS auto-zoom on focus (must be >= 16px) */
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    .input { font-size: 0.875rem; }
   }
   .input-error {
     @apply w-full px-3.5 py-2.5 border border-red-400 dark:border-red-600 rounded-xl text-sm
     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
     focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent
     transition-all duration-150 placeholder:text-gray-400 dark:placeholder:text-gray-500;
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    .input-error { font-size: 0.875rem; }
   }
   .label {
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
@@ -105,3 +122,14 @@ img { display: block; }
 /* Recharts dark mode */
 .dark .recharts-legend-item-text { color: #94a3b8 !important; }
 .dark .recharts-cartesian-axis-tick-value { fill: #64748b !important; }
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line { stroke: #1e293b !important; }
+
+/* Prevent content from scrolling under fixed bottom navs */
+.has-bottom-nav { padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)); }
+
+/* Better tap targets on mobile */
+@media (max-width: 640px) {
+  .btn-primary, .btn-secondary { min-height: 44px; }
+}

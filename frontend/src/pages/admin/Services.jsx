@@ -124,8 +124,8 @@ export default function Services() {
 
       {/* Modal */}
       {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-fade-in">
-          <div className="modal-panel w-full max-w-md animate-slide-up">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-4 bg-black/40 animate-fade-in">
+          <div className="modal-panel w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold text-lg dark:text-white">{modal === 'create' ? 'New Service' : 'Edit Service'}</h2>
               <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400"><XIcon /></button>

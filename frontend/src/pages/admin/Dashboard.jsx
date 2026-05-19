@@ -12,13 +12,13 @@ const STATUS_COLORS = { pending: '#f59e0b', confirmed: '#10b981', cancelled: '#e
 const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
 
 const StatCard = ({ label, value, color, darkColor, icon }) => (
-  <div className="card p-5 flex items-center gap-4">
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} ${darkColor}`}>
+  <div className="card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color} ${darkColor}`}>
       {icon}
     </div>
-    <div>
-      <p className="text-2xl font-bold text-gray-900 dark:text-white">{value ?? '—'}</p>
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+    <div className="min-w-0">
+      <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{value ?? '—'}</p>
+      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{label}</p>
     </div>
   </div>
 );
@@ -139,7 +139,7 @@ export default function Dashboard() {
           <StatCard label="Total Bookings" value={stats?.total} color="bg-primary-50" darkColor="dark:bg-primary-900/30" icon={<CalIcon />} />
           <StatCard label="Pending" value={stats?.pending} color="bg-yellow-50" darkColor="dark:bg-yellow-900/30" icon={<ClockIcon />} />
           <StatCard label="Confirmed" value={stats?.confirmed} color="bg-green-50" darkColor="dark:bg-green-900/30" icon={<CheckIcon />} />
-          <StatCard label="Revenue" value={stats?.revenue ? `$${parseFloat(stats.revenue).toFixed(0)}` : '$0'} color="bg-blue-50" darkColor="dark:bg-blue-900/30" icon={<DollarIcon />} />
+          <StatCard label="Revenue" value={stats?.revenue ? `£${parseFloat(stats.revenue).toFixed(0)}` : '£0'} color="bg-blue-50" darkColor="dark:bg-blue-900/30" icon={<DollarIcon />} />
         </div>
       )}
 
@@ -147,7 +147,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bookings trend */}
         <div className="card p-5 lg:col-span-2">
-          <h3 className="font-semibold text-gray-900 mb-4">Bookings — Last 30 Days</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bookings — Last 30 Days</h3>
           {analyticsLoading ? (
             <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
           ) : chartData.length === 0 ? (
@@ -173,7 +173,7 @@ export default function Dashboard() {
 
         {/* Status breakdown */}
         <div className="card p-5">
-          <h3 className="font-semibold text-gray-900 mb-4">Status Breakdown</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Status Breakdown</h3>
           {analyticsLoading ? (
             <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
           ) : statusData.length === 0 ? (
@@ -202,7 +202,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue chart */}
         <div className="card p-5 lg:col-span-2">
-          <h3 className="font-semibold text-gray-900 mb-4">Revenue — Last 30 Days</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Revenue — Last 30 Days</h3>
           {analyticsLoading ? (
             <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
           ) : chartData.length === 0 ? (
@@ -213,7 +213,7 @@ export default function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-                <Tooltip content={<CustomTooltip prefix="$" />} />
+                <Tooltip content={<CustomTooltip prefix="£" />} />
                 <Bar dataKey="Revenue" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={32} />
               </BarChart>
             </ResponsiveContainer>
@@ -222,7 +222,7 @@ export default function Dashboard() {
 
         {/* Top services */}
         <div className="card p-5">
-          <h3 className="font-semibold text-gray-900 mb-4">Top Services</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Top Services</h3>
           {analyticsLoading ? (
             <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />)}</div>
           ) : topServices.length === 0 ? (

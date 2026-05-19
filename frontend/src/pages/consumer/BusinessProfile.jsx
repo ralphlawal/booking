@@ -360,8 +360,8 @@ export default function BusinessProfile() {
           )}
         </div>
 
-        {/* Sticky book CTA — sits above the bottom nav */}
-        <div className="fixed bottom-[57px] left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40">
+        {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
+        <div className="fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40" style={{ bottom: 'calc(57px + env(safe-area-inset-bottom, 0px))' }}>
           <div className="max-w-2xl mx-auto px-4 py-3">
             <Link to={`/book/${slug}`} className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 text-base">
               <CheckCircle className="w-5 h-5" />

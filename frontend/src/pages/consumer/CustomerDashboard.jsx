@@ -246,9 +246,9 @@ export default function CustomerDashboard() {
   };
 
   const TABS = [
-    { id: 'upcoming',   label: `Upcoming (${upcoming.length})` },
-    { id: 'past',       label: `Past (${past.length})` },
-    { id: 'favourites', label: `Favourites (${prefs.length})` },
+    { id: 'upcoming',   label: 'Upcoming',   count: upcoming.length },
+    { id: 'past',       label: 'Past',        count: past.length },
+    { id: 'favourites', label: 'Favourites',  count: prefs.length },
   ];
 
   if (authLoading || !consumer) return null;
@@ -276,7 +276,7 @@ export default function CustomerDashboard() {
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                     <p className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</p>
                   </div>
@@ -353,13 +353,18 @@ export default function CustomerDashboard() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${
+              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
                 tab === t.id
                   ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {t.label}
+              {t.count > 0 && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${tab === t.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+                  {t.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
