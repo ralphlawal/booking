@@ -1,6 +1,7 @@
 {
   "framework": null,
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/proxy/:path*", "destination": "/api/proxy" },
