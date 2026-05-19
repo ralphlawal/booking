@@ -235,6 +235,20 @@ exports.markNotificationsRead = async (req, res) => {
   }
 };
 
+exports.resendVerification = async (req, res) => {
+  try {
+    const verifyToken = require('crypto').randomBytes(32).toString('hex');
+    await ConsumerAccount.saveVerifyToken(req.consumer.id, verifyToken);
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    const { sendVerificationEmail } = require('../services/emailService');
+    await sendVerificationEmail(req.consumer, `${FRONTEND_URL}/customer/verify-email?token=${verifyToken}`);
+    res.json({ message: 'Verification email sent' });
+  } catch (err) {
+    console.error('[consumer/resendVerification]', err.message);
+    res.status(500).json({ error: 'Failed to send verification email' });
+  }
+};
+
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;

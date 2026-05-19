@@ -144,6 +144,7 @@ export const consumerAPI = {
   getNotifications: () => consumerAxios.get('/consumer/notifications'),
   markNotificationsRead: () => consumerAxios.post('/consumer/notifications/read'),
   verifyEmail: (token) => consumerAxios.get('/consumer/verify-email', { params: { token } }),
+  resendVerification: () => consumerAxios.post('/consumer/resend-verification'),
 };
 
 export const discoverAPI = {

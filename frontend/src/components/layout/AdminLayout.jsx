@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { bookingsAPI } from '../../services/api';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
+import { auth } from '../../config/firebase';
 import toast from 'react-hot-toast';
 
 const NAV = [
@@ -24,18 +25,38 @@ const BOTTOM_NAV = [
 ];
 
 export default function AdminLayout() {
-  const { user, business, logout } = useAuth();
+  const { user, business, logout, resendVerificationEmail } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [emailUnverified, setEmailUnverified] = useState(false);
+  const [resendingVerif, setResendingVerif] = useState(false);
+
+  useEffect(() => {
+    if (auth.currentUser) {
+      setEmailUnverified(!auth.currentUser.emailVerified);
+    }
+  }, [user]);
 
   useEffect(() => {
     bookingsAPI.list({ status: 'pending', limit: 200 })
       .then(data => setPendingCount(data?.total ?? data?.bookings?.length ?? 0))
       .catch(() => {});
   }, []);
+
+  const handleResendVerif = async () => {
+    setResendingVerif(true);
+    try {
+      await resendVerificationEmail();
+      toast.success('Verification email sent — check your inbox');
+    } catch {
+      toast.error('Failed to send — try again later');
+    } finally {
+      setResendingVerif(false);
+    }
+  };
 
   const bookingUrl = business ? `${window.location.origin}/book/${business.slug}` : null;
 
@@ -185,6 +206,20 @@ export default function AdminLayout() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6 pb-28 lg:pb-6">
+          {emailUnverified && (
+            <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+              <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
+                ⚠️ Your email address is not verified. Check your inbox for a verification link.
+              </p>
+              <button
+                onClick={handleResendVerif}
+                disabled={resendingVerif}
+                className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline whitespace-nowrap disabled:opacity-50 flex-shrink-0"
+              >
+                {resendingVerif ? 'Sending…' : 'Resend →'}
+              </button>
+            </div>
+          )}
           <Outlet />
         </main>
       </div>

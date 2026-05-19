@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail } from 'lucide-react';
 import { consumerAPI, bookingsAPI, reviewsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -267,6 +267,7 @@ export default function CustomerDashboard() {
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
   const [reviewTarget, setReviewTarget] = useState(null);
+  const [resending, setResending] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef(null);
@@ -320,6 +321,18 @@ export default function CustomerDashboard() {
       toast.error(err.message);
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      await consumerAPI.resendVerification();
+      toast.success('Verification email sent — check your inbox');
+    } catch {
+      toast.error('Failed to send — try again later');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -416,6 +429,25 @@ export default function CustomerDashboard() {
             <p className="text-sm text-gray-500 dark:text-gray-400">{consumer.email}</p>
           </div>
         </div>
+
+        {/* Email verification banner */}
+        {consumer.email_verified === false && (
+          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              <p className="text-xs text-amber-800 dark:text-amber-300 font-medium truncate">
+                Please verify your email address — check your inbox.
+              </p>
+            </div>
+            <button
+              onClick={handleResendVerification}
+              disabled={resending}
+              className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline whitespace-nowrap disabled:opacity-50"
+            >
+              {resending ? 'Sending…' : 'Resend →'}
+            </button>
+          </div>
+        )}
 
         {/* Quick actions */}
         <div className="grid grid-cols-2 gap-3 mb-6">

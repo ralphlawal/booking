@@ -35,6 +35,7 @@ router.delete('/preferences/:businessId', authenticateConsumer, ctrl.removePrefe
 router.delete('/account', authenticateConsumer, ctrl.deleteAccount);
 router.get('/notifications', authenticateConsumer, ctrl.getNotifications);
 router.post('/notifications/read', authenticateConsumer, ctrl.markNotificationsRead);
+router.post('/resend-verification', authenticateConsumer, ctrl.resendVerification);
 router.get('/verify-email', ctrl.verifyEmail);
 
 module.exports = router;

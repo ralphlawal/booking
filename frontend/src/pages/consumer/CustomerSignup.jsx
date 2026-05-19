@@ -18,7 +18,7 @@ export default function CustomerSignup() {
     setLoading(true);
     try {
       await register(form);
-      toast.success('Welcome to BookAm Business!');
+      toast.success('Account created! Check your inbox to verify your email.');
       navigate('/customer/dashboard');
     } catch (err) {
       toast.error(err.message);

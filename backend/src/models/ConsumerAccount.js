@@ -25,7 +25,7 @@ const ConsumerAccount = {
 
   async findById(id) {
     const { rows } = await db.query(
-      'SELECT id, email, full_name, phone, avatar_url, created_at FROM consumer_accounts WHERE id = $1',
+      'SELECT id, email, full_name, phone, avatar_url, created_at, COALESCE(email_verified, TRUE) AS email_verified FROM consumer_accounts WHERE id = $1',
       [id]
     );
     return rows[0] || null;
@@ -58,10 +58,12 @@ const ConsumerAccount = {
               b.notes, b.cancelled_reason, b.created_at,
               biz.name AS business_name, biz.slug, biz.logo_url, biz.location, biz.phone AS business_phone,
               s.name AS service_name, s.price, s.duration_minutes,
-              s.id AS service_id, biz.id AS business_id
+              s.id AS service_id, biz.id AS business_id,
+              (rv.id IS NOT NULL) AS reviewed
        FROM bookings b
        JOIN businesses biz ON biz.id = b.business_id
        JOIN services s ON s.id = b.service_id
+       LEFT JOIN reviews rv ON rv.booking_id = b.id
        WHERE b.consumer_id = $1
        ORDER BY b.booking_date DESC, b.start_time DESC`,
       [consumer_id]
