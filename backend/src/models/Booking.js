@@ -2,13 +2,14 @@ const db = require('../config/database');
 const crypto = require('crypto');
 
 const Booking = {
-  async create({ reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes }) {
+  async create({ reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id }) {
     const id = crypto.randomUUID();
+    const payment_status = stripe_payment_intent_id ? 'paid' : 'unpaid';
     const { rows } = await db.query(
       `INSERT INTO bookings
-         (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-      [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes]
+         (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id, payment_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+      [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes, stripe_payment_intent_id || null, payment_status]
     );
     return rows[0];
   },

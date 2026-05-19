@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { MapPin, Wrench, CalendarX, Search } from 'lucide-react';
-import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI } from '../../services/api';
+import { MapPin, Wrench, CalendarX, Search, Lock } from 'lucide-react';
+import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI, paymentsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import FloatingChatButton from '../../components/shared/FloatingChatButton';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_live_51TYBvRAXe2tHkXjCc4wiPkhH7MQGm01K0dt8tjHKYxZqfcst1DHrHaWGCjxbX3YJuGKKfLkNx82t4mNX5Vx8dpOD00KyZrW5Jc';
+const stripePromise = loadStripe(STRIPE_PK);
 
 const STEPS = ['Service', 'Date', 'Time', 'Details', 'Confirm'];
 
@@ -31,6 +36,8 @@ export default function BookingPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [honeypot, setHoneypot] = useState('');
+  const [clientSecret, setClientSecret] = useState(null);
+  const [paymentIntentId, setPaymentIntentId] = useState(null);
 
   useEffect(() => {
     if (consumer) {
@@ -68,10 +75,39 @@ export default function BookingPage() {
 
   const set = (k) => (v) => setBooking(p => ({ ...p, [k]: v }));
 
-  const goNext = () => setStep(s => Math.min(s + 1, 4));
-  const goBack = () => setStep(s => Math.max(s - 1, 0));
+  const servicePrice = booking.service ? parseFloat(booking.service.price || 0) : 0;
+  const requiresPayment = servicePrice > 0;
 
-  const submit = async () => {
+  const goNext = () => setStep(s => Math.min(s + 1, 4));
+  const goBack = () => {
+    // If on payment step (5), go back to confirm (4)
+    if (step === 5) { setStep(4); setClientSecret(null); setPaymentIntentId(null); return; }
+    setStep(s => Math.max(s - 1, 0));
+  };
+
+  const handleConfirm = async () => {
+    if (requiresPayment) {
+      setSubmitting(true);
+      try {
+        const { client_secret, payment_intent_id } = await paymentsAPI.createIntent({
+          amount_pence: Math.round(servicePrice * 100),
+          business_name: business.name,
+          service_name: booking.service.name,
+        });
+        setClientSecret(client_secret);
+        setPaymentIntentId(payment_intent_id);
+        setStep(5);
+      } catch (err) {
+        toast.error(err.message || 'Failed to set up payment');
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      submit(null);
+    }
+  };
+
+  const submit = async (stripe_payment_intent_id) => {
     setSubmitting(true);
     try {
       const result = await bookingsAPI.create(slug, {
@@ -84,8 +120,8 @@ export default function BookingPage() {
         notes: booking.notes,
         consumer_id: consumer?.id || undefined,
         website: honeypot,
+        stripe_payment_intent_id: stripe_payment_intent_id || undefined,
       });
-      // Save to consumer favourites if logged in
       if (consumer && business) {
         consumerAPI.savePreference({ business_id: business.id, service_id: booking.service.id }).catch(() => {});
       }
@@ -140,15 +176,28 @@ export default function BookingPage() {
         )}
 
         {/* Progress bar */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-gray-500">Step {step + 1} of {STEPS.length}</span>
-            <span className="text-xs font-semibold text-primary-600">{STEPS[step]}</span>
+        {step < 5 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-500">Step {step + 1} of {requiresPayment ? STEPS.length + 1 : STEPS.length}</span>
+              <span className="text-xs font-semibold text-primary-600">{STEPS[step] || 'Payment'}</span>
+            </div>
+            <div className="h-1.5 bg-gray-200 rounded-full">
+              <div className="h-1.5 bg-primary-600 rounded-full transition-all duration-300" style={{ width: `${((step + 1) / (requiresPayment ? 6 : 5)) * 100}%` }} />
+            </div>
           </div>
-          <div className="h-1.5 bg-gray-200 rounded-full">
-            <div className="h-1.5 bg-primary-600 rounded-full transition-all duration-300" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+        )}
+        {step === 5 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-500">Step 6 of 6</span>
+              <span className="text-xs font-semibold text-primary-600">Payment</span>
+            </div>
+            <div className="h-1.5 bg-gray-200 rounded-full">
+              <div className="h-1.5 bg-primary-600 rounded-full transition-all duration-300" style={{ width: '100%' }} />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Step 0: Choose service */}
         {step === 0 && (
@@ -335,15 +384,84 @@ export default function BookingPage() {
                 ))}
               </div>
             </div>
-            <button onClick={submit} disabled={submitting} className="btn-primary w-full text-base py-3.5">
-              {submitting ? <Spinner /> : 'Confirm Booking'}
+            <button onClick={handleConfirm} disabled={submitting} className="btn-primary w-full text-base py-3.5">
+              {submitting ? <Spinner /> : requiresPayment ? `Pay £${servicePrice.toFixed(2)} & Confirm` : 'Confirm Booking'}
             </button>
             <p className="text-center text-xs text-gray-400 mt-3">By booking you agree to the cancellation policy</p>
+          </div>
+        )}
+
+        {/* Step 5: Payment */}
+        {step === 5 && clientSecret && (
+          <div className="animate-slide-up">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="font-bold text-xl text-gray-900">Payment</h2>
+                <p className="text-sm text-gray-500">£{servicePrice.toFixed(2)} · {booking.service?.name}</p>
+              </div>
+              <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
+            </div>
+            <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+              <PaymentForm
+                onSuccess={(pi_id) => submit(pi_id)}
+                submitting={submitting}
+                setSubmitting={setSubmitting}
+              />
+            </Elements>
           </div>
         )}
       </main>
       <FloatingChatButton />
     </div>
+  );
+}
+
+function PaymentForm({ onSuccess, submitting, setSubmitting }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [error, setError] = useState(null);
+  const [processing, setProcessing] = useState(false);
+
+  const handlePay = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setProcessing(true);
+    setError(null);
+    const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      redirect: 'if_required',
+    });
+    if (stripeErr) {
+      setError(stripeErr.message);
+      setProcessing(false);
+    } else if (paymentIntent?.status === 'succeeded') {
+      onSuccess(paymentIntent.id);
+    } else {
+      setError('Payment was not completed. Please try again.');
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handlePay} className="card p-5 space-y-4">
+      <PaymentElement />
+      {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>}
+      <button
+        type="submit"
+        disabled={!stripe || processing || submitting}
+        className="btn-primary w-full text-base py-3.5 flex items-center justify-center gap-2"
+      >
+        {processing || submitting ? <Spinner /> : (
+          <>
+            <Lock className="w-4 h-4" />
+            Pay securely
+          </>
+        )}
+      </button>
+      <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">
+        <Lock className="w-3 h-3" /> Secured by Stripe · 256-bit encryption
+      </p>
+    </form>
   );
 }
 

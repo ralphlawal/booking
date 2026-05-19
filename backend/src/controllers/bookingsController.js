@@ -9,7 +9,7 @@ exports.create = async (req, res) => {
   // Honeypot: bots fill hidden fields, humans don't
   if (req.body.website) return res.status(201).json({ reference_id: 'BOT-BLOCKED', honeypot: true });
   try {
-    const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes } = req.body;
+    const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id } = req.body;
 
     const service = await Service.findById(service_id);
     if (!service || service.business_id !== req.business.id || !service.is_active) {
@@ -45,6 +45,7 @@ exports.create = async (req, res) => {
       start_time,
       end_time,
       notes,
+      stripe_payment_intent_id: stripe_payment_intent_id || null,
     });
 
     await Customer.incrementBookings(customer.id);

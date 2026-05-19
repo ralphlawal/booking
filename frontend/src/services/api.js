@@ -156,8 +156,8 @@ export const discoverAPI = {
 };
 
 export const paymentsAPI = {
-  createMandate: (data) => api.post('/payments/mandate', data),
-  getMandateForBooking: (bookingId) => api.get(`/payments/mandate/${bookingId}`),
+  createIntent: (data) => api.post('/payments/create-intent', data),
+  getForBooking: (bookingId) => api.get(`/payments/booking/${bookingId}`),
 };
 
 export const reviewsAPI = {
