@@ -10,9 +10,11 @@ const STATUS_COLORS = {
   completed: 'badge-completed',
 };
 
-function CustomerPanel({ customer, onClose }) {
+function CustomerPanel({ customer, onClose, onNotesUpdated }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState(customer.notes || '');
+  const [savingNotes, setSavingNotes] = useState(false);
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -21,6 +23,19 @@ function CustomerPanel({ customer, onClose }) {
       .catch(() => toast.error('Could not load bookings'))
       .finally(() => setLoading(false));
   }, [customer.id]);
+
+  const saveNotes = async () => {
+    setSavingNotes(true);
+    try {
+      await customersAPI.updateNotes(customer.id, notes);
+      onNotesUpdated(customer.id, notes);
+      toast.success('Notes saved');
+    } catch {
+      toast.error('Failed to save notes');
+    } finally {
+      setSavingNotes(false);
+    }
+  };
 
   useEffect(() => {
     const handler = (e) => {
@@ -102,6 +117,25 @@ function CustomerPanel({ customer, onClose }) {
             </div>
           </div>
 
+          {/* Notes */}
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Notes</h3>
+            <textarea
+              className="input resize-none text-sm w-full"
+              rows={3}
+              placeholder="Add private notes about this customer…"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+            />
+            <button
+              onClick={saveNotes}
+              disabled={savingNotes}
+              className="btn-primary text-sm mt-2 disabled:opacity-50"
+            >
+              {savingNotes ? 'Saving…' : 'Save notes'}
+            </button>
+          </div>
+
           {/* Booking history */}
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Booking History</h3>
@@ -161,6 +195,11 @@ export default function Customers() {
     (c.phone && c.phone.includes(search)) ||
     (c.email && c.email.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const handleNotesUpdated = (id, notes) => {
+    setCustomers(prev => prev.map(c => c.id === id ? { ...c, notes } : c));
+    setSelected(prev => prev?.id === id ? { ...prev, notes } : prev);
+  };
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -273,7 +312,7 @@ export default function Customers() {
         )}
       </div>
 
-      {selected && <CustomerPanel customer={selected} onClose={() => setSelected(null)} />}
+      {selected && <CustomerPanel customer={selected} onClose={() => setSelected(null)} onNotesUpdated={handleNotesUpdated} />}
     </div>
   );
 }

@@ -427,6 +427,11 @@ export default function CustomerDashboard() {
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Hi, {consumer.full_name?.split(' ')[0]}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">{consumer.email}</p>
+            {bookings.length > 0 && (
+              <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mt-0.5">
+                {bookings.length} booking{bookings.length !== 1 ? 's' : ''} total
+              </p>
+            )}
           </div>
         </div>
 

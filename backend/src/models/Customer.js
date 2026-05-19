@@ -48,6 +48,14 @@ const Customer = {
     );
   },
 
+  async updateNotes(id, business_id, notes) {
+    const { rows } = await db.query(
+      'UPDATE customers SET notes = $1 WHERE id = $2 AND business_id = $3 RETURNING *',
+      [notes, id, business_id]
+    );
+    return rows[0];
+  },
+
   async findBookings(customer_id, business_id) {
     const { rows } = await db.query(
       `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time,

@@ -1,0 +1,18 @@
+{
+  "name": "BookAm Business",
+  "short_name": "BookAm",
+  "description": "Book services and manage appointments instantly",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#5b3eea",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
