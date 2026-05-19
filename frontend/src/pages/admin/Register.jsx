@@ -41,7 +41,7 @@ export default function Register() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-slide-up">
         <Link to="/" className="flex items-center justify-center mb-8">
-          <img src={LOGO_WHITE_H} alt="BookAm" className="h-10 w-auto object-contain" />
+          <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
         </Link>
 
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">

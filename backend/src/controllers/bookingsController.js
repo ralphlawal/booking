@@ -277,7 +277,7 @@ exports.cancelByCustomer = async (req, res) => {
         booking_id: booking.id,
         html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e2e8f0">
           <div style="background:linear-gradient(135deg,#ef4444,#dc2626);padding:28px 32px;text-align:center">
-            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779210788/IMG_0364_cgkeo4.png" alt="BookAm Business" style="height:32px;filter:brightness(0) invert(1)" />
           </div>
           <div style="padding:32px">
             <h2 style="margin:0 0 8px;color:#1e293b;font-size:20px">Booking Cancelled ❌</h2>

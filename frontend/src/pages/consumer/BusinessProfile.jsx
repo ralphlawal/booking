@@ -162,7 +162,7 @@ export default function BusinessProfile() {
             <span className="text-sm font-medium">Back</span>
           </button>
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           <div className="flex items-center gap-2">
             <button onClick={handleShare} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">

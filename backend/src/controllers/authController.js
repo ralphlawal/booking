@@ -118,7 +118,7 @@ exports.forgotPassword = async (req, res) => {
 
     await sendEmail({
       to: user.email,
-      subject: 'Reset your BookAm password',
+      subject: 'Reset your BookAm Business password',
       type: 'password_reset',
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px">

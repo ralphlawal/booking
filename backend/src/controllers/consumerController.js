@@ -35,15 +35,15 @@ exports.register = async (req, res) => {
     const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
     sendEmail({
       to: consumer.email,
-      subject: 'Welcome to BookAm — start booking',
+      subject: 'Welcome to BookAm Business — start booking',
       type: 'consumer_welcome',
       html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0">
         <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
-          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779210788/IMG_0364_cgkeo4.png" alt="BookAm Business" style="height:32px;filter:brightness(0) invert(1)" />
         </div>
         <div style="padding:32px">
           <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Welcome, ${consumer.full_name}! 🎉</h2>
-          <p style="color:#64748b;font-size:15px;margin:0 0 20px">Your BookAm account is ready. Discover and book local services instantly.</p>
+          <p style="color:#64748b;font-size:15px;margin:0 0 20px">Your BookAm Business account is ready. Discover and book local services instantly.</p>
           <a href="${FRONTEND}/explore" style="display:inline-block;background:#5b3eea;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">Browse services →</a>
         </div>
       </div>`,
@@ -144,11 +144,11 @@ exports.forgotPassword = async (req, res) => {
     if (updated) {
       await sendEmail({
         to: email.toLowerCase().trim(),
-        subject: 'Reset your BookAm password',
+        subject: 'Reset your BookAm Business password',
         type: 'consumer_password_reset',
         html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e2e8f0">
           <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
-            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779210788/IMG_0364_cgkeo4.png" alt="BookAm Business" style="height:32px;filter:brightness(0) invert(1)" />
           </div>
           <div style="padding:32px">
             <h2 style="margin:0 0 8px;color:#1e293b;font-size:20px">Reset your password</h2>

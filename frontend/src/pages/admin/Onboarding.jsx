@@ -71,7 +71,7 @@ export default function Onboarding() {
         {/* Logo + tagline */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-5">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-10 w-auto object-contain mx-auto dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-10 w-auto object-contain mx-auto dark:brightness-0 dark:invert" />
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Set up your business</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">Your booking page will be live in under 2 minutes.</p>
@@ -222,7 +222,7 @@ export default function Onboarding() {
         </div>
 
         <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-5">
-          © {new Date().getFullYear()} BookAm · A{' '}
+          © {new Date().getFullYear()} BookAm Business · A{' '}
           <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Ralph Lawal Group</a> product
         </p>
       </div>

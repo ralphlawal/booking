@@ -52,7 +52,7 @@ export default function CustomerResetPassword() {
       <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-5">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 w-auto object-contain brightness-0 invert mx-auto" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain brightness-0 invert mx-auto" />
           </Link>
           <h1 className="text-2xl font-bold text-white">Set new password</h1>
           <p className="text-primary-200 text-sm mt-1">Choose a strong password for your account</p>

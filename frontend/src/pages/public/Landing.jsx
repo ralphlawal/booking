@@ -9,7 +9,7 @@ import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
 
 const FAQS = [
   {
-    q: 'Is BookAm really free?',
+    q: 'Is BookAm Business really free?',
     a: "Yes — the core plan is completely free. Create your booking page, set your services and hours, and accept unlimited bookings at no cost. We offer optional paid features for power users, but you'll never be forced to upgrade.",
   },
   {
@@ -92,7 +92,7 @@ export default function Landing() {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 sm:h-9 w-auto object-contain" />
+          <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-8 sm:h-9 w-auto object-contain" />
           <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/explore" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 sm:px-3 py-2">
               <span className="hidden sm:inline">Find services</span>
@@ -323,7 +323,7 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary-700 to-primary-900" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.08),transparent_60%)]" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <img src={LOGO_WHITE_H} alt="BookAm" className="h-8 sm:h-10 w-auto object-contain mx-auto mb-6 sm:mb-8 opacity-95" />
+          <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-8 sm:h-10 w-auto object-contain mx-auto mb-6 sm:mb-8 opacity-95" />
           <h2 className="text-3xl sm:text-5xl font-bold text-white leading-tight">
             Ready to stop the DM chaos?
           </h2>
@@ -351,7 +351,7 @@ export default function Landing() {
       <footer className="border-t border-gray-100 py-8 sm:py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5 sm:mb-6">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 sm:h-8 w-auto object-contain" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 sm:h-8 w-auto object-contain" />
             <p className="text-sm font-semibold text-primary-600 tracking-wide">Book. Confirm. Be there.</p>
             <div className="flex items-center gap-4">
               <Link to="/booking/lookup" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
@@ -364,7 +364,7 @@ export default function Landing() {
           </div>
           <div className="border-t border-gray-100 pt-5 sm:pt-6 text-center">
             <p className="text-xs text-gray-400">
-              © {new Date().getFullYear()} BookAm · A{' '}
+              © {new Date().getFullYear()} BookAm Business · A{' '}
               <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-gray-500 hover:text-primary-600 transition-colors">Ralph Lawal Group</a> product
             </p>
           </div>

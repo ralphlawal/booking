@@ -32,7 +32,7 @@ export default function CustomerLogin() {
       <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-5">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 w-auto object-contain brightness-0 invert mx-auto" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain brightness-0 invert mx-auto" />
           </Link>
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
           <p className="text-primary-200 text-sm mt-1">Sign in to manage your bookings</p>
@@ -60,7 +60,7 @@ export default function CustomerLogin() {
               </Link>
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              New to BookAm?{' '}
+              New to BookAm Business?{' '}
               <Link to="/customer/signup" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
                 Create account
               </Link>

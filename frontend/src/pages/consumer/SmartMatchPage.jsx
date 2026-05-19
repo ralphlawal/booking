@@ -192,7 +192,7 @@ export default function SmartMatchPage() {
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/explore" className="text-sm text-gray-600 dark:text-gray-400 font-medium">Browse</Link>

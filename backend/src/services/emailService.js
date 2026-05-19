@@ -23,7 +23,7 @@ const baseTemplate = (content) => `
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;padding:32px 0;min-height:100vh">
     <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
       <div style="background:linear-gradient(135deg,#4f46e5 0%,#6d28d9 100%);padding:32px 32px 28px;text-align:center">
-        <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:36px;width:auto;object-fit:contain;filter:brightness(0) invert(1)" />
+        <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779210788/IMG_0364_cgkeo4.png" alt="BookAm Business" style="height:36px;width:auto;object-fit:contain;filter:brightness(0) invert(1)" />
       </div>
       <div style="padding:32px">
         ${content}
@@ -186,12 +186,12 @@ const sendBookingRescheduled = (booking) =>
 const sendWelcomeEmail = (user) =>
   sendEmail({
     to: user.email,
-    subject: 'Welcome to BookAm — your booking page awaits',
+    subject: 'Welcome to BookAm Business — your booking page awaits',
     type: 'welcome',
     html: baseTemplate(`
       <div style="text-align:center;margin-bottom:28px">
         <div style="font-size:40px;margin-bottom:12px">🎉</div>
-        <h2 style="margin:0 0 8px;font-size:24px;color:#1e293b">Welcome to BookAm, ${user.full_name}!</h2>
+        <h2 style="margin:0 0 8px;font-size:24px;color:#1e293b">Welcome to BookAm Business, ${user.full_name}!</h2>
         <p style="margin:0;color:#64748b;font-size:15px">Your account is ready. Let's get your booking page live.</p>
       </div>
       <div style="space-y:0">

@@ -1,7 +1,7 @@
 {
-  "name": "bookly-backend",
+  "name": "bookam-business-backend",
   "version": "1.0.0",
-  "description": "Bookly SaaS Appointment Booking API",
+  "description": "BookAm Business SaaS Appointment Booking API",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",

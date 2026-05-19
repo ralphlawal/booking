@@ -83,11 +83,11 @@ exports.requestVerification = async (req, res) => {
       type: 'verification_request',
       html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e2e8f0">
         <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
-          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779054818/99A671C3-1992-4C69-A170-BB994A854543_tf8sb4.png" alt="BookAm" style="height:32px;filter:brightness(0) invert(1)" />
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779210788/IMG_0364_cgkeo4.png" alt="BookAm Business" style="height:32px;filter:brightness(0) invert(1)" />
         </div>
         <div style="padding:32px">
           <h2 style="margin:0 0 8px;color:#1e293b;font-size:20px">Verification Request</h2>
-          <p style="color:#64748b;font-size:14px;margin:0 0 20px">A business has requested a verified badge on BookAm.</p>
+          <p style="color:#64748b;font-size:14px;margin:0 0 20px">A business has requested a verified badge on BookAm Business.</p>
           <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
             <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%">Business</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.name}</td></tr>
             <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Category</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.category || '—'}</td></tr>

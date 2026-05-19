@@ -207,7 +207,7 @@ export default function ConsumerProfile() {
             <span className="text-sm font-medium">Dashboard</span>
           </button>
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors px-1">
             <LogOut className="w-4 h-4" />
