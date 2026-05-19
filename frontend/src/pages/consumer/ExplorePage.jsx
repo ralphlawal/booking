@@ -1,21 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle, List, Map } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
-
-// Fix default leaflet marker icons broken by webpack/vite asset handling
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
 
 
 function StarRating({ rating }) {
@@ -89,6 +78,48 @@ function BusinessCard({ biz }) {
         </div>
       </div>
     </Link>
+  );
+}
+
+function MapView({ results, coords, onSwitchList }) {
+  const withCoords = results.filter(b => b.latitude && b.longitude);
+  if (!withCoords.length) {
+    return (
+      <div className="text-center py-14 text-gray-400">
+        <Map className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+        <p className="text-sm">No businesses with location data to show on map</p>
+        <button onClick={onSwitchList} className="btn-primary mt-3 text-sm">Switch to list</button>
+      </div>
+    );
+  }
+
+  const centerLat = coords?.lat ?? withCoords[0].latitude;
+  const centerLng = coords?.lng ?? withCoords[0].longitude;
+  const delta = 0.06;
+  const bbox = `${centerLng - delta},${centerLat - delta},${centerLng + delta},${centerLat + delta}`;
+  const markers = withCoords.map(b => `${b.latitude},${b.longitude}`).join('|');
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`;
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800" style={{ height: '55vh', minHeight: 320 }}>
+        <iframe
+          title="Business map"
+          src={src}
+          style={{ width: '100%', height: '100%', border: 0 }}
+          loading="lazy"
+          allowFullScreen
+        />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {withCoords.map(biz => <BusinessCard key={biz.id} biz={biz} />)}
+      </div>
+      {results.length > withCoords.length && (
+        <p className="text-xs text-gray-400 text-center">
+          {results.length - withCoords.length} result{results.length - withCoords.length !== 1 ? 's' : ''} without location data shown only in list view
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -300,41 +331,8 @@ export default function ExplorePage() {
                 </button>
               </div>
             </div>
-            {viewMode === 'map' && results.some(b => b.latitude && b.longitude) ? (
-              <div className="rounded-2xl overflow-hidden" style={{ height: '60vh' }}>
-                <MapContainer
-                  center={
-                    coords
-                      ? [coords.lat, coords.lng]
-                      : [results.find(b => b.latitude)?.latitude || 51.5, results.find(b => b.longitude)?.longitude || -0.12]
-                  }
-                  zoom={12}
-                  style={{ height: '100%', width: '100%' }}
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  {results.filter(b => b.latitude && b.longitude).map(biz => (
-                    <Marker key={biz.id} position={[biz.latitude, biz.longitude]}>
-                      <Popup>
-                        <div className="text-sm">
-                          <p className="font-bold">{biz.name}</p>
-                          {biz.category && <p className="text-gray-500 text-xs">{biz.category}</p>}
-                          {biz.min_price != null && <p className="text-xs mt-1">From £{parseFloat(biz.min_price).toFixed(0)}</p>}
-                          <a href={`/profile/${biz.slug}`} className="text-primary-600 font-semibold text-xs mt-1 block">View →</a>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
-              </div>
-            ) : viewMode === 'map' ? (
-              <div className="text-center py-12 text-gray-400">
-                <Map className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">No businesses with location data to show on map</p>
-                <button onClick={() => setViewMode('list')} className="btn-primary mt-3 text-sm">Switch to list</button>
-              </div>
+            {viewMode === 'map' ? (
+              <MapView results={results} coords={coords} onSwitchList={() => setViewMode('list')} />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {results.map((biz) => <BusinessCard key={biz.id} biz={biz} />)}
