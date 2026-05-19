@@ -128,7 +128,9 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     syncedUidRef.current = null;
     await signOut(auth);
+    // Clear all tokens so no stale state remains
     localStorage.removeItem('fbToken');
+    localStorage.removeItem('customerToken');
     setUser(null);
     setBusiness(null);
   };

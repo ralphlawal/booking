@@ -89,15 +89,18 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-8 sm:h-9 w-auto object-contain" />
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Link to="/explore" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 sm:px-3 py-2">
               <span className="hidden sm:inline">Find services</span>
               <span className="sm:hidden">Explore</span>
             </Link>
-            <Link to="/admin/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 hidden sm:block">
-              Business sign in
+            <Link to="/customer/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 hidden md:block">
+              Customer login
             </Link>
-            <Link to="/admin/register" className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2">
+            <Link to="/admin/login" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors px-3 py-2 hidden lg:block">
+              Business login
+            </Link>
+            <Link to="/signup" className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2">
               Get started free
             </Link>
           </div>
@@ -135,10 +138,17 @@ export default function Landing() {
               Create my booking page
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link to="/explore" className="btn-secondary px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base flex items-center justify-center">
-              Browse services
+            <Link to="/customer/signup" className="btn-secondary px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base flex items-center justify-center">
+              Book a service →
             </Link>
           </div>
+          <p className="mt-3 text-xs text-gray-400">
+            Business owner?{' '}
+            <Link to="/admin/register" className="text-primary-600 font-medium hover:underline">Start free</Link>
+            {' · '}
+            Looking to book?{' '}
+            <Link to="/customer/login" className="text-primary-600 font-medium hover:underline">Customer login</Link>
+          </p>
 
           {/* Browser mockup — hide on very small screens */}
           <div className="mt-12 sm:mt-16 max-w-2xl mx-auto hidden sm:block">

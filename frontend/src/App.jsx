@@ -3,12 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { CustomerAuthProvider } from './context/CustomerAuthContext';
+import { CustomerAuthProvider, useCustomerAuth } from './context/CustomerAuthContext';
 import { LOGO_BLUE_ICON } from './config/logos';
 import FloatingChatButton from './components/shared/FloatingChatButton';
 
 // Public pages
 import Landing from './pages/public/Landing';
+import SignupChooser from './pages/public/SignupChooser';
 import BookingPage from './pages/public/BookingPage';
 import BookingSuccess from './pages/public/BookingSuccess';
 import BookingLookup from './pages/public/BookingLookup';
@@ -59,6 +60,13 @@ const GuestRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (user) return <Navigate to="/admin/dashboard" replace />;
+  return children;
+};
+
+const ConsumerProtectedRoute = ({ children }) => {
+  const { consumer, loading } = useCustomerAuth();
+  if (loading) return <PageLoader />;
+  if (!consumer) return <Navigate to="/customer/login" replace />;
   return children;
 };
 
@@ -128,10 +136,13 @@ export default function App() {
             <Route path="/customer/signup" element={<CustomerSignup />} />
             <Route path="/customer/forgot-password" element={<CustomerForgotPassword />} />
             <Route path="/customer/reset-password" element={<CustomerResetPassword />} />
-            <Route path="/customer/dashboard" element={<CustomerDashboard />} />
-            <Route path="/customer/messages" element={<ConsumerMessages />} />
-            <Route path="/customer/profile" element={<ConsumerProfile />} />
+            <Route path="/customer/dashboard" element={<ConsumerProtectedRoute><CustomerDashboard /></ConsumerProtectedRoute>} />
+            <Route path="/customer/messages" element={<ConsumerProtectedRoute><ConsumerMessages /></ConsumerProtectedRoute>} />
+            <Route path="/customer/profile" element={<ConsumerProtectedRoute><ConsumerProfile /></ConsumerProtectedRoute>} />
             <Route path="/admin-support" element={<AdminSupport />} />
+
+            {/* Account type chooser */}
+            <Route path="/signup" element={<SignupChooser />} />
 
             {/* Landing */}
             <Route path="/" element={<Landing />} />

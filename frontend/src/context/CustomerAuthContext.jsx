@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { signInWithPopup, GoogleAuthProvider, getIdToken } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, getIdToken, signOut } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { consumerAPI } from '../services/api';
 
@@ -44,9 +44,12 @@ export function CustomerAuthProvider({ children }) {
     return consumer;
   };
 
-  const logout = () => {
+  const logout = async () => {
     localStorage.removeItem(TOKEN_KEY);
     setConsumer(null);
+    // Also sign out from Firebase so a Google-authed consumer doesn't
+    // stay signed in to Firebase and accidentally enter the business dashboard
+    try { await signOut(auth); } catch { /* ignore */ }
   };
 
   const update = async (data) => {
