@@ -70,6 +70,16 @@ exports.create = async (req, res) => {
     if (customer_email) sendBookingConfirmation({ ...fullBooking, customer_email });
     if (req.business.email) sendOwnerNewBooking(fullBooking, req.business.email);
 
+    if (consumer_id) {
+      Notification.create({
+        consumer_id,
+        type: 'booking',
+        title: 'Booking request sent',
+        body: `Your ${fullBooking.service_name} at ${fullBooking.business_name} on ${booking_date} is pending confirmation.`,
+        link: `/booking/success/${reference_id}`,
+      }).catch(() => {});
+    }
+
     res.status(201).json(fullBooking);
   } catch (err) {
     console.error('Create booking error:', err);

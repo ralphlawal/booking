@@ -11,13 +11,17 @@ export function NotificationProvider({ children }) {
 
   const fetch = useCallback(() => {
     if (!localStorage.getItem('customerToken')) return;
-    consumerAPI.getNotifications().then(setNotifications).catch(() => {});
+    consumerAPI.getNotifications()
+      .then(setNotifications)
+      .catch((err) => {
+        if (err?.response?.status === 401) setNotifications([]);
+      });
   }, []);
 
   useEffect(() => {
     if (!consumer) { setNotifications([]); return; }
     fetch();
-    intervalRef.current = setInterval(fetch, 30000);
+    intervalRef.current = setInterval(fetch, 8000);
     return () => clearInterval(intervalRef.current);
   }, [consumer, fetch]);
 

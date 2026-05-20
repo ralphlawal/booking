@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageSquare, ArrowLeft, Headphones, ChevronLeft } from 'lucide-react';
 import { consumerChatAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 import ChatWindow from '../../components/chat/ChatWindow';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -46,11 +47,16 @@ function RoomRow({ room, active, onClick }) {
 
 export default function ConsumerMessages() {
   const { consumer, loading: authLoading } = useCustomerAuth();
+  const { markAllRead } = useNotifications();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [rooms, setRooms] = useState([]);
   const [activeRoom, setActiveRoom] = useState(searchParams.get('room') || null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    markAllRead();
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;

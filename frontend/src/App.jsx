@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -51,6 +51,28 @@ import Customers from './pages/admin/Customers';
 import Settings from './pages/admin/Settings';
 import Onboarding from './pages/admin/Onboarding';
 
+class ErrorBoundary extends Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(err, info) { console.error('[ErrorBoundary]', err, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+          <div className="text-center max-w-sm">
+            <p className="text-4xl mb-4">Something went wrong</p>
+            <p className="text-gray-500 mb-6">An unexpected error occurred. Please try refreshing the page.</p>
+            <button onClick={() => { this.setState({ hasError: false }); window.location.href = '/'; }} className="btn-primary">
+              Go to Home
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
@@ -87,6 +109,7 @@ const PageLoader = () => (
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <ThemeProvider>
       <CustomerAuthProvider>
         <NotificationProvider>
@@ -157,6 +180,7 @@ export default function App() {
         </NotificationProvider>
       </CustomerAuthProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

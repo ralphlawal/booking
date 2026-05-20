@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const Notification = require('../models/Notification');
 
 const getStripe = () => {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not configured');
@@ -65,6 +66,24 @@ exports.webhook = async (req, res) => {
          WHERE stripe_payment_intent_id = $2`,
         [pi.id, pi.id]
       );
+      const { rows } = await db.query(
+        `SELECT b.reference_id, b.consumer_id, b.booking_date, s.name AS service_name, bus.name AS business_name
+         FROM bookings b
+         LEFT JOIN services s ON s.id = b.service_id
+         LEFT JOIN businesses bus ON bus.id = b.business_id
+         WHERE b.stripe_payment_intent_id = $1`,
+        [pi.id]
+      );
+      const row = rows[0];
+      if (row?.consumer_id) {
+        Notification.create({
+          consumer_id: row.consumer_id,
+          type: 'payment',
+          title: 'Payment confirmed',
+          body: `Your payment for ${row.service_name} at ${row.business_name} on ${row.booking_date} was successful.`,
+          link: `/booking/success/${row.reference_id}`,
+        }).catch(() => {});
+      }
     } catch (err) {
       console.error('[stripe-webhook] db update error:', err.message);
     }

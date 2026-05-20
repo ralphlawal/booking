@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { bookingsAPI } from '../../services/api';
+import { bookingsAPI, consumerAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -41,7 +41,7 @@ export default function BookingSuccess() {
   const handleCancel = async () => {
     setCancelling(true);
     try {
-      await bookingsAPI.cancelByCustomer(ref);
+      await consumerAPI.cancelBooking(ref);
       setCancelled(true);
       setShowCancelModal(false);
       setBooking(b => ({ ...b, status: 'cancelled' }));
