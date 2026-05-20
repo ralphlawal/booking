@@ -5,20 +5,19 @@ import { useAuth } from '../../context/AuthContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { businessChatAPI, consumerChatAPI } from '../../services/api';
 
-// Hide on pages that already have full chat UI or a bottom nav covering this area
+// Hide only on pages that already have a full dedicated chat/support UI
 const HIDE_ON = [
   '/customer/messages',
+  '/admin/messages',
+  '/admin-support',
+];
+
+// Consumer pages with a bottom nav — position button higher so it doesn't overlap
+const CONSUMER_BOTTOM_NAV_PAGES = [
   '/customer/dashboard',
   '/customer/profile',
-  '/admin/messages',
-  '/admin/dashboard',
-  '/admin/bookings',
-  '/admin/calendar',
-  '/admin/services',
-  '/admin/customers',
-  '/admin/settings',
-  '/admin/onboarding',
-  '/admin-support',
+  '/explore',
+  '/match',
 ];
 
 function fmtTime(ts) {
@@ -43,6 +42,7 @@ export default function FloatingChatWidget() {
   const bottomRef = useRef(null);
 
   const hide = HIDE_ON.some(p => pathname === p || pathname.startsWith(p));
+  const hasBottomNav = CONSUMER_BOTTOM_NAV_PAGES.some(p => pathname === p || pathname.startsWith(p));
 
   // Determine who is logged in and which API to use
   const isConsumer = !!consumer && !bizUser;
@@ -119,7 +119,7 @@ export default function FloatingChatWidget() {
     <>
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-20 right-4 sm:right-5 z-50 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden animate-slide-up"
+        <div className={`fixed ${hasBottomNav ? 'bottom-32' : 'bottom-20'} right-4 sm:right-5 z-50 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden animate-slide-up`}
           style={{ height: '420px', maxHeight: 'calc(100dvh - 120px)' }}>
 
           {/* Header */}
@@ -225,7 +225,7 @@ export default function FloatingChatWidget() {
       <button
         onClick={openChat}
         title="Chat with BookAm Support"
-        className="fixed bottom-5 right-4 sm:right-5 z-50 flex items-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-2xl shadow-xl shadow-primary-600/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 text-sm font-semibold"
+        className={`fixed ${hasBottomNav ? 'bottom-20' : 'bottom-5'} right-4 sm:right-5 z-50 flex items-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-2xl shadow-xl shadow-primary-600/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 text-sm font-semibold`}
       >
         <div className="relative">
           <MessageSquare className="w-5 h-5" />

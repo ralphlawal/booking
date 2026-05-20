@@ -462,6 +462,29 @@ export default function CustomerDashboard() {
           </div>
         )}
 
+        {/* First-time welcome guidance — shown only when user has no bookings yet */}
+        {!loading && bookings.length === 0 && (
+          <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-5 text-white shadow-primary">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-base">Welcome to BookAm!</p>
+                <p className="text-sm text-primary-100 mt-0.5">Find and book services near you in seconds.</p>
+                <div className="mt-3 flex flex-col gap-2 text-sm text-primary-100">
+                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">1</span> Browse services below or use Smart Match</span>
+                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">2</span> Pick a date &amp; time that works for you</span>
+                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">3</span> Confirm — we'll send you a reminder</span>
+                </div>
+                <Link to="/explore" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-white underline underline-offset-2">
+                  Explore services now →
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quick actions */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Link to="/match" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
