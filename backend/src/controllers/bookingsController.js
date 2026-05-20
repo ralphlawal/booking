@@ -580,7 +580,7 @@ exports.rescheduleRequest = async (req, res) => {
     // Store as a note on the booking for now; notify business via notification
     const noteText = `[Reschedule Request] Customer prefers: ${preferred_date}${preferred_time ? ' at ' + preferred_time : ''}${message ? '. Message: ' + message : ''}`;
     await db.query(
-      "UPDATE bookings SET notes = CONCAT(COALESCE(notes,''), $1) WHERE id=$2",
+      "UPDATE bookings SET notes = COALESCE(notes,'') || $1 WHERE id=$2",
       ['\n' + noteText, booking.id]
     );
 

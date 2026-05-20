@@ -86,7 +86,7 @@ exports.validate = async (req, res) => {
     } else {
       discount = Math.min(parseFloat(promo.value), amount);
     }
-    res.json({ valid: true, promo: { id: promo.id, code: promo.code, type: promo.type, value: parseFloat(promo.value) }, discount });
+    res.json({ valid: true, promo: { id: promo.id, code: promo.code, type: promo.type, value: parseFloat(promo.value) }, discount_amount: discount });
   } catch (err) {
     console.error('[promo/validate]', err.message);
     res.status(500).json({ error: 'Failed to validate promo code' });

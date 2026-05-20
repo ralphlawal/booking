@@ -157,19 +157,19 @@ exports.getFinancialReport = async (req, res) => {
     const [revenueByDay, revenueByBusiness, topServices, recentPayments] = await Promise.all([
       // Revenue per day
       db.query(
-        `SELECT DATE(b.created_at) AS date,
-                COUNT(*) AS bookings,
+        `SELECT DATE(b.created_at) AS day,
+                COUNT(*) AS paid_bookings,
                 COALESCE(SUM(s.price),0)::FLOAT AS revenue
          FROM bookings b
          JOIN services s ON s.id = b.service_id
          WHERE b.payment_status = 'paid' AND b.created_at > NOW() - ($1 || ' days')::INTERVAL
-         GROUP BY DATE(b.created_at) ORDER BY date ASC`,
+         GROUP BY DATE(b.created_at) ORDER BY day ASC`,
         [days]
       ),
       // Top businesses by revenue
       db.query(
-        `SELECT biz.id, biz.name, biz.category,
-                COUNT(b.id) AS total_bookings,
+        `SELECT biz.id AS business_id, biz.name, biz.category,
+                COUNT(b.id) AS paid_bookings,
                 COALESCE(SUM(s.price),0)::FLOAT AS revenue
          FROM bookings b
          JOIN services s ON s.id = b.service_id
@@ -180,20 +180,20 @@ exports.getFinancialReport = async (req, res) => {
       ),
       // Top services
       db.query(
-        `SELECT s.name, biz.name AS business_name,
+        `SELECT s.name AS service_name, biz.name AS business_name,
                 COUNT(b.id) AS bookings,
                 COALESCE(SUM(s.price),0)::FLOAT AS revenue
          FROM bookings b
          JOIN services s ON s.id = b.service_id
          JOIN businesses biz ON biz.id = b.business_id
          WHERE b.created_at > NOW() - ($1 || ' days')::INTERVAL
-         GROUP BY s.id, biz.name ORDER BY bookings DESC LIMIT 10`,
+         GROUP BY s.id, s.name, biz.name ORDER BY bookings DESC LIMIT 10`,
         [days]
       ),
       // Recent paid bookings
       db.query(
-        `SELECT b.reference_id, b.booking_date, b.created_at,
-                s.name AS service_name, s.price::FLOAT AS amount,
+        `SELECT b.id, b.reference_id, b.booking_date, b.created_at,
+                s.name AS service_name, s.price::FLOAT AS price,
                 biz.name AS business_name,
                 COALESCE(ca.full_name, cu.full_name) AS customer_name
          FROM bookings b
