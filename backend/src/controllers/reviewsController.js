@@ -53,10 +53,12 @@ exports.getForBusiness = async (req, res) => {
 
     const { rows } = await db.query(
       `SELECT r.id, r.rating, r.comment, r.created_at,
-              ca.full_name AS reviewer_name
+              ca.full_name AS reviewer_name,
+              rr.reply_text, rr.created_at AS reply_at
        FROM reviews r
        LEFT JOIN bookings b ON b.id = r.booking_id
        LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
+       LEFT JOIN review_replies rr ON rr.review_id = r.id
        WHERE r.business_id = $1
        ORDER BY r.created_at DESC
        LIMIT 50`,
@@ -79,6 +81,44 @@ exports.getForBusiness = async (req, res) => {
   } catch (err) {
     console.error('[reviews/get]', err.message);
     res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
+};
+
+// POST /api/reviews/:id/reply  — business owner replies to a review
+exports.reply = async (req, res) => {
+  try {
+    const { reply_text } = req.body;
+    if (!reply_text?.trim()) return res.status(400).json({ error: 'Reply text required' });
+    // Verify review belongs to this business
+    const { rows: rRows } = await db.query(
+      'SELECT id FROM reviews WHERE id=$1 AND business_id=$2',
+      [req.params.id, req.business.id]
+    );
+    if (!rRows.length) return res.status(404).json({ error: 'Review not found' });
+    const id = crypto.randomUUID();
+    await db.query(
+      `INSERT INTO review_replies (id, review_id, business_id, reply_text)
+       VALUES ($1,$2,$3,$4)
+       ON CONFLICT (review_id) DO UPDATE SET reply_text=$4, created_at=NOW()`,
+      [id, req.params.id, req.business.id, reply_text.trim()]
+    );
+    res.json({ message: 'Reply saved' });
+  } catch (err) {
+    console.error('[reviews/reply]', err.message);
+    res.status(500).json({ error: 'Failed to save reply' });
+  }
+};
+
+// DELETE /api/reviews/:id/reply  — business removes their reply
+exports.deleteReply = async (req, res) => {
+  try {
+    await db.query(
+      'DELETE FROM review_replies WHERE review_id=$1 AND business_id=$2',
+      [req.params.id, req.business.id]
+    );
+    res.json({ message: 'Reply deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete reply' });
   }
 };
 

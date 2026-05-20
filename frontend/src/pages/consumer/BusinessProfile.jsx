@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
-  Calendar, ArrowLeft, Share2, Heart, CheckCircle, Sparkles,
+  Calendar, ArrowLeft, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -82,6 +82,14 @@ function ReviewCard({ review }) {
             ))}
           </div>
           {review.comment && <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{review.comment}</p>}
+          {review.reply_text && (
+            <div className="mt-3 pl-3 border-l-2 border-primary-200 dark:border-primary-800">
+              <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 flex items-center gap-1 mb-0.5">
+                <MessageSquare className="w-3 h-3" /> Business reply
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{review.reply_text}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -97,6 +105,7 @@ export default function BusinessProfile() {
   const [services, setServices] = useState([]);
   const [reviewData, setReviewData] = useState({ reviews: [], stats: null });
   const [hours, setHours] = useState(null);
+  const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -107,12 +116,14 @@ export default function BusinessProfile() {
       servicesAPI.listPublic(slug),
       reviewsAPI.getForBusiness(slug),
       availabilityAPI.getPublicHours(slug).catch(() => null),
+      photosAPI.listPublic(slug).catch(() => []),
     ])
-      .then(([biz, svcs, rev, avail]) => {
+      .then(([biz, svcs, rev, avail, pics]) => {
         setBusiness(biz);
         setServices((svcs.filter ? svcs.filter(s => s.is_active) : svcs));
         setReviewData(rev);
         setHours(avail);
+        setPhotos(Array.isArray(pics) ? pics : []);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -319,6 +330,23 @@ export default function BusinessProfile() {
             ))}
           </div>
         </div>
+
+        {/* Photo Gallery */}
+        {photos.length > 0 && (
+          <div className="card p-5">
+            <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Image className="w-4 h-4 text-primary-500" />
+              Gallery
+            </h2>
+            <div className="grid grid-cols-3 gap-1.5">
+              {photos.map(p => (
+                <div key={p.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <img src={p.photo_url} alt={p.caption || ''} className="w-full h-full object-cover" loading="lazy" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Reviews */}
         <div className="card p-5">

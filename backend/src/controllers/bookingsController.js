@@ -497,3 +497,118 @@ exports.resolveDispute = async (req, res) => {
     res.status(500).json({ error: 'Failed to resolve dispute' });
   }
 };
+
+// POST /bookings/walkin  — business creates walk-in booking from dashboard (authenticated)
+exports.createWalkin = async (req, res) => {
+  try {
+    const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, staff_member_id } = req.body;
+    if (!service_id || !booking_date || !start_time || !customer_name) {
+      return res.status(400).json({ error: 'service_id, booking_date, start_time and customer_name are required' });
+    }
+    const service = await Service.findById(service_id);
+    if (!service || service.business_id !== req.business.id || !service.is_active) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+    const [h, m] = start_time.split(':').map(Number);
+    const endMins = h * 60 + m + service.duration_minutes;
+    const end_time = `${Math.floor(endMins / 60).toString().padStart(2, '0')}:${(endMins % 60).toString().padStart(2, '0')}`;
+
+    const customer = await Customer.findOrCreate({
+      business_id: req.business.id,
+      full_name: customer_name,
+      phone: customer_phone || null,
+      email: customer_email || null,
+    });
+
+    const reference_id = generateReference();
+    const booking = await Booking.create({
+      reference_id,
+      business_id: req.business.id,
+      service_id,
+      customer_id: customer.id,
+      consumer_id: null,
+      booking_date,
+      start_time,
+      end_time,
+      notes: notes || null,
+      stripe_payment_intent_id: null,
+    });
+
+    // Attach staff member if provided
+    if (staff_member_id) {
+      await db.query('UPDATE bookings SET staff_member_id=$1 WHERE id=$2', [staff_member_id, booking.id]);
+    }
+
+    await Customer.incrementBookings(customer.id);
+    const fullBooking = await Booking.findByReference(reference_id);
+
+    // Auto-confirm walk-in
+    await Booking.updateStatus(fullBooking.id, req.business.id, 'confirmed', null);
+
+    if (customer_email) sendBookingConfirmation({ ...fullBooking, customer_email, status: 'confirmed' }).catch(() => {});
+
+    res.status(201).json({ ...fullBooking, status: 'confirmed' });
+  } catch (err) {
+    console.error('[walkin]', err.message);
+    res.status(500).json({ error: 'Failed to create walk-in booking' });
+  }
+};
+
+// POST /bookings/ref/:ref/reschedule-request  — consumer requests rescheduling
+exports.rescheduleRequest = async (req, res) => {
+  try {
+    const booking = await Booking.findByReference(req.params.ref);
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    // Verify consumer owns this booking
+    let consumerIdFromToken = null;
+    const header = req.headers.authorization;
+    if (header?.startsWith('Bearer ')) {
+      try {
+        const jwt2 = require('jsonwebtoken');
+        const p = jwt2.verify(header.split(' ')[1], JWT_SECRET);
+        if (p.type === 'consumer') consumerIdFromToken = p.consumerId;
+      } catch {}
+    }
+    if (booking.consumer_id && consumerIdFromToken && booking.consumer_id !== consumerIdFromToken) {
+      return res.status(403).json({ error: 'Not your booking' });
+    }
+
+    const { preferred_date, preferred_time, message } = req.body;
+    if (!preferred_date) return res.status(400).json({ error: 'preferred_date is required' });
+
+    // Store as a note on the booking for now; notify business via notification
+    const noteText = `[Reschedule Request] Customer prefers: ${preferred_date}${preferred_time ? ' at ' + preferred_time : ''}${message ? '. Message: ' + message : ''}`;
+    await db.query(
+      "UPDATE bookings SET notes = CONCAT(COALESCE(notes,''), $1) WHERE id=$2",
+      ['\n' + noteText, booking.id]
+    );
+
+    // Notify business owner via email
+    if (booking.business_email) {
+      sendEmail({
+        to: booking.business_email,
+        subject: `Reschedule Request: ${booking.customer_name} – ${booking.reference_id}`,
+        type: 'reschedule_request',
+        business_id: booking.business_id,
+        booking_id: booking.id,
+        html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
+          <h2 style="color:#4f46e5">Reschedule Requested</h2>
+          <p><strong>${booking.customer_name}</strong> would like to reschedule.</p>
+          <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+            <tr><td style="padding:8px 12px;color:#64748b;background:#f8fafc">Reference</td><td style="padding:8px 12px;font-family:monospace;font-weight:600">${booking.reference_id}</td></tr>
+            <tr><td style="padding:8px 12px;color:#64748b">Current date</td><td style="padding:8px 12px">${booking.booking_date}</td></tr>
+            <tr><td style="padding:8px 12px;color:#64748b;background:#f8fafc">Preferred date</td><td style="padding:8px 12px;font-weight:600">${preferred_date}${preferred_time ? ' at ' + preferred_time : ''}</td></tr>
+            ${message ? `<tr><td style="padding:8px 12px;color:#64748b">Message</td><td style="padding:8px 12px">${message}</td></tr>` : ''}
+          </table>
+          <p style="margin-top:20px;color:#64748b;font-size:14px">Log in to your dashboard to reschedule this booking.</p>
+        </div>`,
+      }).catch(() => {});
+    }
+
+    res.json({ message: 'Reschedule request sent to the business. They will contact you to confirm.' });
+  } catch (err) {
+    console.error('[reschedule-request]', err.message);
+    res.status(500).json({ error: 'Failed to send reschedule request' });
+  }
+};

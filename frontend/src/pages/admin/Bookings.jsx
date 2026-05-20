@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { ClipboardList } from 'lucide-react';
-import { bookingsAPI, exportBookingsCsv } from '../../services/api';
+import { ClipboardList, UserPlus } from 'lucide-react';
+import { bookingsAPI, exportBookingsCsv, servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const POLL_INTERVAL = 60_000;
@@ -168,6 +168,10 @@ export default function Bookings() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [exporting, setExporting] = useState(false);
   const timerRef = useRef(null);
+  const [walkinModal, setWalkinModal] = useState(false);
+  const [walkinServices, setWalkinServices] = useState([]);
+  const [walkinForm, setWalkinForm] = useState({ service_id:'', booking_date:'', start_time:'', customer_name:'', customer_phone:'', customer_email:'', notes:'' });
+  const [walkinSaving, setWalkinSaving] = useState(false);
 
   const load = useCallback((silent = false) => {
     if (!silent) setLoading(true);
@@ -238,6 +242,24 @@ export default function Bookings() {
     }
   };
 
+  const openWalkin = () => {
+    if (!walkinServices.length) servicesAPI.list().then(s => setWalkinServices(s.filter(x=>x.is_active))).catch(()=>{});
+    setWalkinForm({ service_id:'', booking_date: new Date().toISOString().slice(0,10), start_time:'', customer_name:'', customer_phone:'', customer_email:'', notes:'' });
+    setWalkinModal(true);
+  };
+
+  const saveWalkin = async (e) => {
+    e.preventDefault();
+    setWalkinSaving(true);
+    try {
+      await bookingsAPI.createWalkin(walkinForm);
+      toast.success('Walk-in booking created and confirmed');
+      setWalkinModal(false);
+      load();
+    } catch(err) { toast.error(err.message); }
+    finally { setWalkinSaving(false); }
+  };
+
   const filtered = useMemo(() => {
     if (!search.trim()) return data.bookings;
     const q = search.toLowerCase();
@@ -258,6 +280,13 @@ export default function Bookings() {
           <p className="text-gray-500 text-sm mt-0.5">Manage all your appointments</p>
         </div>
         <div className="flex items-center gap-2 mt-1">
+          <button
+            onClick={openWalkin}
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">Walk-in</span>
+          </button>
           <button
             onClick={handleExport}
             disabled={exporting}
@@ -567,6 +596,38 @@ export default function Bookings() {
                 <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancel</button>
                 <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? <Spinner /> : 'Reschedule'}</button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Walk-in booking modal */}
+      {walkinModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="font-semibold dark:text-white flex items-center gap-2"><UserPlus className="w-4 h-4 text-primary-500"/>New Walk-in Booking</h2>
+              <button onClick={()=>setWalkinModal(false)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon/></button>
+            </div>
+            <form onSubmit={saveWalkin} className="p-5 space-y-4">
+              <div>
+                <label className="label">Service *</label>
+                <select className="input" required value={walkinForm.service_id} onChange={e=>setWalkinForm(p=>({...p,service_id:e.target.value}))}>
+                  <option value="">Choose service…</option>
+                  {walkinServices.map(s=><option key={s.id} value={s.id}>{s.name} — £{parseFloat(s.price).toFixed(2)} ({s.duration_minutes}min)</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="label">Date *</label><input className="input" type="date" required value={walkinForm.booking_date} onChange={e=>setWalkinForm(p=>({...p,booking_date:e.target.value}))}/></div>
+                <div><label className="label">Start Time *</label><input className="input" type="time" required value={walkinForm.start_time} onChange={e=>setWalkinForm(p=>({...p,start_time:e.target.value}))}/></div>
+              </div>
+              <div><label className="label">Customer Name *</label><input className="input" required placeholder="Full name" value={walkinForm.customer_name} onChange={e=>setWalkinForm(p=>({...p,customer_name:e.target.value}))}/></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="label">Phone</label><input className="input" placeholder="07…" value={walkinForm.customer_phone} onChange={e=>setWalkinForm(p=>({...p,customer_phone:e.target.value}))}/></div>
+                <div><label className="label">Email</label><input className="input" type="email" placeholder="email@…" value={walkinForm.customer_email} onChange={e=>setWalkinForm(p=>({...p,customer_email:e.target.value}))}/></div>
+              </div>
+              <div><label className="label">Notes</label><textarea className="input resize-none" rows={2} value={walkinForm.notes} onChange={e=>setWalkinForm(p=>({...p,notes:e.target.value}))}/></div>
+              <div className="flex gap-3"><button type="button" onClick={()=>setWalkinModal(false)} className="btn-secondary flex-1">Cancel</button><button type="submit" disabled={walkinSaving} className="btn-primary flex-1">{walkinSaving?<Spinner/>:'Book Walk-in'}</button></div>
             </form>
           </div>
         </div>

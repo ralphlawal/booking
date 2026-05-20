@@ -1,7 +1,9 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 const ConsumerAccount = require('../models/ConsumerAccount');
 const ctrl = require('../controllers/consumerController');
+const avatarUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -39,6 +41,7 @@ router.post('/notifications/read', authenticateConsumer, ctrl.markNotificationsR
 router.post('/resend-verification', authenticateConsumer, ctrl.resendVerification);
 router.get('/verify-email', ctrl.verifyEmail);
 router.get('/referral', authenticateConsumer, ctrl.getReferral);
+router.post('/me/avatar', authenticateConsumer, avatarUpload.single('avatar'), ctrl.uploadAvatar);
 
 module.exports = router;
 module.exports.authenticateConsumer = authenticateConsumer;

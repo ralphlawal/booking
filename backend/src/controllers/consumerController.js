@@ -380,3 +380,18 @@ exports.getReferral = async (req, res) => {
     res.status(500).json({ error: 'Failed to load referral info' });
   }
 };
+
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const allowed = ['image/jpeg','image/png','image/webp'];
+    if (!allowed.includes(req.file.mimetype)) return res.status(400).json({ error: 'Only JPEG/PNG/WebP allowed' });
+    const avatar_url = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const ConsumerAccount = require('../models/ConsumerAccount');
+    const updated = await ConsumerAccount.update(req.consumer.id, { avatar_url });
+    res.json({ avatar_url, consumer: updated });
+  } catch (err) {
+    console.error('[consumer/uploadAvatar]', err.message);
+    res.status(500).json({ error: 'Upload failed' });
+  }
+};

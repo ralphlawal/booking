@@ -3,7 +3,7 @@ import { Scissors, Lock } from 'lucide-react';
 import { servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const EMPTY = { name: '', description: '', price: '', duration_minutes: 60, is_active: true, deposit_required: false, deposit_amount: '' };
+const EMPTY = { name: '', description: '', price: '', duration_minutes: 60, is_active: true, deposit_required: false, deposit_amount: '', category: '' };
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -91,11 +91,12 @@ export default function Services() {
             <div key={svc.id} className={`card p-5 transition-all ${!svc.is_active ? 'opacity-60' : ''}`}>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-gray-900 dark:text-white">{svc.name}</h3>
                     <span className={`badge ${svc.is_active ? 'badge-confirmed' : 'bg-gray-100 text-gray-500'}`}>
                       {svc.is_active ? 'Active' : 'Inactive'}
                     </span>
+                    {svc.category && <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400">{svc.category}</span>}
                   </div>
                   {svc.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{svc.description}</p>}
                   <div className="flex items-center gap-3 mt-3 flex-wrap">
@@ -135,6 +136,10 @@ export default function Services() {
               <div>
                 <label className="label">Service Name *</label>
                 <input className="input" placeholder="Classic Haircut" required value={form.name} onChange={set('name')} />
+              </div>
+              <div>
+                <label className="label">Category</label>
+                <input className="input" placeholder="e.g. Hair, Nails, Beauty" value={form.category || ''} onChange={set('category')} />
               </div>
               <div>
                 <label className="label">Description</label>

@@ -29,6 +29,7 @@ import BusinessProfile from './pages/consumer/BusinessProfile';
 import ConsumerProfile from './pages/consumer/ConsumerProfile';
 import ConsumerMessages from './pages/consumer/ConsumerMessages';
 import ConsumerOnboarding from './pages/consumer/ConsumerOnboarding';
+import FavouritesPage from './pages/consumer/FavouritesPage';
 
 // Support
 import AdminSupport from './pages/support/AdminSupport';
@@ -168,6 +169,7 @@ export default function App() {
             <Route path="/customer/dashboard" element={<ConsumerProtectedRoute><CustomerDashboard /></ConsumerProtectedRoute>} />
             <Route path="/customer/messages" element={<ConsumerProtectedRoute><ConsumerMessages /></ConsumerProtectedRoute>} />
             <Route path="/customer/profile" element={<ConsumerProtectedRoute><ConsumerProfile /></ConsumerProtectedRoute>} />
+            <Route path="/customer/favourites" element={<ConsumerProtectedRoute><FavouritesPage /></ConsumerProtectedRoute>} />
             <Route path="/admin-support" element={<AdminSupport />} />
 
             {/* Account type chooser */}

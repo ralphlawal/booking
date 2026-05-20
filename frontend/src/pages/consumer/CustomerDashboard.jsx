@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle, CalendarClock } from 'lucide-react';
 import { consumerAPI, reviewsAPI } from '../../services/api';
 import { useNotifications } from '../../context/NotificationContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -36,7 +36,7 @@ function CopyRefButton({ refId }) {
   );
 }
 
-function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, onDispute, past }) {
+function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, onDispute, onReschedule, past }) {
   const today = new Date().toISOString().split('T')[0];
   const isPastDate = booking.booking_date < today;
   const isPaid = booking.payment_status === 'paid';
@@ -134,12 +134,20 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
               View business
             </Link>
             {(booking.status === 'pending' || booking.status === 'confirmed') && (
-              <button
-                onClick={() => onCancel(booking)}
-                className="text-sm px-3 py-2 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              >
-                Cancel
-              </button>
+              <>
+                <button
+                  onClick={() => onReschedule(booking)}
+                  className="text-sm px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center gap-1"
+                >
+                  <CalendarClock className="w-3.5 h-3.5" /> Reschedule
+                </button>
+                <button
+                  onClick={() => onCancel(booking)}
+                  className="text-sm px-3 py-2 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
             )}
           </>
         )}
@@ -378,6 +386,67 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
   );
 }
 
+function RescheduleModal({ booking, onClose }) {
+  const [form, setForm] = useState({ preferred_date: '', preferred_time: '', message: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.preferred_date) { toast.error('Please select a preferred date'); return; }
+    setSubmitting(true);
+    try {
+      await consumerAPI.rescheduleRequest(booking.reference_id, form);
+      toast.success('Reschedule request sent to the business');
+      onClose();
+    } catch (err) {
+      toast.error(err.message || 'Could not send reschedule request');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Request Reschedule</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+        <form onSubmit={submit} className="p-5 space-y-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+          </p>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Preferred date *</label>
+            <input type="date" className="input text-sm" required value={form.preferred_date} onChange={set('preferred_date')} min={new Date().toISOString().split('T')[0]} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Preferred time (optional)</label>
+            <input type="time" className="input text-sm" value={form.preferred_time} onChange={set('preferred_time')} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Message (optional)</label>
+            <textarea className="input resize-none text-sm" rows={2} placeholder="Any specific preferences or notes…" value={form.message} onChange={set('message')} maxLength={300} />
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-xs text-blue-700 dark:text-blue-400">
+            This sends a request to the business — they'll confirm the new time directly with you.
+          </div>
+          <div className="flex gap-3">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" disabled={submitting} className="btn-primary flex-1 flex items-center justify-center gap-2">
+              {submitting ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <CalendarClock className="w-4 h-4" />}
+              {submitting ? 'Sending…' : 'Send request'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function PreferenceCard({ pref, onRemove, onBook }) {
   return (
     <div className="card p-4">
@@ -432,6 +501,7 @@ export default function CustomerDashboard() {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [confirming, setConfirming] = useState(false);
   const [disputeTarget, setDisputeTarget] = useState(null);
+  const [rescheduleTarget, setRescheduleTarget] = useState(null);
   const [resending, setResending] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [bookingsError, setBookingsError] = useState(false);
@@ -753,7 +823,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {upcoming.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past={false} />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} onReschedule={setRescheduleTarget} past={false} />
               ))}
             </div>
           )
@@ -831,6 +901,13 @@ export default function CustomerDashboard() {
           onSubmitted={(bookingId) => {
             setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, has_dispute: true, dispute_status: 'open' } : b));
           }}
+        />
+      )}
+
+      {rescheduleTarget && (
+        <RescheduleModal
+          booking={rescheduleTarget}
+          onClose={() => setRescheduleTarget(null)}
         />
       )}
 

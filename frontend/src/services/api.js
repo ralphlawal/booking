@@ -85,6 +85,7 @@ export const bookingsAPI = {
     api.put(`/bookings/${id}/status`, { status, cancelled_reason, no_show: !!no_show }),
   reschedule: (id, data) => api.put(`/bookings/${id}/reschedule`, data),
   getAnalytics: () => api.get('/bookings/analytics'),
+  createWalkin: (data) => api.post('/bookings/walkin', data),
 };
 
 export const customersAPI = {
@@ -155,6 +156,12 @@ export const consumerAPI = {
   cancelBooking: (ref) => consumerAxios.post(`/bookings/ref/${ref}/cancel`),
   confirmService: (ref, consumer_id) => consumerAxios.post(`/bookings/ref/${ref}/confirm-service`, { consumer_id }),
   raiseDispute: (ref, data) => consumerAxios.post(`/bookings/ref/${ref}/dispute`, data),
+  rescheduleRequest: (ref, data) => consumerAxios.post(`/bookings/ref/${ref}/reschedule-request`, data),
+  uploadAvatar: (file) => {
+    const form = new FormData();
+    form.append('avatar', file);
+    return consumerAxios.post('/consumer/me/avatar', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 export const adminDisputesAPI = {
@@ -232,7 +239,59 @@ export const adminPanelAPI = {
   verifyBusiness: (id) => adminAxios.patch(`/admin/businesses/${id}/verify`),
   rejectVerification: (id) => adminAxios.patch(`/admin/businesses/${id}/reject-verify`),
   suspendBusiness: (id, active) => adminAxios.patch(`/admin/businesses/${id}/suspend`, { active }),
+  editBusiness: (id, data) => adminAxios.put(`/admin/businesses/${id}`, data),
   getConsumers: () => adminAxios.get('/admin/consumers'),
+  getFinancialReport: (period) => adminAxios.get('/admin/financial', { params: { period } }),
+};
+
+export const staffAPI = {
+  list: () => api.get('/staff'),
+  listPublic: (slug) => api.get(`/staff/public/${slug}`),
+  create: (data) => api.post('/staff', data),
+  update: (id, data) => api.put(`/staff/${id}`, data),
+  remove: (id) => api.delete(`/staff/${id}`),
+};
+
+export const photosAPI = {
+  listPublic: (slug) => api.get(`/photos/public/${slug}`),
+  list: () => api.get('/photos'),
+  upload: (file, caption) => {
+    const form = new FormData();
+    form.append('photo', file);
+    if (caption) form.append('caption', caption);
+    return api.post('/photos', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  remove: (id) => api.delete(`/photos/${id}`),
+  reorder: (order) => api.put('/photos/reorder', { order }),
+};
+
+export const waitlistAPI = {
+  join: (slug, data) => api.post(`/waitlist/${slug}`, data),
+  list: () => api.get('/waitlist'),
+  update: (id, status) => api.patch(`/waitlist/${id}`, { status }),
+  remove: (id) => api.delete(`/waitlist/${id}`),
+};
+
+export const promoAPI = {
+  list: () => api.get('/promo'),
+  create: (data) => api.post('/promo', data),
+  update: (id, data) => api.patch(`/promo/${id}`, data),
+  remove: (id) => api.delete(`/promo/${id}`),
+  validate: (code, business_slug, order_amount) =>
+    api.post('/promo/validate', { code, business_slug, order_amount }),
+};
+
+export const intakeAPI = {
+  getPublic: (slug) => api.get(`/intake/public/${slug}`),
+  get: () => api.get('/intake'),
+  save: (data) => api.put('/intake', data),
+  listResponses: () => api.get('/intake/responses'),
+  respond: (data) => api.post('/intake/respond', data),
+};
+
+export const reviewReplyAPI = {
+  reply: (reviewId, reply_text) => api.post(`/reviews/${reviewId}/reply`, { reply_text }),
+  deleteReply: (reviewId) => api.delete(`/reviews/${reviewId}/reply`),
 };
 
 export const adminChatAPI = {

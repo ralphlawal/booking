@@ -59,6 +59,53 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/chat', require('./routes/chat'));
 
+// New feature routes
+const { authenticate, attachBusiness } = require('./middleware/auth');
+const staffCtrl = require('./controllers/staffController');
+const photosCtrl = require('./controllers/photosController');
+const waitlistCtrl = require('./controllers/waitlistController');
+const promoCtrl = require('./controllers/promoController');
+const intakeCtrl = require('./controllers/intakeController');
+
+// Staff
+app.get('/api/staff', authenticate, attachBusiness, staffCtrl.list);
+app.post('/api/staff', authenticate, attachBusiness, staffCtrl.create);
+app.put('/api/staff/:id', authenticate, attachBusiness, staffCtrl.update);
+app.delete('/api/staff/:id', authenticate, attachBusiness, staffCtrl.remove);
+app.get('/api/staff/public/:slug', staffCtrl.listPublic);
+
+// Photos
+app.get('/api/photos/public/:slug', photosCtrl.listPublic);
+app.get('/api/photos', authenticate, attachBusiness, photosCtrl.list);
+app.post('/api/photos', authenticate, attachBusiness, photosCtrl.uploadMiddleware, photosCtrl.upload);
+app.delete('/api/photos/:id', authenticate, attachBusiness, photosCtrl.remove);
+app.put('/api/photos/reorder', authenticate, attachBusiness, photosCtrl.reorder);
+
+// Waitlist
+app.post('/api/waitlist/:slug', waitlistCtrl.join);
+app.get('/api/waitlist', authenticate, attachBusiness, waitlistCtrl.list);
+app.patch('/api/waitlist/:id', authenticate, attachBusiness, waitlistCtrl.update);
+app.delete('/api/waitlist/:id', authenticate, attachBusiness, waitlistCtrl.remove);
+
+// Promo codes
+app.get('/api/promo', authenticate, attachBusiness, promoCtrl.list);
+app.post('/api/promo', authenticate, attachBusiness, promoCtrl.create);
+app.patch('/api/promo/:id', authenticate, attachBusiness, promoCtrl.update);
+app.delete('/api/promo/:id', authenticate, attachBusiness, promoCtrl.remove);
+app.post('/api/promo/validate', promoCtrl.validate);
+
+// Intake forms
+app.get('/api/intake/public/:slug', intakeCtrl.getPublic);
+app.get('/api/intake', authenticate, attachBusiness, intakeCtrl.get);
+app.put('/api/intake', authenticate, attachBusiness, intakeCtrl.save);
+app.get('/api/intake/responses', authenticate, attachBusiness, intakeCtrl.listResponses);
+app.post('/api/intake/respond', intakeCtrl.respond);
+
+// Walk-in booking
+const bookingsCtrl = require('./controllers/bookingsController');
+app.post('/api/bookings/walkin', authenticate, attachBusiness, bookingsCtrl.createWalkin);
+app.post('/api/bookings/ref/:ref/reschedule-request', bookingsCtrl.rescheduleRequest);
+
 // Broadcast notifications
 const bcastCtrl = require('./controllers/broadcastController');
 app.get('/api/broadcasts/active', bcastCtrl.getActive);
@@ -73,7 +120,14 @@ app.get('/api/admin/businesses', adminCtrl.getBusinesses);
 app.patch('/api/admin/businesses/:id/verify', adminCtrl.verifyBusiness);
 app.patch('/api/admin/businesses/:id/reject-verify', adminCtrl.rejectVerification);
 app.patch('/api/admin/businesses/:id/suspend', adminCtrl.suspendBusiness);
+app.put('/api/admin/businesses/:id', adminCtrl.editBusiness);
 app.get('/api/admin/consumers', adminCtrl.getConsumers);
+app.get('/api/admin/financial', adminCtrl.getFinancialReport);
+
+// Review replies (business authenticated)
+const reviewsCtrl = require('./controllers/reviewsController');
+app.post('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.reply);
+app.delete('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.deleteReply);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
@@ -142,6 +196,8 @@ async function start() {
       await pool.query(sql12);
       const sql13 = fs.readFileSync(path.join(__dirname, '../migrations/013_broadcasts_referrals.sql'), 'utf8');
       await pool.query(sql13);
+      const sql14 = fs.readFileSync(path.join(__dirname, '../migrations/014_new_features.sql'), 'utf8');
+      await pool.query(sql14);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');

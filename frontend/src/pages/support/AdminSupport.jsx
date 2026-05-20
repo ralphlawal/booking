@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight } from 'lucide-react';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2 } from 'lucide-react';
 import { adminChatAPI, adminDisputesAPI, broadcastAPI, adminPanelAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -423,6 +423,7 @@ function BusinessesPanel() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [acting, setActing] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
 
   const load = () => adminPanelAPI.getBusinesses().then(setBusinesses).catch(() => toast.error('Failed to load businesses'));
   useEffect(() => { load().finally(() => setLoading(false)); }, []);
@@ -565,11 +566,203 @@ function BusinessesPanel() {
                   {b.is_active ? <Ban className="w-3.5 h-3.5" /> : <ToggleRight className="w-3.5 h-3.5" />}
                   {acting === b.id + 'suspend' ? 'Updating…' : b.is_active ? 'Suspend' : 'Reactivate'}
                 </button>
+                <button
+                  onClick={() => setEditTarget(b)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <Edit2 className="w-3.5 h-3.5" /> Edit
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {editTarget && (
+        <EditBusinessModal
+          business={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={(updated) => {
+            setBusinesses(prev => prev.map(b => b.id === updated.id ? { ...b, ...updated } : b));
+            setEditTarget(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function FinancialPanel() {
+  const [period, setPeriod] = useState(30);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = (p) => {
+    setLoading(true);
+    adminPanelAPI.getFinancialReport(p).then(setData).catch(() => toast.error('Failed to load report')).finally(() => setLoading(false));
+  };
+  useEffect(() => { load(period); }, []);
+
+  const fmt = (v) => `£${parseFloat(v || 0).toFixed(2)}`;
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary-600" /> Financial Report</h2>
+        <div className="flex gap-1.5">
+          {[7, 30, 90].map(d => (
+            <button key={d} onClick={() => { setPeriod(d); load(d); }}
+              className={`text-xs px-3 py-1.5 rounded-xl font-semibold transition-colors ${period === d ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+              {d}d
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      ) : !data ? (
+        <p className="text-center text-gray-400 py-12">No data available</p>
+      ) : (
+        <>
+          {/* Summary totals */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl p-4">
+              <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide mb-1">Total Revenue</p>
+              <p className="text-2xl font-black text-green-800 dark:text-green-300">{fmt(data.revenue_by_day?.reduce((s, r) => s + parseFloat(r.revenue || 0), 0))}</p>
+              <p className="text-xs text-green-600 dark:text-green-500 mt-1">Last {period} days</p>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4">
+              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-1">Paid Bookings</p>
+              <p className="text-2xl font-black text-blue-800 dark:text-blue-300">{data.revenue_by_day?.reduce((s, r) => s + parseInt(r.paid_bookings || 0), 0) || 0}</p>
+              <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">Last {period} days</p>
+            </div>
+          </div>
+
+          {/* Revenue by day */}
+          {data.revenue_by_day?.length > 0 && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Revenue by day</p>
+              <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                {[...data.revenue_by_day].reverse().map(r => (
+                  <div key={r.day} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                    <span className="text-gray-500 text-xs">{new Date(r.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs text-gray-400">{r.paid_bookings} paid</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{fmt(r.revenue)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Top businesses */}
+          {data.top_businesses?.length > 0 && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top businesses by revenue</p>
+              <div className="space-y-2">
+                {data.top_businesses.map((b, i) => (
+                  <div key={b.business_id} className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
+                    <p className="flex-1 text-sm font-semibold text-gray-900 dark:text-white truncate">{b.name}</p>
+                    <span className="text-xs text-gray-400">{b.paid_bookings} bookings</span>
+                    <span className="text-sm font-bold text-green-700 dark:text-green-400">{fmt(b.revenue)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Top services */}
+          {data.top_services?.length > 0 && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top services</p>
+              <div className="space-y-2">
+                {data.top_services.map((s, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
+                    <p className="flex-1 text-sm font-semibold text-gray-900 dark:text-white truncate">{s.service_name}</p>
+                    <span className="text-xs text-gray-400">{s.bookings} bookings</span>
+                    <span className="text-sm font-bold text-green-700 dark:text-green-400">{fmt(s.revenue)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recent payments */}
+          {data.recent_payments?.length > 0 && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent payments</p>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {data.recent_payments.map(p => (
+                  <div key={p.id} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{p.business_name}</p>
+                      <p className="text-[10px] text-gray-400">{p.service_name} · {new Date(p.booking_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
+                    </div>
+                    <span className="font-bold text-green-700 dark:text-green-400 ml-3">{fmt(p.price)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function EditBusinessModal({ business, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    name: business.name || '',
+    description: business.description || '',
+    category: business.category || '',
+    location: business.location || '',
+    phone: business.phone || '',
+    email: business.email || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  const save = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await adminPanelAPI.editBusiness(business.id, form);
+      toast.success('Business updated');
+      onSaved({ ...business, ...form });
+      onClose();
+    } catch (err) {
+      toast.error(err.message || 'Failed to update');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-gray-900 dark:text-white">Edit Business</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
+        </div>
+        <form onSubmit={save} className="space-y-3">
+          {[['name','Name *'], ['description','Description'], ['category','Category'], ['location','Location'], ['phone','Phone'], ['email','Email']].map(([k, label]) => (
+            <div key={k}>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">{label}</label>
+              {k === 'description'
+                ? <textarea className="input resize-none text-sm" rows={2} value={form[k]} onChange={set(k)} />
+                : <input className="input text-sm" required={k === 'name'} value={form[k]} onChange={set(k)} />}
+            </div>
+          ))}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? 'Saving…' : 'Save changes'}</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -707,6 +900,7 @@ export default function AdminSupport() {
                 { id: 'businesses', icon: <Building2 className="w-3 h-3" />, label: 'Businesses' },
                 { id: 'users', icon: <Users className="w-3 h-3" />, label: 'Users' },
                 { id: 'stats', icon: <BarChart2 className="w-3 h-3" />, label: 'Stats' },
+                { id: 'financial', icon: <TrendingUp className="w-3 h-3" />, label: 'Revenue' },
               ].map(t => (
                 <button key={t.id} onClick={() => setMainTab(t.id)}
                   className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${mainTab === t.id ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}>
@@ -761,6 +955,12 @@ export default function AdminSupport() {
       {mainTab === 'stats' && (
         <div className="flex flex-1 overflow-hidden">
           <StatsPanel />
+        </div>
+      )}
+
+      {mainTab === 'financial' && (
+        <div className="flex flex-1 overflow-hidden">
+          <FinancialPanel />
         </div>
       )}
 

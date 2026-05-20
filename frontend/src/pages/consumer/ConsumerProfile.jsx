@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users } from 'lucide-react';
+import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users, Camera } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { consumerAPI, reviewsAPI, referralAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -106,6 +106,8 @@ export default function ConsumerProfile() {
   const [emailSaving, setEmailSaving] = useState(false);
   const [referral, setReferral] = useState(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -224,6 +226,22 @@ export default function ConsumerProfile() {
     }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const { avatar_url } = await consumerAPI.uploadAvatar(file);
+      await update({ avatar_url });
+      toast.success('Profile photo updated');
+    } catch (err) {
+      toast.error(err.message || 'Could not upload photo');
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirm !== consumer.email) return toast.error('Email does not match');
     setDeletingAccount(true);
@@ -262,8 +280,24 @@ export default function ConsumerProfile() {
       <div className="max-w-2xl mx-auto px-4 py-5 sm:py-6 pb-28">
         {/* Avatar */}
         <div className="flex flex-col items-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-3xl font-bold shadow-primary mb-3">
-            {consumer.full_name?.[0]?.toUpperCase() || '?'}
+          <div className="relative mb-3">
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-3xl font-bold shadow-primary">
+              {consumer.avatar_url
+                ? <img src={consumer.avatar_url} alt={consumer.full_name} className="w-full h-full object-cover" />
+                : consumer.full_name?.[0]?.toUpperCase() || '?'}
+            </div>
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarUploading}
+              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary-600 text-white flex items-center justify-center shadow hover:bg-primary-700 transition-colors disabled:opacity-50"
+              title="Change photo"
+            >
+              {avatarUploading
+                ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : <Camera className="w-3.5 h-3.5" />}
+            </button>
+            <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">{consumer.full_name}</h1>
           <p className="text-sm text-gray-400">{consumer.email}</p>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { MapPin, Wrench, CalendarX, Search, Lock, Shield, RotateCcw } from 'lucide-react';
-import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI, paymentsAPI } from '../../services/api';
+import { MapPin, Wrench, CalendarX, Search, Lock, Shield, RotateCcw, Tag, User } from 'lucide-react';
+import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI, paymentsAPI, staffAPI, intakeAPI, promoAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -37,6 +37,13 @@ export default function BookingPage() {
   const [honeypot, setHoneypot] = useState('');
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentIntentId, setPaymentIntentId] = useState(null);
+  const [staffList, setStaffList] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [intakeForm, setIntakeForm] = useState(null);
+  const [intakeAnswers, setIntakeAnswers] = useState({});
+  const [promoCode, setPromoCode] = useState('');
+  const [promoData, setPromoData] = useState(null);
+  const [promoLoading, setPromoLoading] = useState(false);
 
   useEffect(() => {
     if (consumer) {
@@ -53,10 +60,14 @@ export default function BookingPage() {
     Promise.all([
       businessAPI.getPublic(slug),
       servicesAPI.listPublic(slug),
-    ]).then(([biz, svcs]) => {
+      staffAPI.listPublic(slug).catch(() => []),
+      intakeAPI.getPublic(slug).catch(() => null),
+    ]).then(([biz, svcs, staff, intake]) => {
       setBusiness(biz);
       const active = (svcs.filter ? svcs.filter(s => s.is_active) : svcs);
       setServices(active);
+      setStaffList(Array.isArray(staff) ? staff : []);
+      setIntakeForm(intake?.is_active && intake?.questions?.length ? intake : null);
       if (prefillServiceId) {
         const match = active.find(s => s.id === prefillServiceId);
         if (match) { setBooking(p => ({ ...p, service: match })); setStep(1); }
@@ -75,7 +86,24 @@ export default function BookingPage() {
   const set = (k) => (v) => setBooking(p => ({ ...p, [k]: v }));
 
   const servicePrice = booking.service ? parseFloat(booking.service.price || 0) : 0;
-  const requiresPayment = servicePrice > 0;
+  const discount = promoData ? parseFloat(promoData.discount_amount || 0) : 0;
+  const finalPrice = Math.max(0, servicePrice - discount);
+  const requiresPayment = finalPrice > 0;
+
+  const applyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    try {
+      const result = await promoAPI.validate(promoCode.trim(), slug, servicePrice);
+      setPromoData(result);
+      toast.success(`Promo applied — £${parseFloat(result.discount_amount).toFixed(2)} off!`);
+    } catch (err) {
+      setPromoData(null);
+      toast.error(err.message || 'Invalid promo code');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const goNext = () => setStep(s => Math.min(s + 1, 4));
   const goBack = () => {
@@ -89,7 +117,7 @@ export default function BookingPage() {
       setSubmitting(true);
       try {
         const { client_secret, payment_intent_id } = await paymentsAPI.createIntent({
-          amount_pence: Math.round(servicePrice * 100),
+          amount_pence: Math.round(finalPrice * 100),
           business_name: business.name,
           service_name: booking.service.name,
         });
@@ -120,6 +148,9 @@ export default function BookingPage() {
         consumer_id: consumer?.id || undefined,
         website: honeypot,
         stripe_payment_intent_id: stripe_payment_intent_id || undefined,
+        staff_member_id: selectedStaff?.id || undefined,
+        promo_code: promoData ? promoCode : undefined,
+        discount_amount: discount > 0 ? discount : undefined,
       });
       if (consumer && business) {
         consumerAPI.savePreference({ business_id: business.id, service_id: booking.service.id }).catch(() => {});
@@ -365,6 +396,49 @@ export default function BookingPage() {
                 <label className="label">Note / Message (optional)</label>
                 <textarea className="input resize-none" rows={2} placeholder="Any special requests?" value={booking.notes} onChange={e => set('notes')(e.target.value)} />
               </div>
+
+              {/* Staff picker — only shown if business has staff members */}
+              {staffList.length > 0 && (
+                <div>
+                  <label className="label flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Preferred staff member</label>
+                  <select className="input text-sm" value={selectedStaff?.id || ''} onChange={e => {
+                    const found = staffList.find(s => String(s.id) === e.target.value);
+                    setSelectedStaff(found || null);
+                  }}>
+                    <option value="">No preference</option>
+                    {staffList.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}{s.role ? ` (${s.role})` : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Intake form questions */}
+              {intakeForm && intakeForm.questions.map((q, i) => (
+                <div key={i}>
+                  <label className="label">{q.question}{q.required ? ' *' : ''}</label>
+                  {q.type === 'textarea' ? (
+                    <textarea className="input resize-none text-sm" rows={2} required={q.required}
+                      value={intakeAnswers[i] || ''} onChange={e => setIntakeAnswers(p => ({ ...p, [i]: e.target.value }))} />
+                  ) : q.type === 'select' ? (
+                    <select className="input text-sm" required={q.required}
+                      value={intakeAnswers[i] || ''} onChange={e => setIntakeAnswers(p => ({ ...p, [i]: e.target.value }))}>
+                      <option value="">Select…</option>
+                      {(q.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  ) : q.type === 'checkbox' ? (
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                      <input type="checkbox" className="w-4 h-4 accent-primary-600"
+                        checked={intakeAnswers[i] === 'yes'} onChange={e => setIntakeAnswers(p => ({ ...p, [i]: e.target.checked ? 'yes' : 'no' }))} />
+                      {q.question}
+                    </label>
+                  ) : (
+                    <input className="input text-sm" required={q.required}
+                      value={intakeAnswers[i] || ''} onChange={e => setIntakeAnswers(p => ({ ...p, [i]: e.target.value }))} />
+                  )}
+                </div>
+              ))}
+
               <button
                 onClick={goNext}
                 disabled={!booking.name || !booking.phone}
@@ -408,16 +482,43 @@ export default function BookingPage() {
                   ['Phone', booking.phone],
                   ...(booking.email ? [['Email', booking.email]] : []),
                   ...(booking.notes ? [['Note', booking.notes]] : []),
+                  ...(selectedStaff ? [['Staff', selectedStaff.name]] : []),
+                  ...(discount > 0 ? [['Discount', `-£${discount.toFixed(2)}`]] : []),
+                  ...(discount > 0 ? [['Total', `£${finalPrice.toFixed(2)}`]] : []),
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between text-sm">
-                    <span className="text-gray-500">{k}</span>
-                    <span className="font-medium text-right max-w-[60%]">{v}</span>
+                  <div key={k} className={`flex justify-between text-sm ${k === 'Total' ? 'font-bold text-gray-900 border-t border-gray-100 pt-2 mt-2' : ''}`}>
+                    <span className={k === 'Discount' ? 'text-green-600' : 'text-gray-500'}>{k}</span>
+                    <span className={`font-medium text-right max-w-[60%] ${k === 'Discount' ? 'text-green-600' : ''}`}>{v}</span>
                   </div>
                 ))}
               </div>
+
+              {/* Promo code input */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                  <Tag className="w-3.5 h-3.5" /> Promo code
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    className="input flex-1 text-sm"
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={e => { setPromoCode(e.target.value.toUpperCase()); if (promoData) setPromoData(null); }}
+                    disabled={!!promoData}
+                  />
+                  {promoData ? (
+                    <button type="button" onClick={() => { setPromoData(null); setPromoCode(''); }} className="px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">Remove</button>
+                  ) : (
+                    <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()} className="px-3 py-2 rounded-xl bg-primary-600 text-white text-xs font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 whitespace-nowrap">
+                      {promoLoading ? '…' : 'Apply'}
+                    </button>
+                  )}
+                </div>
+                {promoData && <p className="text-xs text-green-600 font-medium mt-1">✓ {promoData.code} applied — £{parseFloat(promoData.discount_amount).toFixed(2)} off</p>}
+              </div>
             </div>
             <button onClick={handleConfirm} disabled={submitting} className="btn-primary w-full text-base py-3.5">
-              {submitting ? <Spinner /> : requiresPayment ? `Pay £${servicePrice.toFixed(2)} & Confirm` : 'Confirm Booking'}
+              {submitting ? <Spinner /> : requiresPayment ? `Pay £${finalPrice.toFixed(2)} & Confirm` : 'Confirm Booking'}
             </button>
             <p className="text-center text-xs text-gray-400 mt-3">By booking you agree to the cancellation policy</p>
 
@@ -445,7 +546,7 @@ export default function BookingPage() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="font-bold text-xl text-gray-900">Payment</h2>
-                <p className="text-sm text-gray-500">£{servicePrice.toFixed(2)} · {booking.service?.name}</p>
+                <p className="text-sm text-gray-500">£{finalPrice.toFixed(2)} · {booking.service?.name}</p>
               </div>
               <button onClick={goBack} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
@@ -457,7 +558,7 @@ export default function BookingPage() {
                 onSuccess={(pi_id) => submit(pi_id)}
                 submitting={submitting}
                 setSubmitting={setSubmitting}
-                amount={servicePrice}
+                amount={finalPrice}
               />
             </Elements>
           </div>

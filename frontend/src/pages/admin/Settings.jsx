@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { businessAPI, availabilityAPI } from '../../services/api';
+import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../config/firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { compressImage } from '../../utils/compressImage';
+import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check } from 'lucide-react';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const INTERVALS = [15,30,45,60];
@@ -39,6 +40,32 @@ export default function Settings() {
   const [verForm, setVerForm] = useState({ legal_name: '', company_reg_number: '', sole_trader: false, business_address: '', contact_person: '', id_type: 'passport' });
   const [verSaving, setVerSaving] = useState(false);
 
+  // Staff
+  const [staff, setStaff] = useState([]);
+  const [staffModal, setStaffModal] = useState(null);
+  const [staffForm, setStaffForm] = useState({ name: '', role: '', bio: '', phone: '', email: '', working_days: [], opening_time: '09:00', closing_time: '18:00' });
+  const [staffSaving, setStaffSaving] = useState(false);
+
+  // Photos
+  const [photos, setPhotos] = useState([]);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef(null);
+
+  // Promo codes
+  const [promos, setPromos] = useState([]);
+  const [promoForm, setPromoForm] = useState({ code: '', type: 'percent', value: '', min_order_amount: '', max_uses: '', valid_until: '' });
+  const [promoSaving, setPromoSaving] = useState(false);
+
+  // Intake form
+  const [intakeForm, setIntakeForm] = useState(null);
+  const [intakeTitle, setIntakeTitle] = useState('Pre-appointment form');
+  const [intakeQuestions, setIntakeQuestions] = useState([]);
+  const [intakeActive, setIntakeActive] = useState(true);
+  const [intakeSaving, setIntakeSaving] = useState(false);
+
+  // Waitlist
+  const [waitlist, setWaitlist] = useState([]);
+
   useEffect(() => {
     if (business) {
       setBizForm({ name: business.name, description: business.description || '', phone: business.phone || '', email: business.email || '', location: business.location || '', category: business.category || '', latitude: business.latitude || '', longitude: business.longitude || '' });
@@ -48,6 +75,13 @@ export default function Settings() {
     }).catch(() => {});
     availabilityAPI.getBlocked().then(setBlocked).catch(() => {});
     businessAPI.getQR().then(d => setQr(d.qr)).catch(() => {});
+    staffAPI.list().then(setStaff).catch(() => {});
+    photosAPI.list().then(setPhotos).catch(() => {});
+    promoAPI.list().then(setPromos).catch(() => {});
+    waitlistAPI.list().then(setWaitlist).catch(() => {});
+    intakeAPI.get().then(f => {
+      if (f) { setIntakeForm(f); setIntakeTitle(f.title); setIntakeQuestions(f.questions || []); setIntakeActive(f.is_active); }
+    }).catch(() => {});
   }, [business]);
 
   const geocodeAddress = async () => {
@@ -232,7 +266,8 @@ export default function Settings() {
     finally { setVerSaving(false); }
   };
 
-  const TABS = ['business','availability','blocked','qr','embed','payouts','verification','security'];
+  const TABS = ['business','availability','blocked','staff','photos','intake','promo','waitlist','qr','embed','payouts','verification','security'];
+  const TAB_LABELS = ['Business Info','Availability','Blocked Days','Staff','Gallery','Intake Forms','Promo Codes','Waitlist','QR & Link','Embed Widget','Payouts','Verification','Security'];
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -244,7 +279,7 @@ export default function Settings() {
       {/* Tabs — horizontal scroll on mobile */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-max sm:w-fit">
-          {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget','Payouts','Verification','Security'].map((t, i) => (
+          {TAB_LABELS.map((t, i) => (
             <button key={t} onClick={() => setTab(TABS[i])}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === TABS[i] ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
               {t}
@@ -791,6 +826,28 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      {/* Staff Tab */}
+      {tab === 'staff' && <StaffTab staff={staff} setStaff={setStaff} />}
+
+      {/* Photos Tab */}
+      {tab === 'photos' && <PhotosTab photos={photos} setPhotos={setPhotos} />}
+
+      {/* Intake Forms Tab */}
+      {tab === 'intake' && (
+        <IntakeTab
+          intakeTitle={intakeTitle} setIntakeTitle={setIntakeTitle}
+          intakeQuestions={intakeQuestions} setIntakeQuestions={setIntakeQuestions}
+          intakeActive={intakeActive} setIntakeActive={setIntakeActive}
+          intakeSaving={intakeSaving} setIntakeSaving={setIntakeSaving}
+        />
+      )}
+
+      {/* Promo Codes Tab */}
+      {tab === 'promo' && <PromoTab promos={promos} setPromos={setPromos} />}
+
+      {/* Waitlist Tab */}
+      {tab === 'waitlist' && <WaitlistTab waitlist={waitlist} setWaitlist={setWaitlist} />}
     </div>
   );
 }
@@ -864,3 +921,351 @@ function VerificationCard({ business }) {
 }
 
 function Spinner() { return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />; }
+
+// ── Staff Tab ──────────────────────────────────────────────────────────────
+export function StaffTab({ staff, setStaff }) {
+  const [modal, setModal] = useState(null);
+  const [form, setForm] = useState({ name:'', role:'', bio:'', phone:'', email:'', working_days:[], opening_time:'09:00', closing_time:'18:00' });
+  const [saving, setSaving] = useState(false);
+  const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const toggle = (d) => setForm(p => ({ ...p, working_days: p.working_days.includes(d) ? p.working_days.filter(x=>x!==d) : [...p.working_days, d] }));
+
+  const open = (s) => { setForm(s ? { name:s.name||'', role:s.role||'', bio:s.bio||'', phone:s.phone||'', email:s.email||'', working_days:s.working_days||[], opening_time:s.opening_time?.slice(0,5)||'09:00', closing_time:s.closing_time?.slice(0,5)||'18:00' } : { name:'', role:'', bio:'', phone:'', email:'', working_days:[], opening_time:'09:00', closing_time:'18:00' }); setModal(s||'new'); };
+
+  const save = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      if (modal === 'new') {
+        const s = await staffAPI.create(form);
+        setStaff(p => [...p, s]);
+        toast.success('Staff member added');
+      } else {
+        const s = await staffAPI.update(modal.id, form);
+        setStaff(p => p.map(x => x.id===s.id ? s : x));
+        toast.success('Updated');
+      }
+      setModal(null);
+    } catch(err) { toast.error(err.message); }
+    finally { setSaving(false); }
+  };
+
+  const remove = async (id) => {
+    if (!confirm('Remove this staff member?')) return;
+    try { await staffAPI.remove(id); setStaff(p => p.filter(x=>x.id!==id)); toast.success('Removed'); }
+    catch(err) { toast.error(err.message); }
+  };
+
+  const toggleActive = async (s) => {
+    try {
+      const u = await staffAPI.update(s.id, { is_active: !s.is_active });
+      setStaff(p => p.map(x => x.id===u.id ? u : x));
+    } catch(err) { toast.error(err.message); }
+  };
+
+  return (
+    <div className="max-w-2xl animate-slide-up space-y-4">
+      <div className="flex items-center justify-between">
+        <div><h3 className="font-bold text-gray-900 dark:text-white">Team Members</h3><p className="text-sm text-gray-500">Add staff so customers can book with a specific person</p></div>
+        <button onClick={() => open(null)} className="btn-primary text-sm flex items-center gap-1.5"><Plus className="w-4 h-4"/>Add Staff</button>
+      </div>
+      {staff.length === 0 ? (
+        <div className="card p-8 text-center"><Users className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No staff members yet</p></div>
+      ) : staff.map(s => (
+        <div key={s.id} className="card p-4 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-lg font-bold text-primary-600 dark:text-primary-400">{s.name[0]}</div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-gray-900 dark:text-white text-sm">{s.name}</p>
+            {s.role && <p className="text-xs text-gray-400">{s.role}</p>}
+            <p className={`text-xs mt-0.5 font-medium ${s.is_active ? 'text-green-600':'text-gray-400'}`}>{s.is_active ? 'Active':'Inactive'}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => toggleActive(s)} className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">{s.is_active?'Deactivate':'Activate'}</button>
+            <button onClick={() => open(s)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><Edit2 className="w-4 h-4"/></button>
+            <button onClick={() => remove(s.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
+          </div>
+        </div>
+      ))}
+      {modal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          <form onSubmit={save} className="modal-panel w-full max-w-md p-6 space-y-4 animate-slide-up">
+            <div className="flex items-center justify-between"><h2 className="font-bold text-lg">{modal==='new'?'Add Staff Member':'Edit Staff Member'}</h2><button type="button" onClick={()=>setModal(null)}><X className="w-5 h-5 text-gray-400"/></button></div>
+            <div><label className="label">Name *</label><input className="input" value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} required placeholder="e.g. Sarah"/></div>
+            <div><label className="label">Role / Title</label><input className="input" value={form.role} onChange={e=>setForm(p=>({...p,role:e.target.value}))} placeholder="e.g. Senior Stylist"/></div>
+            <div><label className="label">Bio (shown to customers)</label><textarea className="input resize-none" rows={2} value={form.bio} onChange={e=>setForm(p=>({...p,bio:e.target.value}))} placeholder="A short description…"/></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="label">Phone</label><input className="input" value={form.phone} onChange={e=>setForm(p=>({...p,phone:e.target.value}))} placeholder="07..."/></div>
+              <div><label className="label">Email</label><input className="input" type="email" value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="staff@..."/></div>
+            </div>
+            <div>
+              <label className="label">Working Days</label>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {DAYS.map(d => <button key={d} type="button" onClick={()=>toggle(d)} className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize transition-all ${form.working_days.includes(d)?'bg-primary-600 text-white':'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}>{d.slice(0,3)}</button>)}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="label">From</label><input className="input" type="time" value={form.opening_time} onChange={e=>setForm(p=>({...p,opening_time:e.target.value}))}/></div>
+              <div><label className="label">To</label><input className="input" type="time" value={form.closing_time} onChange={e=>setForm(p=>({...p,closing_time:e.target.value}))}/></div>
+            </div>
+            <div className="flex gap-3"><button type="button" onClick={()=>setModal(null)} className="btn-secondary flex-1">Cancel</button><button type="submit" disabled={saving} className="btn-primary flex-1">{saving?<Spinner/>:modal==='new'?'Add':'Save'}</button></div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Photos Tab ─────────────────────────────────────────────────────────────
+export function PhotosTab({ photos, setPhotos }) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef(null);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) { toast.error('Only JPG/PNG/WebP'); return; }
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file, 1200, 0.85);
+      const photo = await photosAPI.upload(compressed);
+      setPhotos(p => [...p, photo]);
+      toast.success('Photo added');
+    } catch(err) { toast.error(err.message); }
+    finally { setUploading(false); if(inputRef.current) inputRef.current.value=''; }
+  };
+
+  const remove = async (id) => {
+    if (!confirm('Delete this photo?')) return;
+    try { await photosAPI.remove(id); setPhotos(p => p.filter(x=>x.id!==id)); toast.success('Deleted'); }
+    catch(err) { toast.error(err.message); }
+  };
+
+  return (
+    <div className="max-w-2xl animate-slide-up space-y-4">
+      <div className="flex items-center justify-between">
+        <div><h3 className="font-bold text-gray-900 dark:text-white">Photo Gallery</h3><p className="text-sm text-gray-500">Show your work — photos appear on your public profile</p></div>
+        <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="btn-primary text-sm flex items-center gap-1.5">
+          {uploading?<Spinner/>:<Plus className="w-4 h-4"/>}{uploading?'Uploading…':'Add Photo'}
+        </button>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload}/>
+      </div>
+      {photos.length === 0 ? (
+        <div className="card p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary-300 transition-colors" onClick={()=>inputRef.current?.click()}>
+          <Image className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/>
+          <p className="text-gray-400 text-sm">Click to upload your first photo</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {photos.map(p => (
+            <div key={p.id} className="relative group rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 aspect-square">
+              <img src={p.url} alt={p.caption||''} className="w-full h-full object-cover"/>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <button onClick={()=>remove(p.id)} className="p-2 bg-red-500 rounded-xl text-white"><Trash2 className="w-4 h-4"/></button>
+              </div>
+              {p.caption && <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 p-2"><p className="text-white text-xs truncate">{p.caption}</p></div>}
+            </div>
+          ))}
+          <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-primary-300 transition-colors flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-primary-500">
+            {uploading?<Spinner/>:<Plus className="w-6 h-6"/>}
+            <span className="text-xs font-medium">Add</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Intake Forms Tab ────────────────────────────────────────────────────────
+export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setIntakeQuestions, intakeActive, setIntakeActive, intakeSaving, setIntakeSaving }) {
+  const [newQ, setNewQ] = useState({ label:'', type:'text', required:false, options:'' });
+
+  const addQuestion = () => {
+    if (!newQ.label.trim()) return toast.error('Question text required');
+    const q = { id: Date.now().toString(), label: newQ.label.trim(), type: newQ.type, required: newQ.required, options: newQ.type==='select' ? newQ.options.split(',').map(o=>o.trim()).filter(Boolean) : undefined };
+    setIntakeQuestions(p => [...p, q]);
+    setNewQ({ label:'', type:'text', required:false, options:'' });
+  };
+
+  const removeQ = (id) => setIntakeQuestions(p => p.filter(q=>q.id!==id));
+
+  const save = async () => {
+    setIntakeSaving(true);
+    try {
+      await intakeAPI.save({ title: intakeTitle, questions: intakeQuestions, is_active: intakeActive });
+      toast.success('Intake form saved');
+    } catch(err) { toast.error(err.message); }
+    finally { setIntakeSaving(false); }
+  };
+
+  return (
+    <div className="max-w-2xl animate-slide-up space-y-4">
+      <div><h3 className="font-bold text-gray-900 dark:text-white">Pre-Booking Intake Form</h3><p className="text-sm text-gray-500">Collect information from customers before their appointment</p></div>
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div><label className="label">Form Title</label><input className="input" value={intakeTitle} onChange={e=>setIntakeTitle(e.target.value)} placeholder="Pre-appointment form"/></div>
+          <div className="flex items-center gap-2 mt-5">
+            <span className="text-sm text-gray-500">Active</span>
+            <button type="button" onClick={()=>setIntakeActive(p=>!p)} className={`relative w-11 h-6 rounded-full transition-colors ${intakeActive?'bg-primary-600':'bg-gray-200 dark:bg-gray-700'}`}>
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${intakeActive?'left-5.5 translate-x-0.5':'left-0.5'}`}/>
+            </button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {intakeQuestions.length === 0 && <p className="text-sm text-gray-400 py-2">No questions yet — add one below</p>}
+          {intakeQuestions.map((q,i) => (
+            <div key={q.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{i+1}. {q.label}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{q.type}{q.required?' · required':''}</p>
+              </div>
+              <button onClick={()=>removeQ(q.id)} className="text-gray-300 hover:text-red-500 transition-colors"><X className="w-4 h-4"/></button>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-gray-100 dark:border-gray-800 pt-4 space-y-2">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add Question</p>
+          <input className="input" placeholder="Question text e.g. Do you have any allergies?" value={newQ.label} onChange={e=>setNewQ(p=>({...p,label:e.target.value}))}/>
+          <div className="grid grid-cols-2 gap-2">
+            <select className="input" value={newQ.type} onChange={e=>setNewQ(p=>({...p,type:e.target.value}))}>
+              <option value="text">Short text</option>
+              <option value="textarea">Long text</option>
+              <option value="select">Multiple choice</option>
+              <option value="checkbox">Yes/No checkbox</option>
+            </select>
+            <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm cursor-pointer">
+              <input type="checkbox" checked={newQ.required} onChange={e=>setNewQ(p=>({...p,required:e.target.checked}))} className="rounded"/>
+              Required
+            </label>
+          </div>
+          {newQ.type==='select' && <input className="input" placeholder="Options (comma separated): e.g. Yes, No, Not sure" value={newQ.options} onChange={e=>setNewQ(p=>({...p,options:e.target.value}))}/>}
+          <button onClick={addQuestion} className="btn-secondary w-full text-sm flex items-center justify-center gap-1.5"><Plus className="w-4 h-4"/>Add Question</button>
+        </div>
+        <button onClick={save} disabled={intakeSaving} className="btn-primary w-full">{intakeSaving?<Spinner/>:'Save Form'}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Promo Codes Tab ─────────────────────────────────────────────────────────
+export function PromoTab({ promos, setPromos }) {
+  const [form, setForm] = useState({ code:'', type:'percent', value:'', min_order_amount:'', max_uses:'', valid_until:'' });
+  const [saving, setSaving] = useState(false);
+
+  const create = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const p = await promoAPI.create(form);
+      setPromos(prev => [p, ...prev]);
+      setForm({ code:'', type:'percent', value:'', min_order_amount:'', max_uses:'', valid_until:'' });
+      toast.success('Promo code created');
+    } catch(err) { toast.error(err.message); }
+    finally { setSaving(false); }
+  };
+
+  const toggle = async (promo) => {
+    try {
+      const u = await promoAPI.update(promo.id, { is_active: !promo.is_active });
+      setPromos(p => p.map(x => x.id===u.id ? u : x));
+    } catch(err) { toast.error(err.message); }
+  };
+
+  const remove = async (id) => {
+    if (!confirm('Delete this promo code?')) return;
+    try { await promoAPI.remove(id); setPromos(p => p.filter(x=>x.id!==id)); toast.success('Deleted'); }
+    catch(err) { toast.error(err.message); }
+  };
+
+  return (
+    <div className="max-w-2xl animate-slide-up space-y-4">
+      <div><h3 className="font-bold text-gray-900 dark:text-white">Promo Codes</h3><p className="text-sm text-gray-500">Create discount codes for your customers</p></div>
+      <div className="card p-5">
+        <form onSubmit={create} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label">Code *</label><input className="input uppercase" placeholder="e.g. WELCOME20" value={form.code} onChange={e=>setForm(p=>({...p,code:e.target.value.toUpperCase()}))} required/></div>
+            <div><label className="label">Type</label>
+              <select className="input" value={form.type} onChange={e=>setForm(p=>({...p,type:e.target.value}))}>
+                <option value="percent">% off</option>
+                <option value="fixed">£ off</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div><label className="label">{form.type==='percent'?'Discount %':'Amount £'} *</label><input className="input" type="number" min="0.01" step="0.01" placeholder={form.type==='percent'?'20':'5'} value={form.value} onChange={e=>setForm(p=>({...p,value:e.target.value}))} required/></div>
+            <div><label className="label">Min order £</label><input className="input" type="number" min="0" step="0.01" placeholder="0" value={form.min_order_amount} onChange={e=>setForm(p=>({...p,min_order_amount:e.target.value}))}/></div>
+            <div><label className="label">Max uses</label><input className="input" type="number" min="1" placeholder="∞" value={form.max_uses} onChange={e=>setForm(p=>({...p,max_uses:e.target.value}))}/></div>
+          </div>
+          <div><label className="label">Expires</label><input className="input" type="date" value={form.valid_until} onChange={e=>setForm(p=>({...p,valid_until:e.target.value}))}/></div>
+          <button type="submit" disabled={saving} className="btn-primary w-full flex items-center justify-center gap-2">{saving?<Spinner/>:<><Plus className="w-4 h-4"/>Create Code</>}</button>
+        </form>
+      </div>
+      {promos.length > 0 && (
+        <div className="space-y-2">
+          {promos.map(p => (
+            <div key={p.id} className="card p-4 flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-gray-900 dark:text-white">{p.code}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.is_active?'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400':'bg-gray-100 text-gray-400 dark:bg-gray-800'}`}>{p.is_active?'Active':'Off'}</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">{p.type==='percent'?`${p.value}% off`:`£${parseFloat(p.value).toFixed(2)} off`} · {p.uses_count||0} uses{p.max_uses?` / ${p.max_uses}`:''}</p>
+                {p.valid_until && <p className="text-xs text-gray-400">Expires {p.valid_until}</p>}
+              </div>
+              <button onClick={()=>toggle(p)} className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 transition-colors">{p.is_active?'Disable':'Enable'}</button>
+              <button onClick={()=>remove(p.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Waitlist Tab ─────────────────────────────────────────────────────────────
+export function WaitlistTab({ waitlist, setWaitlist }) {
+  const update = async (id, status) => {
+    try {
+      const u = await waitlistAPI.update(id, status);
+      setWaitlist(p => p.map(x => x.id===u.id ? u : x));
+      toast.success(status === 'notified' ? 'Marked as notified' : 'Removed');
+    } catch(err) { toast.error(err.message); }
+  };
+
+  const remove = async (id) => {
+    try { await waitlistAPI.remove(id); setWaitlist(p => p.filter(x=>x.id!==id)); }
+    catch(err) { toast.error(err.message); }
+  };
+
+  const STATUS_COLOR = { waiting:'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', notified:'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', cancelled:'bg-gray-100 text-gray-400 dark:bg-gray-800' };
+
+  return (
+    <div className="max-w-2xl animate-slide-up space-y-4">
+      <div><h3 className="font-bold text-gray-900 dark:text-white">Waitlist</h3><p className="text-sm text-gray-500">Customers who want to be notified when a slot opens up</p></div>
+      {waitlist.length === 0 ? (
+        <div className="card p-8 text-center"><List className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No one on the waitlist yet</p></div>
+      ) : (
+        <div className="space-y-2">
+          {waitlist.map(w => (
+            <div key={w.id} className="card p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2"><p className="font-semibold text-sm text-gray-900 dark:text-white">{w.consumer_name}</p><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[w.status]}`}>{w.status}</span></div>
+                  <p className="text-xs text-gray-400 mt-0.5">{w.consumer_email}{w.consumer_phone?` · ${w.consumer_phone}`:''}</p>
+                  {w.service_name && <p className="text-xs text-gray-500 mt-0.5">Service: {w.service_name}</p>}
+                  {w.requested_date && <p className="text-xs text-gray-400">Preferred: {w.requested_date}{w.preferred_time?` at ${w.preferred_time}`:''}</p>}
+                  <p className="text-xs text-gray-300 mt-0.5">{new Date(w.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {w.status === 'waiting' && <button onClick={()=>update(w.id,'notified')} className="text-xs px-2 py-1 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 hover:bg-blue-100 transition-colors font-medium">Mark notified</button>}
+                  <a href={`tel:${w.consumer_phone}`} className={`text-xs px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-600 hover:bg-gray-100 transition-colors ${!w.consumer_phone?'opacity-40 pointer-events-none':''}`}>Call</a>
+                  <a href={`mailto:${w.consumer_email}`} className="text-xs px-2 py-1 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 hover:bg-primary-100 transition-colors">Email</a>
+                  <button onClick={()=>remove(w.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500"><X className="w-4 h-4"/></button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

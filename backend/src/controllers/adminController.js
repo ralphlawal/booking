@@ -127,3 +127,94 @@ exports.suspendBusiness = async (req, res) => {
     res.status(500).json({ error: 'Failed to update business status' });
   }
 };
+
+exports.editBusiness = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { name, description, category, location, phone, email } = req.body;
+    const { rows } = await db.query(
+      `UPDATE businesses
+       SET name=COALESCE($1,name), description=COALESCE($2,description),
+           category=COALESCE($3,category), location=COALESCE($4,location),
+           phone=COALESCE($5,phone), email=COALESCE($6,email)
+       WHERE id=$7 RETURNING id,name,description,category,location,phone,email,is_verified,is_active`,
+      [name||null, description||null, category||null, location||null, phone||null, email||null, req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('[admin/edit-business]', err.message);
+    res.status(500).json({ error: 'Failed to update business' });
+  }
+};
+
+exports.getFinancialReport = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { period = '30' } = req.query; // days
+    const days = Math.min(parseInt(period) || 30, 365);
+
+    const [revenueByDay, revenueByBusiness, topServices, recentPayments] = await Promise.all([
+      // Revenue per day
+      db.query(
+        `SELECT DATE(b.created_at) AS date,
+                COUNT(*) AS bookings,
+                COALESCE(SUM(s.price),0)::FLOAT AS revenue
+         FROM bookings b
+         JOIN services s ON s.id = b.service_id
+         WHERE b.payment_status = 'paid' AND b.created_at > NOW() - ($1 || ' days')::INTERVAL
+         GROUP BY DATE(b.created_at) ORDER BY date ASC`,
+        [days]
+      ),
+      // Top businesses by revenue
+      db.query(
+        `SELECT biz.id, biz.name, biz.category,
+                COUNT(b.id) AS total_bookings,
+                COALESCE(SUM(s.price),0)::FLOAT AS revenue
+         FROM bookings b
+         JOIN services s ON s.id = b.service_id
+         JOIN businesses biz ON biz.id = b.business_id
+         WHERE b.payment_status = 'paid' AND b.created_at > NOW() - ($1 || ' days')::INTERVAL
+         GROUP BY biz.id ORDER BY revenue DESC LIMIT 10`,
+        [days]
+      ),
+      // Top services
+      db.query(
+        `SELECT s.name, biz.name AS business_name,
+                COUNT(b.id) AS bookings,
+                COALESCE(SUM(s.price),0)::FLOAT AS revenue
+         FROM bookings b
+         JOIN services s ON s.id = b.service_id
+         JOIN businesses biz ON biz.id = b.business_id
+         WHERE b.created_at > NOW() - ($1 || ' days')::INTERVAL
+         GROUP BY s.id, biz.name ORDER BY bookings DESC LIMIT 10`,
+        [days]
+      ),
+      // Recent paid bookings
+      db.query(
+        `SELECT b.reference_id, b.booking_date, b.created_at,
+                s.name AS service_name, s.price::FLOAT AS amount,
+                biz.name AS business_name,
+                COALESCE(ca.full_name, cu.full_name) AS customer_name
+         FROM bookings b
+         JOIN services s ON s.id = b.service_id
+         JOIN businesses biz ON biz.id = b.business_id
+         LEFT JOIN customers cu ON cu.id = b.customer_id
+         LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
+         WHERE b.payment_status = 'paid'
+         ORDER BY b.created_at DESC LIMIT 50`
+      ),
+    ]);
+
+    res.json({
+      period_days: days,
+      revenue_by_day: revenueByDay.rows,
+      top_businesses: revenueByBusiness.rows,
+      top_services: topServices.rows,
+      recent_payments: recentPayments.rows,
+    });
+  } catch (err) {
+    console.error('[admin/financial]', err.message);
+    res.status(500).json({ error: 'Failed to generate financial report' });
+  }
+};
