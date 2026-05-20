@@ -21,6 +21,8 @@ router.put('/me', authenticate, attachBusiness, ctrl.updateBusiness);
 router.post('/me/logo', authenticate, attachBusiness, upload.single('logo'), ctrl.uploadLogo);
 router.get('/me/qr', authenticate, attachBusiness, ctrl.getQRCode);
 router.post('/me/request-verification', authenticate, attachBusiness, ctrl.requestVerification);
+router.post('/me/verification-details', authenticate, attachBusiness, ctrl.submitVerificationDetails);
+router.put('/me/bank-details', authenticate, attachBusiness, ctrl.saveBankDetails);
 
 // Public
 router.get('/:slug', ctrl.getPublicBusiness);

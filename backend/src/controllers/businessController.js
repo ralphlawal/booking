@@ -76,7 +76,7 @@ exports.getQRCode = async (req, res) => {
 exports.requestVerification = async (req, res) => {
   try {
     const biz = req.business;
-    if (biz.is_verified) return res.status(400).json({ error: 'Already verified' });
+    if (biz.is_verified || biz.verification_status === 'verified') return res.status(400).json({ error: 'Already verified' });
     const { sendEmail } = require('../services/emailService');
     const adminEmail = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
     await sendEmail({
@@ -94,17 +94,99 @@ exports.requestVerification = async (req, res) => {
             <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px;width:40%">Business</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.name}</td></tr>
             <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Category</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.category || '—'}</td></tr>
             <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px">Location</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.location || '—'}</td></tr>
-            <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Phone</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.phone || '—'}</td></tr>
-            <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px">Email</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.email || '—'}</td></tr>
+            <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Reg No.</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.verification_details?.company_reg_number || (biz.verification_details?.sole_trader ? 'Sole Trader' : '—')}</td></tr>
+            <tr style="background:#f8fafc"><td style="padding:10px 14px;color:#64748b;font-size:14px">Legal Name</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${biz.verification_details?.legal_name || '—'}</td></tr>
             <tr><td style="padding:10px 14px;color:#64748b;font-size:14px">Business ID</td><td style="padding:10px 14px;color:#1e293b;font-size:14px;font-family:monospace">${biz.id}</td></tr>
           </table>
-          <p style="color:#64748b;font-size:13px;margin:20px 0 0">To approve: run <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">UPDATE businesses SET is_verified = TRUE WHERE id = '${biz.id}';</code> in your database.</p>
+          <p style="color:#64748b;font-size:13px;margin:20px 0 0">To approve: run <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">UPDATE businesses SET is_verified = TRUE, verification_status = 'verified', verified_at = NOW() WHERE id = '${biz.id}';</code> in your database.</p>
         </div>
       </div>`,
     });
-    res.json({ message: 'Verification request submitted. We will review and respond within 2 business days.' });
+    res.json({ message: 'Verification request submitted. We will review within 2 business days.' });
   } catch (err) {
     console.error('Verification request error:', err);
     res.status(500).json({ error: 'Failed to submit request' });
+  }
+};
+
+// POST /api/business/me/verification-details
+// Saves detailed verification info and auto-verifies if criteria met
+exports.submitVerificationDetails = async (req, res) => {
+  try {
+    const biz = req.business;
+    if (biz.is_verified || biz.verification_status === 'verified')
+      return res.status(400).json({ error: 'Already verified' });
+
+    const { legal_name, company_reg_number, sole_trader, business_address, contact_person, id_type } = req.body;
+    if (!legal_name) return res.status(400).json({ error: 'Legal business name is required' });
+    if (!company_reg_number && !sole_trader) return res.status(400).json({ error: 'Company registration number or sole trader declaration is required' });
+
+    const details = { legal_name, company_reg_number: company_reg_number || null, sole_trader: !!sole_trader, business_address, contact_person, id_type };
+
+    const db = require('../config/database');
+    await db.query(
+      `UPDATE businesses SET verification_details = $1, verification_status = 'pending',
+       verification_requested_at = NOW() WHERE id = $2`,
+      [JSON.stringify(details), biz.id]
+    );
+
+    // Attempt auto-verify immediately
+    const { checkAutoVerify } = require('../utils/autoVerify');
+    const autoVerified = await checkAutoVerify(biz.id);
+
+    if (autoVerified) {
+      return res.json({ status: 'verified', message: 'Your business has been automatically verified!' });
+    }
+
+    // Not auto-verified — send manual review email
+    try {
+      const { sendEmail } = require('../services/emailService');
+      const adminEmail = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
+      await sendEmail({
+        to: adminEmail,
+        subject: `Verification Submission: ${biz.name}`,
+        type: 'verification_request',
+        html: `<p>Business <strong>${biz.name}</strong> (ID: ${biz.id}) has submitted verification details for manual review.</p>
+               <p>Legal Name: ${legal_name}</p>
+               <p>Reg No: ${company_reg_number || 'N/A (sole trader)'}</p>
+               <p>Address: ${business_address || '—'}</p>`,
+      });
+    } catch {}
+
+    res.json({ status: 'pending', message: 'Details submitted. We will verify within 2 business days.' });
+  } catch (err) {
+    console.error('submitVerificationDetails error:', err);
+    res.status(500).json({ error: 'Failed to submit details' });
+  }
+};
+
+// PUT /api/business/me/bank-details
+exports.saveBankDetails = async (req, res) => {
+  try {
+    const { holder_name, sort_code, account_number } = req.body;
+    if (!holder_name || !sort_code || !account_number)
+      return res.status(400).json({ error: 'All bank detail fields are required' });
+
+    // Basic format validation
+    const cleanSort = sort_code.replace(/[-\s]/g, '');
+    if (!/^\d{6}$/.test(cleanSort))
+      return res.status(400).json({ error: 'Sort code must be 6 digits (e.g. 20-00-00)' });
+    if (!/^\d{8}$/.test(account_number.replace(/\s/g, '')))
+      return res.status(400).json({ error: 'Account number must be 8 digits' });
+
+    const db = require('../config/database');
+    await db.query(
+      `UPDATE businesses SET
+         bank_holder_name = $1,
+         bank_sort_code = $2,
+         bank_account_number = $3,
+         bank_updated_at = NOW()
+       WHERE id = $4`,
+      [holder_name.trim(), cleanSort, account_number.replace(/\s/g, ''), req.business.id]
+    );
+    res.json({ message: 'Bank details saved securely' });
+  } catch (err) {
+    console.error('saveBankDetails error:', err);
+    res.status(500).json({ error: 'Failed to save bank details' });
   }
 };

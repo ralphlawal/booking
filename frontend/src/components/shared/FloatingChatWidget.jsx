@@ -12,12 +12,12 @@ const HIDE_ON = [
   '/admin-support',
 ];
 
-// Consumer pages with a bottom nav — position button higher so it doesn't overlap
-const CONSUMER_BOTTOM_NAV_PAGES = [
-  '/customer/dashboard',
-  '/customer/profile',
+// Pages with a fixed bottom nav — position button higher so it doesn't overlap
+const HAS_BOTTOM_NAV_PREFIXES = [
+  '/customer/',
   '/explore',
   '/match',
+  '/admin/',
 ];
 
 function fmtTime(ts) {
@@ -40,9 +40,11 @@ export default function FloatingChatWidget() {
   const lastTsRef = useRef(null);
   const pollRef = useRef(null);
   const bottomRef = useRef(null);
+  const seenIds = useRef(new Set());
+  const pollingActive = useRef(false);
 
   const hide = HIDE_ON.some(p => pathname === p || pathname.startsWith(p));
-  const hasBottomNav = CONSUMER_BOTTOM_NAV_PAGES.some(p => pathname === p || pathname.startsWith(p));
+  const hasBottomNav = HAS_BOTTOM_NAV_PREFIXES.some(p => pathname === p || pathname.startsWith(p));
 
   // Determine who is logged in and which API to use
   const isConsumer = !!consumer && !bizUser;
@@ -56,21 +58,26 @@ export default function FloatingChatWidget() {
   const loadMessages = async (roomId) => {
     try {
       const msgs = await chatAPI.getMessages(roomId, null);
+      seenIds.current = new Set(msgs.map(m => m.id));
       setMessages(msgs);
       if (msgs.length) lastTsRef.current = msgs[msgs.length - 1].created_at;
     } catch { /* silent */ }
   };
 
   const pollMessages = async (roomId) => {
-    if (!roomId) return;
+    if (!roomId || pollingActive.current) return;
+    pollingActive.current = true;
     try {
       const newMsgs = await chatAPI.getMessages(roomId, lastTsRef.current);
-      if (newMsgs.length) {
-        setMessages(prev => [...prev, ...newMsgs]);
-        lastTsRef.current = newMsgs[newMsgs.length - 1].created_at;
-        if (!open) setUnread(n => n + newMsgs.length);
+      const fresh = newMsgs.filter(m => !seenIds.current.has(m.id));
+      fresh.forEach(m => seenIds.current.add(m.id));
+      if (fresh.length) {
+        setMessages(prev => [...prev, ...fresh]);
+        lastTsRef.current = fresh[fresh.length - 1].created_at;
+        if (!open) setUnread(n => n + fresh.length);
       }
     } catch { /* silent */ }
+    pollingActive.current = false;
   };
 
   const openChat = async () => {
@@ -107,6 +114,7 @@ export default function FloatingChatWidget() {
     setInput('');
     try {
       const msg = await chatAPI.sendMessage(room.id, text);
+      seenIds.current.add(msg.id);
       setMessages(prev => [...prev, msg]);
       lastTsRef.current = msg.created_at;
     } catch { setInput(text); }

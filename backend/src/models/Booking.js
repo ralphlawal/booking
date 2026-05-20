@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const Booking = {
   async create({ reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id }) {
     const id = crypto.randomUUID();
-    const payment_status = stripe_payment_intent_id ? 'paid' : 'unpaid';
+    const payment_status = stripe_payment_intent_id ? 'pending' : 'unpaid';
     const { rows } = await db.query(
       `INSERT INTO bookings
          (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id, payment_status)

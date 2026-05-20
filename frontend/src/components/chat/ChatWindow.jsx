@@ -30,10 +30,19 @@ export default function ChatWindow({ roomId, currentSenderType, fetchMessages, s
   const bottomRef = useRef(null);
   const lastTsRef = useRef(null);
   const pollRef = useRef(null);
+  const seenIds = useRef(new Set());
+  const pollingRef = useRef(false);
+
+  const mergeMessages = (newMsgs) => {
+    const fresh = newMsgs.filter(m => !seenIds.current.has(m.id));
+    fresh.forEach(m => seenIds.current.add(m.id));
+    return fresh;
+  };
 
   const loadInitial = async () => {
     try {
       const msgs = await fetchMessages(roomId, null);
+      seenIds.current = new Set(msgs.map(m => m.id));
       setMessages(msgs);
       if (msgs.length) lastTsRef.current = msgs[msgs.length - 1].created_at;
     } catch {}
@@ -41,22 +50,28 @@ export default function ChatWindow({ roomId, currentSenderType, fetchMessages, s
   };
 
   const pollNew = async () => {
+    if (pollingRef.current) return;
+    pollingRef.current = true;
     try {
       const newMsgs = await fetchMessages(roomId, lastTsRef.current);
-      if (newMsgs.length) {
-        setMessages(prev => [...prev, ...newMsgs]);
-        lastTsRef.current = newMsgs[newMsgs.length - 1].created_at;
+      const fresh = mergeMessages(newMsgs);
+      if (fresh.length) {
+        setMessages(prev => [...prev, ...fresh]);
+        lastTsRef.current = fresh[fresh.length - 1].created_at;
       }
     } catch {}
+    pollingRef.current = false;
   };
 
   useEffect(() => {
     if (!roomId) return;
     setMessages([]);
-    setLoading(true);
+    seenIds.current = new Set();
     lastTsRef.current = null;
+    pollingRef.current = false;
+    setLoading(true);
     loadInitial();
-    pollRef.current = setInterval(pollNew, 3000);
+    pollRef.current = setInterval(pollNew, 4000);
     return () => clearInterval(pollRef.current);
   }, [roomId]);
 
@@ -72,6 +87,7 @@ export default function ChatWindow({ roomId, currentSenderType, fetchMessages, s
     setInput('');
     try {
       const msg = await sendMessage(roomId, text);
+      seenIds.current.add(msg.id);
       setMessages(prev => [...prev, msg]);
       lastTsRef.current = msg.created_at;
     } catch { setInput(text); }

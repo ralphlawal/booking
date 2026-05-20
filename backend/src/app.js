@@ -113,6 +113,8 @@ async function start() {
       await pool.query(sql8);
       const sql9 = fs.readFileSync(path.join(__dirname, '../migrations/009_stripe_payments.sql'), 'utf8');
       await pool.query(sql9);
+      const sql10 = fs.readFileSync(path.join(__dirname, '../migrations/010_bank_verification.sql'), 'utf8');
+      await pool.query(sql10);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');

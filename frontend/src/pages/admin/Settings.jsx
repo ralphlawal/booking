@@ -31,6 +31,14 @@ export default function Settings() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
 
+  // Bank details
+  const [bankForm, setBankForm] = useState({ holder_name: '', sort_code: '', account_number: '' });
+  const [bankSaving, setBankSaving] = useState(false);
+
+  // Verification details
+  const [verForm, setVerForm] = useState({ legal_name: '', company_reg_number: '', sole_trader: false, business_address: '', contact_person: '', id_type: 'passport' });
+  const [verSaving, setVerSaving] = useState(false);
+
   useEffect(() => {
     if (business) {
       setBizForm({ name: business.name, description: business.description || '', phone: business.phone || '', email: business.email || '', location: business.location || '', category: business.category || '', latitude: business.latitude || '', longitude: business.longitude || '' });
@@ -198,7 +206,33 @@ export default function Settings() {
     }
   };
 
-  const TABS = ['business','availability','blocked','qr','embed','security'];
+  const saveBankDetails = async (e) => {
+    e.preventDefault();
+    setBankSaving(true);
+    try {
+      await businessAPI.saveBankDetails(bankForm);
+      toast.success('Bank details saved');
+    } catch (err) { toast.error(err.message); }
+    finally { setBankSaving(false); }
+  };
+
+  const submitVerification = async (e) => {
+    e.preventDefault();
+    setVerSaving(true);
+    try {
+      const result = await businessAPI.submitVerificationDetails(verForm);
+      if (result.status === 'verified') {
+        toast.success('Your business has been verified!');
+        updateBusiness({ ...business, is_verified: true, verification_status: 'verified' });
+      } else {
+        toast.success(result.message);
+        updateBusiness({ ...business, verification_status: 'pending' });
+      }
+    } catch (err) { toast.error(err.message); }
+    finally { setVerSaving(false); }
+  };
+
+  const TABS = ['business','availability','blocked','qr','embed','payouts','verification','security'];
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -210,7 +244,7 @@ export default function Settings() {
       {/* Tabs — horizontal scroll on mobile */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-max sm:w-fit">
-          {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget','Security'].map((t, i) => (
+          {['Business Info','Availability','Blocked Days','QR & Link','Embed Widget','Payouts','Verification','Security'].map((t, i) => (
             <button key={t} onClick={() => setTab(TABS[i])}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === TABS[i] ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
               {t}
@@ -536,6 +570,143 @@ export default function Settings() {
               Delete my account
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Payouts */}
+      {tab === 'payouts' && (
+        <div className="max-w-2xl animate-slide-up space-y-5">
+          <div className="card p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Payout Bank Details</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Enter your UK bank account to receive payments from BookAm. Funds are processed weekly after Stripe fees.
+            </p>
+            <form onSubmit={saveBankDetails} className="space-y-4">
+              <div>
+                <label className="label">Account Holder Name</label>
+                <input className="input" placeholder="As it appears on your bank account" value={bankForm.holder_name}
+                  onChange={e => setBankForm(p => ({ ...p, holder_name: e.target.value }))} required />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Sort Code</label>
+                  <input className="input" placeholder="20-00-00" maxLength={8} value={bankForm.sort_code}
+                    onChange={e => setBankForm(p => ({ ...p, sort_code: e.target.value }))} required />
+                </div>
+                <div>
+                  <label className="label">Account Number</label>
+                  <input className="input" placeholder="12345678" maxLength={8} value={bankForm.account_number}
+                    onChange={e => setBankForm(p => ({ ...p, account_number: e.target.value }))} required />
+                </div>
+              </div>
+              <button type="submit" disabled={bankSaving} className="btn-primary disabled:opacity-50">
+                {bankSaving ? 'Saving…' : 'Save Bank Details'}
+              </button>
+            </form>
+          </div>
+          <div className="rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4">
+            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">Stripe Connect — Coming Soon</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400">
+              We are adding Stripe Connect for instant automated payouts. Bank details entered above are used for manual weekly transfers until that is live.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Verification */}
+      {tab === 'verification' && (
+        <div className="max-w-2xl animate-slide-up space-y-5">
+          {business?.is_verified || business?.verification_status === 'verified' ? (
+            <div className="card p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white">Business Verified</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  Your business has been verified and displays a verified badge to customers.
+                </p>
+              </div>
+            </div>
+          ) : business?.verification_status === 'pending' ? (
+            <div className="card p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white">Review In Progress</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  We received your details and will verify your business within 2 working days.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="card p-6">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Business Verification</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+                Verified businesses get a badge and rank higher in search. If your profile is complete and details match, you may be verified automatically.
+              </p>
+
+              <div className="mb-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Business info', done: !!(business?.name && business?.phone && business?.email) },
+                  { label: 'Location set', done: !!business?.location },
+                  { label: 'Logo uploaded', done: !!business?.logo_url },
+                  { label: 'Service listed', done: true },
+                ].map(item => (
+                  <div key={item.label} className={`rounded-xl p-3 text-center border ${item.done ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'}`}>
+                    <p className="text-lg">{item.done ? '✓' : '○'}</p>
+                    <p className={`text-xs font-medium mt-0.5 ${item.done ? 'text-green-700 dark:text-green-400' : 'text-gray-400'}`}>{item.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={submitVerification} className="space-y-4">
+                <div>
+                  <label className="label">Legal Business Name *</label>
+                  <input className="input" placeholder="Registered trading name" value={verForm.legal_name}
+                    onChange={e => setVerForm(p => ({ ...p, legal_name: e.target.value }))} required />
+                </div>
+                <div className="flex items-center gap-3 py-1">
+                  <input type="checkbox" id="sole_trader" className="w-4 h-4 rounded accent-primary-600"
+                    checked={verForm.sole_trader}
+                    onChange={e => setVerForm(p => ({ ...p, sole_trader: e.target.checked, company_reg_number: e.target.checked ? '' : p.company_reg_number }))} />
+                  <label htmlFor="sole_trader" className="text-sm text-gray-700 dark:text-gray-300 font-medium cursor-pointer">
+                    I am a sole trader (no company registration)
+                  </label>
+                </div>
+                {!verForm.sole_trader && (
+                  <div>
+                    <label className="label">Company Registration Number *</label>
+                    <input className="input" placeholder="e.g. 12345678" value={verForm.company_reg_number}
+                      onChange={e => setVerForm(p => ({ ...p, company_reg_number: e.target.value }))} />
+                    <p className="text-xs text-gray-400 mt-1">Find yours at <a href="https://find-and-update.company-information.service.gov.uk" target="_blank" rel="noopener" className="text-primary-600 underline">Companies House</a></p>
+                  </div>
+                )}
+                <div>
+                  <label className="label">Registered Business Address</label>
+                  <input className="input" placeholder="Full address including postcode" value={verForm.business_address}
+                    onChange={e => setVerForm(p => ({ ...p, business_address: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Contact Person Full Name</label>
+                  <input className="input" placeholder="Person responsible for this account" value={verForm.contact_person}
+                    onChange={e => setVerForm(p => ({ ...p, contact_person: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Identity Document Type</label>
+                  <select className="input" value={verForm.id_type} onChange={e => setVerForm(p => ({ ...p, id_type: e.target.value }))}>
+                    <option value="passport">Passport</option>
+                    <option value="driving_licence">UK Driving Licence</option>
+                    <option value="national_id">National ID Card</option>
+                  </select>
+                </div>
+                <button type="submit" disabled={verSaving} className="btn-primary w-full sm:w-auto disabled:opacity-50">
+                  {verSaving ? 'Submitting…' : 'Submit for Verification'}
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       )}
 
