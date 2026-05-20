@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin, Gift, Copy, Check as CheckIcon, Users } from 'lucide-react';
+import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { consumerAPI, reviewsAPI, referralAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -90,6 +90,8 @@ export default function ConsumerProfile() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ full_name: '', phone: '', location_text: '' });
+  const [locCoords, setLocCoords] = useState(null);
+  const [detectingLoc, setDetectingLoc] = useState(false);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('profile');
   const [bookings, setBookings] = useState([]);
@@ -141,14 +143,47 @@ export default function ConsumerProfile() {
     }
   }, [tab]);
 
+  const detectLocation = () => {
+    if (!navigator.geolocation) return toast.error('Location not supported in this browser');
+    setDetectingLoc(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLocCoords({ latitude, longitude });
+        try {
+          const resp = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
+          const data = await resp.json();
+          const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || '';
+          const postcode = data.address?.postcode || '';
+          const text = [city, postcode].filter(Boolean).join(', ');
+          setForm(p => ({ ...p, location_text: text || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` }));
+        } catch {
+          setForm(p => ({ ...p, location_text: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` }));
+        }
+        setDetectingLoc(false);
+      },
+      (err) => {
+        setDetectingLoc(false);
+        if (err.code === 1) toast.error('Location access denied — please allow location in your browser settings');
+        else toast.error('Could not detect location — please type it below');
+      },
+      { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
+    );
+  };
+
   const saveProfile = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await update(form);
+      const payload = { ...form };
+      if (locCoords) { payload.latitude = locCoords.latitude; payload.longitude = locCoords.longitude; }
+      await update(payload);
       toast.success('Profile updated');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Could not save profile');
     } finally {
       setSaving(false);
     }
@@ -295,13 +330,28 @@ export default function ConsumerProfile() {
                 <label className="label flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5" /> Your location
                 </label>
-                <input
-                  className="input"
-                  placeholder="e.g. Manchester, M1 1AE"
-                  value={form.location_text}
-                  onChange={e => setForm(p => ({ ...p, location_text: e.target.value }))}
-                />
-                <p className="text-xs text-gray-400 mt-1">Used to show nearby businesses</p>
+                <div className="flex gap-2">
+                  <input
+                    className="input flex-1"
+                    placeholder="e.g. Manchester, M1 1AE"
+                    value={form.location_text}
+                    onChange={e => { setForm(p => ({ ...p, location_text: e.target.value })); setLocCoords(null); }}
+                  />
+                  <button
+                    type="button"
+                    onClick={detectLocation}
+                    disabled={detectingLoc}
+                    title="Detect my location"
+                    className="flex-shrink-0 px-3 rounded-xl border border-gray-200 dark:border-gray-700 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
+                  >
+                    {detectingLoc
+                      ? <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+                      : <Navigation className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {locCoords ? 'GPS coordinates detected — save to update your location' : 'Used to show nearby businesses'}
+                </p>
               </div>
               <button type="submit" disabled={saving} className="btn-primary flex items-center gap-2">
                 <Save className="w-4 h-4" />

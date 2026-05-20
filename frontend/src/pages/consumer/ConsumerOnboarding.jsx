@@ -35,26 +35,38 @@ export default function ConsumerOnboarding() {
   const [selected, setSelected] = useState([]);
 
   const detectLocation = () => {
-    if (!navigator.geolocation) return toast.error('Geolocation not supported on this device');
+    if (!navigator.geolocation) return toast.error('Location not supported on this device — please type your city or postcode');
     setDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         setCoords({ latitude, longitude });
-        // Reverse geocode with a free API
         try {
-          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+          const resp = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
           const data = await resp.json();
           const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || '';
           const postcode = data.address?.postcode || '';
           const text = [city, postcode].filter(Boolean).join(', ');
-          setLocationText(text);
+          setLocationText(text || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
         } catch {
           setLocationText(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
         }
         setDetectingLocation(false);
       },
-      () => { toast.error('Could not detect location — please type it instead'); setDetectingLocation(false); }
+      (err) => {
+        setDetectingLocation(false);
+        if (err.code === 1) {
+          toast.error('Location access denied — please type your city or postcode below');
+        } else if (err.code === 3) {
+          toast.error('Location timed out — please type your city or postcode below');
+        } else {
+          toast.error('Could not detect location — please type your city or postcode below');
+        }
+      },
+      { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
     );
   };
 

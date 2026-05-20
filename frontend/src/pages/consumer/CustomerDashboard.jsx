@@ -434,21 +434,31 @@ export default function CustomerDashboard() {
   const [disputeTarget, setDisputeTarget] = useState(null);
   const [resending, setResending] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [bookingsError, setBookingsError] = useState(false);
   const notifRef = useRef(null);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!consumer) { navigate('/customer/login'); return; }
+  const loadData = () => {
+    setLoading(true);
+    setBookingsError(false);
     Promise.allSettled([
       consumerAPI.myBookings(),
       consumerAPI.getPreferences(),
     ])
       .then(([bResult, pResult]) => {
-        if (bResult.status === 'fulfilled') setBookings(bResult.value);
-        else toast.error('Could not load your bookings');
+        if (bResult.status === 'fulfilled') {
+          setBookings(bResult.value);
+        } else {
+          setBookingsError(true);
+        }
         if (pResult.status === 'fulfilled') setPrefs(pResult.value);
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!consumer) { navigate('/customer/login'); return; }
+    loadData();
   }, [consumer, authLoading]);
 
   useEffect(() => {
@@ -720,6 +730,15 @@ export default function CustomerDashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : bookingsError ? (
+          <div className="text-center py-12">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-7 h-7 text-amber-400" />
+            </div>
+            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Could not load your bookings</h3>
+            <p className="text-sm text-gray-500 mb-4">The server may be starting up — please try again in a moment.</p>
+            <button onClick={loadData} className="btn-primary text-sm">Try again</button>
           </div>
         ) : tab === 'upcoming' ? (
           upcoming.length === 0 ? (

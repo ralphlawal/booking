@@ -5,6 +5,7 @@ import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
+import toast from 'react-hot-toast';
 
 
 function StarRating({ rating }) {
@@ -177,15 +178,22 @@ export default function ExplorePage() {
   };
 
   const getLocation = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      toast.error('Location not supported in this browser');
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
       },
-      () => setLocating(false),
-      { timeout: 8000 }
+      (err) => {
+        setLocating(false);
+        if (err.code === 1) toast.error('Location access denied — please allow location in your browser settings');
+        else toast.error('Could not get your location — please try again');
+      },
+      { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
     );
   };
 
