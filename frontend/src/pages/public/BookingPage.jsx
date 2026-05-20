@@ -6,7 +6,7 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_live_51TYBvRAXe2tHkXjCc4wiPkhH7MQGm01K0dt8tjHKYxZqfcst1DHrHaWGCjxbX3YJuGKKfLkNx82t4mNX5Vx8dpOD00KyZrW5Jc';
 const stripePromise = loadStripe(STRIPE_PK);
@@ -126,8 +126,16 @@ export default function BookingPage() {
       }
       navigate(`/booking-success/${result.reference_id}`);
     } catch (err) {
-      toast.error(err.message);
-      if (err.message.includes('available')) { setStep(2); setBooking(p => ({ ...p, time: null })); }
+      if (stripe_payment_intent_id) {
+        // Payment already taken — give user a clear recovery message
+        toast.error(
+          `Your payment was processed but the booking could not be saved. Please email hello@bookam.business with payment reference: ${stripe_payment_intent_id}`,
+          { duration: 10000 }
+        );
+      } else {
+        toast.error(err.message);
+        if (err.message.includes('available')) { setStep(2); setBooking(p => ({ ...p, time: null })); }
+      }
     } finally {
       setSubmitting(false);
     }
@@ -427,11 +435,13 @@ export default function BookingPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
               </button>
             </div>
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+            <Elements stripe={stripePromise}>
               <PaymentForm
+                clientSecret={clientSecret}
                 onSuccess={(pi_id) => submit(pi_id)}
                 submitting={submitting}
                 setSubmitting={setSubmitting}
+                amount={servicePrice}
               />
             </Elements>
           </div>
@@ -441,7 +451,19 @@ export default function BookingPage() {
   );
 }
 
-function PaymentForm({ onSuccess, submitting, setSubmitting }) {
+const CARD_STYLE = {
+  style: {
+    base: {
+      fontSize: '16px',
+      color: '#1e293b',
+      fontFamily: 'system-ui, sans-serif',
+      '::placeholder': { color: '#94a3b8' },
+    },
+    invalid: { color: '#ef4444' },
+  },
+};
+
+function PaymentForm({ clientSecret, onSuccess, submitting, setSubmitting, amount }) {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
@@ -449,13 +471,15 @@ function PaymentForm({ onSuccess, submitting, setSubmitting }) {
 
   const handlePay = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !clientSecret) return;
     setProcessing(true);
     setError(null);
-    const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      redirect: 'if_required',
+
+    const cardElement = elements.getElement(CardElement);
+    const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card: cardElement },
     });
+
     if (stripeErr) {
       setError(stripeErr.message);
       setProcessing(false);
@@ -468,24 +492,38 @@ function PaymentForm({ onSuccess, submitting, setSubmitting }) {
   };
 
   return (
-    <form onSubmit={handlePay} className="card p-5 space-y-4">
-      <PaymentElement />
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>}
-      <button
-        type="submit"
-        disabled={!stripe || processing || submitting}
-        className="btn-primary w-full text-base py-3.5 flex items-center justify-center gap-2"
-      >
-        {processing || submitting ? <Spinner /> : (
-          <>
-            <Lock className="w-4 h-4" />
-            Pay securely
-          </>
+    <form onSubmit={handlePay} className="space-y-4">
+      <div className="card p-5 space-y-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Card details</p>
+          <div className="border border-gray-200 rounded-xl px-4 py-3.5 bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">
+            <CardElement options={CARD_STYLE} />
+          </div>
+        </div>
+
+        {error && (
+          <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+            <svg className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
         )}
-      </button>
-      <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">
-        <Lock className="w-3 h-3" /> Secured by Stripe · 256-bit encryption
-      </p>
+
+        <button
+          type="submit"
+          disabled={!stripe || !clientSecret || processing || submitting}
+          className="btn-primary w-full text-base py-3.5 flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {processing || submitting ? (
+            <><Spinner /> Processing…</>
+          ) : (
+            <><Lock className="w-4 h-4" /> Pay £{amount?.toFixed(2)} securely</>
+          )}
+        </button>
+
+        <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1.5">
+          <Lock className="w-3 h-3" /> 256-bit SSL · Powered by Stripe
+        </p>
+      </div>
     </form>
   );
 }

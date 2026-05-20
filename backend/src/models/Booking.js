@@ -5,13 +5,28 @@ const Booking = {
   async create({ reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id }) {
     const id = crypto.randomUUID();
     const payment_status = stripe_payment_intent_id ? 'pending' : 'unpaid';
-    const { rows } = await db.query(
-      `INSERT INTO bookings
-         (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id, payment_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes, stripe_payment_intent_id || null, payment_status]
-    );
-    return rows[0];
+    try {
+      const { rows } = await db.query(
+        `INSERT INTO bookings
+           (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id, payment_status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+        [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes, stripe_payment_intent_id || null, payment_status]
+      );
+      return rows[0];
+    } catch (err) {
+      // Fallback: payment columns may not exist yet (migration pending) — insert without them
+      if (err.message?.includes('column') && (err.message.includes('stripe_payment_intent_id') || err.message.includes('payment_status'))) {
+        const { rows } = await db.query(
+          `INSERT INTO bookings
+             (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+          [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes]
+        );
+        console.warn('[Booking.create] Inserted without payment columns — run migration 009');
+        return rows[0];
+      }
+      throw err;
+    }
   },
 
   async findByBusinessId(business_id, { status, date, page = 1, limit = 20 } = {}) {
