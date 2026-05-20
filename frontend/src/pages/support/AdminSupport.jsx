@@ -456,8 +456,6 @@ export default function AdminSupport() {
             </div>
           )}
         </div>
-      </div>
-
       </div>}
 
       {showNew && (
