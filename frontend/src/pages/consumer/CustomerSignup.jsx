@@ -21,8 +21,8 @@ export default function CustomerSignup() {
     setLoading(true);
     try {
       await register(form);
-      toast.success('Account created! Check your inbox to verify your email.');
-      navigate('/customer/dashboard');
+      toast.success('Account created! Welcome to BookAm.');
+      navigate('/customer/onboarding');
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -35,7 +35,7 @@ export default function CustomerSignup() {
     try {
       const consumer = await googleLogin();
       toast.success(`Welcome, ${consumer.full_name}!`);
-      navigate('/customer/dashboard');
+      navigate(consumer.onboarding_complete ? '/customer/dashboard' : '/customer/onboarding');
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
         toast.error(err.message || 'Google sign-in failed');

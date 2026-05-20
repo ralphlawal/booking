@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { consumerAPI, reviewsAPI } from '../../services/api';
+import { useNotifications } from '../../context/NotificationContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -419,6 +420,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
 
 export default function CustomerDashboard() {
   const { consumer, loading: authLoading, logout } = useCustomerAuth();
+  const { notifications, unreadCount, markAllRead, setNotifications } = useNotifications();
   const navigate = useNavigate();
   const [tab, setTab] = useState('upcoming');
   const [bookings, setBookings] = useState([]);
@@ -431,7 +433,6 @@ export default function CustomerDashboard() {
   const [confirming, setConfirming] = useState(false);
   const [disputeTarget, setDisputeTarget] = useState(null);
   const [resending, setResending] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef(null);
 
@@ -441,9 +442,8 @@ export default function CustomerDashboard() {
     Promise.all([
       consumerAPI.myBookings(),
       consumerAPI.getPreferences(),
-      consumerAPI.getNotifications().catch(() => []),
     ])
-      .then(([b, p, n]) => { setBookings(b); setPrefs(p); setNotifications(n); })
+      .then(([b, p]) => { setBookings(b); setPrefs(p); })
       .catch(() => toast.error('Failed to load your data'))
       .finally(() => setLoading(false));
   }, [consumer, authLoading]);
@@ -455,13 +455,9 @@ export default function CustomerDashboard() {
     return () => document.removeEventListener('mousedown', close);
   }, [notifOpen]);
 
-  const openNotifications = async () => {
+  const openNotifications = () => {
     setNotifOpen(v => !v);
-    const unread = notifications.filter(n => !n.is_read);
-    if (unread.length > 0) {
-      consumerAPI.markNotificationsRead().catch(() => {});
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    }
+    if (unreadCount > 0) markAllRead();
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -554,7 +550,7 @@ export default function CustomerDashboard() {
                 title="Notifications"
               >
                 <Bell className="w-4 h-4 text-gray-500" />
-                {notifications.filter(n => !n.is_read).length > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                 )}
               </button>
@@ -816,7 +812,7 @@ export default function CustomerDashboard() {
         />
       )}
 
-      <ConsumerBottomNav unreadCount={notifications.filter(n => !n.is_read).length} />
+      <ConsumerBottomNav />
     </div>
   );
 }

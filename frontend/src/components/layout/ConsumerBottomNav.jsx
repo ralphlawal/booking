@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { CalendarDays, Search, MessageSquare, User } from 'lucide-react';
+import { useNotifications } from '../../context/NotificationContext';
 
 const NAV = [
   { to: '/customer/dashboard', icon: CalendarDays,  label: 'Bookings' },
@@ -9,7 +10,9 @@ const NAV = [
   { to: '/customer/profile',   icon: User,          label: 'Profile'  },
 ];
 
-export default function ConsumerBottomNav({ unreadCount = 0 }) {
+export default function ConsumerBottomNav() {
+  const { unreadCount } = useNotifications();
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex safe-bottom"

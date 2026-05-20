@@ -108,6 +108,42 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Profile completeness banner */}
+      {business && (() => {
+        const missing = [
+          !business.location && 'Add your business address',
+          !business.category && 'Choose a category',
+          !business.description && 'Write a short description',
+          !business.logo_url && 'Upload a logo',
+          !business.phone && 'Add a contact phone number',
+        ].filter(Boolean);
+        const pct = Math.round(((5 - missing.length) / 5) * 100);
+        if (missing.length === 0) return null;
+        return (
+          <div className="card p-4 border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="font-semibold text-amber-900 dark:text-amber-200 text-sm">Complete your profile — {pct}% done</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">A complete profile gets up to 3× more bookings</p>
+              </div>
+              <a href="/admin/settings" className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-3 py-1.5 rounded-lg hover:bg-amber-200 transition-colors whitespace-nowrap">
+                Complete →
+              </a>
+            </div>
+            <div className="h-1.5 bg-amber-200 dark:bg-amber-800 rounded-full mb-3">
+              <div className="h-1.5 bg-amber-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {missing.map(m => (
+                <span key={m} className="text-[11px] bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-lg font-medium">
+                  + {m}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Go-live checklist */}
       {checklist && (
         <div className="card p-5 border-l-4 border-l-primary-500">

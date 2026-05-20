@@ -117,6 +117,8 @@ async function start() {
       await pool.query(sql10);
       const sql11 = fs.readFileSync(path.join(__dirname, '../migrations/011_trust_system.sql'), 'utf8');
       await pool.query(sql11);
+      const sql12 = fs.readFileSync(path.join(__dirname, '../migrations/012_consumer_location.sql'), 'utf8');
+      await pool.query(sql12);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -144,6 +146,9 @@ async function start() {
         )`);
       } catch {}
       try { db.exec(`ALTER TABLE customers ADD COLUMN notes TEXT`); } catch {}
+      for (const col of ['location_text TEXT', 'latitude REAL', 'longitude REAL', 'service_preferences TEXT', 'onboarding_complete INTEGER DEFAULT 0']) {
+        try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN ${col}`); } catch {}
+      }
       try {
         db.exec(`CREATE TABLE IF NOT EXISTS service_confirmations (
           id TEXT PRIMARY KEY, booking_id TEXT NOT NULL, consumer_id TEXT,

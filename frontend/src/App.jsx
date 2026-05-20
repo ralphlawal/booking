@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CustomerAuthProvider, useCustomerAuth } from './context/CustomerAuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { LOGO_BLUE_ICON } from './config/logos';
 import FloatingChatWidget from './components/shared/FloatingChatWidget';
 
@@ -26,6 +27,7 @@ import CustomerDashboard from './pages/consumer/CustomerDashboard';
 import BusinessProfile from './pages/consumer/BusinessProfile';
 import ConsumerProfile from './pages/consumer/ConsumerProfile';
 import ConsumerMessages from './pages/consumer/ConsumerMessages';
+import ConsumerOnboarding from './pages/consumer/ConsumerOnboarding';
 
 // Support
 import AdminSupport from './pages/support/AdminSupport';
@@ -87,6 +89,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <CustomerAuthProvider>
+        <NotificationProvider>
         <AuthProvider>
           <BrowserRouter>
           <Toaster
@@ -136,6 +139,7 @@ export default function App() {
             <Route path="/customer/signup" element={<CustomerSignup />} />
             <Route path="/customer/forgot-password" element={<CustomerForgotPassword />} />
             <Route path="/customer/reset-password" element={<CustomerResetPassword />} />
+            <Route path="/customer/onboarding" element={<ConsumerProtectedRoute><ConsumerOnboarding /></ConsumerProtectedRoute>} />
             <Route path="/customer/dashboard" element={<ConsumerProtectedRoute><CustomerDashboard /></ConsumerProtectedRoute>} />
             <Route path="/customer/messages" element={<ConsumerProtectedRoute><ConsumerMessages /></ConsumerProtectedRoute>} />
             <Route path="/customer/profile" element={<ConsumerProtectedRoute><ConsumerProfile /></ConsumerProtectedRoute>} />
@@ -150,6 +154,7 @@ export default function App() {
           </Routes>
           </BrowserRouter>
         </AuthProvider>
+        </NotificationProvider>
       </CustomerAuthProvider>
     </ThemeProvider>
   );

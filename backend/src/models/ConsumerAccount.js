@@ -38,28 +38,38 @@ const ConsumerAccount = {
 
   async findById(id) {
     const { rows } = await db.query(
-      'SELECT id, email, full_name, phone, avatar_url, created_at, COALESCE(email_verified, TRUE) AS email_verified FROM consumer_accounts WHERE id = $1',
+      `SELECT id, email, full_name, phone, avatar_url, created_at,
+              COALESCE(email_verified, TRUE) AS email_verified,
+              location_text, latitude, longitude,
+              COALESCE(service_preferences, '[]'::jsonb) AS service_preferences,
+              COALESCE(onboarding_complete, FALSE) AS onboarding_complete
+       FROM consumer_accounts WHERE id = $1`,
       [id]
     );
     return rows[0] || null;
   },
 
   async update(id, fields) {
-    const allowed = ['full_name', 'phone', 'avatar_url'];
+    const allowed = ['full_name', 'phone', 'avatar_url', 'location_text', 'latitude', 'longitude', 'service_preferences', 'onboarding_complete'];
     const updates = [];
     const values = [];
     let idx = 1;
     for (const key of allowed) {
       if (fields[key] !== undefined) {
         updates.push(`${key} = $${idx++}`);
-        values.push(fields[key]);
+        // service_preferences must be stored as JSON string for JSONB
+        values.push(key === 'service_preferences' && Array.isArray(fields[key]) ? JSON.stringify(fields[key]) : fields[key]);
       }
     }
     if (!updates.length) return ConsumerAccount.findById(id);
     updates.push('updated_at = NOW()');
     values.push(id);
     const { rows } = await db.query(
-      `UPDATE consumer_accounts SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, email, full_name, phone, avatar_url`,
+      `UPDATE consumer_accounts SET ${updates.join(', ')} WHERE id = $${idx}
+       RETURNING id, email, full_name, phone, avatar_url,
+                 location_text, latitude, longitude,
+                 COALESCE(service_preferences, '[]'::jsonb) AS service_preferences,
+                 COALESCE(onboarding_complete, FALSE) AS onboarding_complete`,
       values
     );
     return rows[0];

@@ -17,12 +17,17 @@ export default function CustomerLogin() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const afterLogin = (consumer) => {
+    const dest = !consumer.onboarding_complete ? '/customer/onboarding' : from;
+    navigate(dest, { replace: true });
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(form.email, form.password);
-      navigate(from, { replace: true });
+      const consumer = await login(form.email, form.password);
+      afterLogin(consumer);
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -33,8 +38,8 @@ export default function CustomerLogin() {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     try {
-      await googleLogin();
-      navigate(from, { replace: true });
+      const consumer = await googleLogin();
+      afterLogin(consumer);
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
         toast.error(err.message || 'Google sign-in failed');

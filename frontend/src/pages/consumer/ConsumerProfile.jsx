@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2 } from 'lucide-react';
+import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { consumerAPI, reviewsAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -89,7 +89,7 @@ export default function ConsumerProfile() {
   const { consumer, update, logout, loading: authLoading } = useCustomerAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ full_name: '', phone: '' });
+  const [form, setForm] = useState({ full_name: '', phone: '', location_text: '' });
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('profile');
   const [bookings, setBookings] = useState([]);
@@ -106,7 +106,7 @@ export default function ConsumerProfile() {
   useEffect(() => {
     if (authLoading) return;
     if (!consumer) { navigate('/customer/login'); return; }
-    setForm({ full_name: consumer.full_name || '', phone: consumer.phone || '' });
+    setForm({ full_name: consumer.full_name || '', phone: consumer.phone || '', location_text: consumer.location_text || '' });
   }, [consumer, authLoading]);
 
   useEffect(() => {
@@ -281,6 +281,18 @@ export default function ConsumerProfile() {
                   value={form.phone}
                   onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
                 />
+              </div>
+              <div>
+                <label className="label flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5" /> Your location
+                </label>
+                <input
+                  className="input"
+                  placeholder="e.g. Manchester, M1 1AE"
+                  value={form.location_text}
+                  onChange={e => setForm(p => ({ ...p, location_text: e.target.value }))}
+                />
+                <p className="text-xs text-gray-400 mt-1">Used to show nearby businesses</p>
               </div>
               <button type="submit" disabled={saving} className="btn-primary flex items-center gap-2">
                 <Save className="w-4 h-4" />

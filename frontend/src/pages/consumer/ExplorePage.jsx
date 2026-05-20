@@ -162,6 +162,13 @@ export default function ExplorePage() {
     discoverAPI.categories().then(setCategories).catch(() => {});
   }, []);
 
+  // Auto-use stored consumer location on mount
+  useEffect(() => {
+    if (consumer?.latitude && consumer?.longitude && !coords) {
+      setCoords({ lat: consumer.latitude, lng: consumer.longitude });
+    }
+  }, [consumer]);
+
   useEffect(() => { doSearch(); }, [category, coords]);
 
   const handleSearch = (e) => {
