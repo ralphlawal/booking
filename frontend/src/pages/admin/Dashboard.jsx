@@ -48,12 +48,18 @@ export default function Dashboard() {
   const [confirming, setConfirming] = useState(null);
 
   const loadBookings = useCallback(() => {
-    bookingsAPI.list({ limit: 5 }).then(d => setData(d)).finally(() => setLoading(false));
+    bookingsAPI.list({ limit: 5 })
+      .then(d => setData(d))
+      .catch(() => toast.error('Could not load bookings — check your connection'))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     loadBookings();
-    bookingsAPI.getAnalytics().then(setAnalytics).finally(() => setAnalyticsLoading(false));
+    bookingsAPI.getAnalytics()
+      .then(setAnalytics)
+      .catch(() => {})
+      .finally(() => setAnalyticsLoading(false));
   }, []);
 
   const quickConfirm = async (bookingId) => {

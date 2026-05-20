@@ -439,12 +439,15 @@ export default function CustomerDashboard() {
   useEffect(() => {
     if (authLoading) return;
     if (!consumer) { navigate('/customer/login'); return; }
-    Promise.all([
+    Promise.allSettled([
       consumerAPI.myBookings(),
       consumerAPI.getPreferences(),
     ])
-      .then(([b, p]) => { setBookings(b); setPrefs(p); })
-      .catch(() => toast.error('Failed to load your data'))
+      .then(([bResult, pResult]) => {
+        if (bResult.status === 'fulfilled') setBookings(bResult.value);
+        else toast.error('Could not load your bookings');
+        if (pResult.status === 'fulfilled') setPrefs(pResult.value);
+      })
       .finally(() => setLoading(false));
   }, [consumer, authLoading]);
 

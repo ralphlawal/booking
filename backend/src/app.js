@@ -1,8 +1,7 @@
 require('dotenv').config();
 
 if (!process.env.JWT_SECRET) {
-  console.error('FATAL: JWT_SECRET environment variable is not set. Set it in .env or Render config.');
-  if (process.env.NODE_ENV === 'production') process.exit(1);
+  console.warn('WARNING: JWT_SECRET is not set. Using insecure fallback — set JWT_SECRET in Render env vars.');
 }
 
 const express = require('express');
