@@ -3,7 +3,7 @@ const Customer = require('../models/Customer');
 const Service = require('../models/Service');
 const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
-const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder } = require('../services/emailService');
+const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder } = require('../services/emailService');
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -431,7 +431,8 @@ exports.getDisputes = async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT d.*, b.reference_id, b.booking_date, b.stripe_payment_intent_id, b.payment_status,
-              c.full_name AS customer_name, c.email AS customer_email,
+              COALESCE(c.full_name, cu.full_name) AS customer_name,
+              COALESCE(c.email, cu.email) AS customer_email,
               biz.name AS business_name, s.name AS service_name, s.price
        FROM disputes d
        JOIN bookings b ON b.id = d.booking_id

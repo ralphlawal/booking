@@ -15,7 +15,9 @@ const DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
 
 function formatHours(avail) {
   if (!avail?.working_days?.length) return null;
-  const days = DAY_ORDER.filter(d => avail.working_days.includes(d));
+  // working_days stored lowercase; DAY_ORDER is capitalized — normalise for comparison
+  const wd = avail.working_days.map(d => d.toLowerCase());
+  const days = DAY_ORDER.filter(d => wd.includes(d.toLowerCase()));
   const fmt = (t) => {
     const [h, m] = t.split(':').map(Number);
     const ampm = h >= 12 ? 'pm' : 'am';
@@ -25,10 +27,9 @@ function formatHours(avail) {
   const timeStr = avail.opening_time && avail.closing_time
     ? `${fmt(avail.opening_time)} – ${fmt(avail.closing_time)}`
     : null;
-  // Compress consecutive days: Mon–Fri
   const shorts = days.map(d => DAY_SHORT[d]);
   let label = shorts.length === 7 ? 'Every day'
-    : shorts.length === 5 && !avail.working_days.includes('Saturday') && !avail.working_days.includes('Sunday') ? 'Mon–Fri'
+    : shorts.length === 5 && !wd.includes('saturday') && !wd.includes('sunday') ? 'Mon–Fri'
     : shorts.join(', ');
   return timeStr ? `${label} · ${timeStr}` : label;
 }
@@ -36,8 +37,8 @@ function formatHours(avail) {
 function isOpenNow(avail) {
   if (!avail?.working_days?.length || !avail.opening_time || !avail.closing_time) return null;
   const now = new Date();
-  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()];
-  if (!avail.working_days.includes(dayName)) return false;
+  const dayName = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][now.getDay()];
+  if (!avail.working_days.map(d => d.toLowerCase()).includes(dayName)) return false;
   const [oh, om] = avail.opening_time.split(':').map(Number);
   const [ch, cm] = avail.closing_time.split(':').map(Number);
   const mins = now.getHours() * 60 + now.getMinutes();

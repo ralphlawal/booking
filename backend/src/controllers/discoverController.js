@@ -65,7 +65,7 @@ exports.search = async (req, res) => {
 
     let query = `
       SELECT b.id, b.name, b.slug, b.description, b.category, b.location,
-             b.logo_url, b.phone, b.email, b.latitude, b.longitude,
+             b.logo_url, b.phone, b.email, b.latitude, b.longitude, b.is_verified,
              COUNT(DISTINCT s.id) AS service_count,
              MIN(s.price)::FLOAT        AS min_price,
              MAX(s.price)::FLOAT        AS max_price,

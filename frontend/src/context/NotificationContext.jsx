@@ -14,7 +14,7 @@ export function NotificationProvider({ children }) {
     consumerAPI.getNotifications()
       .then(setNotifications)
       .catch((err) => {
-        if (err?.response?.status === 401) setNotifications([]);
+        if (err?.status === 401) setNotifications([]);
       });
   }, []);
 
