@@ -92,12 +92,13 @@ const getAvailableSlots = async (business_id, date, service_duration_minutes, ti
     });
   });
 
-  // Remove already-booked slots
-  const bookings = await Booking.findByBusinessId(business_id, { date });
+  // Remove already-booked slots (exclude cancelled bookings from blocking)
+  const { rows: bookings } = await Booking.findByBusinessId(business_id, { date, limit: 200 });
+  const activeBookings = bookings.filter(b => b.status !== 'cancelled');
   let available = filteredSlots.filter(slot => {
     const slotStart = timeToMinutes(slot.start);
     const slotEnd = timeToMinutes(slot.end);
-    return !bookings.some(booking => {
+    return !activeBookings.some(booking => {
       const bStart = timeToMinutes(booking.start_time.slice(0, 5));
       const bEnd = timeToMinutes(booking.end_time.slice(0, 5));
       return slotStart < bEnd && slotEnd > bStart;

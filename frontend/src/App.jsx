@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CustomerAuthProvider, useCustomerAuth } from './context/CustomerAuthContext';
 import { LOGO_BLUE_ICON } from './config/logos';
-import FloatingChatButton from './components/shared/FloatingChatButton';
+import FloatingChatWidget from './components/shared/FloatingChatWidget';
 
 // Public pages
 import Landing from './pages/public/Landing';
@@ -98,7 +98,7 @@ export default function App() {
               error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
             }}
           />
-          <FloatingChatButton />
+          <FloatingChatWidget />
           <Routes>
             {/* Public booking */}
             <Route path="/book/:slug" element={<BookingPage />} />

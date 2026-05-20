@@ -201,28 +201,34 @@ export default function BookingPage() {
         {/* Step 0: Choose service */}
         {step === 0 && (
           <div className="space-y-3 animate-slide-up">
-            <h2 className="font-bold text-xl text-gray-900 mb-4">Choose a Service</h2>
+            <h2 className="font-bold text-xl text-gray-900 mb-1">Choose a Service</h2>
+            <p className="text-sm text-gray-500 mb-4">Select what you'd like to book</p>
             {services.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100">
                 <Wrench className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                <p>No services available yet</p>
+                <p className="font-medium">No services available yet</p>
               </div>
             ) : services.map(svc => (
               <button
                 key={svc.id}
                 onClick={() => { set('service')(svc); goNext(); }}
-                className={`w-full text-left p-4 rounded-2xl border-2 transition-all hover:border-primary-300 hover:shadow-sm ${
-                  booking.service?.id === svc.id ? 'border-primary-600 bg-primary-50' : 'border-gray-100 bg-white'
-                }`}
+                className="w-full text-left p-4 sm:p-5 rounded-2xl border-2 border-gray-100 bg-white hover:border-primary-400 hover:shadow-md transition-all duration-150 group"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{svc.name}</h3>
-                    {svc.description && <p className="text-sm text-gray-500 mt-0.5">{svc.description}</p>}
-                    <p className="text-sm text-gray-400 mt-1">{svc.duration_minutes} min</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 group-hover:text-primary-700 transition-colors">{svc.name}</h3>
+                    {svc.description && <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{svc.description}</p>}
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <span className="text-xs text-gray-400 font-medium">{svc.duration_minutes} min</span>
+                      {parseFloat(svc.price) === 0 && <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Free</span>}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-primary-700">£{parseFloat(svc.price).toFixed(2)}</p>
+                  <div className="text-right flex-shrink-0">
+                    {parseFloat(svc.price) > 0
+                      ? <p className="text-xl font-bold text-primary-700">£{parseFloat(svc.price).toFixed(2)}</p>
+                      : <p className="text-xl font-bold text-emerald-600">Free</p>
+                    }
+                    <p className="text-xs text-primary-500 font-semibold mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Book →</p>
                   </div>
                 </div>
               </button>
@@ -230,28 +236,37 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* Step 1: Pick date */}
+        {/* Step 1: Pick date — horizontal scroll carousel */}
         {step === 1 && (
           <div className="animate-slide-up">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-1">
               <h2 className="font-bold text-xl text-gray-900">Pick a Date</h2>
-              <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
+              <button onClick={goBack} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
+              </button>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            <p className="text-sm text-gray-500 mb-4">Swipe to find your preferred day</p>
+            <div className="flex gap-2.5 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
               {dateOptions.map(date => {
                 const isSelected = booking.date && isSameDay(date, booking.date);
                 return (
                   <button
                     key={date.toISOString()}
                     onClick={() => { set('date')(date); set('time')(null); goNext(); }}
-                    className={`flex flex-col items-center py-3 px-2 rounded-xl border-2 transition-all ${
-                      isSelected ? 'border-primary-600 bg-primary-600 text-white' :
-                      'border-gray-100 bg-white hover:border-primary-300 text-gray-700'
+                    className={`flex flex-col items-center py-3.5 px-4 rounded-2xl border-2 flex-shrink-0 snap-start transition-all duration-150 ${
+                      isSelected
+                        ? 'border-primary-600 bg-primary-600 text-white shadow-lg shadow-primary-200'
+                        : 'border-gray-100 bg-white hover:border-primary-300 text-gray-700 hover:shadow-sm'
                     }`}
+                    style={{ minWidth: 64 }}
                   >
-                    <span className="text-xs font-medium opacity-70">{format(date, 'EEE')}</span>
-                    <span className="text-lg font-bold mt-0.5">{format(date, 'd')}</span>
-                    <span className="text-xs opacity-70">{format(date, 'MMM')}</span>
+                    <span className={`text-[11px] font-semibold uppercase tracking-wide ${isSelected ? 'text-primary-100' : 'text-gray-400'}`}>
+                      {format(date, 'EEE')}
+                    </span>
+                    <span className="text-2xl font-bold mt-0.5 leading-none">{format(date, 'd')}</span>
+                    <span className={`text-[11px] mt-1 font-medium ${isSelected ? 'text-primary-200' : 'text-gray-400'}`}>
+                      {format(date, 'MMM')}
+                    </span>
                   </button>
                 );
               })}
@@ -262,34 +277,37 @@ export default function BookingPage() {
         {/* Step 2: Pick time */}
         {step === 2 && (
           <div className="animate-slide-up">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-1">
               <div>
                 <h2 className="font-bold text-xl text-gray-900">Pick a Time</h2>
                 <p className="text-sm text-gray-500">{booking.date && format(booking.date, 'EEEE, MMMM d')}</p>
               </div>
-              <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
+              <button onClick={goBack} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
+              </button>
             </div>
+            <div className="mt-4">
             {loadingSlots ? (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {[...Array(9)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}
               </div>
             ) : slots.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
+              <div className="text-center py-14 bg-white rounded-2xl border border-gray-100">
                 <CalendarX className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                <p className="font-semibold">No slots available</p>
-                <p className="text-sm text-gray-500 mt-1">Try another date</p>
-                <button onClick={goBack} className="btn-primary mt-4">Change Date</button>
+                <p className="font-bold text-gray-900">No slots available</p>
+                <p className="text-sm text-gray-500 mt-1">This day is fully booked — try another date</p>
+                <button onClick={goBack} className="btn-primary mt-5">← Change Date</button>
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {slots.map(slot => (
                   <button
                     key={slot.start}
                     onClick={() => { set('time')(slot); goNext(); }}
-                    className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
+                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-all duration-150 ${
                       booking.time?.start === slot.start
-                        ? 'border-primary-600 bg-primary-600 text-white'
-                        : 'border-gray-100 bg-white hover:border-primary-300 text-gray-700'
+                        ? 'border-primary-600 bg-primary-600 text-white shadow-md shadow-primary-200'
+                        : 'border-gray-100 bg-white hover:border-primary-400 text-gray-700 hover:shadow-sm'
                     }`}
                   >
                     {slot.start}
@@ -297,21 +315,26 @@ export default function BookingPage() {
                 ))}
               </div>
             )}
+            </div>
           </div>
         )}
 
         {/* Step 3: Enter details */}
         {step === 3 && (
           <div className="animate-slide-up">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-1">
               <h2 className="font-bold text-xl text-gray-900">Your Details</h2>
-              <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
+              <button onClick={goBack} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
+              </button>
             </div>
-            {!consumer && (
-              <div className="mb-4 p-3.5 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-between gap-3">
+            {!consumer ? (
+              <div className="mb-4 mt-3 p-3.5 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-between gap-3">
                 <p className="text-sm text-primary-700 font-medium">Sign in to auto-fill your details</p>
-                <a href={`/customer/login`} className="text-xs font-semibold text-primary-600 hover:underline whitespace-nowrap">Sign in →</a>
+                <a href="/customer/login" className="text-xs font-bold text-primary-600 bg-white border border-primary-200 px-3 py-1.5 rounded-lg hover:bg-primary-50 transition-colors whitespace-nowrap">Sign in →</a>
               </div>
+            ) : (
+              <p className="text-sm text-emerald-600 font-medium mt-1 mb-4">✓ Signed in as {consumer.full_name}</p>
             )}
             <div className="card p-5 space-y-4">
               {/* Honeypot — hidden from real users, bots fill it */}
@@ -350,7 +373,9 @@ export default function BookingPage() {
           <div className="animate-slide-up">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-xl text-gray-900">Confirm Booking</h2>
-              <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
+              <button onClick={goBack} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
+              </button>
             </div>
             <div className="card p-5 mb-4">
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100 mb-4">
@@ -398,7 +423,9 @@ export default function BookingPage() {
                 <h2 className="font-bold text-xl text-gray-900">Payment</h2>
                 <p className="text-sm text-gray-500">£{servicePrice.toFixed(2)} · {booking.service?.name}</p>
               </div>
-              <button onClick={goBack} className="btn-secondary text-sm">← Back</button>
+              <button onClick={goBack} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
+              </button>
             </div>
             <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
               <PaymentForm
