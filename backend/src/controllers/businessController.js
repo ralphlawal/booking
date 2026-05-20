@@ -1,6 +1,29 @@
+const https = require('https');
 const Business = require('../models/Business');
 const QRCode = require('qrcode');
 const { checkAutoVerify } = require('../utils/autoVerify');
+
+function geocodeLocation(locationText) {
+  return new Promise((resolve) => {
+    const q = encodeURIComponent(locationText);
+    const options = {
+      hostname: 'nominatim.openstreetmap.org',
+      path: `/search?format=json&q=${q}&limit=1`,
+      headers: { 'User-Agent': 'BookAm/1.0 (bookam.business)' },
+    };
+    https.get(options, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json[0]) resolve({ lat: parseFloat(json[0].lat), lon: parseFloat(json[0].lon) });
+          else resolve(null);
+        } catch { resolve(null); }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
 
 exports.getMyBusiness = async (req, res) => {
   res.json(req.business);
@@ -24,7 +47,13 @@ exports.createBusiness = async (req, res) => {
 
 exports.updateBusiness = async (req, res) => {
   try {
-    const updated = await Business.update(req.business.id, req.body);
+    const body = { ...req.body };
+    // Auto-geocode when location text changes but coordinates aren't supplied by client
+    if (body.location && body.latitude === undefined && body.longitude === undefined) {
+      const geo = await geocodeLocation(body.location);
+      if (geo) { body.latitude = geo.lat; body.longitude = geo.lon; }
+    }
+    const updated = await Business.update(req.business.id, body);
     checkAutoVerify(req.business.id).catch(() => {});
     res.json(updated);
   } catch (err) {

@@ -165,7 +165,7 @@ exports.me = (req, res) => res.json(req.consumer);
 exports.update = async (req, res) => {
   try {
     const updated = await ConsumerAccount.update(req.consumer.id, req.body);
-    res.json(updated);
+    res.json(updated || req.consumer);
   } catch (err) {
     console.error('[consumer/update]', err.message);
     res.status(500).json({ error: 'Update failed' });

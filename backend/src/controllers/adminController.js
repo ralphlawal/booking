@@ -1,0 +1,129 @@
+const jwt = require('jsonwebtoken');
+const db = require('../config/database');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
+
+function isAdmin(req) {
+  const h = req.headers.authorization;
+  if (!h?.startsWith('Bearer ')) return false;
+  try {
+    const p = jwt.verify(h.split(' ')[1], JWT_SECRET);
+    return p.type === 'admin';
+  } catch { return false; }
+}
+
+exports.getStats = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const [bizCount, consumerCount, bookingCount, revenueRow, pendingVerif, newThisWeek] = await Promise.all([
+      db.query('SELECT COUNT(*) FROM businesses WHERE is_active = TRUE'),
+      db.query('SELECT COUNT(*) FROM consumer_accounts'),
+      db.query('SELECT COUNT(*) FROM bookings'),
+      db.query("SELECT COALESCE(SUM(s.price),0) AS total FROM bookings b JOIN services s ON s.id = b.service_id WHERE b.payment_status = 'paid'"),
+      db.query("SELECT COUNT(*) FROM businesses WHERE verification_status = 'pending'"),
+      db.query("SELECT COUNT(*) FROM bookings WHERE created_at > NOW() - INTERVAL '7 days'"),
+    ]);
+    res.json({
+      businesses: parseInt(bizCount.rows[0].count),
+      consumers: parseInt(consumerCount.rows[0].count),
+      bookings: parseInt(bookingCount.rows[0].count),
+      revenue: parseFloat(revenueRow.rows[0].total).toFixed(2),
+      pending_verifications: parseInt(pendingVerif.rows[0].count),
+      bookings_this_week: parseInt(newThisWeek.rows[0].count),
+    });
+  } catch (err) {
+    console.error('[admin/stats]', err.message);
+    res.status(500).json({ error: 'Failed to load stats' });
+  }
+};
+
+exports.getBusinesses = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { rows } = await db.query(
+      `SELECT b.id, b.name, b.slug, b.email, b.phone, b.category, b.location,
+              b.is_verified, b.verification_status, b.verification_requested_at,
+              b.verification_details, b.is_active, b.created_at,
+              COUNT(bk.id) AS total_bookings
+       FROM businesses b
+       LEFT JOIN bookings bk ON bk.business_id = b.id
+       GROUP BY b.id
+       ORDER BY b.created_at DESC`
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('[admin/businesses]', err.message);
+    res.status(500).json({ error: 'Failed to load businesses' });
+  }
+};
+
+exports.verifyBusiness = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { rows } = await db.query(
+      `UPDATE businesses
+       SET is_verified = TRUE, verification_status = 'verified', verified_at = NOW()
+       WHERE id = $1 RETURNING id, name, is_verified, verification_status`,
+      [req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
+    res.json({ message: `${rows[0].name} has been verified`, business: rows[0] });
+  } catch (err) {
+    console.error('[admin/verify]', err.message);
+    res.status(500).json({ error: 'Failed to verify business' });
+  }
+};
+
+exports.rejectVerification = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { rows } = await db.query(
+      `UPDATE businesses
+       SET verification_status = 'rejected', is_verified = FALSE
+       WHERE id = $1 RETURNING id, name, verification_status`,
+      [req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
+    res.json({ message: `Verification rejected for ${rows[0].name}`, business: rows[0] });
+  } catch (err) {
+    console.error('[admin/reject-verify]', err.message);
+    res.status(500).json({ error: 'Failed to reject verification' });
+  }
+};
+
+exports.getConsumers = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { rows } = await db.query(
+      `SELECT ca.id, ca.email, ca.full_name, ca.phone, ca.created_at,
+              ca.email_verified, ca.onboarding_complete,
+              ca.referral_code, ca.referral_credits,
+              COUNT(b.id) AS total_bookings
+       FROM consumer_accounts ca
+       LEFT JOIN bookings b ON b.consumer_id = ca.id
+       GROUP BY ca.id
+       ORDER BY ca.created_at DESC`
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('[admin/consumers]', err.message);
+    res.status(500).json({ error: 'Failed to load consumers' });
+  }
+};
+
+exports.suspendBusiness = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { active } = req.body;
+    const { rows } = await db.query(
+      `UPDATE businesses SET is_active = $1 WHERE id = $2 RETURNING id, name, is_active`,
+      [!!active, req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
+    const action = rows[0].is_active ? 'reactivated' : 'suspended';
+    res.json({ message: `${rows[0].name} has been ${action}`, business: rows[0] });
+  } catch (err) {
+    console.error('[admin/suspend]', err.message);
+    res.status(500).json({ error: 'Failed to update business status' });
+  }
+};

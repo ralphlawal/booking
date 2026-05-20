@@ -126,7 +126,11 @@ consumerAxios.interceptors.request.use(config => {
 });
 consumerAxios.interceptors.response.use(
   res => res.data,
-  err => Promise.reject(new Error(err.response?.data?.error || err.message || 'Something went wrong'))
+  err => {
+    const error = new Error(err.response?.data?.error || err.message || 'Something went wrong');
+    error.status = err.response?.status;
+    return Promise.reject(error);
+  }
 );
 
 export const consumerAPI = {
@@ -220,6 +224,15 @@ export const broadcastAPI = {
 
 export const referralAPI = {
   get: () => consumerAxios.get('/consumer/referral'),
+};
+
+export const adminPanelAPI = {
+  getStats: () => adminAxios.get('/admin/stats'),
+  getBusinesses: () => adminAxios.get('/admin/businesses'),
+  verifyBusiness: (id) => adminAxios.patch(`/admin/businesses/${id}/verify`),
+  rejectVerification: (id) => adminAxios.patch(`/admin/businesses/${id}/reject-verify`),
+  suspendBusiness: (id, active) => adminAxios.patch(`/admin/businesses/${id}/suspend`, { active }),
+  getConsumers: () => adminAxios.get('/admin/consumers'),
 };
 
 export const adminChatAPI = {

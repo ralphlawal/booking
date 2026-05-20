@@ -66,6 +66,15 @@ app.get('/api/broadcasts', bcastCtrl.list);
 app.post('/api/broadcasts', bcastCtrl.create);
 app.patch('/api/broadcasts/:id/deactivate', bcastCtrl.deactivate);
 
+// Admin management panel
+const adminCtrl = require('./controllers/adminController');
+app.get('/api/admin/stats', adminCtrl.getStats);
+app.get('/api/admin/businesses', adminCtrl.getBusinesses);
+app.patch('/api/admin/businesses/:id/verify', adminCtrl.verifyBusiness);
+app.patch('/api/admin/businesses/:id/reject-verify', adminCtrl.rejectVerification);
+app.patch('/api/admin/businesses/:id/suspend', adminCtrl.suspendBusiness);
+app.get('/api/admin/consumers', adminCtrl.getConsumers);
+
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2 } from 'lucide-react';
-import { adminChatAPI, adminDisputesAPI, broadcastAPI } from '../../services/api';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight } from 'lucide-react';
+import { adminChatAPI, adminDisputesAPI, broadcastAPI, adminPanelAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
@@ -375,6 +375,265 @@ function BroadcastsPanel() {
   );
 }
 
+function StatsPanel() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => adminPanelAPI.getStats().then(setStats).catch(() => toast.error('Failed to load stats'));
+  useEffect(() => { load().finally(() => setLoading(false)); }, []);
+
+  const cards = stats ? [
+    { label: 'Businesses', value: stats.businesses, color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300', icon: <Building2 className="w-5 h-5" /> },
+    { label: 'Customers', value: stats.consumers, color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300', icon: <Users className="w-5 h-5" /> },
+    { label: 'Total Bookings', value: stats.bookings, color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300', icon: <CheckCircle className="w-5 h-5" /> },
+    { label: 'Bookings This Week', value: stats.bookings_this_week, color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300', icon: <BarChart2 className="w-5 h-5" /> },
+    { label: 'Revenue (paid)', value: `£${stats.revenue}`, color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300', icon: <CheckCircle className="w-5 h-5" /> },
+    { label: 'Pending Verifications', value: stats.pending_verifications, color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300', icon: <AlertTriangle className="w-5 h-5" /> },
+  ] : [];
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="font-bold text-gray-900 dark:text-white text-lg">Platform Overview</h2>
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {cards.map(c => (
+            <div key={c.label} className={`${c.color} rounded-2xl p-4 flex flex-col gap-2`}>
+              {c.icon}
+              <p className="text-2xl font-black">{c.value}</p>
+              <p className="text-xs font-semibold opacity-70">{c.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BusinessesPanel() {
+  const [businesses, setBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [acting, setActing] = useState(null);
+
+  const load = () => adminPanelAPI.getBusinesses().then(setBusinesses).catch(() => toast.error('Failed to load businesses'));
+  useEffect(() => { load().finally(() => setLoading(false)); }, []);
+
+  const verify = async (id, name) => {
+    setActing(id + 'verify');
+    try {
+      await adminPanelAPI.verifyBusiness(id);
+      toast.success(`${name} verified`);
+      setBusinesses(prev => prev.map(b => b.id === id ? { ...b, is_verified: true, verification_status: 'verified' } : b));
+    } catch (err) { toast.error(err.message || 'Failed'); }
+    setActing(null);
+  };
+
+  const reject = async (id, name) => {
+    setActing(id + 'reject');
+    try {
+      await adminPanelAPI.rejectVerification(id);
+      toast.success(`Verification rejected for ${name}`);
+      setBusinesses(prev => prev.map(b => b.id === id ? { ...b, verification_status: 'rejected' } : b));
+    } catch (err) { toast.error(err.message || 'Failed'); }
+    setActing(null);
+  };
+
+  const toggleSuspend = async (biz) => {
+    const newActive = !biz.is_active;
+    setActing(biz.id + 'suspend');
+    try {
+      await adminPanelAPI.suspendBusiness(biz.id, newActive);
+      toast.success(`${biz.name} ${newActive ? 'reactivated' : 'suspended'}`);
+      setBusinesses(prev => prev.map(b => b.id === biz.id ? { ...b, is_active: newActive } : b));
+    } catch (err) { toast.error(err.message || 'Failed'); }
+    setActing(null);
+  };
+
+  const filters = [
+    { id: 'all', label: 'All' },
+    { id: 'pending', label: 'Pending' },
+    { id: 'verified', label: 'Verified' },
+    { id: 'unverified', label: 'Unverified' },
+  ];
+
+  const filtered = businesses.filter(b => {
+    if (filter === 'pending') return b.verification_status === 'pending';
+    if (filter === 'verified') return b.is_verified;
+    if (filter === 'unverified') return !b.is_verified;
+    return true;
+  });
+
+  const verifyBadge = (b) => {
+    if (b.is_verified) return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Verified</span>;
+    if (b.verification_status === 'pending') return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>;
+    if (b.verification_status === 'rejected') return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">Rejected</span>;
+    return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">Unverified</span>;
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-gray-900 dark:text-white">Businesses <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {filters.map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)}
+            className={`text-xs px-3 py-1.5 rounded-xl font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-24 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-400"><Building2 className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No businesses</p></div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map(b => (
+            <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-2xl border p-4 shadow-sm ${!b.is_active ? 'opacity-50 border-gray-100 dark:border-gray-800' : b.verification_status === 'pending' ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800'}`}>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                    <p className="font-bold text-sm text-gray-900 dark:text-white">{b.name}</p>
+                    {verifyBadge(b)}
+                    {!b.is_active && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-red-100 text-red-600">Suspended</span>}
+                  </div>
+                  <p className="text-xs text-gray-500">@{b.slug} · {b.category || 'Uncategorised'}</p>
+                  {b.location && <p className="text-xs text-gray-400 mt-0.5">{b.location}</p>}
+                  <p className="text-xs text-gray-400 mt-0.5">{b.email} · {parseInt(b.total_bookings)} bookings</p>
+                </div>
+                <p className="text-[10px] text-gray-400 flex-shrink-0">{new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              </div>
+
+              {b.verification_status === 'pending' && b.verification_details && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-3 text-xs space-y-0.5">
+                  <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">Verification request</p>
+                  {b.verification_details.legal_name && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Legal name:</span> {b.verification_details.legal_name}</p>}
+                  {b.verification_details.company_reg_number && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Reg no:</span> {b.verification_details.company_reg_number}</p>}
+                  {b.verification_details.sole_trader && <p className="text-amber-700 dark:text-amber-400">Sole trader declaration</p>}
+                  {b.verification_details.business_address && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Address:</span> {b.verification_details.business_address}</p>}
+                </div>
+              )}
+
+              <div className="flex gap-2 flex-wrap">
+                {b.verification_status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => verify(b.id, b.name)}
+                      disabled={!!acting}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" /> {acting === b.id + 'verify' ? 'Verifying…' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => reject(b.id, b.name)}
+                      disabled={!!acting}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    >
+                      <ShieldX className="w-3.5 h-3.5" /> {acting === b.id + 'reject' ? 'Rejecting…' : 'Reject'}
+                    </button>
+                  </>
+                )}
+                {!b.is_verified && b.verification_status !== 'pending' && (
+                  <button
+                    onClick={() => verify(b.id, b.name)}
+                    disabled={!!acting}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-xs font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors disabled:opacity-50"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" /> Force verify
+                  </button>
+                )}
+                <button
+                  onClick={() => toggleSuspend(b)}
+                  disabled={!!acting}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors disabled:opacity-50 ${b.is_active ? 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                >
+                  {b.is_active ? <Ban className="w-3.5 h-3.5" /> : <ToggleRight className="w-3.5 h-3.5" />}
+                  {acting === b.id + 'suspend' ? 'Updating…' : b.is_active ? 'Suspend' : 'Reactivate'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UsersPanel() {
+  const [consumers, setConsumers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  const load = () => adminPanelAPI.getConsumers().then(setConsumers).catch(() => toast.error('Failed to load users'));
+  useEffect(() => { load().finally(() => setLoading(false)); }, []);
+
+  const filtered = consumers.filter(c => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return c.full_name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-gray-900 dark:text-white">Customers <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      <input
+        className="input"
+        placeholder="Search by name or email…"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
+
+      {loading ? (
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-400"><Users className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No customers found</p></div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map(c => (
+            <div key={c.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary-600 dark:text-primary-400">
+                {(c.full_name?.[0] || c.email[0]).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{c.full_name || '—'}</p>
+                <p className="text-xs text-gray-400 truncate">{c.email}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{parseInt(c.total_bookings)} bookings</p>
+                <p className="text-[10px] text-gray-400">{new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                <div className="flex items-center gap-1 justify-end mt-0.5">
+                  {c.email_verified ? <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-green-100 text-green-700">Verified</span> : <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-gray-100 text-gray-500">Unverified</span>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminSupport() {
   const [authed, setAuthed] = useState(!!localStorage.getItem(TOKEN_KEY));
   const [rooms, setRooms] = useState([]);
@@ -440,25 +699,20 @@ export default function AdminSupport() {
 
           <div className="ml-auto flex items-center gap-2">
             {/* Tab switcher */}
-            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
-              <button
-                onClick={() => setMainTab('messages')}
-                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 ${mainTab === 'messages' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
-              >
-                <MessageSquare className="w-3 h-3" /> Messages
-              </button>
-              <button
-                onClick={() => setMainTab('disputes')}
-                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 ${mainTab === 'disputes' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
-              >
-                <AlertTriangle className="w-3 h-3" /> Disputes
-              </button>
-              <button
-                onClick={() => setMainTab('broadcasts')}
-                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 ${mainTab === 'broadcasts' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
-              >
-                <Bell className="w-3 h-3" /> Alerts
-              </button>
+            <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 overflow-x-auto scrollbar-hide">
+              {[
+                { id: 'messages', icon: <MessageSquare className="w-3 h-3" />, label: 'Messages' },
+                { id: 'disputes', icon: <AlertTriangle className="w-3 h-3" />, label: 'Disputes' },
+                { id: 'broadcasts', icon: <Bell className="w-3 h-3" />, label: 'Alerts' },
+                { id: 'businesses', icon: <Building2 className="w-3 h-3" />, label: 'Businesses' },
+                { id: 'users', icon: <Users className="w-3 h-3" />, label: 'Users' },
+                { id: 'stats', icon: <BarChart2 className="w-3 h-3" />, label: 'Stats' },
+              ].map(t => (
+                <button key={t.id} onClick={() => setMainTab(t.id)}
+                  className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${mainTab === t.id ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}>
+                  {t.icon} <span className="hidden sm:inline">{t.label}</span>
+                </button>
+              ))}
             </div>
             {!showingChat && mainTab === 'messages' && (
               <button
@@ -489,6 +743,24 @@ export default function AdminSupport() {
       {mainTab === 'broadcasts' && (
         <div className="flex flex-1 overflow-hidden">
           <BroadcastsPanel />
+        </div>
+      )}
+
+      {mainTab === 'businesses' && (
+        <div className="flex flex-1 overflow-hidden">
+          <BusinessesPanel />
+        </div>
+      )}
+
+      {mainTab === 'users' && (
+        <div className="flex flex-1 overflow-hidden">
+          <UsersPanel />
+        </div>
+      )}
+
+      {mainTab === 'stats' && (
+        <div className="flex flex-1 overflow-hidden">
+          <StatsPanel />
         </div>
       )}
 

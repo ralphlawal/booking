@@ -15,8 +15,12 @@ export function CustomerAuthProvider({ children }) {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) { setLoading(false); return; }
     consumerAPI.me()
-      .then(setConsumer)
-      .catch(() => localStorage.removeItem(TOKEN_KEY))
+      .then(data => { if (data) setConsumer(data); })
+      .catch((err) => {
+        // Only clear token on 401 (invalid/expired). Network errors or server errors
+        // (Render cold start timeout, 500) should NOT log the user out.
+        if (err.status === 401) localStorage.removeItem(TOKEN_KEY);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -54,7 +58,7 @@ export function CustomerAuthProvider({ children }) {
 
   const update = async (data) => {
     const updated = await consumerAPI.updateMe(data);
-    setConsumer(updated);
+    if (updated) setConsumer(updated);
     return updated;
   };
 
