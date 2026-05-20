@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin } from 'lucide-react';
+import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin, Gift, Copy, Check as CheckIcon, Users } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { consumerAPI, reviewsAPI } from '../../services/api';
+import { consumerAPI, reviewsAPI, referralAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
@@ -102,12 +102,20 @@ export default function ConsumerProfile() {
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [emailForm, setEmailForm] = useState({ new_email: '', password: '' });
   const [emailSaving, setEmailSaving] = useState(false);
+  const [referral, setReferral] = useState(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
     if (!consumer) { navigate('/customer/login'); return; }
     setForm({ full_name: consumer.full_name || '', phone: consumer.phone || '', location_text: consumer.location_text || '' });
   }, [consumer, authLoading]);
+
+  useEffect(() => {
+    if (tab === 'referral' && !referral) {
+      referralAPI.get().then(setReferral).catch(() => {});
+    }
+  }, [tab]);
 
   useEffect(() => {
     if (tab === 'reviews') {
@@ -231,6 +239,7 @@ export default function ConsumerProfile() {
           {[
             { id: 'profile', label: 'Profile' },
             { id: 'reviews', label: 'Reviews' },
+            { id: 'referral', label: 'Refer' },
             { id: 'security', label: 'Security' },
           ].map(t => (
             <button
@@ -299,6 +308,79 @@ export default function ConsumerProfile() {
                 {saving ? 'Saving…' : 'Save changes'}
               </button>
             </form>
+          </div>
+        )}
+
+        {tab === 'referral' && (
+          <div className="space-y-4">
+            <div className="card p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <Gift className="w-5 h-5 text-primary-600" />
+                <h2 className="font-bold text-gray-900 dark:text-white text-lg">Refer &amp; Earn</h2>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+                Share your referral code with friends. Every time someone signs up using your code, you earn a credit — redeemable for discounts on future bookings.
+              </p>
+
+              {!referral ? (
+                <div className="text-center py-4 text-gray-400 text-sm">Loading your referral code…</div>
+              ) : (
+                <>
+                  <div className="bg-primary-50 dark:bg-primary-900/20 border-2 border-dashed border-primary-300 dark:border-primary-700 rounded-2xl p-5 text-center mb-4">
+                    <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-1">Your referral code</p>
+                    <p className="text-3xl font-black text-primary-700 dark:text-primary-300 tracking-widest font-mono">{referral.referral_code}</p>
+                  </div>
+                  <div className="flex gap-2 mb-4">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(referral.referral_code);
+                        setCodeCopied(true);
+                        setTimeout(() => setCodeCopied(false), 2000);
+                      }}
+                      className="btn-secondary flex-1 flex items-center justify-center gap-2"
+                    >
+                      {codeCopied ? <CheckIcon className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                      {codeCopied ? 'Copied!' : 'Copy code'}
+                    </button>
+                    {navigator.share && (
+                      <button
+                        onClick={() => navigator.share({ title: 'Join BookAm', text: `Use my code ${referral.referral_code} to sign up on BookAm and get started booking local services instantly.`, url: window.location.origin + '/customer/signup' })}
+                        className="btn-primary flex-1 flex items-center justify-center gap-2"
+                      >
+                        Share link
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <Users className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{referral.referrals?.length || 0} friend{referral.referrals?.length !== 1 ? 's' : ''} referred</p>
+                      <p className="text-xs text-gray-500">{referral.credits || 0} credit{referral.credits !== 1 ? 's' : ''} earned</p>
+                    </div>
+                  </div>
+
+                  {referral.referrals?.length > 0 && (
+                    <div className="mt-4 space-y-1.5">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Referral history</p>
+                      {referral.referrals.map((r, i) => (
+                        <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                          <span className="text-gray-700 dark:text-gray-300">{r.referred_name}</span>
+                          <span className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="card p-4 border-l-4 border-l-amber-400">
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">How credits work</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Credits are being rolled out gradually. Once live, each credit will give you a discount on a future booking. Credits never expire.
+              </p>
+            </div>
           </div>
         )}
 

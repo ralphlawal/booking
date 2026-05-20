@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
-import { adminChatAPI, adminDisputesAPI } from '../../services/api';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2 } from 'lucide-react';
+import { adminChatAPI, adminDisputesAPI, broadcastAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
@@ -272,6 +272,109 @@ function DisputesPanel() {
   );
 }
 
+function BroadcastsPanel() {
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ title: '', message: '', type: 'info' });
+  const [sending, setSending] = useState(false);
+
+  const load = () => broadcastAPI.list().then(setBroadcasts).catch(() => toast.error('Failed to load broadcasts')).finally(() => setLoading(false));
+  useEffect(() => { load(); }, []);
+
+  const send = async (e) => {
+    e.preventDefault();
+    if (!form.title.trim() || !form.message.trim()) return toast.error('Title and message required');
+    setSending(true);
+    try {
+      await broadcastAPI.create(form);
+      toast.success('Broadcast sent to all users');
+      setForm({ title: '', message: '', type: 'info' });
+      load();
+    } catch (err) { toast.error(err.message); }
+    finally { setSending(false); }
+  };
+
+  const deactivate = async (id) => {
+    await broadcastAPI.deactivate(id).catch(() => toast.error('Failed'));
+    load();
+  };
+
+  const TYPE_OPTS = [
+    { val: 'info', label: 'Info (blue)' },
+    { val: 'warning', label: 'Warning (amber)' },
+    { val: 'success', label: 'Success (green)' },
+  ];
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-2xl mx-auto w-full space-y-6">
+      {/* Compose */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+        <p className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Bell className="w-4 h-4 text-primary-600" /> Send notification to all users
+        </p>
+        <form onSubmit={send} className="space-y-3">
+          <input
+            className="input"
+            placeholder="Title — e.g. Scheduled maintenance on Sunday"
+            value={form.title}
+            onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+          />
+          <textarea
+            className="input resize-none"
+            rows={3}
+            placeholder="Message — e.g. BookAm will be briefly unavailable on Sunday 25 May between 2–3am GMT for scheduled maintenance."
+            value={form.message}
+            onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
+          />
+          <div className="flex gap-2 items-center">
+            <select
+              className="input flex-1"
+              value={form.type}
+              onChange={e => setForm(p => ({ ...p, type: e.target.value }))}
+            >
+              {TYPE_OPTS.map(o => <option key={o.val} value={o.val}>{o.label}</option>)}
+            </select>
+            <button type="submit" disabled={sending} className="btn-primary px-6 disabled:opacity-50">
+              {sending ? 'Sending…' : 'Broadcast'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* History */}
+      <div>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Broadcast history</p>
+        {loading ? (
+          <div className="text-center text-sm text-gray-400 py-8">Loading…</div>
+        ) : broadcasts.length === 0 ? (
+          <div className="text-center text-sm text-gray-400 py-8">No broadcasts yet</div>
+        ) : (
+          <div className="space-y-2">
+            {broadcasts.map(b => (
+              <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-xl border p-3 flex items-start gap-3 ${b.is_active ? 'border-gray-100 dark:border-gray-800' : 'border-gray-50 dark:border-gray-900 opacity-50'}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${b.type === 'warning' ? 'bg-amber-100 text-amber-700' : b.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-primary-100 text-primary-700'}`}>{b.type}</span>
+                    {!b.is_active && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 text-gray-500">Inactive</span>}
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{b.title}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{b.message}</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+                {b.is_active && (
+                  <button onClick={() => deactivate(b.id)} className="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminSupport() {
   const [authed, setAuthed] = useState(!!localStorage.getItem(TOKEN_KEY));
   const [rooms, setRooms] = useState([]);
@@ -350,6 +453,12 @@ export default function AdminSupport() {
               >
                 <AlertTriangle className="w-3 h-3" /> Disputes
               </button>
+              <button
+                onClick={() => setMainTab('broadcasts')}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 ${mainTab === 'broadcasts' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
+              >
+                <Bell className="w-3 h-3" /> Alerts
+              </button>
             </div>
             {!showingChat && mainTab === 'messages' && (
               <button
@@ -374,6 +483,12 @@ export default function AdminSupport() {
       {mainTab === 'disputes' && (
         <div className="flex-1 overflow-hidden">
           <DisputesPanel />
+        </div>
+      )}
+
+      {mainTab === 'broadcasts' && (
+        <div className="flex flex-1 overflow-hidden">
+          <BroadcastsPanel />
         </div>
       )}
 

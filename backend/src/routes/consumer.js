@@ -38,6 +38,7 @@ router.get('/notifications', authenticateConsumer, ctrl.getNotifications);
 router.post('/notifications/read', authenticateConsumer, ctrl.markNotificationsRead);
 router.post('/resend-verification', authenticateConsumer, ctrl.resendVerification);
 router.get('/verify-email', ctrl.verifyEmail);
+router.get('/referral', authenticateConsumer, ctrl.getReferral);
 
 module.exports = router;
 module.exports.authenticateConsumer = authenticateConsumer;

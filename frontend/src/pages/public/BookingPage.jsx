@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { MapPin, Wrench, CalendarX, Search, Lock } from 'lucide-react';
+import { MapPin, Wrench, CalendarX, Search, Lock, Shield, RotateCcw } from 'lucide-react';
 import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI, paymentsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
@@ -424,13 +424,13 @@ export default function BookingPage() {
             {requiresPayment && (
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[
-                  { icon: '🔒', title: 'Secure payment', desc: 'Encrypted by Stripe' },
-                  { icon: '🛡️', title: 'Protected funds', desc: 'Held until service confirmed' },
-                  { icon: '↩️', title: 'Refund policy', desc: 'Dispute within 14 days' },
+                  { icon: <Lock className="w-4 h-4 mx-auto text-primary-600" />, title: 'Secure payment', desc: 'Encrypted by Stripe' },
+                  { icon: <Shield className="w-4 h-4 mx-auto text-primary-600" />, title: 'Protected funds', desc: 'Held until service confirmed' },
+                  { icon: <RotateCcw className="w-4 h-4 mx-auto text-primary-600" />, title: 'Refund policy', desc: 'Dispute within 14 days' },
                 ].map(b => (
                   <div key={b.title} className="bg-white border border-gray-100 rounded-xl p-3 text-center">
-                    <span className="text-xl">{b.icon}</span>
-                    <p className="text-xs font-semibold text-gray-700 mt-1">{b.title}</p>
+                    <div className="mb-1">{b.icon}</div>
+                    <p className="text-xs font-semibold text-gray-700">{b.title}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{b.desc}</p>
                   </div>
                 ))}
@@ -525,7 +525,7 @@ function PaymentForm({ clientSecret, onSuccess, submitting, setSubmitting, amoun
         )}
 
         <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl p-3 flex items-start gap-2.5">
-          <span className="text-base flex-shrink-0">🛡️</span>
+          <Shield className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-semibold text-indigo-800 dark:text-indigo-300">BookAm Buyer Protection</p>
             <p className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">Your payment is held securely until you confirm the service was received. You have 14 days to dispute if anything goes wrong.</p>

@@ -4,6 +4,13 @@ const crypto = require('crypto');
 const ConsumerAccount = require('../models/ConsumerAccount');
 const Notification = require('../models/Notification');
 const { sendEmail, sendVerificationEmail } = require('../services/emailService');
+const db = require('../config/database');
+
+function generateReferralCode(name) {
+  const prefix = (name || 'BOOK').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X');
+  const suffix = Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4).padEnd(4, '0');
+  return prefix + suffix;
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -25,8 +32,25 @@ exports.register = async (req, res) => {
     const existing = await ConsumerAccount.findByEmail(email);
     if (existing) return res.status(409).json({ error: 'An account with this email already exists' });
 
+    const { referral_code: usedCode } = req.body;
     const consumer = await ConsumerAccount.create({ email, password, full_name, phone });
     const token = signToken(consumer);
+
+    // Assign a unique referral code to every new consumer
+    const myCode = generateReferralCode(full_name);
+    db.query('UPDATE consumer_accounts SET referral_code = $1 WHERE id = $2', [myCode, consumer.id]).catch(() => {});
+
+    // Credit the referrer if a valid code was used
+    if (usedCode) {
+      db.query('UPDATE consumer_accounts SET referral_credits = COALESCE(referral_credits,0) + 1 WHERE referral_code = $1 RETURNING id', [usedCode.toUpperCase()])
+        .then(({ rows }) => {
+          if (rows[0]) {
+            db.query(`INSERT INTO referral_events (id, referrer_id, referred_id, referral_code) VALUES ($1,$2,$3,$4)`,
+              [crypto.randomUUID(), rows[0].id, consumer.id, usedCode.toUpperCase()]).catch(() => {});
+            db.query('UPDATE consumer_accounts SET referred_by = $1 WHERE id = $2', [usedCode.toUpperCase(), consumer.id]).catch(() => {});
+          }
+        }).catch(() => {});
+    }
 
     // Link any past guest bookings with matching email
     ConsumerAccount.linkByEmail(consumer.id, email).catch(() => {});
@@ -328,5 +352,31 @@ exports.changePassword = async (req, res) => {
   } catch (err) {
     console.error('[consumer/changePassword]', err.message);
     res.status(500).json({ error: 'Failed to change password' });
+  }
+};
+
+exports.getReferral = async (req, res) => {
+  try {
+    const { rows: [row] } = await db.query(
+      'SELECT referral_code, referral_credits FROM consumer_accounts WHERE id = $1',
+      [req.consumer.id]
+    );
+    // Generate code lazily if not yet assigned
+    let code = row?.referral_code;
+    if (!code) {
+      code = generateReferralCode(req.consumer.full_name);
+      await db.query('UPDATE consumer_accounts SET referral_code = $1 WHERE id = $2', [code, req.consumer.id]);
+    }
+    const { rows: events } = await db.query(
+      `SELECT re.created_at, ca.full_name AS referred_name
+       FROM referral_events re
+       JOIN consumer_accounts ca ON ca.id = re.referred_id
+       WHERE re.referrer_id = $1 ORDER BY re.created_at DESC LIMIT 20`,
+      [req.consumer.id]
+    );
+    res.json({ referral_code: code, credits: row?.referral_credits || 0, referrals: events });
+  } catch (err) {
+    console.error('[consumer/referral]', err.message);
+    res.status(500).json({ error: 'Failed to load referral info' });
   }
 };

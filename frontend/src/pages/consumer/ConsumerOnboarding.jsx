@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Sparkles, ChevronRight, Check, Navigation } from 'lucide-react';
+import { MapPin, Sparkles, ChevronRight, Check, Navigation, CalendarCheck, MessageSquare, Shield } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
@@ -91,7 +91,7 @@ export default function ConsumerOnboarding() {
   const STEPS = [
     {
       icon: <MapPin className="w-8 h-8 text-primary-500" />,
-      title: `Welcome, ${consumer?.full_name?.split(' ')[0] || 'there'}! 👋`,
+      title: `Welcome, ${consumer?.full_name?.split(' ')[0] || 'there'}.`,
       subtitle: 'Tell us where you\'re based so we can show you nearby services',
       content: (
         <div className="space-y-4">
@@ -160,6 +160,35 @@ export default function ConsumerOnboarding() {
       ),
       canContinue: true,
     },
+    {
+      icon: <CalendarCheck className="w-8 h-8 text-emerald-500" />,
+      title: 'You\'re all set.',
+      subtitle: 'Here\'s what you can do with BookAm right now',
+      content: (
+        <div className="space-y-3">
+          {[
+            { icon: <CalendarCheck className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Book services near you', desc: 'Browse and book barbers, stylists, trainers and more — instantly.' },
+            { icon: <MessageSquare className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Message businesses directly', desc: 'Chat with businesses before and after your appointment.' },
+            { icon: <Shield className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'BookAm Buyer Protection', desc: 'Your payment is held securely. Raise a dispute within 14 days if anything goes wrong.' },
+          ].map(item => (
+            <div key={item.title} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              {item.icon}
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+          <div className="mt-1 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-xl">
+            <p className="text-xs font-semibold text-primary-800 dark:text-primary-200">Early Access</p>
+            <p className="text-xs text-primary-600 dark:text-primary-400 mt-0.5">
+              BookAm is in active development. We are building new features every week — payments, reviews, loyalty rewards, and more. Thank you for being part of this journey.
+            </p>
+          </div>
+        </div>
+      ),
+      canContinue: true,
+    },
   ];
 
   const current = STEPS[step];
@@ -208,18 +237,20 @@ export default function ConsumerOnboarding() {
               {saving ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : isLast ? (
-                <><Check className="w-4 h-4" /> All done — let's go!</>
+                <><Check className="w-4 h-4" /> Get started</>
               ) : (
                 <>Continue <ChevronRight className="w-4 h-4" /></>
               )}
             </button>
-            <button
-              onClick={isLast ? skipAll : () => setStep(s => s + 1)}
-              disabled={saving}
-              className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-center py-2 transition-colors"
-            >
-              {isLast ? 'Skip for now' : 'Skip this step'}
-            </button>
+            {!isLast && (
+              <button
+                onClick={step === 0 ? () => setStep(1) : saveAndFinish}
+                disabled={saving}
+                className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-center py-2 transition-colors"
+              >
+                Skip this step
+              </button>
+            )}
           </div>
         </div>
 

@@ -7,6 +7,7 @@ import { CustomerAuthProvider, useCustomerAuth } from './context/CustomerAuthCon
 import { NotificationProvider } from './context/NotificationContext';
 import { LOGO_BLUE_ICON } from './config/logos';
 import FloatingChatWidget from './components/shared/FloatingChatWidget';
+import BroadcastBanner from './components/shared/BroadcastBanner';
 
 // Public pages
 import Landing from './pages/public/Landing';
@@ -124,6 +125,7 @@ export default function App() {
               error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
             }}
           />
+          <BroadcastBanner />
           <FloatingChatWidget />
           <Routes>
             {/* Public booking */}

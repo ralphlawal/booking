@@ -211,6 +211,17 @@ export const consumerChatAPI = {
   sendMessage: (id, content) => consumerAxios.post(`/chat/consumer/rooms/${id}/messages`, { content }),
 };
 
+export const broadcastAPI = {
+  getActive: () => axios.get(`${BASE}/broadcasts/active`).then(r => r.data),
+  list: () => adminAxios.get('/broadcasts'),
+  create: (data) => adminAxios.post('/broadcasts', data),
+  deactivate: (id) => adminAxios.patch(`/broadcasts/${id}/deactivate`),
+};
+
+export const referralAPI = {
+  get: () => consumerAxios.get('/consumer/referral'),
+};
+
 export const adminChatAPI = {
   login: (password) => adminAxios.post('/chat/admin/login', { password }),
   getRooms: () => adminAxios.get('/chat/admin/rooms'),

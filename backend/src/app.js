@@ -59,6 +59,13 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/chat', require('./routes/chat'));
 
+// Broadcast notifications
+const bcastCtrl = require('./controllers/broadcastController');
+app.get('/api/broadcasts/active', bcastCtrl.getActive);
+app.get('/api/broadcasts', bcastCtrl.list);
+app.post('/api/broadcasts', bcastCtrl.create);
+app.patch('/api/broadcasts/:id/deactivate', bcastCtrl.deactivate);
+
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
@@ -124,6 +131,8 @@ async function start() {
       await pool.query(sql11);
       const sql12 = fs.readFileSync(path.join(__dirname, '../migrations/012_consumer_location.sql'), 'utf8');
       await pool.query(sql12);
+      const sql13 = fs.readFileSync(path.join(__dirname, '../migrations/013_broadcasts_referrals.sql'), 'utf8');
+      await pool.query(sql13);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -169,6 +178,22 @@ async function start() {
       try {
         db.exec(`ALTER TABLE bookings ADD COLUMN stripe_payment_intent_id TEXT`);
         db.exec(`ALTER TABLE bookings ADD COLUMN payment_status TEXT DEFAULT 'unpaid'`);
+      } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS broadcast_notifications (
+          id TEXT PRIMARY KEY, title TEXT NOT NULL, message TEXT NOT NULL,
+          type TEXT NOT NULL DEFAULT 'info', is_active INTEGER NOT NULL DEFAULT 1,
+          created_at TEXT DEFAULT (datetime('now')), expires_at TEXT
+        )`);
+      } catch {}
+      for (const col of ['referral_code TEXT', 'referred_by TEXT', 'referral_credits INTEGER DEFAULT 0']) {
+        try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN ${col}`); } catch {}
+      }
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS referral_events (
+          id TEXT PRIMARY KEY, referrer_id TEXT NOT NULL, referred_id TEXT,
+          referral_code TEXT NOT NULL, created_at TEXT DEFAULT (datetime('now'))
+        )`);
       } catch {}
       try {
         db.exec(`CREATE TABLE IF NOT EXISTS chat_rooms (
