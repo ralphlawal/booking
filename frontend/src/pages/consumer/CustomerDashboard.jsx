@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare } from 'lucide-react';
-import { consumerAPI, bookingsAPI, reviewsAPI } from '../../services/api';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { consumerAPI, reviewsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -35,7 +35,15 @@ function CopyRefButton({ refId }) {
   );
 }
 
-function BookingCard({ booking, onRebook, onCancel, onReview, past }) {
+function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, onDispute, past }) {
+  const today = new Date().toISOString().split('T')[0];
+  const isPastDate = booking.booking_date < today;
+  const isPaid = booking.payment_status === 'paid';
+  const serviceDate = new Date(booking.booking_date + 'T12:00:00Z');
+  const daysSinceService = (Date.now() - serviceDate.getTime()) / (1000 * 60 * 60 * 24);
+  const canDispute = isPaid && isPastDate && !booking.has_dispute && !booking.service_confirmed && daysSinceService <= 14;
+  const canConfirm = isPaid && isPastDate && !booking.service_confirmed && !booking.has_dispute;
+
   return (
     <div className="card p-4">
       <div className="flex items-start gap-3">
@@ -63,9 +71,8 @@ function BookingCard({ booking, onRebook, onCancel, onReview, past }) {
               <p className="flex items-center gap-1.5">
                 <PoundSterling className="w-3.5 h-3.5 flex-shrink-0" />
                 £{parseFloat(booking.price).toFixed(2)}
-                {booking.payment_status === 'paid' && (
-                  <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>
-                )}
+                {isPaid && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>}
+                {booking.payment_status === 'refunded' && <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Refunded</span>}
               </p>
             )}
             {booking.location && <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{booking.location}</p>}
@@ -76,21 +83,50 @@ function BookingCard({ booking, onRebook, onCancel, onReview, past }) {
             )}
           </div>
           <p className="text-xs text-gray-400 mt-1"><CopyRefButton refId={booking.reference_id} /></p>
+
+          {/* Trust status indicators */}
+          {booking.service_confirmed && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" /> Service confirmed
+            </div>
+          )}
+          {booking.has_dispute && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Dispute {booking.dispute_status === 'open' ? 'under review' : booking.dispute_status === 'resolved_refunded' ? '— refund issued' : '— resolved'}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex gap-2 mt-4">
+      <div className="flex gap-2 mt-4 flex-wrap">
         {past ? (
-          <div className="flex gap-2 flex-1">
-            <button onClick={() => onRebook(booking)} className="btn-secondary flex-1 text-sm py-2 flex items-center justify-center gap-1.5">
+          <>
+            <button onClick={() => onRebook(booking)} className="btn-secondary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
               <RotateCcw className="w-3.5 h-3.5" /> Rebook
             </button>
             {booking.status === 'completed' && !booking.reviewed && (
-              <button onClick={() => onReview(booking)} className="btn-primary flex-1 text-sm py-2 flex items-center justify-center gap-1.5">
+              <button onClick={() => onReview(booking)} className="btn-primary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
                 <Star className="w-3.5 h-3.5" /> Review
               </button>
             )}
-          </div>
+            {canConfirm && (
+              <button
+                onClick={() => onConfirmService(booking)}
+                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 transition-colors"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
+              </button>
+            )}
+            {canDispute && (
+              <button
+                onClick={() => onDispute(booking)}
+                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 transition-colors"
+              >
+                <AlertTriangle className="w-3.5 h-3.5" /> Dispute
+              </button>
+            )}
+          </>
         ) : (
           <>
             <Link to={`/profile/${booking.slug}`} className="btn-secondary flex-1 text-sm py-2 text-center">
@@ -154,8 +190,8 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Leave a review</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -193,8 +229,8 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 
 function CancelModal({ booking, onConfirm, onClose, cancelling }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Cancel booking?</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -218,6 +254,122 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
             className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
           >
             {cancelling ? 'Cancelling…' : 'Yes, cancel'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmServiceModal({ booking, onConfirm, onClose, confirming }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-4">
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Confirm service received?</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          {fmtDate(booking.booking_date)} · {booking.start_time?.slice(0, 5)}
+        </p>
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 mb-5 text-xs text-green-700 dark:text-green-400">
+          By confirming, you let us know the service was completed as expected. This helps us release payment to the business and keeps your booking history accurate.
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="btn-secondary flex-1">Not yet</button>
+          <button
+            onClick={onConfirm}
+            disabled={confirming}
+            className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            {confirming ? 'Confirming…' : 'Yes, confirm'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
+  const REASONS = [
+    'Service was not rendered',
+    'Service quality was unacceptable',
+    'Business was unresponsive / no-show',
+    'Wrong service provided',
+    'Other',
+  ];
+  const [reason, setReason] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async () => {
+    if (!reason) { toast.error('Please select a reason'); return; }
+    setSubmitting(true);
+    try {
+      await consumerAPI.raiseDispute(booking.reference_id, { reason, description, consumer_id: consumer?.id });
+      toast.success('Dispute raised — we\'ll review within 48 hours');
+      onSubmitted(booking.id);
+      onClose();
+    } catch (err) {
+      toast.error(err.message || 'Failed to raise dispute');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-4">
+          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Raise a dispute</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name} · {fmtDate(booking.booking_date)}
+        </p>
+        <div className="space-y-3 mb-5">
+          <div>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Reason</label>
+            <select
+              className="input text-sm"
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+            >
+              <option value="">Select a reason…</option>
+              {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Additional details (optional)</label>
+            <textarea
+              className="input resize-none text-sm"
+              rows={3}
+              placeholder="Please describe what happened…"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              maxLength={500}
+            />
+          </div>
+        </div>
+        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-5 text-xs text-amber-700 dark:text-amber-400">
+          Our team will review your dispute within 48 hours. If valid, a full refund will be issued to your original payment method.
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+          <button
+            onClick={submit}
+            disabled={submitting || !reason}
+            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+          >
+            {submitting ? 'Submitting…' : 'Submit dispute'}
           </button>
         </div>
       </div>
@@ -275,6 +427,9 @@ export default function CustomerDashboard() {
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
   const [reviewTarget, setReviewTarget] = useState(null);
+  const [confirmTarget, setConfirmTarget] = useState(null);
+  const [confirming, setConfirming] = useState(false);
+  const [disputeTarget, setDisputeTarget] = useState(null);
   const [resending, setResending] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -321,14 +476,29 @@ export default function CustomerDashboard() {
     if (!cancelTarget) return;
     setCancelling(true);
     try {
-      await bookingsAPI.cancelByCustomer(cancelTarget.reference_id);
+      await consumerAPI.cancelBooking(cancelTarget.reference_id);
       setBookings((prev) => prev.map((b) => b.id === cancelTarget.id ? { ...b, status: 'cancelled' } : b));
       toast.success('Booking cancelled');
       setCancelTarget(null);
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Could not cancel booking');
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleConfirmService = async () => {
+    if (!confirmTarget) return;
+    setConfirming(true);
+    try {
+      await consumerAPI.confirmService(confirmTarget.reference_id, consumer?.id);
+      setBookings(prev => prev.map(b => b.id === confirmTarget.id ? { ...b, service_confirmed: true, status: 'completed' } : b));
+      toast.success('Service confirmed — thank you!');
+      setConfirmTarget(null);
+    } catch (err) {
+      toast.error(err.message || 'Failed to confirm service');
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -565,7 +735,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {upcoming.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} past={false} />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past={false} />
               ))}
             </div>
           )
@@ -580,7 +750,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {past.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} past />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past />
               ))}
             </div>
           )
@@ -623,6 +793,26 @@ export default function CustomerDashboard() {
           booking={reviewTarget}
           onClose={() => setReviewTarget(null)}
           onSubmitted={handleReviewSubmitted}
+        />
+      )}
+
+      {confirmTarget && (
+        <ConfirmServiceModal
+          booking={confirmTarget}
+          onConfirm={handleConfirmService}
+          onClose={() => setConfirmTarget(null)}
+          confirming={confirming}
+        />
+      )}
+
+      {disputeTarget && (
+        <DisputeModal
+          booking={disputeTarget}
+          consumer={consumer}
+          onClose={() => setDisputeTarget(null)}
+          onSubmitted={(bookingId) => {
+            setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, has_dispute: true, dispute_status: 'open' } : b));
+          }}
         />
       )}
 

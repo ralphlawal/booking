@@ -38,6 +38,16 @@ router.post('/lookup', ctrl.lookup);
 // Public: customer cancels their own booking
 router.post('/ref/:ref/cancel', ctrl.cancelByCustomer);
 
+// Public: customer confirms service was rendered
+router.post('/ref/:ref/confirm-service', ctrl.confirmService);
+
+// Public: customer raises a dispute
+router.post('/ref/:ref/dispute', ctrl.raiseDispute);
+
+// Admin: dispute management (auth checked inside controller)
+router.get('/admin/disputes', ctrl.getDisputes);
+router.post('/admin/disputes/:id/resolve', ctrl.resolveDispute);
+
 // Admin routes
 router.get('/analytics', authenticate, attachBusiness, ctrl.getAnalytics);
 router.get('/export/csv', authenticate, attachBusiness, ctrl.exportCsv);

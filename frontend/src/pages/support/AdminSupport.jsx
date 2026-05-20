@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, Filter } from 'lucide-react';
-import { adminChatAPI } from '../../services/api';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { adminChatAPI, adminDisputesAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
@@ -152,6 +152,126 @@ function LoginScreen({ onLogin }) {
   );
 }
 
+function DisputesPanel() {
+  const [disputes, setDisputes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [resolving, setResolving] = useState(null);
+  const [adminNotes, setAdminNotes] = useState({});
+
+  const load = () => adminDisputesAPI.getDisputes().then(setDisputes).catch(() => toast.error('Failed to load disputes'));
+
+  useEffect(() => { load().finally(() => setLoading(false)); }, []);
+
+  const resolve = async (id, action) => {
+    setResolving(id + action);
+    try {
+      const msg = await adminDisputesAPI.resolveDispute(id, { action, admin_notes: adminNotes[id] || '' });
+      toast.success(msg.message || (action === 'refund' ? 'Refund issued' : 'Dispute rejected'));
+      setDisputes(prev => prev.map(d => d.id === id ? { ...d, status: action === 'refund' ? 'resolved_refunded' : 'resolved_rejected' } : d));
+    } catch (err) {
+      toast.error(err.message || 'Failed to resolve dispute');
+    } finally {
+      setResolving(null);
+    }
+  };
+
+  if (loading) return <div className="flex items-center justify-center h-40"><div className="w-7 h-7 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" /></div>;
+
+  const open = disputes.filter(d => d.status === 'open');
+  const closed = disputes.filter(d => d.status !== 'open');
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="font-bold text-gray-900 dark:text-white">
+          Disputes <span className="ml-1 text-sm font-normal text-gray-400">({open.length} open)</span>
+        </h2>
+        <button onClick={() => load()} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      {disputes.length === 0 && (
+        <div className="text-center py-16 text-gray-400">
+          <CheckCircle className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+          <p className="font-medium">No disputes</p>
+          <p className="text-sm mt-1">All clear — no customer disputes raised.</p>
+        </div>
+      )}
+
+      {open.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Open disputes</p>
+          {open.map(d => (
+            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-red-200 dark:border-red-800 p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <p className="font-bold text-sm text-gray-900 dark:text-white">{d.customer_name || d.customer_email || 'Customer'}</p>
+                  <p className="text-xs text-gray-500">{d.service_name} · {d.business_name}</p>
+                  <p className="text-xs text-gray-400 font-mono mt-0.5">{d.reference_id}</p>
+                </div>
+                <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded-full font-semibold">Open</span>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 mb-3">
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Reason: {d.reason}</p>
+                {d.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{d.description}</p>}
+              </div>
+              <div className="mb-3">
+                <p className="text-xs text-gray-500 mb-1">Service: <strong>£{parseFloat(d.price || 0).toFixed(2)}</strong> · Payment: <span className={d.payment_status === 'paid' ? 'text-green-600' : 'text-gray-400'}>{d.payment_status || 'unpaid'}</span></p>
+                <p className="text-xs text-gray-400">Raised {new Date(d.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              </div>
+              <textarea
+                className="input text-sm resize-none mb-3"
+                rows={2}
+                placeholder="Admin notes (optional)…"
+                value={adminNotes[d.id] || ''}
+                onChange={e => setAdminNotes(prev => ({ ...prev, [d.id]: e.target.value }))}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => resolve(d.id, 'reject')}
+                  disabled={!!resolving}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                >
+                  <XCircle className="w-4 h-4" /> {resolving === d.id + 'reject' ? 'Rejecting…' : 'Reject'}
+                </button>
+                {d.stripe_payment_intent_id && (
+                  <button
+                    onClick={() => resolve(d.id, 'refund')}
+                    disabled={!!resolving}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                  >
+                    <CheckCircle className="w-4 h-4" /> {resolving === d.id + 'refund' ? 'Refunding…' : 'Issue refund'}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {closed.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-4">Resolved</p>
+          {closed.map(d => (
+            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 opacity-60">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{d.customer_name || d.customer_email}</p>
+                  <p className="text-xs text-gray-400">{d.reason}</p>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full font-semibold ${d.status === 'resolved_refunded' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                  {d.status === 'resolved_refunded' ? 'Refunded' : 'Rejected'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminSupport() {
   const [authed, setAuthed] = useState(!!localStorage.getItem(TOKEN_KEY));
   const [rooms, setRooms] = useState([]);
@@ -159,6 +279,7 @@ export default function AdminSupport() {
   const [filter, setFilter] = useState('all');
   const [showNew, setShowNew] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mainTab, setMainTab] = useState('messages');
 
   const loadRooms = () => adminChatAPI.getRooms().then(setRooms).catch(() => {});
 
@@ -215,7 +336,22 @@ export default function AdminSupport() {
           )}
 
           <div className="ml-auto flex items-center gap-2">
-            {!showingChat && (
+            {/* Tab switcher */}
+            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+              <button
+                onClick={() => setMainTab('messages')}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 ${mainTab === 'messages' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
+              >
+                <MessageSquare className="w-3 h-3" /> Messages
+              </button>
+              <button
+                onClick={() => setMainTab('disputes')}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 ${mainTab === 'disputes' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
+              >
+                <AlertTriangle className="w-3 h-3" /> Disputes
+              </button>
+            </div>
+            {!showingChat && mainTab === 'messages' && (
               <button
                 onClick={() => setShowNew(true)}
                 className="flex items-center gap-1.5 btn-primary text-xs py-2 px-3"
@@ -235,7 +371,13 @@ export default function AdminSupport() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden min-h-0">
+      {mainTab === 'disputes' && (
+        <div className="flex-1 overflow-hidden">
+          <DisputesPanel />
+        </div>
+      )}
+
+      {mainTab === 'messages' && <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Room list — full width mobile (hidden when chat open), fixed sidebar desktop */}
         <div className={`${showingChat ? 'hidden md:flex' : 'flex'} md:flex-col w-full md:w-80 flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex-col`}>
           {/* Filter bar */}
@@ -315,6 +457,8 @@ export default function AdminSupport() {
           )}
         </div>
       </div>
+
+      </div>}
 
       {showNew && (
         <NewChatModal

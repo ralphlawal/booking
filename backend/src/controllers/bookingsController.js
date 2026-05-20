@@ -4,6 +4,20 @@ const Service = require('../models/Service');
 const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
 const { sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder } = require('../services/emailService');
+const db = require('../config/database');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
+
+function authenticateAdmin(req) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) return false;
+  try {
+    const payload = jwt.verify(header.split(' ')[1], JWT_SECRET);
+    return payload.type === 'admin';
+  } catch { return false; }
+}
 
 exports.create = async (req, res) => {
   // Honeypot: bots fill hidden fields, humans don't
@@ -305,5 +319,170 @@ exports.cancelByCustomer = async (req, res) => {
     res.json({ message: 'Booking cancelled successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Cancellation failed' });
+  }
+};
+
+// POST /bookings/ref/:ref/confirm-service  (public — consumer confirms service was rendered)
+exports.confirmService = async (req, res) => {
+  try {
+    const booking = await Booking.findByReference(req.params.ref);
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (!['confirmed', 'completed', 'pending'].includes(booking.status)) {
+      return res.status(400).json({ error: 'Cannot confirm service for this booking' });
+    }
+
+    const { rows: existing } = await db.query(
+      'SELECT id FROM service_confirmations WHERE booking_id = $1', [booking.id]
+    );
+    if (existing.length > 0) return res.status(400).json({ error: 'Service already confirmed' });
+
+    const { rows: dispRows } = await db.query(
+      'SELECT id FROM disputes WHERE booking_id = $1', [booking.id]
+    );
+    if (dispRows.length > 0) return res.status(400).json({ error: 'A dispute is open for this booking' });
+
+    const id = crypto.randomUUID();
+    const consumer_id = req.body.consumer_id || null;
+    await db.query(
+      'INSERT INTO service_confirmations (id, booking_id, consumer_id) VALUES ($1, $2, $3)',
+      [id, booking.id, consumer_id]
+    );
+
+    // Mark booking as completed if not already
+    if (booking.status !== 'completed') {
+      await Booking.updateStatus(booking.id, booking.business_id, 'completed', null);
+    }
+
+    res.json({ message: 'Service confirmed — thank you!' });
+  } catch (err) {
+    console.error('[confirmService]', err.message);
+    res.status(500).json({ error: 'Failed to confirm service' });
+  }
+};
+
+// POST /bookings/ref/:ref/dispute  (consumer raises a dispute)
+exports.raiseDispute = async (req, res) => {
+  try {
+    const booking = await Booking.findByReference(req.params.ref);
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    const { reason, description, consumer_id } = req.body;
+    if (!reason?.trim()) return res.status(400).json({ error: 'Reason is required' });
+
+    // Only allow disputes for paid bookings within 14 days of service date
+    const serviceDate = new Date(booking.booking_date + 'T12:00:00Z');
+    const daysSince = (Date.now() - serviceDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSince > 14) {
+      return res.status(400).json({ error: 'Disputes must be raised within 14 days of the service date' });
+    }
+
+    const { rows: existing } = await db.query(
+      'SELECT id FROM disputes WHERE booking_id = $1', [booking.id]
+    );
+    if (existing.length > 0) return res.status(400).json({ error: 'A dispute already exists for this booking' });
+
+    const id = crypto.randomUUID();
+    await db.query(
+      `INSERT INTO disputes (id, booking_id, consumer_id, reason, description)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [id, booking.id, consumer_id || null, reason.trim(), description?.trim() || null]
+    );
+
+    // Notify admin via email
+    const { sendEmail } = require('../services/emailService');
+    sendEmail({
+      to: process.env.ADMIN_EMAIL || 'hello@bookam.business',
+      subject: `New Dispute: ${booking.reference_id}`,
+      type: 'dispute_raised',
+      html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
+        <h2 style="color:#dc2626">New Dispute Raised</h2>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:6px 0;color:#64748b;width:130px">Reference</td><td style="font-weight:600;font-family:monospace">${booking.reference_id}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b">Customer</td><td>${booking.customer_name}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b">Business</td><td>${booking.business_name}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b">Service</td><td>${booking.service_name}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b">Reason</td><td>${reason}</td></tr>
+          ${description ? `<tr><td style="padding:6px 0;color:#64748b">Details</td><td>${description}</td></tr>` : ''}
+        </table>
+        <p style="margin-top:20px"><a href="${process.env.FRONTEND_URL || 'https://bookam.business'}/admin-support">View in admin dashboard</a></p>
+      </div>`,
+    }).catch(() => {});
+
+    res.json({ message: 'Dispute raised — our team will review within 48 hours.' });
+  } catch (err) {
+    console.error('[raiseDispute]', err.message);
+    res.status(500).json({ error: 'Failed to raise dispute' });
+  }
+};
+
+// GET /bookings/admin/disputes  (admin only)
+exports.getDisputes = async (req, res) => {
+  if (!authenticateAdmin(req)) return res.status(401).json({ error: 'Admin access required' });
+  try {
+    const { rows } = await db.query(
+      `SELECT d.*, b.reference_id, b.booking_date, b.stripe_payment_intent_id, b.payment_status,
+              c.full_name AS customer_name, c.email AS customer_email,
+              biz.name AS business_name, s.name AS service_name, s.price
+       FROM disputes d
+       JOIN bookings b ON b.id = d.booking_id
+       LEFT JOIN customers cu ON cu.id = b.customer_id
+       LEFT JOIN consumer_accounts c ON c.id = d.consumer_id
+       JOIN businesses biz ON biz.id = b.business_id
+       JOIN services s ON s.id = b.service_id
+       ORDER BY d.created_at DESC`
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('[getDisputes]', err.message);
+    res.status(500).json({ error: 'Failed to fetch disputes' });
+  }
+};
+
+// POST /bookings/admin/disputes/:id/resolve  (admin only)
+exports.resolveDispute = async (req, res) => {
+  if (!authenticateAdmin(req)) return res.status(401).json({ error: 'Admin access required' });
+  try {
+    const { action, admin_notes } = req.body; // action: 'refund' | 'reject'
+    if (!['refund', 'reject'].includes(action)) return res.status(400).json({ error: 'action must be refund or reject' });
+
+    const { rows } = await db.query('SELECT * FROM disputes WHERE id = $1', [req.params.id]);
+    const dispute = rows[0];
+    if (!dispute) return res.status(404).json({ error: 'Dispute not found' });
+    if (dispute.status !== 'open') return res.status(400).json({ error: 'Dispute already resolved' });
+
+    let stripe_refund_id = null;
+
+    if (action === 'refund') {
+      const { rows: bookingRows } = await db.query(
+        'SELECT stripe_payment_intent_id FROM bookings WHERE id = $1', [dispute.booking_id]
+      );
+      const pi_id = bookingRows[0]?.stripe_payment_intent_id;
+      if (pi_id && process.env.STRIPE_SECRET_KEY) {
+        try {
+          const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+          const refund = await stripe.refunds.create({ payment_intent: pi_id });
+          stripe_refund_id = refund.id;
+          await db.query(
+            `UPDATE bookings SET payment_status = 'refunded' WHERE id = $1`,
+            [dispute.booking_id]
+          );
+        } catch (stripeErr) {
+          console.error('[resolveDispute] Stripe refund error:', stripeErr.message);
+          return res.status(500).json({ error: `Stripe refund failed: ${stripeErr.message}` });
+        }
+      }
+    }
+
+    const status = action === 'refund' ? 'resolved_refunded' : 'resolved_rejected';
+    await db.query(
+      `UPDATE disputes SET status = $1, admin_notes = $2, stripe_refund_id = $3, resolved_at = NOW()
+       WHERE id = $4`,
+      [status, admin_notes || null, stripe_refund_id, dispute.id]
+    );
+
+    res.json({ message: action === 'refund' ? 'Refund issued successfully' : 'Dispute rejected' });
+  } catch (err) {
+    console.error('[resolveDispute]', err.message);
+    res.status(500).json({ error: 'Failed to resolve dispute' });
   }
 };

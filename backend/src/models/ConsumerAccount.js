@@ -69,14 +69,20 @@ const ConsumerAccount = {
     const { rows } = await db.query(
       `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
               b.notes, b.cancelled_reason, b.created_at,
+              b.payment_status, b.stripe_payment_intent_id,
               biz.name AS business_name, biz.slug, biz.logo_url, biz.location, biz.phone AS business_phone,
               s.name AS service_name, s.price, s.duration_minutes,
               s.id AS service_id, biz.id AS business_id,
-              (rv.id IS NOT NULL) AS reviewed
+              (rv.id IS NOT NULL) AS reviewed,
+              (sc.id IS NOT NULL) AS service_confirmed,
+              (d.id IS NOT NULL) AS has_dispute,
+              d.status AS dispute_status
        FROM bookings b
        JOIN businesses biz ON biz.id = b.business_id
        JOIN services s ON s.id = b.service_id
        LEFT JOIN reviews rv ON rv.booking_id = b.id
+       LEFT JOIN service_confirmations sc ON sc.booking_id = b.id
+       LEFT JOIN disputes d ON d.booking_id = b.id
        WHERE b.consumer_id = $1
        ORDER BY b.booking_date DESC, b.start_time DESC`,
       [consumer_id]

@@ -115,6 +115,8 @@ async function start() {
       await pool.query(sql9);
       const sql10 = fs.readFileSync(path.join(__dirname, '../migrations/010_bank_verification.sql'), 'utf8');
       await pool.query(sql10);
+      const sql11 = fs.readFileSync(path.join(__dirname, '../migrations/011_trust_system.sql'), 'utf8');
+      await pool.query(sql11);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -142,6 +144,22 @@ async function start() {
         )`);
       } catch {}
       try { db.exec(`ALTER TABLE customers ADD COLUMN notes TEXT`); } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS service_confirmations (
+          id TEXT PRIMARY KEY, booking_id TEXT NOT NULL, consumer_id TEXT,
+          confirmed_at TEXT DEFAULT (datetime('now')), UNIQUE(booking_id)
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS disputes (
+          id TEXT PRIMARY KEY, booking_id TEXT NOT NULL, consumer_id TEXT,
+          reason TEXT NOT NULL, description TEXT, status TEXT NOT NULL DEFAULT 'open',
+          admin_notes TEXT, stripe_refund_id TEXT,
+          created_at TEXT DEFAULT (datetime('now')), resolved_at TEXT, UNIQUE(booking_id)
+        )`);
+      } catch {}
+      try {
+        db.exec(`ALTER TABLE bookings ADD COLUMN stripe_payment_intent_id TEXT`);
+        db.exec(`ALTER TABLE bookings ADD COLUMN payment_status TEXT DEFAULT 'unpaid'`);
+      } catch {}
       try {
         db.exec(`CREATE TABLE IF NOT EXISTS chat_rooms (
           id TEXT PRIMARY KEY, type TEXT NOT NULL,

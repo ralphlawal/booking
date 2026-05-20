@@ -420,6 +420,22 @@ export default function BookingPage() {
               {submitting ? <Spinner /> : requiresPayment ? `Pay £${servicePrice.toFixed(2)} & Confirm` : 'Confirm Booking'}
             </button>
             <p className="text-center text-xs text-gray-400 mt-3">By booking you agree to the cancellation policy</p>
+
+            {requiresPayment && (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[
+                  { icon: '🔒', title: 'Secure payment', desc: 'Encrypted by Stripe' },
+                  { icon: '🛡️', title: 'Protected funds', desc: 'Held until service confirmed' },
+                  { icon: '↩️', title: 'Refund policy', desc: 'Dispute within 14 days' },
+                ].map(b => (
+                  <div key={b.title} className="bg-white border border-gray-100 rounded-xl p-3 text-center">
+                    <span className="text-xl">{b.icon}</span>
+                    <p className="text-xs font-semibold text-gray-700 mt-1">{b.title}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{b.desc}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -507,6 +523,14 @@ function PaymentForm({ clientSecret, onSuccess, submitting, setSubmitting, amoun
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
+
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl p-3 flex items-start gap-2.5">
+          <span className="text-base flex-shrink-0">🛡️</span>
+          <div>
+            <p className="text-xs font-semibold text-indigo-800 dark:text-indigo-300">BookAm Buyer Protection</p>
+            <p className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">Your payment is held securely until you confirm the service was received. You have 14 days to dispute if anything goes wrong.</p>
+          </div>
+        </div>
 
         <button
           type="submit"

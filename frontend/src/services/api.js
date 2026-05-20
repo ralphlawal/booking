@@ -79,7 +79,6 @@ export const bookingsAPI = {
   create: (slug, data) => api.post(`/bookings/public/${slug}`, data),
   getByRef: (ref) => api.get(`/bookings/ref/${ref}`),
   lookup: (reference_id, email) => api.post('/bookings/lookup', { reference_id, email }),
-  cancelByCustomer: (ref) => api.post(`/bookings/ref/${ref}/cancel`),
   list: (params) => api.get('/bookings', { params }),
   getById: (id) => api.get(`/bookings/${id}`),
   updateStatus: (id, status, cancelled_reason, no_show) =>
@@ -149,6 +148,24 @@ export const consumerAPI = {
   markNotificationsRead: () => consumerAxios.post('/consumer/notifications/read'),
   verifyEmail: (token) => consumerAxios.get('/consumer/verify-email', { params: { token } }),
   resendVerification: () => consumerAxios.post('/consumer/resend-verification'),
+  cancelBooking: (ref) => consumerAxios.post(`/bookings/ref/${ref}/cancel`),
+  confirmService: (ref, consumer_id) => consumerAxios.post(`/bookings/ref/${ref}/confirm-service`, { consumer_id }),
+  raiseDispute: (ref, data) => consumerAxios.post(`/bookings/ref/${ref}/dispute`, data),
+};
+
+export const adminDisputesAPI = {
+  getDisputes: () => {
+    const token = localStorage.getItem('adminSupportToken');
+    return axios.get(`${BASE}/bookings/admin/disputes`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(r => r.data);
+  },
+  resolveDispute: (id, data) => {
+    const token = localStorage.getItem('adminSupportToken');
+    return axios.post(`${BASE}/bookings/admin/disputes/${id}/resolve`, data, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(r => r.data);
+  },
 };
 
 export const discoverAPI = {
