@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 // Local dev: Vite proxy handles /api → localhost:5001
-// Production: /api/proxy/* → Vercel edge function → Render (same-origin, no CORS)
+// Production: call Render directly — CORS allows *.vercel.app; avoids 25s Vercel proxy timeout
 const BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : import.meta.env.PROD
-  ? '/api/proxy'
+  ? 'https://bookly-api-3bz0.onrender.com/api'
   : '/api';
 
 const api = axios.create({
@@ -96,9 +96,7 @@ export const customersAPI = {
 
 export const exportBookingsCsv = () => {
   const token = localStorage.getItem('fbToken');
-  const base = import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api`
-    : import.meta.env.PROD ? '/api/proxy' : '/api';
+  const base = BASE;
   const url = `${base}/bookings/export/csv`;
   const a = document.createElement('a');
   a.href = url;
