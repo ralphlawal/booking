@@ -1,12 +1,20 @@
 import axios from 'axios';
 
 // Local dev: Vite proxy handles /api → localhost:5001
-// Production: call Render directly — CORS allows *.vercel.app; avoids 25s Vercel proxy timeout
+// Production: /api/proxy/* → Vercel edge function → Render (same-origin, no CORS)
 const BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : import.meta.env.PROD
-  ? 'https://bookly-api-3bz0.onrender.com/api'
+  ? '/api/proxy'
   : '/api';
+
+// Kick Render out of sleep on app load. Uses no-cors so CORS headers are not needed.
+// The request itself wakes the server; we don't need to read the response.
+if (import.meta.env.PROD) {
+  fetch('https://bookly-api-3bz0.onrender.com/health', { mode: 'no-cors' }).catch(() => {});
+}
+
+const RETRY_DELAY_MS = 38000; // wait 38s then retry — Render typically wakes in 30-45s
 
 const api = axios.create({
   baseURL: BASE,
@@ -22,6 +30,16 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res.data,
   err => {
+    // Auto-retry GET requests once after a delay when the server is cold-starting
+    const config = err.config;
+    const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+    const isGet = config?.method === 'get';
+    if (isGet && isTimeout && !config._retried) {
+      config._retried = true;
+      return new Promise(resolve =>
+        setTimeout(() => resolve(axios(config)), RETRY_DELAY_MS)
+      );
+    }
     const message = err.response?.data?.error || err.message || 'Something went wrong';
     return Promise.reject(new Error(message));
   }
@@ -126,6 +144,12 @@ consumerAxios.interceptors.request.use(config => {
 consumerAxios.interceptors.response.use(
   res => res.data,
   err => {
+    const config = err.config;
+    const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+    if (config?.method === 'get' && isTimeout && !config._retried) {
+      config._retried = true;
+      return new Promise(resolve => setTimeout(() => resolve(axios(config)), RETRY_DELAY_MS));
+    }
     const error = new Error(err.response?.data?.error || err.message || 'Something went wrong');
     error.status = err.response?.status;
     return Promise.reject(error);
@@ -203,7 +227,15 @@ adminAxios.interceptors.request.use(config => {
 });
 adminAxios.interceptors.response.use(
   res => res.data,
-  err => Promise.reject(new Error(err.response?.data?.error || err.message || 'Something went wrong'))
+  err => {
+    const config = err.config;
+    const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+    if (config?.method === 'get' && isTimeout && !config._retried) {
+      config._retried = true;
+      return new Promise(resolve => setTimeout(() => resolve(axios(config)), RETRY_DELAY_MS));
+    }
+    return Promise.reject(new Error(err.response?.data?.error || err.message || 'Something went wrong'));
+  }
 );
 
 export const businessChatAPI = {
