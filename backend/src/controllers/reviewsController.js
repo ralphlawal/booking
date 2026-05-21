@@ -51,19 +51,36 @@ exports.getForBusiness = async (req, res) => {
     );
     if (!biz.length) return res.status(404).json({ error: 'Business not found' });
 
-    const { rows } = await db.query(
-      `SELECT r.id, r.rating, r.comment, r.created_at,
-              ca.full_name AS reviewer_name,
-              rr.reply_text, rr.created_at AS reply_at
-       FROM reviews r
-       LEFT JOIN bookings b ON b.id = r.booking_id
-       LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
-       LEFT JOIN review_replies rr ON rr.review_id = r.id
-       WHERE r.business_id = $1
-       ORDER BY r.created_at DESC
-       LIMIT 50`,
-      [biz[0].id]
-    );
+    let rows;
+    try {
+      ({ rows } = await db.query(
+        `SELECT r.id, r.rating, r.comment, r.created_at,
+                ca.full_name AS reviewer_name,
+                rr.reply_text, rr.created_at AS reply_at
+         FROM reviews r
+         LEFT JOIN bookings b ON b.id = r.booking_id
+         LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
+         LEFT JOIN review_replies rr ON rr.review_id = r.id
+         WHERE r.business_id = $1
+         ORDER BY r.created_at DESC
+         LIMIT 50`,
+        [biz[0].id]
+      ));
+    } catch {
+      // review_replies table may not exist yet (migration 014 pending)
+      ({ rows } = await db.query(
+        `SELECT r.id, r.rating, r.comment, r.created_at,
+                ca.full_name AS reviewer_name,
+                NULL AS reply_text, NULL AS reply_at
+         FROM reviews r
+         LEFT JOIN bookings b ON b.id = r.booking_id
+         LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
+         WHERE r.business_id = $1
+         ORDER BY r.created_at DESC
+         LIMIT 50`,
+        [biz[0].id]
+      ));
+    }
 
     const { rows: stats } = await db.query(
       `SELECT COUNT(*) AS total,
@@ -105,6 +122,7 @@ exports.reply = async (req, res) => {
     res.json({ message: 'Reply saved' });
   } catch (err) {
     console.error('[reviews/reply]', err.message);
+    if (err.message?.includes('review_replies')) return res.status(503).json({ error: 'Review replies not available yet' });
     res.status(500).json({ error: 'Failed to save reply' });
   }
 };

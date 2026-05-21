@@ -187,7 +187,7 @@ export default function Customers() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    customersAPI.list().then(setCustomers).finally(() => setLoading(false));
+    customersAPI.list().then(setCustomers).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const filtered = customers.filter(c =>

@@ -12,7 +12,7 @@ export default function Services() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
 
-  const load = () => servicesAPI.list().then(setServices).finally(() => setLoading(false));
+  const load = () => servicesAPI.list().then(setServices).catch(() => {}).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setForm(EMPTY); setModal('create'); };
