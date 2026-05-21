@@ -114,7 +114,7 @@ export default function BusinessProfile() {
     Promise.all([
       businessAPI.getPublic(slug),
       servicesAPI.listPublic(slug),
-      reviewsAPI.getForBusiness(slug),
+      reviewsAPI.getForBusiness(slug).catch(() => ({ reviews: [], stats: null })),
       availabilityAPI.getPublicHours(slug).catch(() => null),
       photosAPI.listPublic(slug).catch(() => []),
     ])
@@ -341,7 +341,7 @@ export default function BusinessProfile() {
             <div className="grid grid-cols-3 gap-1.5">
               {photos.map(p => (
                 <div key={p.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-                  <img src={p.photo_url} alt={p.caption || ''} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={p.url} alt={p.caption || ''} className="w-full h-full object-cover" loading="lazy" />
                 </div>
               ))}
             </div>
