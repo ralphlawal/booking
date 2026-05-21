@@ -23,7 +23,8 @@ exports.create = async (req, res) => {
   // Honeypot: bots fill hidden fields, humans don't
   if (req.body.website) return res.status(201).json({ reference_id: 'BOT-BLOCKED', honeypot: true });
   try {
-    const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id } = req.body;
+    const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id,
+            consumer_id, staff_member_id, promo_code, discount_amount } = req.body;
 
     const service = await Service.findById(service_id);
     if (!service || service.business_id !== req.business.id || !service.is_active) {
@@ -48,7 +49,6 @@ exports.create = async (req, res) => {
     });
 
     const reference_id = generateReference();
-    const { consumer_id } = req.body;
     const booking = await Booking.create({
       reference_id,
       business_id: req.business.id,
@@ -61,6 +61,26 @@ exports.create = async (req, res) => {
       notes,
       stripe_payment_intent_id: stripe_payment_intent_id || null,
     });
+
+    // Save optional new-feature fields (requires migration 014 columns to exist)
+    if (staff_member_id || promo_code || discount_amount) {
+      db.query(
+        `UPDATE bookings SET
+           staff_member_id = COALESCE($1, staff_member_id),
+           promo_code = COALESCE($2, promo_code),
+           discount_amount = COALESCE($3, discount_amount)
+         WHERE id = $4`,
+        [staff_member_id || null, promo_code || null, discount_amount || null, booking.id]
+      ).catch(() => {});
+    }
+    // Increment promo uses_count
+    if (promo_code) {
+      db.query(
+        `UPDATE promo_codes SET uses_count = uses_count + 1
+         WHERE business_id = $1 AND UPPER(code) = UPPER($2)`,
+        [req.business.id, promo_code]
+      ).catch(() => {});
+    }
 
     await Customer.incrementBookings(customer.id);
 
