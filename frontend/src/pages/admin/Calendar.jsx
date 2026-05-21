@@ -14,7 +14,7 @@ export default function Calendar() {
 
   useEffect(() => {
     setLoading(true);
-    bookingsAPI.list({ limit: 200 }).then(d => setBookings(d.bookings || [])).finally(() => setLoading(false));
+    bookingsAPI.list({ limit: 200 }).then(d => setBookings(d.bookings || [])).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const monthStart = startOfMonth(currentMonth);

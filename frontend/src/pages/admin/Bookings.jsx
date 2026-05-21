@@ -177,6 +177,7 @@ export default function Bookings() {
     if (!silent) setLoading(true);
     bookingsAPI.list({ status: filter === 'all' ? undefined : filter, page, limit: PAGE_SIZE })
       .then(d => { setData(d); setLastUpdated(new Date()); })
+      .catch(() => {})
       .finally(() => { if (!silent) setLoading(false); });
   }, [filter, page]);
 
