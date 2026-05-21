@@ -44,9 +44,6 @@ router.post('/ref/:ref/confirm-service', ctrl.confirmService);
 // Public: customer raises a dispute
 router.post('/ref/:ref/dispute', ctrl.raiseDispute);
 
-// Public: customer requests a reschedule (sends notification to business)
-router.post('/ref/:ref/reschedule-request', ctrl.rescheduleRequest);
-
 // Admin: dispute management (auth checked inside controller)
 router.get('/admin/disputes', ctrl.getDisputes);
 router.post('/admin/disputes/:id/resolve', ctrl.resolveDispute);

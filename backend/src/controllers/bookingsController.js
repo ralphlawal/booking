@@ -445,37 +445,6 @@ exports.raiseDispute = async (req, res) => {
   }
 };
 
-// POST /bookings/ref/:ref/reschedule-request  (consumer requests reschedule)
-exports.rescheduleRequest = async (req, res) => {
-  try {
-    const { rows: bRows } = await db.query(
-      `SELECT b.id, b.business_id, b.status, biz.name AS business_name,
-              b.consumer_id, b.customer_name, b.customer_email
-       FROM bookings b JOIN businesses biz ON biz.id = b.business_id
-       WHERE b.reference_id = $1`,
-      [req.params.ref]
-    );
-    if (!bRows.length) return res.status(404).json({ error: 'Booking not found' });
-    const booking = bRows[0];
-    if (!['pending', 'confirmed'].includes(booking.status))
-      return res.status(400).json({ error: 'Can only reschedule pending or confirmed bookings' });
-
-    const { preferred_date, preferred_time, message } = req.body;
-    const notifId = require('crypto').randomUUID();
-    const notifMsg = `${booking.customer_name} requested a reschedule${preferred_date ? ` to ${preferred_date}` : ''}${message ? `: ${message}` : ''}.`;
-    db.query(
-      `INSERT INTO notifications (id, business_id, type, message, booking_id)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [notifId, booking.business_id, 'reschedule_request', notifMsg, booking.id]
-    ).catch(() => {});
-
-    res.json({ message: 'Reschedule request sent to the business' });
-  } catch (err) {
-    console.error('[rescheduleRequest]', err.message);
-    res.status(500).json({ error: 'Failed to send reschedule request' });
-  }
-};
-
 // GET /bookings/admin/disputes  (admin only)
 exports.getDisputes = async (req, res) => {
   if (!authenticateAdmin(req)) return res.status(401).json({ error: 'Admin access required' });
