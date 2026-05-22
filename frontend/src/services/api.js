@@ -190,20 +190,7 @@ export const consumerAPI = {
   },
 };
 
-export const adminDisputesAPI = {
-  getDisputes: () => {
-    const token = localStorage.getItem('adminSupportToken');
-    return axios.get(`${BASE}/bookings/admin/disputes`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(r => r.data);
-  },
-  resolveDispute: (id, data) => {
-    const token = localStorage.getItem('adminSupportToken');
-    return axios.post(`${BASE}/bookings/admin/disputes/${id}/resolve`, data, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(r => r.data);
-  },
-};
+// adminDisputesAPI defined below after adminAxios is created
 
 export const discoverAPI = {
   search: (params) => api.get('/discover', { params }),
@@ -258,8 +245,13 @@ export const consumerChatAPI = {
   sendMessage: (id, content) => consumerAxios.post(`/chat/consumer/rooms/${id}/messages`, { content }),
 };
 
+export const adminDisputesAPI = {
+  getDisputes: () => adminAxios.get('/bookings/admin/disputes'),
+  resolveDispute: (id, data) => adminAxios.post(`/bookings/admin/disputes/${id}/resolve`, data),
+};
+
 export const broadcastAPI = {
-  getActive: () => axios.get(`${BASE}/broadcasts/active`).then(r => r.data),
+  getActive: () => api.get('/broadcasts/active'),
   list: () => adminAxios.get('/broadcasts'),
   create: (data) => adminAxios.post('/broadcasts', data),
   deactivate: (id) => adminAxios.patch(`/broadcasts/${id}/deactivate`),
