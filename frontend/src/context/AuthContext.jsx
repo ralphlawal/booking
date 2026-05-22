@@ -19,6 +19,17 @@ import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
+const AUTH_CACHE_KEY = 'bookam_biz_auth';
+function saveAuthCache(user, business) {
+  try { localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({ user, business })); } catch {}
+}
+function loadAuthCache() {
+  try { return JSON.parse(localStorage.getItem(AUTH_CACHE_KEY) || 'null'); } catch { return null; }
+}
+function clearAuthCache() {
+  try { localStorage.removeItem(AUTH_CACHE_KEY); } catch {}
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [business, setBusiness] = useState(null);
@@ -42,6 +53,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
+        clearAuthCache();
         setUser(null);
         setBusiness(null);
         syncedUidRef.current = null;
@@ -52,6 +64,13 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
+      // Show cached state immediately so the UI is not blocked during cold start
+      const cached = loadAuthCache();
+      if (cached) {
+        setUser(cached.user);
+        setBusiness(cached.business);
+        setLoading(false);
+      }
       try {
         const token = await fbUser.getIdToken();
         localStorage.setItem('fbToken', token);
@@ -59,10 +78,19 @@ export const AuthProvider = ({ children }) => {
         syncedUidRef.current = fbUser.uid;
         setUser(data.user);
         setBusiness(data.business || null);
+        saveAuthCache(data.user, data.business || null);
       } catch (err) {
-        console.error('Session restore failed:', err.message);
-        setUser(null);
-        setBusiness(null);
+        const isNetworkError = !err.response || err.response?.status === 504 || err.code === 'ECONNABORTED';
+        if (isNetworkError && cached) {
+          // Server is cold — keep cached session rather than logging the user out
+          console.warn('[Auth] Backend unavailable on load, using cached session');
+          syncedUidRef.current = fbUser.uid;
+        } else {
+          console.error('Session restore failed:', err.message);
+          clearAuthCache();
+          setUser(null);
+          setBusiness(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -78,6 +106,7 @@ export const AuthProvider = ({ children }) => {
     syncedUidRef.current = cred.user.uid;
     setUser(data.user);
     setBusiness(data.business || null);
+    saveAuthCache(data.user, data.business || null);
     return data;
   };
 
@@ -91,6 +120,7 @@ export const AuthProvider = ({ children }) => {
     syncedUidRef.current = cred.user.uid;
     setUser(data.user);
     setBusiness(data.business || null);
+    saveAuthCache(data.user, data.business || null);
     return data;
   };
 
@@ -119,6 +149,7 @@ export const AuthProvider = ({ children }) => {
     // Delete from Firebase
     await deleteUser(fbUser);
     // Clear local state
+    clearAuthCache();
     syncedUidRef.current = null;
     localStorage.removeItem('fbToken');
     setUser(null);
@@ -126,6 +157,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    clearAuthCache();
     syncedUidRef.current = null;
     await signOut(auth);
     // Clear all tokens so no stale state remains
@@ -139,7 +171,11 @@ export const AuthProvider = ({ children }) => {
     url: `${window.location.origin}/admin/login`,
   });
   const resetPasswordWithCode = (oobCode, newPassword) => confirmPasswordReset(auth, oobCode, newPassword);
-  const updateBusiness = (biz) => setBusiness(biz);
+  const updateBusiness = (biz) => {
+    setBusiness(biz);
+    const cached = loadAuthCache();
+    if (cached) saveAuthCache(cached.user, biz);
+  };
 
   return (
     <AuthContext.Provider value={{
