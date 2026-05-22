@@ -32,12 +32,14 @@ api.interceptors.response.use(
   err => {
     // Auto-retry GET requests once after a delay when the server is cold-starting
     const config = err.config;
-    const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+    const isTimeout = err.code === 'ECONNABORTED'
+      || err.message?.includes('timeout')
+      || err.response?.status === 504;
     const isGet = config?.method === 'get';
     if (isGet && isTimeout && !config._retried) {
       config._retried = true;
       return new Promise(resolve =>
-        setTimeout(() => resolve(axios(config)), RETRY_DELAY_MS)
+        setTimeout(() => resolve(api(config)), RETRY_DELAY_MS)
       );
     }
     const message = err.response?.data?.error || err.message || 'Something went wrong';
@@ -145,10 +147,12 @@ consumerAxios.interceptors.response.use(
   res => res.data,
   err => {
     const config = err.config;
-    const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+    const isTimeout = err.code === 'ECONNABORTED'
+      || err.message?.includes('timeout')
+      || err.response?.status === 504;
     if (config?.method === 'get' && isTimeout && !config._retried) {
       config._retried = true;
-      return new Promise(resolve => setTimeout(() => resolve(axios(config)), RETRY_DELAY_MS));
+      return new Promise(resolve => setTimeout(() => resolve(consumerAxios(config)), RETRY_DELAY_MS));
     }
     const error = new Error(err.response?.data?.error || err.message || 'Something went wrong');
     error.status = err.response?.status;
@@ -229,10 +233,12 @@ adminAxios.interceptors.response.use(
   res => res.data,
   err => {
     const config = err.config;
-    const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+    const isTimeout = err.code === 'ECONNABORTED'
+      || err.message?.includes('timeout')
+      || err.response?.status === 504;
     if (config?.method === 'get' && isTimeout && !config._retried) {
       config._retried = true;
-      return new Promise(resolve => setTimeout(() => resolve(axios(config)), RETRY_DELAY_MS));
+      return new Promise(resolve => setTimeout(() => resolve(adminAxios(config)), RETRY_DELAY_MS));
     }
     return Promise.reject(new Error(err.response?.data?.error || err.message || 'Something went wrong'));
   }
