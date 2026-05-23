@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle, List, Map } from 'lucide-react';
+import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle, List, Map, BadgeCheck } from 'lucide-react';
 import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -42,13 +42,7 @@ function BusinessCard({ biz }) {
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight line-clamp-1 flex items-center gap-1">
             {biz.name}
-            {biz.is_verified && (
-              <span title="Verified Business" className="inline-flex flex-shrink-0">
-                <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                </svg>
-              </span>
-            )}
+            {!!biz.is_verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
           </h3>
           {biz.category && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 whitespace-nowrap flex-shrink-0">

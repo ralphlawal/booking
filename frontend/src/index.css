@@ -8,12 +8,20 @@
     transition: background-color 0.2s, color 0.2s;
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    min-height: 100%;
   }
   body {
     @apply bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    min-height: 100%;
   }
+  #root {
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+  .min-h-screen { min-height: 100dvh; }
+  .h-screen { height: 100dvh; }
   h1, h2, h3, h4, h5, h6 { @apply font-semibold; }
   :root { --radius: 0.75rem; }
 }
@@ -74,7 +82,7 @@
 
   /* Badges */
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0;
   }
   .badge-pending   { @apply badge bg-amber-50   dark:bg-amber-900/30  text-amber-700   dark:text-amber-400   ring-1 ring-amber-200   dark:ring-amber-700; }
   .badge-confirmed { @apply badge bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-200 dark:ring-emerald-700; }

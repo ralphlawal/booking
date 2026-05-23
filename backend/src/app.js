@@ -211,7 +211,7 @@ async function start() {
       for (const col of ['reminder_24h_sent INTEGER DEFAULT 0', 'reminder_1h_sent INTEGER DEFAULT 0']) {
         addColumn('bookings', col);
       }
-      for (const col of ['is_verified INTEGER DEFAULT 0', 'latitude REAL', 'longitude REAL', "verification_status TEXT DEFAULT 'pending'", 'verified_at TEXT', 'verification_requested_at TEXT', 'verification_rejected_reason TEXT', 'verification_notes TEXT', 'stripe_account_id TEXT', 'stripe_onboarding_complete INTEGER DEFAULT 0']) {
+      for (const col of ['is_verified INTEGER DEFAULT 0', 'latitude REAL', 'longitude REAL', "verification_status TEXT DEFAULT 'pending'", "verification_details TEXT DEFAULT '{}'", 'verified_at TEXT', 'verification_requested_at TEXT', 'verification_rejected_reason TEXT', 'verification_notes TEXT', 'stripe_account_id TEXT', 'stripe_onboarding_complete INTEGER DEFAULT 0']) {
         addColumn('businesses', col);
       }
       for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT']) {

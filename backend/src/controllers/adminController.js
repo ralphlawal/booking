@@ -15,13 +15,16 @@ function isAdmin(req) {
 exports.getStats = async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
   try {
+    const weekFilter = process.env.DATABASE_URL
+      ? "created_at > NOW() - INTERVAL '7 days'"
+      : "datetime(created_at) > datetime('now', '-7 days')";
     const [bizCount, consumerCount, bookingCount, revenueRow, pendingVerif, newThisWeek] = await Promise.all([
-      db.query('SELECT COUNT(*) FROM businesses WHERE is_active = TRUE'),
-      db.query('SELECT COUNT(*) FROM consumer_accounts'),
-      db.query('SELECT COUNT(*) FROM bookings'),
+      db.query('SELECT COUNT(*) AS count FROM businesses WHERE is_active = TRUE'),
+      db.query('SELECT COUNT(*) AS count FROM consumer_accounts'),
+      db.query('SELECT COUNT(*) AS count FROM bookings'),
       db.query("SELECT COALESCE(SUM(s.price),0) AS total FROM bookings b JOIN services s ON s.id = b.service_id WHERE b.payment_status = 'paid'"),
-      db.query("SELECT COUNT(*) FROM businesses WHERE verification_status = 'pending'"),
-      db.query("SELECT COUNT(*) FROM bookings WHERE created_at > NOW() - INTERVAL '7 days'"),
+      db.query("SELECT COUNT(*) AS count FROM businesses WHERE verification_status = 'pending'"),
+      db.query(`SELECT COUNT(*) AS count FROM bookings WHERE ${weekFilter}`),
     ]);
     res.json({
       businesses: parseInt(bizCount.rows[0].count),
@@ -50,7 +53,16 @@ exports.getBusinesses = async (req, res) => {
        GROUP BY b.id
        ORDER BY b.created_at DESC`
     );
-    res.json(rows);
+    res.json(rows.map((business) => {
+      if (typeof business.verification_details === 'string') {
+        try {
+          return { ...business, verification_details: JSON.parse(business.verification_details) };
+        } catch {
+          return { ...business, verification_details: {} };
+        }
+      }
+      return business;
+    }));
   } catch (err) {
     console.error('[admin/businesses]', err.message);
     res.status(500).json({ error: 'Failed to load businesses' });
@@ -153,6 +165,9 @@ exports.getFinancialReport = async (req, res) => {
   try {
     const { period = '30' } = req.query; // days
     const days = Math.min(parseInt(period) || 30, 365);
+    const dateFilter = process.env.DATABASE_URL
+      ? "b.created_at > NOW() - ($1 || ' days')::INTERVAL"
+      : "datetime(b.created_at) > datetime('now', '-' || $1 || ' days')";
 
     const [revenueByDay, revenueByBusiness, topServices, recentPayments] = await Promise.all([
       // Revenue per day
@@ -162,7 +177,7 @@ exports.getFinancialReport = async (req, res) => {
                 COALESCE(SUM(s.price),0)::FLOAT AS revenue
          FROM bookings b
          JOIN services s ON s.id = b.service_id
-         WHERE b.payment_status = 'paid' AND b.created_at > NOW() - ($1 || ' days')::INTERVAL
+         WHERE b.payment_status = 'paid' AND ${dateFilter}
          GROUP BY DATE(b.created_at) ORDER BY day ASC`,
         [days]
       ),
@@ -174,7 +189,7 @@ exports.getFinancialReport = async (req, res) => {
          FROM bookings b
          JOIN services s ON s.id = b.service_id
          JOIN businesses biz ON biz.id = b.business_id
-         WHERE b.payment_status = 'paid' AND b.created_at > NOW() - ($1 || ' days')::INTERVAL
+         WHERE b.payment_status = 'paid' AND ${dateFilter}
          GROUP BY biz.id ORDER BY revenue DESC LIMIT 10`,
         [days]
       ),
@@ -186,7 +201,7 @@ exports.getFinancialReport = async (req, res) => {
          FROM bookings b
          JOIN services s ON s.id = b.service_id
          JOIN businesses biz ON biz.id = b.business_id
-         WHERE b.created_at > NOW() - ($1 || ' days')::INTERVAL
+         WHERE ${dateFilter}
          GROUP BY s.id, s.name, biz.name ORDER BY bookings DESC LIMIT 10`,
         [days]
       ),

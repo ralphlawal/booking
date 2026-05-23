@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
   Calendar, ArrowLeft, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
+  BadgeCheck,
 } from 'lucide-react';
 import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -211,13 +212,7 @@ export default function BusinessProfile() {
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                 {business.name}
-                {business.is_verified && (
-                  <span title="Verified Business">
-                    <svg className="w-5 h-5 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                    </svg>
-                  </span>
-                )}
+                {!!business.is_verified && <BadgeCheck title="Verified Business" className="w-5 h-5 text-blue-500 flex-shrink-0" />}
               </h1>
               {business.category && (
                 <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 mt-1">
