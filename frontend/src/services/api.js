@@ -220,9 +220,16 @@ adminAxios.interceptors.response.use(
   res => res.data,
   err => {
     const config = err.config;
+    const status = err.response?.status;
+    // Auth failure — clear stale token and signal the panel to show login again
+    if (status === 401 || status === 403) {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+      window.dispatchEvent(new CustomEvent('admin-auth-expired'));
+      return Promise.reject(new Error('Session expired — please log in again'));
+    }
     const isTimeout = err.code === 'ECONNABORTED'
       || err.message?.includes('timeout')
-      || err.response?.status === 504;
+      || status === 504;
     if (config?.method === 'get' && isTimeout && !config._retried) {
       config._retried = true;
       return new Promise(resolve => setTimeout(() => resolve(adminAxios(config)), RETRY_DELAY_MS));

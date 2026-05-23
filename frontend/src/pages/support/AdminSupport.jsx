@@ -158,7 +158,7 @@ function DisputesPanel() {
   const [resolving, setResolving] = useState(null);
   const [adminNotes, setAdminNotes] = useState({});
 
-  const load = () => adminDisputesAPI.getDisputes().then(setDisputes).catch(() => toast.error('Failed to load disputes'));
+  const load = () => adminDisputesAPI.getDisputes().then(setDisputes).catch(err => toast.error(err.message || 'Failed to load disputes'));
 
   useEffect(() => { load().finally(() => setLoading(false)); }, []);
 
@@ -278,7 +278,7 @@ function BroadcastsPanel() {
   const [form, setForm] = useState({ title: '', message: '', type: 'info' });
   const [sending, setSending] = useState(false);
 
-  const load = () => broadcastAPI.list().then(setBroadcasts).catch(() => toast.error('Failed to load broadcasts')).finally(() => setLoading(false));
+  const load = () => broadcastAPI.list().then(setBroadcasts).catch(err => toast.error(err.message || 'Failed to load broadcasts')).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
   const send = async (e) => {
@@ -379,7 +379,7 @@ function StatsPanel() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const load = () => adminPanelAPI.getStats().then(setStats).catch(() => toast.error('Failed to load stats'));
+  const load = () => adminPanelAPI.getStats().then(setStats).catch(err => toast.error(err.message || 'Failed to load stats'));
   useEffect(() => { load().finally(() => setLoading(false)); }, []);
 
   const cards = stats ? [
@@ -425,7 +425,7 @@ function BusinessesPanel() {
   const [acting, setActing] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
 
-  const load = () => adminPanelAPI.getBusinesses().then(setBusinesses).catch(() => toast.error('Failed to load businesses'));
+  const load = () => adminPanelAPI.getBusinesses().then(setBusinesses).catch(err => toast.error(err.message || 'Failed to load businesses'));
   useEffect(() => { load().finally(() => setLoading(false)); }, []);
 
   const verify = async (id, name) => {
@@ -772,7 +772,7 @@ function UsersPanel() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  const load = () => adminPanelAPI.getConsumers().then(setConsumers).catch(() => toast.error('Failed to load users'));
+  const load = () => adminPanelAPI.getConsumers().then(setConsumers).catch(err => toast.error(err.message || 'Failed to load users'));
   useEffect(() => { load().finally(() => setLoading(false)); }, []);
 
   const filtered = consumers.filter(c => {
@@ -844,6 +844,17 @@ export default function AdminSupport() {
     const poll = setInterval(loadRooms, 8000);
     return () => clearInterval(poll);
   }, [authed]);
+
+  // Auto-logout when any admin API call gets 401/403 (expired or invalid token)
+  useEffect(() => {
+    const handleExpired = () => {
+      setAuthed(false);
+      setActiveRoom(null);
+      toast.error('Session expired — please log in again');
+    };
+    window.addEventListener('admin-auth-expired', handleExpired);
+    return () => window.removeEventListener('admin-auth-expired', handleExpired);
+  }, []);
 
   if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
 
