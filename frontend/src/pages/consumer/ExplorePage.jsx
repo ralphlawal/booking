@@ -21,10 +21,11 @@ function StarRating({ rating }) {
 }
 
 function BusinessCard({ biz }) {
+  const verified = !!biz.is_verified || biz.verification_status === 'verified';
   return (
     <Link
       to={`/profile/${biz.slug}`}
-      className="group card p-0 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-lg flex flex-col"
+      className="group card p-0 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-lg flex flex-col min-w-0"
     >
       <div className="h-28 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative">
         {biz.logo_url ? (
@@ -39,13 +40,13 @@ function BusinessCard({ biz }) {
         )}
       </div>
       <div className="p-4 flex flex-col gap-1 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight line-clamp-1 flex items-center gap-1">
-            {biz.name}
-            {!!biz.is_verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+        <div className="flex items-start justify-between gap-2 min-w-0">
+          <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight flex items-center gap-1 min-w-0">
+            <span className="truncate min-w-0">{biz.name}</span>
+            {verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
           </h3>
           {biz.category && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 whitespace-nowrap flex-shrink-0">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 whitespace-nowrap flex-shrink min-w-0 max-w-[45%] truncate">
               {biz.category}
             </span>
           )}
@@ -61,13 +62,13 @@ function BusinessCard({ biz }) {
             {biz.description}
           </p>
         )}
-        <div className="mt-auto pt-3 flex items-center justify-between">
+        <div className="mt-auto pt-3 flex items-center justify-between gap-2 min-w-0">
           {biz.min_price != null ? (
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate min-w-0">
               From £{parseFloat(biz.min_price).toFixed(0)}
             </span>
           ) : <span />}
-          <span className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 font-semibold group-hover:underline">
+          <span className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 font-semibold group-hover:underline flex-shrink-0">
             View <ChevronRight className="w-3 h-3" />
           </span>
         </div>
@@ -106,7 +107,7 @@ function MapView({ results, coords, onSwitchList }) {
           allowFullScreen
         />
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {withCoords.map(biz => <BusinessCard key={biz.id} biz={biz} />)}
       </div>
       {results.length > withCoords.length && (
@@ -290,7 +291,7 @@ export default function ExplorePage() {
       {/* Results */}
       <div className="max-w-6xl mx-auto px-4 pb-28">
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="card p-0 overflow-hidden animate-pulse">
                 <div className="h-28 bg-gray-200 dark:bg-gray-800" />
@@ -343,7 +344,7 @@ export default function ExplorePage() {
             {viewMode === 'map' ? (
               <MapView results={results} coords={coords} onSwitchList={() => setViewMode('list')} />
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {results.map((biz) => <BusinessCard key={biz.id} biz={biz} />)}
               </div>
             )}

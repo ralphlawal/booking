@@ -17,6 +17,14 @@ function normalizeConsumer(row) {
   return normalized;
 }
 
+function isMissingRelationError(err) {
+  const msg = String(err?.message || '').toLowerCase();
+  return err?.code === '42p01'
+    || msg.includes('no such table')
+    || msg.includes('does not exist')
+    || msg.includes('no such column');
+}
+
 const ConsumerAccount = {
   async create({ email, password, full_name, phone }) {
     const id = crypto.randomUUID();
@@ -91,28 +99,50 @@ const ConsumerAccount = {
   },
 
   async getBookings(consumer_id) {
-    const { rows } = await db.query(
-      `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
-              b.notes, b.cancelled_reason, b.created_at,
-              b.payment_status, b.stripe_payment_intent_id,
-              biz.name AS business_name, biz.slug, biz.logo_url, biz.location, biz.phone AS business_phone,
-              s.name AS service_name, s.price, s.duration_minutes,
-              s.id AS service_id, biz.id AS business_id,
-              (rv.id IS NOT NULL) AS reviewed,
-              (sc.id IS NOT NULL) AS service_confirmed,
-              (d.id IS NOT NULL) AS has_dispute,
-              d.status AS dispute_status
-       FROM bookings b
-       JOIN businesses biz ON biz.id = b.business_id
-       JOIN services s ON s.id = b.service_id
-       LEFT JOIN reviews rv ON rv.booking_id = b.id
-       LEFT JOIN service_confirmations sc ON sc.booking_id = b.id
-       LEFT JOIN disputes d ON d.booking_id = b.id
-       WHERE b.consumer_id = $1
-       ORDER BY b.booking_date DESC, b.start_time DESC`,
-      [consumer_id]
-    );
-    return rows;
+    const fullQuery = `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
+            b.notes, b.cancelled_reason, b.created_at,
+            b.payment_status, b.stripe_payment_intent_id,
+            biz.name AS business_name, biz.slug, biz.logo_url, biz.location, biz.phone AS business_phone,
+            s.name AS service_name, s.price, s.duration_minutes,
+            s.id AS service_id, biz.id AS business_id,
+            (rv.id IS NOT NULL) AS reviewed,
+            (sc.id IS NOT NULL) AS service_confirmed,
+            (d.id IS NOT NULL) AS has_dispute,
+            d.status AS dispute_status
+     FROM bookings b
+     JOIN businesses biz ON biz.id = b.business_id
+     JOIN services s ON s.id = b.service_id
+     LEFT JOIN reviews rv ON rv.booking_id = b.id
+     LEFT JOIN service_confirmations sc ON sc.booking_id = b.id
+     LEFT JOIN disputes d ON d.booking_id = b.id
+     WHERE b.consumer_id = $1
+     ORDER BY b.booking_date DESC, b.start_time DESC`;
+
+    const fallbackQuery = `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
+            b.notes, b.cancelled_reason, b.created_at,
+            b.payment_status, b.stripe_payment_intent_id,
+            biz.name AS business_name, biz.slug, biz.logo_url, biz.location, biz.phone AS business_phone,
+            s.name AS service_name, s.price, s.duration_minutes,
+            s.id AS service_id, biz.id AS business_id,
+            FALSE AS reviewed,
+            FALSE AS service_confirmed,
+            FALSE AS has_dispute,
+            NULL AS dispute_status
+     FROM bookings b
+     JOIN businesses biz ON biz.id = b.business_id
+     JOIN services s ON s.id = b.service_id
+     WHERE b.consumer_id = $1
+     ORDER BY b.booking_date DESC, b.start_time DESC`;
+
+    try {
+      const { rows } = await db.query(fullQuery, [consumer_id]);
+      return rows;
+    } catch (err) {
+      if (!isMissingRelationError(err)) throw err;
+      console.warn('[consumer bookings] Falling back without trust/dispute joins:', err.message);
+      const { rows } = await db.query(fallbackQuery, [consumer_id]);
+      return rows;
+    }
   },
 
   async getPreferences(consumer_id) {

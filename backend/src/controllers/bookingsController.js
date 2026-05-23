@@ -465,6 +465,10 @@ exports.getDisputes = async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error('[getDisputes]', err.message);
+    const msg = String(err.message || '').toLowerCase();
+    if (err.code === '42p01' || msg.includes('no such table') || msg.includes('does not exist')) {
+      return res.json([]);
+    }
     res.status(500).json({ error: 'Failed to fetch disputes' });
   }
 };

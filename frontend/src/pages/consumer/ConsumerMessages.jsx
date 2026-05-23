@@ -129,7 +129,13 @@ export default function ConsumerMessages() {
               <div className="p-8 text-center text-gray-400">
                 <MessageSquare className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No conversations yet</p>
-                <p className="text-xs mt-1">Contact support below to get started</p>
+                <p className="text-xs mt-1">Contact support to get started</p>
+                <button
+                  onClick={openSupport}
+                  className="mt-4 inline-flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-xl px-4 py-2.5 transition-colors"
+                >
+                  <Headphones className="w-4 h-4" /> Contact Support
+                </button>
               </div>
             ) : (
               rooms.map(room => (

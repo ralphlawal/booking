@@ -169,7 +169,7 @@ exports.getFinancialReport = async (req, res) => {
       ? "b.created_at > NOW() - ($1 || ' days')::INTERVAL"
       : "datetime(b.created_at) > datetime('now', '-' || $1 || ' days')";
 
-    const [revenueByDay, revenueByBusiness, topServices, recentPayments] = await Promise.all([
+    const [revenueByDay, revenueByBusiness, topServices, recentPayments, paymentSummary] = await Promise.all([
       // Revenue per day
       db.query(
         `SELECT DATE(b.created_at) AS day,
@@ -208,6 +208,7 @@ exports.getFinancialReport = async (req, res) => {
       // Recent paid bookings
       db.query(
         `SELECT b.id, b.reference_id, b.booking_date, b.created_at,
+                b.payment_status, b.stripe_payment_intent_id,
                 s.name AS service_name, s.price::FLOAT AS price,
                 biz.name AS business_name,
                 COALESCE(ca.full_name, cu.full_name) AS customer_name
@@ -216,8 +217,24 @@ exports.getFinancialReport = async (req, res) => {
          JOIN businesses biz ON biz.id = b.business_id
          LEFT JOIN customers cu ON cu.id = b.customer_id
          LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
-         WHERE b.payment_status = 'paid'
+         WHERE ${dateFilter}
          ORDER BY b.created_at DESC LIMIT 50`
+        ,
+        [days]
+      ),
+      db.query(
+        `SELECT
+           COUNT(*) AS total,
+           COALESCE(SUM(CASE WHEN b.payment_status = 'paid' THEN 1 ELSE 0 END), 0) AS paid,
+           COALESCE(SUM(CASE WHEN b.payment_status = 'unpaid' OR b.payment_status IS NULL THEN 1 ELSE 0 END), 0) AS unpaid,
+           COALESCE(SUM(CASE WHEN b.payment_status = 'refunded' THEN 1 ELSE 0 END), 0) AS refunded,
+           COALESCE(SUM(CASE WHEN b.payment_status NOT IN ('paid','unpaid','refunded') AND b.payment_status IS NOT NULL THEN 1 ELSE 0 END), 0) AS other,
+           COALESCE(SUM(CASE WHEN b.payment_status = 'paid' THEN s.price ELSE 0 END), 0)::FLOAT AS paid_revenue,
+           COALESCE(SUM(s.price), 0)::FLOAT AS booked_value
+         FROM bookings b
+         JOIN services s ON s.id = b.service_id
+         WHERE ${dateFilter}`,
+        [days]
       ),
     ]);
 
@@ -227,6 +244,7 @@ exports.getFinancialReport = async (req, res) => {
       top_businesses: revenueByBusiness.rows,
       top_services: topServices.rows,
       recent_payments: recentPayments.rows,
+      payment_summary: paymentSummary.rows[0] || {},
     });
   } catch (err) {
     console.error('[admin/financial]', err.message);

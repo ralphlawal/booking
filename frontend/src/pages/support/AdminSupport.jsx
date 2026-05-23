@@ -418,7 +418,7 @@ function StatsPanel() {
   );
 }
 
-function BusinessesPanel() {
+function BusinessesPanel({ onStartChat }) {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -572,6 +572,12 @@ function BusinessesPanel() {
                 >
                   <Edit2 className="w-3.5 h-3.5" /> Edit
                 </button>
+                <button
+                  onClick={() => onStartChat?.({ type: 'admin_business', business_id: b.id, subject: 'Business Support' })}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" /> Message
+                </button>
               </div>
             </div>
           ))}
@@ -604,6 +610,7 @@ function FinancialPanel() {
   useEffect(() => { load(period); }, []);
 
   const fmt = (v) => `£${parseFloat(v || 0).toFixed(2)}`;
+  const summary = data?.payment_summary || {};
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full space-y-5">
@@ -636,6 +643,16 @@ function FinancialPanel() {
               <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-1">Paid Bookings</p>
               <p className="text-2xl font-black text-blue-800 dark:text-blue-300">{data.revenue_by_day?.reduce((s, r) => s + parseInt(r.paid_bookings || 0), 0) || 0}</p>
               <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">Last {period} days</p>
+            </div>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Booked Value</p>
+              <p className="text-2xl font-black text-gray-900 dark:text-white">{fmt(summary.booked_value)}</p>
+              <p className="text-xs text-gray-400 mt-1">Paid + unpaid services</p>
+            </div>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Payment Status</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{parseInt(summary.paid || 0)} paid · {parseInt(summary.unpaid || 0)} unpaid</p>
+              <p className="text-xs text-gray-400 mt-1">{parseInt(summary.refunded || 0)} refunded · {parseInt(summary.other || 0)} other</p>
             </div>
           </div>
 
@@ -691,18 +708,18 @@ function FinancialPanel() {
             </div>
           )}
 
-          {/* Recent payments */}
+          {/* Recent transactions */}
           {data.recent_payments?.length > 0 && (
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent payments</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent transactions</p>
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {data.recent_payments.map(p => (
                   <div key={p.id} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{p.business_name}</p>
-                      <p className="text-[10px] text-gray-400">{p.service_name} · {new Date(p.booking_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
+                      <p className="text-[10px] text-gray-400">{p.service_name} · {new Date(p.booking_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · {p.payment_status || 'unpaid'}</p>
                     </div>
-                    <span className="font-bold text-green-700 dark:text-green-400 ml-3">{fmt(p.price)}</span>
+                    <span className={`font-bold ml-3 ${p.payment_status === 'paid' ? 'text-green-700 dark:text-green-400' : p.payment_status === 'refunded' ? 'text-amber-700 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}`}>{fmt(p.price)}</span>
                   </div>
                 ))}
               </div>
@@ -767,7 +784,7 @@ function EditBusinessModal({ business, onClose, onSaved }) {
   );
 }
 
-function UsersPanel() {
+function UsersPanel({ onStartChat }) {
   const [consumers, setConsumers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -819,6 +836,13 @@ function UsersPanel() {
                   {c.email_verified ? <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-green-100 text-green-700">Verified</span> : <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-gray-100 text-gray-500">Unverified</span>}
                 </div>
               </div>
+              <button
+                onClick={() => onStartChat?.({ type: 'admin_consumer', consumer_id: c.id, subject: 'Customer Support' })}
+                className="p-2 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0"
+                title="Message customer"
+              >
+                <MessageSquare className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
@@ -837,6 +861,18 @@ export default function AdminSupport() {
   const [mainTab, setMainTab] = useState('messages');
 
   const loadRooms = () => adminChatAPI.getRooms().then(setRooms).catch(() => {});
+
+  const startAdminChat = async (payload) => {
+    try {
+      const room = await adminChatAPI.createRoom(payload);
+      setRooms(prev => prev.find(r => r.id === room.id) ? prev : [room, ...prev]);
+      setActiveRoom(room.id);
+      setMainTab('messages');
+      toast.success('Conversation ready');
+    } catch (err) {
+      toast.error(err.message || 'Failed to start conversation');
+    }
+  };
 
   useEffect(() => {
     if (!authed) return;
@@ -953,13 +989,13 @@ export default function AdminSupport() {
 
       {mainTab === 'businesses' && (
         <div className="flex flex-1 overflow-hidden">
-          <BusinessesPanel />
+          <BusinessesPanel onStartChat={startAdminChat} />
         </div>
       )}
 
       {mainTab === 'users' && (
         <div className="flex flex-1 overflow-hidden">
-          <UsersPanel />
+          <UsersPanel onStartChat={startAdminChat} />
         </div>
       )}
 

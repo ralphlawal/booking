@@ -172,6 +172,7 @@ export default function BusinessProfile() {
 
   const avgRating = parseFloat(reviewData.stats?.avg_rating || 0);
   const totalReviews = parseInt(reviewData.stats?.total || 0);
+  const verified = !!business.is_verified || business.verification_status === 'verified';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -210,9 +211,9 @@ export default function BusinessProfile() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                {business.name}
-                {!!business.is_verified && <BadgeCheck title="Verified Business" className="w-5 h-5 text-blue-500 flex-shrink-0" />}
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1.5 min-w-0">
+                <span className="truncate min-w-0">{business.name}</span>
+                {verified && <BadgeCheck title="Verified Business" className="w-5 h-5 text-blue-500 flex-shrink-0" />}
               </h1>
               {business.category && (
                 <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 mt-1">
