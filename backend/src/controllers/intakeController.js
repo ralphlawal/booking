@@ -1,6 +1,29 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 
+function parseJson(value, fallback) {
+  if (value && typeof value === 'object') return value;
+  if (typeof value !== 'string') return value ?? fallback;
+  try { return JSON.parse(value); } catch { return fallback; }
+}
+
+function normalizeForm(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    questions: parseJson(row.questions, []),
+    is_active: !!row.is_active,
+  };
+}
+
+function normalizeResponse(row) {
+  if (!row) return row;
+  return {
+    ...row,
+    responses: parseJson(row.responses, {}),
+  };
+}
+
 // GET /api/intake  — business gets their active intake form
 exports.get = async (req, res) => {
   try {
@@ -8,7 +31,7 @@ exports.get = async (req, res) => {
       'SELECT * FROM intake_forms WHERE business_id=$1 AND is_active=TRUE ORDER BY created_at DESC LIMIT 1',
       [req.business.id]
     );
-    res.json(rows[0] || null);
+    res.json(normalizeForm(rows[0]));
   } catch (err) {
     res.status(500).json({ error: 'Failed to load intake form' });
   }
@@ -23,7 +46,7 @@ exports.getPublic = async (req, res) => {
       'SELECT * FROM intake_forms WHERE business_id=$1 AND is_active=TRUE ORDER BY created_at DESC LIMIT 1',
       [biz[0].id]
     );
-    res.json(rows[0] || null);
+    res.json(normalizeForm(rows[0]));
   } catch (err) {
     res.status(500).json({ error: 'Failed to load intake form' });
   }
@@ -44,7 +67,7 @@ exports.save = async (req, res) => {
          WHERE id=$4 RETURNING *`,
         [title||null, questions ? JSON.stringify(questions) : null, is_active??null, existing[0].id]
       );
-      return res.json(rows[0]);
+      return res.json(normalizeForm(rows[0]));
     }
     const id = crypto.randomUUID();
     const { rows } = await db.query(
@@ -52,7 +75,7 @@ exports.save = async (req, res) => {
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [id, req.business.id, title||'Pre-appointment form', JSON.stringify(questions||[]), is_active??true]
     );
-    res.status(201).json(rows[0]);
+    res.status(201).json(normalizeForm(rows[0]));
   } catch (err) {
     console.error('[intake/save]', err.message);
     res.status(500).json({ error: 'Failed to save intake form' });
@@ -71,7 +94,7 @@ exports.listResponses = async (req, res) => {
        ORDER BY ir.created_at DESC LIMIT 100`,
       [req.business.id]
     );
-    res.json(rows);
+    res.json(rows.map(normalizeResponse));
   } catch (err) {
     res.status(500).json({ error: 'Failed to load responses' });
   }

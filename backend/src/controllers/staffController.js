@@ -1,13 +1,28 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 
+function parseJson(value, fallback) {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return value ?? fallback;
+  try { return JSON.parse(value); } catch { return fallback; }
+}
+
+function normalizeStaff(row) {
+  if (!row) return row;
+  return {
+    ...row,
+    working_days: parseJson(row.working_days, []),
+    is_active: row.is_active === undefined ? row.is_active : !!row.is_active,
+  };
+}
+
 exports.list = async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT * FROM staff_members WHERE business_id = $1 ORDER BY created_at ASC`,
       [req.business.id]
     );
-    res.json(rows);
+    res.json(rows.map(normalizeStaff));
   } catch (err) {
     console.error('[staff/list]', err.message);
     res.status(500).json({ error: 'Failed to load staff' });
@@ -23,7 +38,7 @@ exports.listPublic = async (req, res) => {
        FROM staff_members WHERE business_id = $1 AND is_active = TRUE ORDER BY created_at ASC`,
       [biz[0].id]
     );
-    res.json(rows);
+    res.json(rows.map(normalizeStaff));
   } catch (err) {
     console.error('[staff/public]', err.message);
     res.status(500).json({ error: 'Failed to load staff' });
@@ -41,7 +56,7 @@ exports.create = async (req, res) => {
       [id, req.business.id, name.trim(), role||null, bio||null, avatar_url||null, phone||null, email||null,
        working_days||[], opening_time||'09:00', closing_time||'18:00']
     );
-    res.status(201).json(rows[0]);
+    res.status(201).json(normalizeStaff(rows[0]));
   } catch (err) {
     console.error('[staff/create]', err.message);
     res.status(500).json({ error: 'Failed to create staff member' });
@@ -62,7 +77,7 @@ exports.update = async (req, res) => {
        req.params.id, req.business.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Staff member not found' });
-    res.json(rows[0]);
+    res.json(normalizeStaff(rows[0]));
   } catch (err) {
     console.error('[staff/update]', err.message);
     res.status(500).json({ error: 'Failed to update staff member' });

@@ -1,9 +1,20 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 
-// SQLite stores working_days as JSON text; parse before returning
+// SQLite stores working_days as JSON text; parse before returning.
+const parseWorkingDays = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 const parseAv = (row) => row
-  ? { ...row, working_days: typeof row.working_days === 'string' ? JSON.parse(row.working_days) : row.working_days }
+  ? { ...row, working_days: parseWorkingDays(row.working_days) }
   : null;
 
 const Availability = {

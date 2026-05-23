@@ -23,7 +23,10 @@ async function checkAutoVerify(businessId) {
     );
     if (parseInt(count) < 1) return false;
 
-    const details = biz.verification_details || {};
+    let details = biz.verification_details || {};
+    if (typeof details === 'string') {
+      try { details = JSON.parse(details); } catch { details = {}; }
+    }
     const hasVerificationData = !!(
       details.legal_name &&
       (details.company_reg_number || details.sole_trader === true) &&
