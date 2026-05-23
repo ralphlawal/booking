@@ -202,13 +202,41 @@ async function start() {
       const { db } = require('./config/database.sqlite');
       const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_sqlite_schema.sql'), 'utf8');
       db.exec(sql);
+      const addColumn = (table, column) => {
+        try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${column}`); } catch {}
+      };
       for (const col of ['reset_token TEXT', 'reset_token_expires TEXT', 'firebase_uid TEXT']) {
-        try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch {}
+        addColumn('users', col);
       }
       for (const col of ['reminder_24h_sent INTEGER DEFAULT 0', 'reminder_1h_sent INTEGER DEFAULT 0']) {
-        try { db.exec(`ALTER TABLE bookings ADD COLUMN ${col}`); } catch {}
+        addColumn('bookings', col);
       }
-      try { db.exec(`ALTER TABLE businesses ADD COLUMN is_verified INTEGER DEFAULT 0`); } catch {}
+      for (const col of ['is_verified INTEGER DEFAULT 0', 'latitude REAL', 'longitude REAL', "verification_status TEXT DEFAULT 'pending'", 'verified_at TEXT', 'verification_requested_at TEXT', 'verification_rejected_reason TEXT', 'verification_notes TEXT', 'stripe_account_id TEXT', 'stripe_onboarding_complete INTEGER DEFAULT 0']) {
+        addColumn('businesses', col);
+      }
+      for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT']) {
+        addColumn('services', col);
+      }
+      for (const col of ['consumer_id TEXT', 'mandate_id TEXT', 'stripe_payment_intent_id TEXT', "payment_status TEXT DEFAULT 'unpaid'", 'staff_member_id TEXT', 'promo_code TEXT', 'discount_amount REAL DEFAULT 0', 'intake_response_id TEXT']) {
+        addColumn('bookings', col);
+      }
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS consumer_accounts (
+          id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+          full_name TEXT NOT NULL, phone TEXT, avatar_url TEXT,
+          location_text TEXT, latitude REAL, longitude REAL,
+          service_preferences TEXT DEFAULT '[]', onboarding_complete INTEGER DEFAULT 0,
+          email_verified INTEGER DEFAULT 1, email_verify_token TEXT,
+          reset_token TEXT, reset_token_expires TEXT,
+          referral_code TEXT, referred_by TEXT, referral_credits INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS consumer_preferences (
+          id TEXT PRIMARY KEY, consumer_id TEXT NOT NULL, business_id TEXT NOT NULL,
+          service_id TEXT, notes TEXT, last_booked_at TEXT, total_bookings INTEGER DEFAULT 0,
+          UNIQUE(consumer_id, business_id)
+        )`);
+      } catch {}
       try { db.exec(`ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 1`); } catch {}
       try { db.exec(`ALTER TABLE users ADD COLUMN email_verify_token TEXT`); } catch {}
       try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN email_verified INTEGER DEFAULT 1`); } catch {}
@@ -272,6 +300,46 @@ async function start() {
           created_at TEXT DEFAULT (datetime('now'))
         )`);
       } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS staff_members (
+          id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, role TEXT,
+          bio TEXT, avatar_url TEXT, phone TEXT, email TEXT, working_days TEXT DEFAULT '[]',
+          opening_time TEXT DEFAULT '09:00', closing_time TEXT DEFAULT '18:00',
+          is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS business_photos (
+          id TEXT PRIMARY KEY, business_id TEXT NOT NULL, url TEXT NOT NULL,
+          caption TEXT, sort_order INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS review_replies (
+          id TEXT PRIMARY KEY, review_id TEXT NOT NULL UNIQUE, business_id TEXT NOT NULL,
+          reply_text TEXT NOT NULL, created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS intake_forms (
+          id TEXT PRIMARY KEY, business_id TEXT NOT NULL,
+          title TEXT NOT NULL DEFAULT 'Pre-appointment form',
+          questions TEXT NOT NULL DEFAULT '[]', is_active INTEGER DEFAULT 1,
+          created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS intake_responses (
+          id TEXT PRIMARY KEY, intake_form_id TEXT NOT NULL, booking_id TEXT,
+          consumer_name TEXT, responses TEXT NOT NULL DEFAULT '{}',
+          created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS waitlist (
+          id TEXT PRIMARY KEY, business_id TEXT NOT NULL, service_id TEXT, consumer_id TEXT,
+          consumer_name TEXT NOT NULL, consumer_email TEXT NOT NULL, consumer_phone TEXT,
+          requested_date TEXT, preferred_time TEXT, status TEXT NOT NULL DEFAULT 'waiting',
+          created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE TABLE IF NOT EXISTS promo_codes (
+          id TEXT PRIMARY KEY, business_id TEXT NOT NULL, code TEXT NOT NULL,
+          type TEXT NOT NULL DEFAULT 'percent', value REAL NOT NULL,
+          min_order_amount REAL DEFAULT 0, max_uses INTEGER, uses_count INTEGER DEFAULT 0,
+          valid_from TEXT, valid_until TEXT, is_active INTEGER DEFAULT 1,
+          created_at TEXT DEFAULT (datetime('now')), UNIQUE(business_id, code)
+        )`);
+      } catch {}
     }
   } catch (err) {
     console.error('Startup migration error:', err.message);
@@ -280,8 +348,21 @@ async function start() {
   startReminderJob();
 
   const PORT = process.env.PORT || 5001;
-  app.listen(PORT, () => console.log(`BookAm API running on port ${PORT}`));
+  const server = app.listen(PORT, () => console.log(`BookAm API running on port ${PORT}`));
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use. Set PORT to a free port, for example: PORT=5101 npm start`);
+    } else if (err.code === 'EACCES' || err.code === 'EPERM') {
+      console.error(`Cannot listen on port ${PORT}: ${err.message}`);
+    } else {
+      console.error('Server listen error:', err);
+    }
+    process.exit(1);
+  });
 }
 
-start();
+if (require.main === module) {
+  start();
+}
+
 module.exports = app;

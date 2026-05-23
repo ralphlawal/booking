@@ -17,6 +17,10 @@ build/
 *.db
 *.db-shm
 *.db-wal
+*.db.corrupt-*
+*.db.failed-recreate-*
+*.db-shm.corrupt-*
+*.db-wal.corrupt-*
 
 # Uploads (user content)
 backend/uploads/

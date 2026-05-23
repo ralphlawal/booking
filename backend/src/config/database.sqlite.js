@@ -17,10 +17,14 @@ db.function('NOW', () => new Date().toISOString());
  */
 const query = async (text, params = []) => {
   const boundValues = [];
-  const sql = text.replace(/\$(\d+)/g, (_, n) => {
-    boundValues.push(params[parseInt(n, 10) - 1]);
-    return '?';
-  });
+  const sql = text
+    .replace(/\$(\d+)(::[a-zA-Z_][\w]*(?:\[\])?)?/g, (_, n) => {
+      boundValues.push(params[parseInt(n, 10) - 1]);
+      return '?';
+    })
+    .replace(/'([^']*)'::jsonb/g, "'$1'")
+    .replace(/::[a-zA-Z_][\w]*(?:\[\])?/g, '')
+    .replace(/\bILIKE\b/gi, 'LIKE');
 
   const stmt = db.prepare(sql);
   const upper = sql.trimStart().toUpperCase();
