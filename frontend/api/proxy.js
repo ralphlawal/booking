@@ -3,9 +3,8 @@
 export const config = { runtime: 'edge' };
 
 // VITE_* vars are build-time only and unavailable in edge functions at runtime.
-// Fall back to the known Render URL so the proxy always works even if BACKEND_URL
-// is not explicitly set in Vercel environment variables.
-const BACKEND = process.env.BACKEND_URL || 'https://bookly-api-3bz0.onrender.com';
+// BACKEND_URL must be set in Vercel so production never silently points at an old server.
+const BACKEND = process.env.BACKEND_URL;
 
 export default async function handler(req) {
   if (!BACKEND) {

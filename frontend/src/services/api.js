@@ -8,10 +8,10 @@ const BASE = import.meta.env.VITE_API_URL
   ? '/api/proxy'
   : '/api';
 
-// Kick Render out of sleep on app load. Uses no-cors so CORS headers are not needed.
-// The request itself wakes the server; we don't need to read the response.
+// Kick the backend out of sleep on app load through the configured API route.
+// This avoids hardcoding an old Render URL and works through the Vercel proxy too.
 if (import.meta.env.PROD) {
-  fetch('https://bookly-api-3bz0.onrender.com/health', { mode: 'no-cors' }).catch(() => {});
+  fetch(`${BASE}/health`).catch(() => {});
 }
 
 const RETRY_DELAY_MS = 38000; // wait 38s then retry — Render typically wakes in 30-45s

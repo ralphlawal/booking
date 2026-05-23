@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle, List, Map, BadgeCheck } from 'lucide-react';
 import { discoverAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -20,11 +20,12 @@ function StarRating({ rating }) {
   );
 }
 
-function BusinessCard({ biz }) {
+function BusinessCard({ biz, from }) {
   const verified = !!biz.is_verified || biz.verification_status === 'verified';
   return (
     <Link
       to={`/profile/${biz.slug}`}
+      state={{ from }}
       className="group card p-0 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-lg flex flex-col min-w-0"
     >
       <div className="h-28 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative">
@@ -77,7 +78,7 @@ function BusinessCard({ biz }) {
   );
 }
 
-function MapView({ results, coords, onSwitchList }) {
+function MapView({ results, coords, onSwitchList, from }) {
   const withCoords = results.filter(b => b.latitude && b.longitude);
   if (!withCoords.length) {
     return (
@@ -108,7 +109,7 @@ function MapView({ results, coords, onSwitchList }) {
         />
       </div>
       <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {withCoords.map(biz => <BusinessCard key={biz.id} biz={biz} />)}
+        {withCoords.map(biz => <BusinessCard key={biz.id} biz={biz} from={from} />)}
       </div>
       {results.length > withCoords.length && (
         <p className="text-xs text-gray-400 text-center">
@@ -120,6 +121,7 @@ function MapView({ results, coords, onSwitchList }) {
 }
 
 export default function ExplorePage() {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [results, setResults] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -342,10 +344,10 @@ export default function ExplorePage() {
               </div>
             </div>
             {viewMode === 'map' ? (
-              <MapView results={results} coords={coords} onSwitchList={() => setViewMode('list')} />
+              <MapView results={results} coords={coords} onSwitchList={() => setViewMode('list')} from={location} />
             ) : (
               <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {results.map((biz) => <BusinessCard key={biz.id} biz={biz} />)}
+                {results.map((biz) => <BusinessCard key={biz.id} biz={biz} from={location} />)}
               </div>
             )}
           </>

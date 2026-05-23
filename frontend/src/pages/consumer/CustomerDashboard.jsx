@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle, CalendarClock } from 'lucide-react';
 import { consumerAPI, reviewsAPI } from '../../services/api';
 import { useNotifications } from '../../context/NotificationContext';
@@ -36,7 +36,7 @@ function CopyRefButton({ refId }) {
   );
 }
 
-function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, onDispute, onReschedule, past }) {
+function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, onDispute, onReschedule, past, from }) {
   const today = new Date().toISOString().split('T')[0];
   const isPastDate = booking.booking_date < today;
   const isPaid = booking.payment_status === 'paid';
@@ -130,7 +130,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
           </>
         ) : (
           <>
-            <Link to={`/profile/${booking.slug}`} className="btn-secondary flex-1 text-sm py-2 text-center">
+            <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary flex-1 text-sm py-2 text-center">
               View business
             </Link>
             {(booking.status === 'pending' || booking.status === 'confirmed') && (
@@ -491,6 +491,7 @@ export default function CustomerDashboard() {
   const { consumer, loading: authLoading, logout } = useCustomerAuth();
   const { notifications, unreadCount, markAllRead, setNotifications } = useNotifications();
   const navigate = useNavigate();
+  const location = useLocation();
   const [tab, setTab] = useState('upcoming');
   const [bookings, setBookings] = useState([]);
   const [prefs, setPrefs] = useState([]);
@@ -823,7 +824,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {upcoming.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} onReschedule={setRescheduleTarget} past={false} />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} onReschedule={setRescheduleTarget} past={false} from={location} />
               ))}
             </div>
           )
@@ -838,7 +839,7 @@ export default function CustomerDashboard() {
           ) : (
             <div className="space-y-3">
               {past.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past />
+                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past from={location} />
               ))}
             </div>
           )

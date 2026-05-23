@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { MapPin, Wrench, CalendarX, Search, Lock, Shield, RotateCcw, Tag, User } from 'lucide-react';
 import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI, paymentsAPI, staffAPI, intakeAPI, promoAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import BackButton from '../../components/shared/BackButton';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
@@ -196,9 +197,13 @@ export default function BookingPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 flex-shrink-0">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg>
-          </button>
+          <BackButton
+            fallback={`/profile/${slug}`}
+            className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 flex-shrink-0"
+            iconClassName="w-5 h-5"
+          >
+            {null}
+          </BackButton>
           {business.logo_url ? (
             <img src={business.logo_url} alt={business.name} className="w-9 h-9 rounded-xl object-cover flex-shrink-0" />
           ) : (
@@ -210,7 +215,7 @@ export default function BookingPage() {
             <h1 className="font-bold text-gray-900 truncate">{business.name}</h1>
             {business.category && <p className="text-xs text-gray-500 capitalize">{business.category}</p>}
           </div>
-          <Link to={`/profile/${slug}`} className="text-xs text-primary-600 font-medium hover:underline flex-shrink-0">Profile</Link>
+          <Link to={`/profile/${slug}`} state={{ from: location }} className="text-xs text-primary-600 font-medium hover:underline flex-shrink-0">Profile</Link>
         </div>
       </header>
 

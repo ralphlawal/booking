@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LOGO_WHITE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from;
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +18,10 @@ export default function Login() {
     try {
       const data = await login(form.email, form.password);
       toast.success('Welcome back!');
-      navigate(data.onboardingComplete ? '/admin/dashboard' : '/admin/onboarding');
+      const destination = data.onboardingComplete
+        ? (from?.pathname?.startsWith('/admin') ? `${from.pathname}${from.search || ''}${from.hash || ''}` : '/admin/dashboard')
+        : '/admin/onboarding';
+      navigate(destination, { replace: true });
     } catch (err) {
       const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
         ? 'Invalid email or password'

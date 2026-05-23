@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, ArrowLeft, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users, Camera } from 'lucide-react';
+import { User, Phone, Mail, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users, Camera } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { consumerAPI, reviewsAPI, referralAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
+import BackButton from '../../components/shared/BackButton';
 import toast from 'react-hot-toast';
 
 function StarPicker({ value, onChange }) {
@@ -263,10 +264,7 @@ export default function ConsumerProfile() {
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-          <button onClick={() => navigate('/customer/dashboard')} className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Dashboard</span>
-          </button>
+          <BackButton fallback="/customer/dashboard">Back</BackButton>
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>

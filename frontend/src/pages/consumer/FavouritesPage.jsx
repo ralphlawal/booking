@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Building2, MapPin, Star, ChevronRight, Trash2, ArrowLeft } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Heart, Building2, MapPin, Star, ChevronRight, Trash2 } from 'lucide-react';
 import { consumerAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
+import BackButton from '../../components/shared/BackButton';
 import toast from 'react-hot-toast';
 
 export default function FavouritesPage() {
-  const navigate = useNavigate();
+  const location = useLocation();
   const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,9 +33,13 @@ export default function FavouritesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+          <BackButton
+            fallback="/customer/dashboard"
+            className="p-2 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
+            iconClassName="w-5 h-5"
+          >
+            {null}
+          </BackButton>
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
@@ -59,7 +64,7 @@ export default function FavouritesPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{favourites.length} saved {favourites.length === 1 ? 'business' : 'businesses'}</p>
             {favourites.map(f => (
               <div key={f.id || f.business_id} className="card p-4 flex items-center gap-4">
-                <Link to={`/profile/${f.business_slug || f.slug}`} className="flex items-center gap-3 flex-1 min-w-0">
+                <Link to={`/profile/${f.business_slug || f.slug}`} state={{ from: location }} className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-14 h-14 rounded-2xl overflow-hidden bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 border border-gray-100 dark:border-gray-800">
                     {f.logo_url ? (
                       <img src={f.logo_url} alt={f.business_name || f.name} className="w-full h-full object-cover" />

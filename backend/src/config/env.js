@@ -12,12 +12,17 @@ function validateProductionEnv() {
     'STRIPE_WEBHOOK_SECRET',
   ];
 
+  const missingVars = [];
   for (const entry of required) {
     const names = Array.isArray(entry) ? entry : [entry];
     const missing = names.every(n => !process.env[n]);
     if (missing) {
-      console.warn(`WARNING: Missing env var: ${names.join(' or ')} — some features may not work`);
+      missingVars.push(names.join(' or '));
     }
+  }
+
+  if (missingVars.length) {
+    throw new Error(`Missing required production env var${missingVars.length === 1 ? '' : 's'}: ${missingVars.join(', ')}`);
   }
 }
 

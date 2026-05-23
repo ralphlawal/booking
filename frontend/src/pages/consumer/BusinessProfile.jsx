@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
-  Calendar, ArrowLeft, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
+  Calendar, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
   BadgeCheck,
 } from 'lucide-react';
 import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
+import BackButton from '../../components/shared/BackButton';
 import toast from 'react-hot-toast';
 
 const DAY_SHORT = { Monday:'Mon', Tuesday:'Tue', Wednesday:'Wed', Thursday:'Thu', Friday:'Fri', Saturday:'Sat', Sunday:'Sun' };
@@ -100,6 +101,7 @@ function ReviewCard({ review }) {
 export default function BusinessProfile() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { consumer } = useCustomerAuth();
 
   const [business, setBusiness] = useState(null);
@@ -179,10 +181,7 @@ export default function BusinessProfile() {
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back</span>
-          </button>
+          <BackButton fallback="/explore" />
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
@@ -301,7 +300,7 @@ export default function BusinessProfile() {
               <Link
                 key={s.id}
                 to={`/book/${slug}`}
-                state={{ prefill_service_id: s.id }}
+                state={{ prefill_service_id: s.id, from: location }}
                 className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-transparent hover:border-primary-200 dark:hover:border-primary-800 transition-all group"
               >
                 <div>
@@ -400,7 +399,7 @@ export default function BusinessProfile() {
               <Sparkles className="w-4 h-4" />
               Message
             </button>
-            <Link to={`/book/${slug}`} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 text-sm">
+            <Link to={`/book/${slug}`} state={{ from: location }} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 text-sm">
               <CheckCircle className="w-4 h-4" />
               Book now
             </Link>

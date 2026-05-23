@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { MessageSquare, X, Send, Headphones, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -155,12 +155,12 @@ export default function FloatingChatWidget() {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to start a support conversation</p>
               </div>
               <div className="w-full space-y-2">
-                <a href="/customer/login" className="flex items-center justify-between w-full px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-xl text-sm font-semibold text-primary-700 dark:text-primary-300 hover:bg-primary-100 transition-colors">
+                <Link to="/customer/login" state={{ from: { pathname, search: '', hash: '' } }} className="flex items-center justify-between w-full px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-xl text-sm font-semibold text-primary-700 dark:text-primary-300 hover:bg-primary-100 transition-colors">
                   <span>Customer sign in</span><ChevronRight className="w-4 h-4" />
-                </a>
-                <a href="/admin/login" className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 transition-colors">
+                </Link>
+                <Link to="/admin/login" state={{ from: { pathname, search: '', hash: '' } }} className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 transition-colors">
                   <span>Business sign in</span><ChevronRight className="w-4 h-4" />
-                </a>
+                </Link>
                 <a href="mailto:hello@bookam.business" className="block text-center text-xs text-gray-400 hover:text-gray-600 mt-2">
                   Or email hello@bookam.business
                 </a>

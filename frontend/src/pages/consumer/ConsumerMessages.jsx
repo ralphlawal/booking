@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { MessageSquare, ArrowLeft, Headphones, ChevronLeft } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { MessageSquare, Headphones, ChevronLeft } from 'lucide-react';
 import { consumerChatAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import ChatWindow from '../../components/chat/ChatWindow';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
+import BackButton from '../../components/shared/BackButton';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
@@ -102,9 +103,13 @@ export default function ConsumerMessages() {
               <ChevronLeft className="w-5 h-5" />
             </button>
           ) : (
-            <Link to="/customer/dashboard" className="p-2 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500">
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
+            <BackButton
+              fallback="/customer/dashboard"
+              className="p-2 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500"
+              iconClassName="w-4 h-4"
+            >
+              {null}
+            </BackButton>
           )}
           <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           <span className="font-bold text-gray-900 dark:text-white">

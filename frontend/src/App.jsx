@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -77,8 +77,9 @@ class ErrorBoundary extends Component {
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <PageLoader />;
-  if (!user) return <Navigate to="/admin/login" replace />;
+  if (!user) return <Navigate to="/admin/login" replace state={{ from: location }} />;
   return children;
 };
 
@@ -91,8 +92,9 @@ const GuestRoute = ({ children }) => {
 
 const ConsumerProtectedRoute = ({ children }) => {
   const { consumer, loading } = useCustomerAuth();
+  const location = useLocation();
   if (loading) return <PageLoader />;
-  if (!consumer) return <Navigate to="/customer/login" replace />;
+  if (!consumer) return <Navigate to="/customer/login" replace state={{ from: location }} />;
   return children;
 };
 
