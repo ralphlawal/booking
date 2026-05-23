@@ -49,15 +49,24 @@ exports.getForBooking = async (req, res) => {
 
 // POST /api/payments/webhook — Stripe sends events here
 exports.webhook = async (req, res) => {
-  const stripe = getStripe();
+  let stripe;
+  try {
+    stripe = getStripe();
+  } catch (err) {
+    const status = err.code === 'STRIPE_NOT_CONFIGURED' ? 503 : 500;
+    return res.status(status).json({ error: err.message || 'Stripe webhook unavailable', code: err.code });
+  }
   const sig = req.headers['stripe-signature'];
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    return res.status(503).json({ error: 'Stripe webhook is not configured' });
+  }
 
   let event;
   try {
     event = secret
       ? stripe.webhooks.constructEvent(req.body, sig, secret)
-      : JSON.parse(req.body);
+      : JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : req.body);
   } catch (err) {
     console.error('[stripe-webhook] signature error:', err.message);
     return res.status(400).send(`Webhook error: ${err.message}`);

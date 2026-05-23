@@ -6,17 +6,15 @@ Estimated time: **15–20 minutes**
 
 ---
 
-## Step 1 — Gmail App Password (for email notifications)
+## Step 1 — Required production accounts/keys
 
-You need this so the app can send booking confirmation emails.
+Prepare these before deploying:
 
-1. Go to your Google Account → **Security**
-2. Enable **2-Step Verification** (required for App Passwords)
-3. Go to **Security → App Passwords**
-4. Select app: **Mail**, device: **Other** → type "Bookly" → **Generate**
-5. Copy the 16-character password shown (e.g. `abcd efgh ijkl mnop`)
-
-Keep this ready — you'll paste it into Render in Step 3.
+- **Resend** API key for email delivery (`RESEND_API_KEY`)
+- **Stripe** secret key and webhook signing secret (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
+- **Stripe** publishable key for Vercel (`VITE_STRIPE_PUBLIC_KEY`)
+- A strong admin support password (`ADMIN_SUPPORT_PASSWORD`)
+- Your Firebase project id (`FIREBASE_PROJECT_ID`)
 
 ---
 
@@ -50,11 +48,14 @@ git push -u origin main
 
    | Key | Value |
    |-----|-------|
-   | `SMTP_HOST` | `smtp.gmail.com` |
-   | `SMTP_USER` | `your_gmail@gmail.com` |
-   | `SMTP_PASS` | `abcd efgh ijkl mnop` (App Password from Step 1) |
-   | `EMAIL_FROM` | `Bookly <your_gmail@gmail.com>` |
-   | `FRONTEND_URL` | *(leave blank for now — fill after Step 4)* |
+   | `ADMIN_SUPPORT_PASSWORD` | strong unique password |
+   | `ADMIN_EMAIL` | your admin notification email |
+   | `RESEND_API_KEY` | your Resend API key |
+   | `EMAIL_FROM` | `BookAm <noreply@your-domain.com>` |
+   | `STRIPE_SECRET_KEY` | Stripe secret key |
+   | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+   | `FIREBASE_PROJECT_ID` | your Firebase project id |
+   | `FRONTEND_URL` | fill after Step 4 |
 
 6. Go to **Events** tab → click **Manual Deploy → Deploy latest commit**
 
@@ -79,6 +80,8 @@ git push -u origin main
    | Key | Value |
    |-----|-------|
    | `VITE_API_URL` | `https://bookly-api.onrender.com` ← your Render URL |
+   | `BACKEND_URL` | `https://bookly-api.onrender.com` ← same Render URL for the Vercel proxy |
+   | `VITE_STRIPE_PUBLIC_KEY` | Stripe publishable key |
 5. Click **Deploy**
 6. Copy your Vercel URL: `https://bookly-xyz.vercel.app`
 
@@ -110,6 +113,9 @@ git push -u origin main
   Upgrade to paid or set up a cron backup.
 - **File uploads (logos):** Currently stored on the server. For production, migrate to
   Cloudinary or AWS S3 so files survive redeploys. (I can build this for you.)
+- **Stripe webhook:** Add a Stripe webhook endpoint pointing to
+  `https://your-api.onrender.com/api/payments/webhook` and paste its signing secret
+  into `STRIPE_WEBHOOK_SECRET`.
 
 ---
 

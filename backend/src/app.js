@@ -1,4 +1,7 @@
 require('dotenv').config();
+const { validateProductionEnv } = require('./config/env');
+
+validateProductionEnv();
 
 if (!process.env.JWT_SECRET) {
   console.warn('WARNING: JWT_SECRET is not set. Using insecure fallback — set JWT_SECRET in Render env vars.');
@@ -35,6 +38,10 @@ app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { e
 app.use('/api/consumer/register', rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: { error: 'Too many registrations from this IP' } }));
 app.use('/api/consumer/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many login attempts' } }));
 app.use('/api/bookings/public', rateLimit({ windowMs: 60 * 1000, max: 10, message: { error: 'Too many bookings' } }));
+
+// Stripe webhooks must receive the exact raw body before JSON parsing.
+const paymentsCtrl = require('./controllers/paymentsController');
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentsCtrl.webhook);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));

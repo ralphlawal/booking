@@ -16,16 +16,20 @@ services:
           property: connectionString
       - key: FRONTEND_URL
         sync: false        # You'll fill this in after Vercel deploy
-      - key: SMTP_HOST
+      - key: ADMIN_SUPPORT_PASSWORD
         sync: false
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USER
+      - key: ADMIN_EMAIL
         sync: false
-      - key: SMTP_PASS
+      - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM
-        value: "Bookly <noreply@bookly.app>"
+        value: "BookAm <noreply@bookam.business>"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
 
 databases:
   - name: bookly-db

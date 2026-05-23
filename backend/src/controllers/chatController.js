@@ -8,7 +8,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 exports.adminLogin = async (req, res) => {
   try {
     const { password } = req.body;
-    const ADMIN_PASSWORD = process.env.ADMIN_SUPPORT_PASSWORD || 'bookam-support-2024';
+    const ADMIN_PASSWORD = process.env.ADMIN_SUPPORT_PASSWORD
+      || (process.env.NODE_ENV === 'production' ? null : 'bookam-support-2024');
+    if (!ADMIN_PASSWORD && process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ error: 'Admin support login is not configured' });
+    }
     if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Invalid password' });
     const token = jwt.sign({ type: 'admin', role: 'superadmin' }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token });

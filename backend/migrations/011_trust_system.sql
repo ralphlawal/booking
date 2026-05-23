@@ -1,18 +1,18 @@
 -- 011_trust_system.sql
 -- Service confirmations: customer confirms service was rendered
 CREATE TABLE IF NOT EXISTS service_confirmations (
-  id TEXT PRIMARY KEY,
-  booking_id TEXT NOT NULL,
-  consumer_id TEXT,
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  consumer_id UUID REFERENCES consumer_accounts(id) ON DELETE SET NULL,
   confirmed_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(booking_id)
 );
 
 -- Disputes: customer raises a dispute for unrendered / bad service
 CREATE TABLE IF NOT EXISTS disputes (
-  id TEXT PRIMARY KEY,
-  booking_id TEXT NOT NULL,
-  consumer_id TEXT,
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  consumer_id UUID REFERENCES consumer_accounts(id) ON DELETE SET NULL,
   reason TEXT NOT NULL,
   description TEXT,
   status TEXT NOT NULL DEFAULT 'open',

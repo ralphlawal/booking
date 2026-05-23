@@ -1,4 +1,4 @@
-# Bookly — SaaS Appointment Booking Platform
+# BookAm — SaaS Appointment Booking Platform
 
 A full-stack, multi-tenant appointment booking SaaS for small businesses (barbers, makeup artists, photographers, tutors, etc.).
 
@@ -12,7 +12,7 @@ A full-stack, multi-tenant appointment booking SaaS for small businesses (barber
 | Backend | Node.js + Express |
 | Database | PostgreSQL |
 | Auth | JWT |
-| Email | Nodemailer (SMTP) |
+| Email | Resend |
 | QR Code | qrcode + qrcode.react |
 
 ---
@@ -102,20 +102,25 @@ The app runs on **http://localhost:5173**
 ## Environment Variables (backend/.env)
 
 ```env
-PORT=5000
+PORT=5001
 NODE_ENV=development
 
-DATABASE_URL=postgresql://postgres:password@localhost:5432/bookly_db
+# Leave empty locally for SQLite. Set PostgreSQL in production.
+DATABASE_URL=
 
 JWT_SECRET=change_this_to_a_long_random_string
 JWT_EXPIRES_IN=7d
+ADMIN_SUPPORT_PASSWORD=change_this_admin_password
+ADMIN_EMAIL=admin@example.com
+FIREBASE_PROJECT_ID=your_firebase_project_id
 
-# Optional: Email (leave blank to skip email, use notification log instead)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-EMAIL_FROM=Bookly <noreply@bookly.com>
+# Email
+RESEND_API_KEY=
+EMAIL_FROM=BookAm <noreply@bookam.business>
+
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
 
 FRONTEND_URL=http://localhost:5173
 ```
@@ -203,7 +208,7 @@ After running `npm run seed`:
 
 1. Set build command: `npm run build`
 2. Set output directory: `dist`
-3. Add environment variable: `VITE_API_URL=https://your-api.com`
+3. Add environment variables: `VITE_API_URL=https://your-api.com`, `BACKEND_URL=https://your-api.com`, and `VITE_STRIPE_PUBLIC_KEY=pk_...`
 
 Update `frontend/src/services/api.js` baseURL for production:
 ```js

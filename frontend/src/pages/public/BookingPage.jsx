@@ -8,8 +8,8 @@ import toast from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_live_51TYBvRAXe2tHkXjCc4wiPkhH7MQGm01K0dt8tjHKYxZqfcst1DHrHaWGCjxbX3YJuGKKfLkNx82t4mNX5Vx8dpOD00KyZrW5Jc';
-const stripePromise = loadStripe(STRIPE_PK);
+const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : Promise.resolve(null);
 
 const STEPS = ['Service', 'Date', 'Time', 'Details', 'Confirm'];
 
@@ -114,6 +114,11 @@ export default function BookingPage() {
 
   const handleConfirm = async () => {
     if (requiresPayment) {
+      if (!STRIPE_PK) {
+        toast('Online payment is not configured yet. Your booking will be saved as unpaid.');
+        await submit(null);
+        return;
+      }
       setSubmitting(true);
       try {
         const { client_secret, payment_intent_id } = await paymentsAPI.createIntent({

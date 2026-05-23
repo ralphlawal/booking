@@ -2,14 +2,21 @@
 // The browser calls its own domain (no CORS). Render gets a server-to-server call (no CORS).
 export const config = { runtime: 'edge' };
 
-const BACKEND = 'https://bookly-api-3bz0.onrender.com';
+const BACKEND = process.env.BACKEND_URL || process.env.VITE_API_URL;
 
 export default async function handler(req) {
+  if (!BACKEND) {
+    return new Response(JSON.stringify({ error: 'Backend proxy is not configured' }), {
+      status: 503,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
   const url = new URL(req.url);
 
   // Build the target URL: /api/proxy/auth/me → /api/auth/me
   const targetPath = url.pathname.replace(/^\/api\/proxy/, '/api');
-  const target = `${BACKEND}${targetPath}${url.search}`;
+  const target = `${BACKEND.replace(/\/$/, '')}${targetPath}${url.search}`;
 
   const headers = new Headers();
   const ct = req.headers.get('content-type');
