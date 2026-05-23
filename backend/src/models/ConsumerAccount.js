@@ -2,6 +2,21 @@ const db = require('../config/database');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
+function normalizeConsumer(row) {
+  if (!row) return null;
+  const normalized = { ...row };
+  if (typeof normalized.service_preferences === 'string') {
+    try {
+      normalized.service_preferences = JSON.parse(normalized.service_preferences);
+    } catch {
+      normalized.service_preferences = [];
+    }
+  }
+  normalized.email_verified = !!normalized.email_verified;
+  normalized.onboarding_complete = !!normalized.onboarding_complete;
+  return normalized;
+}
+
 const ConsumerAccount = {
   async create({ email, password, full_name, phone }) {
     const id = crypto.randomUUID();
@@ -33,7 +48,7 @@ const ConsumerAccount = {
       'SELECT * FROM consumer_accounts WHERE email = $1',
       [email.toLowerCase().trim()]
     );
-    return rows[0] || null;
+    return normalizeConsumer(rows[0]);
   },
 
   async findById(id) {
@@ -46,7 +61,7 @@ const ConsumerAccount = {
        FROM consumer_accounts WHERE id = $1`,
       [id]
     );
-    return rows[0] || null;
+    return normalizeConsumer(rows[0]);
   },
 
   async update(id, fields) {
@@ -72,7 +87,7 @@ const ConsumerAccount = {
                  COALESCE(onboarding_complete, FALSE) AS onboarding_complete`,
       values
     );
-    return rows[0];
+    return normalizeConsumer(rows[0]);
   },
 
   async getBookings(consumer_id) {
@@ -181,10 +196,11 @@ const ConsumerAccount = {
     );
     if (!customers.length) return 0;
     const customerIds = customers.map(c => c.id);
+    const placeholders = customerIds.map((_, i) => `$${i + 2}`).join(', ');
     const { rowCount } = await db.query(
       `UPDATE bookings SET consumer_id = $1
-       WHERE customer_id = ANY($2::uuid[]) AND consumer_id IS NULL`,
-      [consumer_id, customerIds]
+       WHERE customer_id IN (${placeholders}) AND consumer_id IS NULL`,
+      [consumer_id, ...customerIds]
     );
     return rowCount;
   },

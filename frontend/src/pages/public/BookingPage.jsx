@@ -125,7 +125,12 @@ export default function BookingPage() {
         setPaymentIntentId(payment_intent_id);
         setStep(5);
       } catch (err) {
-        toast.error(err.message || 'Failed to set up payment');
+        if (err.code === 'STRIPE_NOT_CONFIGURED' || err.status === 503) {
+          toast('Online payment is not configured yet. Your booking will be saved as unpaid.');
+          await submit(null);
+        } else {
+          toast.error(err.message || 'Failed to set up payment');
+        }
       } finally {
         setSubmitting(false);
       }

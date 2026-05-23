@@ -42,8 +42,10 @@ api.interceptors.response.use(
         setTimeout(() => resolve(api(config)), RETRY_DELAY_MS)
       );
     }
-    const message = err.response?.data?.error || err.message || 'Something went wrong';
-    return Promise.reject(new Error(message));
+    const error = new Error(err.response?.data?.error || err.message || 'Something went wrong');
+    error.status = err.response?.status;
+    error.code = err.response?.data?.code;
+    return Promise.reject(error);
   }
 );
 

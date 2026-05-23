@@ -17,9 +17,15 @@ db.function('NOW', () => new Date().toISOString());
  */
 const query = async (text, params = []) => {
   const boundValues = [];
+  const bindValue = (value) => {
+    if (typeof value === 'boolean') return value ? 1 : 0;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return JSON.stringify(value);
+    return value;
+  };
   const sql = text
     .replace(/\$(\d+)(::[a-zA-Z_][\w]*(?:\[\])?)?/g, (_, n) => {
-      boundValues.push(params[parseInt(n, 10) - 1]);
+      boundValues.push(bindValue(params[parseInt(n, 10) - 1]));
       return '?';
     })
     .replace(/'([^']*)'::jsonb/g, "'$1'")

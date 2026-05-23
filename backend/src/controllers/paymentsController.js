@@ -2,7 +2,11 @@ const db = require('../config/database');
 const Notification = require('../models/Notification');
 
 const getStripe = () => {
-  if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not configured');
+  if (!process.env.STRIPE_SECRET_KEY) {
+    const err = new Error('Online payments are not configured');
+    err.code = 'STRIPE_NOT_CONFIGURED';
+    throw err;
+  }
   return require('stripe')(process.env.STRIPE_SECRET_KEY);
 };
 
@@ -25,7 +29,8 @@ exports.createIntent = async (req, res) => {
     res.json({ client_secret: intent.client_secret, payment_intent_id: intent.id });
   } catch (err) {
     console.error('[payments/create-intent]', err.message);
-    res.status(500).json({ error: err.message || 'Failed to create payment' });
+    const status = err.code === 'STRIPE_NOT_CONFIGURED' ? 503 : 500;
+    res.status(status).json({ error: err.message || 'Failed to create payment', code: err.code });
   }
 };
 

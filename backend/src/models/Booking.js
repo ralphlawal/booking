@@ -41,9 +41,9 @@ const Booking = {
 
     const countValues = [...values];
     const { rows: countRows } = await db.query(
-      `SELECT COUNT(*) FROM bookings b WHERE ${where}`, countValues
+      `SELECT COUNT(*) AS count FROM bookings b WHERE ${where}`, countValues
     );
-    const total = parseInt(countRows[0].count, 10);
+    const total = parseInt(countRows[0].count || 0, 10);
 
     const offset = (page - 1) * limit;
     values.push(limit, offset);
@@ -145,7 +145,15 @@ const Booking = {
        WHERE b.business_id = $1`,
       [business_id]
     );
-    return rows[0];
+    const stats = rows[0] || {};
+    return {
+      total: parseInt(stats.total || 0, 10),
+      pending: parseInt(stats.pending || 0, 10),
+      confirmed: parseInt(stats.confirmed || 0, 10),
+      cancelled: parseInt(stats.cancelled || 0, 10),
+      completed: parseInt(stats.completed || 0, 10),
+      revenue: Number(stats.revenue || 0),
+    };
   },
 
   async getAnalytics(business_id) {
