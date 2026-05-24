@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bookingsAPI, consumerAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import LoadingScreen from '../../components/shared/LoadingScreen';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -53,7 +54,7 @@ export default function BookingSuccess() {
     }
   };
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoadingScreen message="Loading your booking details" />;
   if (notFound) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -224,14 +225,6 @@ export default function BookingSuccess() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }

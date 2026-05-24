@@ -121,6 +121,67 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.bookam-loader {
+  animation: loaderFade 0.28s ease-out both;
+}
+
+.bookam-loader-ring {
+  background:
+    conic-gradient(from 0deg, transparent 0deg, transparent 74deg, #5b3eea 108deg, #10b981 154deg, transparent 216deg),
+    linear-gradient(#fff, #fff) padding-box;
+  border: 2px solid transparent;
+  mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  animation: loaderSpin 1.35s linear infinite;
+}
+
+.dark .bookam-loader-ring {
+  background:
+    conic-gradient(from 0deg, transparent 0deg, transparent 74deg, #8b7cf6 108deg, #34d399 154deg, transparent 216deg),
+    linear-gradient(#030712, #030712) padding-box;
+}
+
+.bookam-loader-step {
+  animation: loaderStep 1.2s ease-in-out infinite;
+}
+
+.bookam-loader-bar {
+  animation: loaderBar 1.25s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes loaderFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes loaderSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loaderStep {
+  0%, 100% { transform: translateY(0); opacity: 0.72; }
+  45% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes loaderBar {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(230%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bookam-loader,
+  .bookam-loader-ring,
+  .bookam-loader-step,
+  .bookam-loader-bar {
+    animation: none !important;
+  }
+  .bookam-loader-bar {
+    transform: translateX(50%);
+  }
+}
+
 /* Smooth page transitions */
 .animate-fade-in { animation: fadeIn 0.25s ease-out both; }
 .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }

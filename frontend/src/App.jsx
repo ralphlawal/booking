@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { CustomerAuthProvider, useCustomerAuth } from './context/CustomerAuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { LOGO_BLUE_ICON } from './config/logos';
+import LoadingScreen from './components/shared/LoadingScreen';
 import FloatingChatWidget from './components/shared/FloatingChatWidget';
 import BroadcastBanner from './components/shared/BroadcastBanner';
 
@@ -99,18 +100,7 @@ const ConsumerProtectedRoute = ({ children }) => {
   return children;
 };
 
-const PageLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-950">
-    <div className="flex flex-col items-center gap-5 animate-fade-in">
-      <img src={LOGO_BLUE_ICON} alt="BookAm Business" className="w-12 h-12 object-contain dark:brightness-0 dark:invert animate-pulse" />
-      <div className="flex items-center gap-1.5">
-        {[0, 120, 240].map(d => (
-          <span key={d} className="w-1.5 h-1.5 rounded-full bg-primary-400" style={{ animation: `bounce 0.9s ease-in-out ${d}ms infinite` }} />
-        ))}
-      </div>
-    </div>
-  </div>
-);
+const PageLoader = () => <LoadingScreen />;
 
 export default function App() {
   return (
