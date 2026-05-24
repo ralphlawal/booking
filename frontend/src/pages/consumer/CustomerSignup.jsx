@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff } from 'lucide-react';
+import { CalendarCheck, Eye, EyeOff, Heart, Search, ShieldCheck } from 'lucide-react';
 
 export default function CustomerSignup() {
   const { register, googleLogin } = useCustomerAuth();
@@ -46,17 +46,47 @@ export default function CustomerSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-700 to-primary-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm animate-fade-in">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-5">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain brightness-0 invert mx-auto" />
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-primary-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px] items-center animate-fade-in">
+        <div className="hidden lg:block">
+          <Link to="/" className="inline-block mb-8">
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
           </Link>
-          <h1 className="text-2xl font-bold text-white">Create your account</h1>
-          <p className="text-primary-200 text-sm mt-1">Book services and track your appointments</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-4">Customer account</p>
+          <h1 className="text-5xl font-black text-gray-900 leading-tight max-w-xl">Create your personal booking hub.</h1>
+          <p className="text-gray-500 mt-5 text-lg max-w-lg">Save favourite businesses, manage appointments, chat with providers, and get support when you need it.</p>
+          <div className="grid grid-cols-3 gap-3 mt-8 max-w-xl">
+            {[
+              [Search, 'Discover services'],
+              [Heart, 'Save favourites'],
+              [ShieldCheck, 'Support built in'],
+            ].map(([Icon, label]) => (
+              <div key={label} className="rounded-2xl border border-emerald-100 bg-white/80 p-4 shadow-sm">
+                <Icon className="w-5 h-5 text-emerald-600 mb-3" />
+                <p className="text-sm font-bold text-gray-900">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="card p-6 space-y-4">
+        <div className="w-full max-w-sm mx-auto lg:max-w-none">
+          <div className="text-center mb-6 lg:hidden">
+            <Link to="/" className="inline-block mb-5">
+              <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain mx-auto" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">Customer sign up</h1>
+            <p className="text-gray-500 text-sm mt-1">Book services and track appointments</p>
+          </div>
+
+          <div className="mb-3 hidden lg:block">
+            <p className="text-sm font-bold text-gray-900">Customer sign up</p>
+            <p className="text-xs text-gray-500 mt-0.5">For people booking services</p>
+          </div>
+
+          <div className="card p-6 space-y-4 shadow-card-hover">
+            <div className="lg:hidden inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 text-xs font-bold">
+              <CalendarCheck className="w-3.5 h-3.5" /> Customer
+            </div>
           {/* Google */}
           <button
             type="button"
@@ -120,11 +150,12 @@ export default function CustomerSignup() {
             </Link>
           </p>
           <p className="text-center text-xs text-gray-400">
-            Business owner?{' '}
+            Are you a business owner?{' '}
             <Link to="/admin/register" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-              Register your business
+              Create a business account
             </Link>
           </p>
+        </div>
         </div>
       </div>
     </div>
