@@ -192,16 +192,64 @@ exports.submitVerificationDetails = async (req, res) => {
 // PUT /api/business/me/bank-details
 exports.saveBankDetails = async (req, res) => {
   try {
-    const { holder_name, sort_code, account_number } = req.body;
-    if (!holder_name || !sort_code || !account_number)
-      return res.status(400).json({ error: 'All bank detail fields are required' });
+    const {
+      holder_name,
+      bank_country,
+      country,
+      bank_currency,
+      currency,
+      bank_name,
+      sort_code,
+      account_number,
+      routing_number,
+      iban,
+      bic_swift,
+      bic,
+    } = req.body;
 
-    // Basic format validation
-    const cleanSort = sort_code.replace(/[-\s]/g, '');
-    if (!/^\d{6}$/.test(cleanSort))
-      return res.status(400).json({ error: 'Sort code must be 6 digits (e.g. 20-00-00)' });
-    if (!/^\d{8}$/.test(account_number.replace(/\s/g, '')))
-      return res.status(400).json({ error: 'Account number must be 8 digits' });
+    const cleanHolder = (holder_name || '').trim();
+    const cleanCountry = (bank_country || country || 'GB').trim().toUpperCase();
+    const cleanCurrency = (bank_currency || currency || 'GBP').trim().toUpperCase();
+    const cleanBankName = (bank_name || '').trim() || null;
+    const cleanSort = sort_code ? sort_code.replace(/[-\s]/g, '') : null;
+    const cleanAccount = account_number ? account_number.replace(/\s/g, '') : null;
+    const cleanRouting = routing_number ? routing_number.replace(/\s/g, '') : null;
+    const cleanIban = iban ? iban.replace(/\s/g, '').toUpperCase() : null;
+    const cleanBic = (bic_swift || bic) ? (bic_swift || bic).replace(/\s/g, '').toUpperCase() : null;
+
+    if (cleanHolder.length < 2) {
+      return res.status(400).json({ error: 'Account holder name is required' });
+    }
+    if (!/^[A-Z]{2,5}$/.test(cleanCountry)) {
+      return res.status(400).json({ error: 'Choose a valid bank country' });
+    }
+    if (!/^[A-Z]{3}$/.test(cleanCurrency)) {
+      return res.status(400).json({ error: 'Choose a valid payout currency' });
+    }
+    if (cleanIban && !/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(cleanIban)) {
+      return res.status(400).json({ error: 'IBAN format looks incorrect' });
+    }
+    if (cleanBic && !/^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(cleanBic)) {
+      return res.status(400).json({ error: 'BIC/SWIFT code must be 8 or 11 characters' });
+    }
+
+    if (cleanCountry === 'GB' && !cleanIban) {
+      if (!/^\d{6}$/.test(cleanSort || '')) {
+        return res.status(400).json({ error: 'UK sort code must be 6 digits (e.g. 20-00-00)' });
+      }
+      if (!/^\d{8}$/.test(cleanAccount || '')) {
+        return res.status(400).json({ error: 'UK account number must be 8 digits' });
+      }
+    } else if (cleanCountry === 'US' && !cleanIban) {
+      if (!/^\d{9}$/.test(cleanRouting || '')) {
+        return res.status(400).json({ error: 'US routing number must be 9 digits' });
+      }
+      if (!/^[A-Z0-9-]{4,17}$/i.test(cleanAccount || '')) {
+        return res.status(400).json({ error: 'US account number must be 4 to 17 characters' });
+      }
+    } else if (!cleanIban && !cleanAccount) {
+      return res.status(400).json({ error: 'Enter an IBAN or local account number' });
+    }
 
     const db = require('../config/database');
     await db.query(
@@ -209,9 +257,26 @@ exports.saveBankDetails = async (req, res) => {
          bank_holder_name = $1,
          bank_sort_code = $2,
          bank_account_number = $3,
+         bank_country = $4,
+         bank_currency = $5,
+         bank_name = $6,
+         bank_iban = $7,
+         bank_bic = $8,
+         bank_routing_number = $9,
          bank_updated_at = NOW()
-       WHERE id = $4`,
-      [holder_name.trim(), cleanSort, account_number.replace(/\s/g, ''), req.business.id]
+       WHERE id = $10`,
+      [
+        cleanHolder,
+        cleanSort,
+        cleanAccount,
+        cleanCountry,
+        cleanCurrency,
+        cleanBankName,
+        cleanIban,
+        cleanBic,
+        cleanRouting,
+        req.business.id,
+      ]
     );
     res.json({ message: 'Bank details saved securely' });
   } catch (err) {

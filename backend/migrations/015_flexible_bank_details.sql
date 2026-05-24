@@ -1,0 +1,6 @@
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS bank_country TEXT;
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS bank_currency TEXT;
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS bank_name TEXT;
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS bank_iban TEXT;
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS bank_bic TEXT;
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS bank_routing_number TEXT;

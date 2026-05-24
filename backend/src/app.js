@@ -202,6 +202,8 @@ async function start() {
       await pool.query(sql13);
       const sql14 = fs.readFileSync(path.join(__dirname, '../migrations/014_new_features.sql'), 'utf8');
       await pool.query(sql14);
+      const sql15 = fs.readFileSync(path.join(__dirname, '../migrations/015_flexible_bank_details.sql'), 'utf8');
+      await pool.query(sql15);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -218,7 +220,29 @@ async function start() {
       for (const col of ['reminder_24h_sent INTEGER DEFAULT 0', 'reminder_1h_sent INTEGER DEFAULT 0']) {
         addColumn('bookings', col);
       }
-      for (const col of ['is_verified INTEGER DEFAULT 0', 'latitude REAL', 'longitude REAL', "verification_status TEXT DEFAULT 'pending'", "verification_details TEXT DEFAULT '{}'", 'verified_at TEXT', 'verification_requested_at TEXT', 'verification_rejected_reason TEXT', 'verification_notes TEXT', 'stripe_account_id TEXT', 'stripe_onboarding_complete INTEGER DEFAULT 0']) {
+      for (const col of [
+        'is_verified INTEGER DEFAULT 0',
+        'latitude REAL',
+        'longitude REAL',
+        "verification_status TEXT DEFAULT 'pending'",
+        "verification_details TEXT DEFAULT '{}'",
+        'verified_at TEXT',
+        'verification_requested_at TEXT',
+        'verification_rejected_reason TEXT',
+        'verification_notes TEXT',
+        'stripe_account_id TEXT',
+        'stripe_onboarding_complete INTEGER DEFAULT 0',
+        'bank_holder_name TEXT',
+        'bank_sort_code TEXT',
+        'bank_account_number TEXT',
+        'bank_country TEXT',
+        'bank_currency TEXT',
+        'bank_name TEXT',
+        'bank_iban TEXT',
+        'bank_bic TEXT',
+        'bank_routing_number TEXT',
+        'bank_updated_at TEXT',
+      ]) {
         addColumn('businesses', col);
       }
       for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT']) {

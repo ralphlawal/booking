@@ -10,6 +10,28 @@ import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check } from
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const INTERVALS = [15,30,45,60];
+const BANK_COUNTRIES = [
+  { value: 'GB', label: 'United Kingdom', currency: 'GBP' },
+  { value: 'IE', label: 'Ireland', currency: 'EUR' },
+  { value: 'US', label: 'United States', currency: 'USD' },
+  { value: 'CA', label: 'Canada', currency: 'CAD' },
+  { value: 'AU', label: 'Australia', currency: 'AUD' },
+  { value: 'NG', label: 'Nigeria', currency: 'NGN' },
+  { value: 'INTL', label: 'Other / IBAN', currency: 'EUR' },
+];
+const BANK_CURRENCIES = ['GBP', 'EUR', 'USD', 'CAD', 'AUD', 'NGN'];
+
+const emptyBankForm = {
+  holder_name: '',
+  bank_country: 'GB',
+  bank_currency: 'GBP',
+  bank_name: '',
+  sort_code: '',
+  account_number: '',
+  routing_number: '',
+  iban: '',
+  bic_swift: '',
+};
 
 export default function Settings() {
   const { business, updateBusiness, changePassword, resendVerificationEmail, deleteAccount } = useAuth();
@@ -33,7 +55,7 @@ export default function Settings() {
   const [geocoding, setGeocoding] = useState(false);
 
   // Bank details
-  const [bankForm, setBankForm] = useState({ holder_name: '', sort_code: '', account_number: '' });
+  const [bankForm, setBankForm] = useState(emptyBankForm);
   const [bankSaving, setBankSaving] = useState(false);
 
   // Verification details
@@ -69,6 +91,18 @@ export default function Settings() {
   useEffect(() => {
     if (business) {
       setBizForm({ name: business.name, description: business.description || '', phone: business.phone || '', email: business.email || '', location: business.location || '', category: business.category || '', latitude: business.latitude || '', longitude: business.longitude || '' });
+      setBankForm({
+        ...emptyBankForm,
+        holder_name: business.bank_holder_name || '',
+        bank_country: business.bank_country || 'GB',
+        bank_currency: business.bank_currency || 'GBP',
+        bank_name: business.bank_name || '',
+        sort_code: business.bank_sort_code || '',
+        account_number: business.bank_account_number || '',
+        routing_number: business.bank_routing_number || '',
+        iban: business.bank_iban || '',
+        bic_swift: business.bank_bic || '',
+      });
     }
     availabilityAPI.get().then(av => {
       if (av) setAvForm({ working_days: av.working_days || [], opening_time: av.opening_time?.slice(0,5) || '09:00', closing_time: av.closing_time?.slice(0,5) || '18:00', slot_interval_minutes: av.slot_interval_minutes || 30, buffer_minutes: av.buffer_minutes || 0 });
@@ -248,6 +282,15 @@ export default function Settings() {
       toast.success('Bank details saved');
     } catch (err) { toast.error(err.message); }
     finally { setBankSaving(false); }
+  };
+
+  const updateBankCountry = (country) => {
+    const selected = BANK_COUNTRIES.find(item => item.value === country);
+    setBankForm(p => ({
+      ...p,
+      bank_country: country,
+      bank_currency: selected?.currency || p.bank_currency,
+    }));
   };
 
   const submitVerification = async (e) => {
@@ -614,7 +657,7 @@ export default function Settings() {
           <div className="card p-6">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Payout Bank Details</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Enter your UK bank account to receive payments from BookAm. Funds are processed weekly after Stripe fees.
+              Add the bank account where your business should receive payouts. UK, US, IBAN/SWIFT, and other local bank accounts are supported.
             </p>
             <form onSubmit={saveBankDetails} className="space-y-4">
               <div>
@@ -622,18 +665,56 @@ export default function Settings() {
                 <input className="input" placeholder="As it appears on your bank account" value={bankForm.holder_name}
                   onChange={e => setBankForm(p => ({ ...p, holder_name: e.target.value }))} required />
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Bank Country</label>
+                  <select className="input" value={bankForm.bank_country} onChange={e => updateBankCountry(e.target.value)} required>
+                    {BANK_COUNTRIES.map(country => (
+                      <option key={country.value} value={country.value}>{country.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Payout Currency</label>
+                  <select className="input" value={bankForm.bank_currency} onChange={e => setBankForm(p => ({ ...p, bank_currency: e.target.value }))} required>
+                    {BANK_CURRENCIES.map(currency => (
+                      <option key={currency} value={currency}>{currency}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="label">Bank Name</label>
+                <input className="input" placeholder="Bank name, e.g. Barclays, Chase, AIB" value={bankForm.bank_name}
+                  onChange={e => setBankForm(p => ({ ...p, bank_name: e.target.value }))} />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Sort Code</label>
-                  <input className="input" placeholder="20-00-00" maxLength={8} value={bankForm.sort_code}
-                    onChange={e => setBankForm(p => ({ ...p, sort_code: e.target.value }))} required />
+                  <label className="label">{bankForm.bank_country === 'US' ? 'Routing Number' : 'Sort / Routing Code'}</label>
+                  <input className="input" placeholder={bankForm.bank_country === 'US' ? '021000021' : '20-00-00'} value={bankForm.bank_country === 'US' ? bankForm.routing_number : bankForm.sort_code}
+                    onChange={e => setBankForm(p => bankForm.bank_country === 'US' ? ({ ...p, routing_number: e.target.value }) : ({ ...p, sort_code: e.target.value }))} />
                 </div>
                 <div>
                   <label className="label">Account Number</label>
-                  <input className="input" placeholder="12345678" maxLength={8} value={bankForm.account_number}
-                    onChange={e => setBankForm(p => ({ ...p, account_number: e.target.value }))} required />
+                  <input className="input" placeholder="12345678" value={bankForm.account_number}
+                    onChange={e => setBankForm(p => ({ ...p, account_number: e.target.value }))} />
                 </div>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">IBAN</label>
+                  <input className="input uppercase" placeholder="GB82 WEST 1234 5698 7654 32" value={bankForm.iban}
+                    onChange={e => setBankForm(p => ({ ...p, iban: e.target.value.toUpperCase() }))} />
+                </div>
+                <div>
+                  <label className="label">BIC / SWIFT</label>
+                  <input className="input uppercase" placeholder="BUKBGB22" value={bankForm.bic_swift}
+                    onChange={e => setBankForm(p => ({ ...p, bic_swift: e.target.value.toUpperCase() }))} />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Use IBAN and BIC/SWIFT if your bank provides them. For countries without IBAN, enter the local routing/sort code and account number.
+              </p>
               <button type="submit" disabled={bankSaving} className="btn-primary disabled:opacity-50">
                 {bankSaving ? 'Saving…' : 'Save Bank Details'}
               </button>
@@ -642,7 +723,7 @@ export default function Settings() {
           <div className="rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4">
             <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">Stripe Connect — Coming Soon</p>
             <p className="text-xs text-blue-600 dark:text-blue-400">
-              We are adding Stripe Connect for instant automated payouts. Bank details entered above are used for manual weekly transfers until that is live.
+              We are adding Stripe Connect for instant automated payouts. Bank details entered above are used for manual transfers until that is live.
             </p>
           </div>
         </div>

@@ -34,6 +34,23 @@ async function runMigrations() {
     console.log('Running SQLite migrations…');
     const sql = fs.readFileSync(path.join(__dirname, '001_sqlite_schema.sql'), 'utf8');
     db.exec(sql);
+    const addColumn = (table, column) => {
+      try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${column}`); } catch {}
+    };
+    for (const col of [
+      'bank_holder_name TEXT',
+      'bank_sort_code TEXT',
+      'bank_account_number TEXT',
+      'bank_country TEXT',
+      'bank_currency TEXT',
+      'bank_name TEXT',
+      'bank_iban TEXT',
+      'bank_bic TEXT',
+      'bank_routing_number TEXT',
+      'bank_updated_at TEXT',
+    ]) {
+      addColumn('businesses', col);
+    }
     console.log('SQLite migrations completed.');
   }
 }
