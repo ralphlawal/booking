@@ -23,7 +23,7 @@ exports.register = async (req, res) => {
     // Send email verification (fire-and-forget — don't block registration)
     const verifyToken = crypto.randomBytes(32).toString('hex');
     await User.saveVerifyToken(user.id, verifyToken).catch(() => {});
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://bookam.business';
     sendVerificationEmail(user, `${frontendUrl}/verify-email?token=${verifyToken}`).catch(() => {});
 
     res.status(201).json({
@@ -94,7 +94,7 @@ exports.resendVerification = async (req, res) => {
     if (user.email_verified) return res.json({ message: 'Already verified' });
     const verifyToken = crypto.randomBytes(32).toString('hex');
     await User.saveVerifyToken(user.id, verifyToken);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://bookam.business';
     await sendVerificationEmail(user, `${frontendUrl}/verify-email?token=${verifyToken}`);
     res.json({ message: 'Verification email sent' });
   } catch (err) {
@@ -159,7 +159,7 @@ exports.forgotPassword = async (req, res) => {
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await User.saveResetToken(user.id, token, expires);
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://bookam.business';
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
     await sendEmail({

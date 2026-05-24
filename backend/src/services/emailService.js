@@ -210,7 +210,7 @@ const sendWelcomeEmail = (user) =>
           </div>`).join('')}
       </div>
       <div style="margin:24px 0 0;text-align:center">
-        <a href="${process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app'}/admin/onboarding"
+        <a href="${process.env.FRONTEND_URL || 'https://bookam.business'}/admin/onboarding"
            style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#6d28d9);color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">
           Set Up My Page →
         </a>
@@ -219,7 +219,7 @@ const sendWelcomeEmail = (user) =>
   });
 
 const sendReviewReminder = (booking) => {
-  const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+  const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
   const reviewLink = `${FRONTEND}/profile/${booking.slug}#reviews`;
   return sendEmail({
     to: booking.customer_email,

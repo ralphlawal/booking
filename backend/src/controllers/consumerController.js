@@ -58,11 +58,11 @@ exports.register = async (req, res) => {
     // Send email verification (fire-and-forget)
     const verifyToken = crypto.randomBytes(32).toString('hex');
     ConsumerAccount.saveVerifyToken(consumer.id, verifyToken).catch(() => {});
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://bookam.business';
     sendVerificationEmail(consumer, `${FRONTEND_URL}/customer/verify-email?token=${verifyToken}`).catch(() => {});
 
     // Send welcome email (fire and forget)
-    const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
     sendEmail({
       to: consumer.email,
       subject: 'Welcome to BookAm Business — start booking',
@@ -217,7 +217,7 @@ exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email required' });
-    const FRONTEND = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
     const token = crypto.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     const updated = await ConsumerAccount.setResetToken(email, token, expires);
@@ -313,7 +313,7 @@ exports.resendVerification = async (req, res) => {
   try {
     const verifyToken = require('crypto').randomBytes(32).toString('hex');
     await ConsumerAccount.saveVerifyToken(req.consumer.id, verifyToken);
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://booking-sepia-nu.vercel.app';
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://bookam.business';
     const { sendVerificationEmail } = require('../services/emailService');
     await sendVerificationEmail(req.consumer, `${FRONTEND_URL}/customer/verify-email?token=${verifyToken}`);
     res.json({ message: 'Verification email sent' });
