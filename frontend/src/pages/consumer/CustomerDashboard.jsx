@@ -46,7 +46,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
   const canConfirm = isPaid && isPastDate && !booking.service_confirmed && !booking.has_dispute;
 
   return (
-    <div className="card p-4">
+    <div className="card p-4 h-full">
       <div className="flex items-start gap-3">
         <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {booking.logo_url ? (
@@ -620,7 +620,7 @@ export default function CustomerDashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
@@ -676,7 +676,7 @@ export default function CustomerDashboard() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 pb-consumer-nav">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8 pb-consumer-nav">
         {/* Welcome header */}
         <div className="mb-6 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">
@@ -736,7 +736,7 @@ export default function CustomerDashboard() {
         )}
 
         {/* Quick actions */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
           <Link to="/match" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
             <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
               <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -822,7 +822,7 @@ export default function CustomerDashboard() {
               <Link to="/explore" className="btn-primary text-sm">Explore services</Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-2">
               {upcoming.map((b) => (
                 <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} onReschedule={setRescheduleTarget} past={false} from={location} />
               ))}
@@ -837,7 +837,7 @@ export default function CustomerDashboard() {
               <p className="text-gray-500 dark:text-gray-400 text-sm">No past bookings yet</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-2">
               {past.map((b) => (
                 <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past from={location} />
               ))}
@@ -854,7 +854,7 @@ export default function CustomerDashboard() {
               <Link to="/explore" className="btn-primary text-sm">Find services</Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-2">
               {prefs.map((p) => (
                 <PreferenceCard
                   key={p.business_id}

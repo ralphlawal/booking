@@ -32,7 +32,7 @@ export default function FavouritesPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-consumer-nav">
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <BackButton
             fallback="/customer/dashboard"
             className="p-2 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
@@ -47,7 +47,7 @@ export default function FavouritesPage() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 lg:py-8">
         {loading ? (
           <div className="flex justify-center py-16">
             <div className="w-8 h-8 border-3 border-primary-600 border-t-transparent rounded-full animate-spin" />
@@ -60,8 +60,8 @@ export default function FavouritesPage() {
             <Link to="/explore" className="btn-primary text-sm px-6">Browse services</Link>
           </div>
         ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{favourites.length} saved {favourites.length === 1 ? 'business' : 'businesses'}</p>
+          <div className="grid gap-3 lg:grid-cols-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 lg:col-span-2">{favourites.length} saved {favourites.length === 1 ? 'business' : 'businesses'}</p>
             {favourites.map(f => (
               <div key={f.id || f.business_id} className="card p-4 flex items-center gap-4">
                 <Link to={`/profile/${f.business_slug || f.slug}`} state={{ from: location }} className="flex items-center gap-3 flex-1 min-w-0">

@@ -263,7 +263,7 @@ export default function ConsumerProfile() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <BackButton fallback="/customer/dashboard">Back</BackButton>
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
@@ -275,7 +275,7 @@ export default function ConsumerProfile() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-6 pb-consumer-nav">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-6 lg:py-8 pb-consumer-nav">
         {/* Avatar */}
         <div className="flex flex-col items-center mb-6">
           <div className="relative mb-3">
@@ -324,7 +324,7 @@ export default function ConsumerProfile() {
         </div>
 
         {tab === 'profile' && (
-          <div className="card p-6">
+          <div className="card p-6 max-w-3xl mx-auto">
             <form onSubmit={saveProfile} className="space-y-4">
               <div>
                 <label className="label flex items-center gap-1.5">
@@ -395,7 +395,7 @@ export default function ConsumerProfile() {
 
         {tab === 'referral' && (
           <div className="space-y-4">
-            <div className="card p-6">
+            <div className="card p-6 max-w-3xl mx-auto">
               <div className="flex items-center gap-2 mb-1">
                 <Gift className="w-5 h-5 text-primary-600" />
                 <h2 className="font-bold text-gray-900 dark:text-white text-lg">Refer &amp; Earn</h2>
@@ -457,7 +457,7 @@ export default function ConsumerProfile() {
               )}
             </div>
 
-            <div className="card p-4 border-l-4 border-l-amber-400">
+            <div className="card p-4 border-l-4 border-l-amber-400 max-w-3xl mx-auto">
               <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">How credits work</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Credits are being rolled out gradually. Once live, each credit will give you a discount on a future booking. Credits never expire.
@@ -467,11 +467,11 @@ export default function ConsumerProfile() {
         )}
 
         {tab === 'reviews' && (
-          <div className="space-y-3">
+          <div className="grid gap-3 lg:grid-cols-2">
             {loadingBookings ? (
               <div className="text-center py-8 text-gray-400">Loading…</div>
             ) : bookings.length === 0 ? (
-              <div className="card p-8 text-center">
+              <div className="card p-8 text-center lg:col-span-2">
                 <Star className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
                 <h3 className="font-bold text-gray-900 dark:text-white mb-1">No completed bookings</h3>
                 <p className="text-sm text-gray-400">Reviews are available after your appointment is completed</p>
@@ -506,7 +506,7 @@ export default function ConsumerProfile() {
         )}
 
         {tab === 'security' && (
-          <div className="card p-6 animate-slide-up">
+          <div className="card p-6 animate-slide-up max-w-3xl mx-auto">
             {/* Change email */}
             <div className="flex items-center gap-2 mb-4">
               <Mail className="w-4 h-4 text-gray-500" />

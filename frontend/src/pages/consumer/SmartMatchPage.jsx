@@ -190,7 +190,7 @@ export default function SmartMatchPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
@@ -205,7 +205,7 @@ export default function SmartMatchPage() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 pb-consumer-nav">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8 pb-consumer-nav">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-3">
@@ -218,9 +218,9 @@ export default function SmartMatchPage() {
         </div>
 
         {results === null ? (
-          <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2">
             {/* Step 1: What */}
-            <div className="card p-5">
+            <div className="card p-5 lg:col-span-2">
               <h2 className="font-bold text-gray-900 dark:text-white mb-3">1. What do you need?</h2>
               <input
                 className="input"
@@ -297,7 +297,7 @@ export default function SmartMatchPage() {
             </div>
 
             {/* Step 4: Location (optional) */}
-            <div className="card p-5">
+            <div className="card p-5 lg:col-span-2">
               <h2 className="font-bold text-gray-900 dark:text-white mb-1">4. Where? (optional)</h2>
               <p className="text-xs text-gray-400 mb-3">Share your location to prioritise nearby providers</p>
               <button
@@ -323,7 +323,7 @@ export default function SmartMatchPage() {
             <button
               onClick={findMatch}
               disabled={loading || !form.service_type.trim()}
-              className="btn-primary w-full py-4 text-base"
+              className="btn-primary w-full py-4 text-base lg:col-span-2"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -362,7 +362,7 @@ export default function SmartMatchPage() {
                 </button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid gap-4 lg:grid-cols-2">
                 {results.map((match, i) => (
                   <div key={`${match.business_id}-${match.service_id}`} className="relative">
                     {i === 0 && (
@@ -375,7 +375,7 @@ export default function SmartMatchPage() {
                     <MatchCard match={match} onBook={handleBook} />
                   </div>
                 ))}
-                <div className="text-center pt-2">
+                <div className="text-center pt-2 lg:col-span-2">
                   <Link to="/explore" className="text-sm text-primary-600 dark:text-primary-400 font-medium">
                     Browse all providers →
                   </Link>

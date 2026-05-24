@@ -180,7 +180,7 @@ export default function BusinessProfile() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <BackButton fallback="/explore" />
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
@@ -196,9 +196,10 @@ export default function BusinessProfile() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4 pb-consumer-cta">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 lg:py-8 pb-consumer-cta">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         {/* Business header */}
-        <div className="card p-5">
+        <div className="card p-5 lg:col-span-2">
           <div className="flex items-start gap-4">
             <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center border border-gray-100 dark:border-gray-800">
               {business.logo_url ? (
@@ -328,7 +329,7 @@ export default function BusinessProfile() {
 
         {/* Photo Gallery */}
         {photos.length > 0 && (
-          <div className="card p-5">
+          <div className="card p-5 lg:col-span-2">
             <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Image className="w-4 h-4 text-primary-500" />
               Gallery
@@ -344,7 +345,7 @@ export default function BusinessProfile() {
         )}
 
         {/* Reviews */}
-        <div className="card p-5">
+        <div className="card p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -392,9 +393,11 @@ export default function BusinessProfile() {
           )}
         </div>
 
+        </div>
+
         {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
         <div className="fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]" style={{ bottom: 'var(--consumer-nav-height)' }}>
-          <div className="max-w-2xl mx-auto px-4 py-3 flex gap-2">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex gap-2">
             <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-xl border-2 border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
               <Sparkles className="w-4 h-4" />
               Message
