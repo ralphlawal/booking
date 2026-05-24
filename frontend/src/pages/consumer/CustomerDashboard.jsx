@@ -676,7 +676,7 @@ export default function CustomerDashboard() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 pb-28">
+      <div className="max-w-2xl mx-auto px-4 py-6 pb-consumer-nav">
         {/* Welcome header */}
         <div className="mb-6 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">

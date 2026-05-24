@@ -275,7 +275,7 @@ export default function ConsumerProfile() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-6 pb-28">
+      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-6 pb-consumer-nav">
         {/* Avatar */}
         <div className="flex flex-col items-center mb-6">
           <div className="relative mb-3">

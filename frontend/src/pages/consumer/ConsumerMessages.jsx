@@ -90,7 +90,7 @@ export default function ConsumerMessages() {
   const showingChat = !!activeRoom;
 
   return (
-    <div className="flex flex-col bg-gray-50 dark:bg-gray-950" style={{ height: '100dvh' }}>
+    <div className="flex flex-col bg-gray-50 dark:bg-gray-950 h-consumer-viewport">
       {/* Nav */}
       <nav className="flex-shrink-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">

@@ -205,7 +205,7 @@ export default function SmartMatchPage() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 pb-28">
+      <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 pb-consumer-nav">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-3">

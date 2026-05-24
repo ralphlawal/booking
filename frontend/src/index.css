@@ -23,7 +23,12 @@
   .min-h-screen { min-height: 100dvh; }
   .h-screen { height: 100dvh; }
   h1, h2, h3, h4, h5, h6 { @apply font-semibold; }
-  :root { --radius: 0.75rem; }
+  :root {
+    --radius: 0.75rem;
+    --consumer-nav-height: calc(56px + env(safe-area-inset-bottom, 0px));
+    --consumer-nav-padding: calc(7rem + env(safe-area-inset-bottom, 0px));
+    --consumer-cta-padding: calc(10.5rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @layer components {
@@ -104,6 +109,9 @@
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .pb-consumer-nav { padding-bottom: var(--consumer-nav-padding); }
+  .pb-consumer-cta { padding-bottom: var(--consumer-cta-padding); }
+  .h-consumer-viewport { height: calc(100dvh - var(--consumer-nav-height)); }
   .animate-in { animation: animIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
 }
@@ -135,7 +143,7 @@ img { display: block; }
 .dark .recharts-cartesian-grid-vertical line { stroke: #1e293b !important; }
 
 /* Prevent content from scrolling under fixed bottom navs */
-.has-bottom-nav { padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)); }
+.has-bottom-nav { padding-bottom: var(--consumer-nav-padding); }
 
 /* Use dynamic viewport height to avoid iOS Safari address bar bug */
 .h-dvh { height: 100dvh; }

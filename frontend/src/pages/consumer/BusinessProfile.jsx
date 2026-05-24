@@ -196,7 +196,7 @@ export default function BusinessProfile() {
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4 pb-consumer-cta">
         {/* Business header */}
         <div className="card p-5">
           <div className="flex items-start gap-4">
@@ -393,7 +393,7 @@ export default function BusinessProfile() {
         </div>
 
         {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
-        <div className="fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40" style={{ bottom: 'calc(57px + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]" style={{ bottom: 'var(--consumer-nav-height)' }}>
           <div className="max-w-2xl mx-auto px-4 py-3 flex gap-2">
             <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-xl border-2 border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
               <Sparkles className="w-4 h-4" />
@@ -405,9 +405,6 @@ export default function BusinessProfile() {
             </Link>
           </div>
         </div>
-
-        {/* Bottom padding for sticky CTA + bottom nav */}
-        <div className="h-36" />
       </div>
 
       <ConsumerBottomNav />
