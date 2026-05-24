@@ -9,6 +9,7 @@ import { LOGO_BLUE_ICON } from './config/logos';
 import LoadingScreen from './components/shared/LoadingScreen';
 import FloatingChatWidget from './components/shared/FloatingChatWidget';
 import BroadcastBanner from './components/shared/BroadcastBanner';
+import CookieConsent from './components/shared/CookieConsent';
 
 // Public pages
 import Landing from './pages/public/Landing';
@@ -121,6 +122,7 @@ export default function App() {
           />
           <BroadcastBanner />
           <FloatingChatWidget />
+          <CookieConsent />
           <Routes>
             {/* Public booking */}
             <Route path="/book/:slug" element={<BookingPage />} />

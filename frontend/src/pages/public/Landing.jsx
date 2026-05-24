@@ -436,6 +436,7 @@ export default function Landing() {
                 </li>
                 <li><Link to="/legal/terms" className="hover:text-white transition-colors">Terms of service</Link></li>
                 <li><Link to="/legal/privacy" className="hover:text-white transition-colors">Privacy policy</Link></li>
+                <li><Link to="/legal/cookies" className="hover:text-white transition-colors">Cookie policy</Link></li>
                 <li><Link to="/legal/refunds" className="hover:text-white transition-colors">Refunds and disputes</Link></li>
                 <li><a href="mailto:hello@bookam.business" className="hover:text-white transition-colors">Contact us</a></li>
                 <li><span className="text-gray-500 text-xs">@bookambusiness</span></li>

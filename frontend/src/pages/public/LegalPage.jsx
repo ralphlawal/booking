@@ -40,6 +40,18 @@ const PAGES = {
       ['Support', 'For urgent payment or booking issues, contact support with your booking reference, business name, date, and payment reference if available.'],
     ],
   },
+  cookies: {
+    title: 'Cookie Policy',
+    updated: '24 May 2026',
+    intro: 'This policy explains how BookAm Business uses cookies and browser storage to keep the app secure, reliable, and useful.',
+    sections: [
+      ['Essential Cookies and Storage', 'We use essential cookies, local storage, and similar browser storage to keep users signed in, remember preferences, protect accounts, manage chat sessions, save cookie choices, and support booking flows.'],
+      ['Optional Analytics', 'If you accept analytics, we may use privacy-conscious analytics tools to understand which features are used, spot reliability issues, and improve the product. Analytics is optional and should not be used until consent is saved.'],
+      ['Third-Party Services', 'BookAm may use providers such as Stripe for payments, Firebase for authentication, Resend for email, and hosting or security providers. These services may set their own necessary cookies or storage when their features are used.'],
+      ['Managing Choices', 'You can accept all cookies or use essential-only mode from the cookie banner. You can also clear site data in your browser to reset your choice.'],
+      ['No Sale of Data', 'BookAm does not sell personal data. Any analytics should be used to operate, secure, and improve the platform.'],
+    ],
+  },
 };
 
 export default function LegalPage() {
