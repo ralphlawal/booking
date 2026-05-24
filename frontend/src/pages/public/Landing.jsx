@@ -89,19 +89,16 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-8 sm:h-9 w-auto object-contain" />
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <Link to="/explore" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 sm:px-3 py-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link to="/explore" className="hidden sm:inline-flex text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 sm:px-3 py-2">
               <span className="hidden sm:inline">Find services</span>
               <span className="sm:hidden">Explore</span>
             </Link>
-            <Link to="/customer/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-3 py-2 hidden md:block">
-              Customer login
+            <Link to="/customer/login" className="text-xs sm:text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors px-2 sm:px-3 py-2">
+              Sign in
             </Link>
-            <Link to="/admin/login" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors px-3 py-2 hidden lg:block">
-              Business login
-            </Link>
-            <Link to="/signup" className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2">
-              Get started free
+            <Link to="/signup" className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap">
+              Sign up
             </Link>
           </div>
         </div>
@@ -112,43 +109,61 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary-50/80 to-transparent pointer-events-none" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-primary-400/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20 pb-16 sm:pb-24 text-center">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-12 sm:pb-20 text-center">
           <div className="inline-flex items-center gap-2 bg-white border border-primary-200 text-primary-700 text-xs font-semibold px-4 py-2 rounded-full mb-6 sm:mb-8 shadow-sm">
             <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
-            Free to start — no credit card needed
+            Welcome to BookAm Business
           </div>
 
-          <h1 className="text-3xl sm:text-6xl lg:text-7xl font-bold text-gray-900 leading-[1.07] tracking-tight max-w-4xl mx-auto">
-            Your booking page,
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.08] tracking-tight max-w-4xl mx-auto">
+            Book services or run your business,
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-400">
-              live in minutes
+              all in one place
             </span>
           </h1>
 
           <p className="mt-5 sm:mt-7 text-base sm:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed px-2">
-            Built for every service business. Let customers book themselves 24/7 — you get notified instantly and just show up.
+            Customers can discover trusted local services and book instantly. Businesses can create a booking page, manage appointments, chat, and grow from one dashboard.
           </p>
 
           <p className="mt-3 sm:mt-4 text-sm sm:text-base font-semibold text-primary-600 tracking-wide">
             Book. Confirm. Be there.
           </p>
 
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
-            <Link to="/admin/register" className="btn-primary px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base flex items-center justify-center gap-2">
-              Create my booking page
-              <ArrowRight className="w-4 h-4" />
+          <div className="mt-8 sm:mt-10 grid gap-3 sm:grid-cols-2 max-w-3xl mx-auto text-left">
+            <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-card">
+              <div className="w-11 h-11 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center mb-4">
+                <Search className="w-5 h-5" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">I want to book</h2>
+              <p className="text-sm text-gray-500 mt-1 mb-4">Find barbers, stylists, tutors, trainers, and more near you.</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Link to="/customer/signup" className="btn-primary px-3 py-2.5 text-sm">Customer sign up</Link>
+                <Link to="/customer/login" className="btn-secondary px-3 py-2.5 text-sm">Customer sign in</Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 sm:p-5 shadow-card">
+              <div className="w-11 h-11 rounded-xl bg-white text-primary-600 flex items-center justify-center mb-4">
+                <CalendarDays className="w-5 h-5" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">I run a business</h2>
+              <p className="text-sm text-gray-600 mt-1 mb-4">Create your booking page and manage customers, services, payments, and chats.</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Link to="/admin/register" className="btn-primary px-3 py-2.5 text-sm">Business sign up</Link>
+                <Link to="/admin/login" className="btn-secondary px-3 py-2.5 text-sm bg-white">Business sign in</Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700 px-3 py-2">
+              Browse services <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link to="/customer/signup" className="btn-secondary px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base flex items-center justify-center">
-              Book a service →
+            <Link to="/booking/lookup" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-800 px-3 py-2">
+              Find my booking
             </Link>
           </div>
-          <p className="mt-3 text-xs text-gray-400">
-            Business owner?{' '}
-            <Link to="/admin/register" className="text-primary-600 font-medium hover:underline">Start free</Link>
-            {' · '}
-            Looking to book?{' '}
-            <Link to="/customer/login" className="text-primary-600 font-medium hover:underline">Customer login</Link>
-          </p>
 
           {/* Browser mockup — hide on very small screens */}
           <div className="mt-12 sm:mt-16 max-w-2xl mx-auto hidden sm:block">
