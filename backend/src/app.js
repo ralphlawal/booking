@@ -127,6 +127,7 @@ app.patch('/api/admin/businesses/:id/suspend', adminCtrl.suspendBusiness);
 app.put('/api/admin/businesses/:id', adminCtrl.editBusiness);
 app.get('/api/admin/consumers', adminCtrl.getConsumers);
 app.get('/api/admin/financial', adminCtrl.getFinancialReport);
+app.get('/api/admin/launch-readiness', adminCtrl.getLaunchReadiness);
 
 // Review replies (business authenticated)
 const reviewsCtrl = require('./controllers/reviewsController');

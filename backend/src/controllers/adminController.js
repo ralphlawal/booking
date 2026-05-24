@@ -251,3 +251,137 @@ exports.getFinancialReport = async (req, res) => {
     res.status(500).json({ error: 'Failed to generate financial report' });
   }
 };
+
+exports.getLaunchReadiness = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const [
+      businesses,
+      services,
+      bookableBusinesses,
+      paidBookings,
+      openDisputes,
+      payoutReady,
+      verifiedBusinesses,
+    ] = await Promise.all([
+      db.query('SELECT COUNT(*) AS count FROM businesses WHERE is_active = TRUE'),
+      db.query('SELECT COUNT(*) AS count FROM services'),
+      db.query(
+        `SELECT COUNT(DISTINCT b.id) AS count
+         FROM businesses b
+         JOIN services s ON s.business_id = b.id
+         WHERE b.is_active = TRUE`
+      ),
+      db.query("SELECT COUNT(*) AS count FROM bookings WHERE payment_status = 'paid'"),
+      db.query("SELECT COUNT(*) AS count FROM disputes WHERE status = 'open'"),
+      db.query(
+        `SELECT COUNT(*) AS count
+         FROM businesses
+         WHERE bank_holder_name IS NOT NULL
+           AND bank_holder_name <> ''
+           AND (bank_account_number IS NOT NULL OR bank_iban IS NOT NULL)`
+      ),
+      db.query("SELECT COUNT(*) AS count FROM businesses WHERE is_verified = TRUE OR verification_status = 'verified'"),
+    ]);
+
+    const activeBusinesses = parseInt(businesses.rows[0]?.count || 0, 10);
+    const serviceCount = parseInt(services.rows[0]?.count || 0, 10);
+    const bookableBusinessCount = parseInt(bookableBusinesses.rows[0]?.count || 0, 10);
+    const paidBookingCount = parseInt(paidBookings.rows[0]?.count || 0, 10);
+    const openDisputeCount = parseInt(openDisputes.rows[0]?.count || 0, 10);
+    const payoutReadyCount = parseInt(payoutReady.rows[0]?.count || 0, 10);
+    const verifiedCount = parseInt(verifiedBusinesses.rows[0]?.count || 0, 10);
+
+    const checks = [
+      {
+        key: 'database',
+        label: 'Production database',
+        status: process.env.DATABASE_URL ? 'ready' : 'warning',
+        detail: process.env.DATABASE_URL ? 'DATABASE_URL is configured.' : 'Using local SQLite. Use PostgreSQL before public launch.',
+      },
+      {
+        key: 'security',
+        label: 'JWT secret',
+        status: process.env.JWT_SECRET && process.env.JWT_SECRET !== 'bookam-jwt-secret-change-in-prod' ? 'ready' : 'blocked',
+        detail: process.env.JWT_SECRET && process.env.JWT_SECRET !== 'bookam-jwt-secret-change-in-prod'
+          ? 'JWT_SECRET is configured.'
+          : 'Set a strong JWT_SECRET in production.',
+      },
+      {
+        key: 'admin_password',
+        label: 'Admin support password',
+        status: process.env.ADMIN_SUPPORT_PASSWORD || process.env.ADMIN_CHAT_PASSWORD ? 'ready' : 'blocked',
+        detail: process.env.ADMIN_SUPPORT_PASSWORD || process.env.ADMIN_CHAT_PASSWORD
+          ? 'Admin support login password is configured.'
+          : 'Set ADMIN_SUPPORT_PASSWORD before launch.',
+      },
+      {
+        key: 'email',
+        label: 'Transactional email',
+        status: process.env.RESEND_API_KEY ? 'ready' : 'warning',
+        detail: process.env.RESEND_API_KEY ? 'Email delivery is configured.' : 'RESEND_API_KEY is missing. Emails will be logged, not sent.',
+      },
+      {
+        key: 'stripe',
+        label: 'Stripe payments',
+        status: process.env.STRIPE_SECRET_KEY ? 'ready' : 'blocked',
+        detail: process.env.STRIPE_SECRET_KEY ? 'Stripe secret key is configured.' : 'STRIPE_SECRET_KEY is missing. Online payments cannot run.',
+      },
+      {
+        key: 'stripe_webhook',
+        label: 'Stripe webhook',
+        status: process.env.STRIPE_WEBHOOK_SECRET ? 'ready' : 'blocked',
+        detail: process.env.STRIPE_WEBHOOK_SECRET ? 'Stripe webhook signing secret is configured.' : 'STRIPE_WEBHOOK_SECRET is missing. Payment status may not update.',
+      },
+      {
+        key: 'businesses',
+        label: 'Active businesses',
+        status: activeBusinesses > 0 ? 'ready' : 'warning',
+        detail: `${activeBusinesses} active business${activeBusinesses === 1 ? '' : 'es'} on the platform.`,
+      },
+      {
+        key: 'services',
+        label: 'Bookable services',
+        status: serviceCount > 0 && bookableBusinessCount > 0 ? 'ready' : 'warning',
+        detail: `${serviceCount} service${serviceCount === 1 ? '' : 's'} across ${bookableBusinessCount} bookable business${bookableBusinessCount === 1 ? '' : 'es'}.`,
+      },
+      {
+        key: 'payouts',
+        label: 'Payout readiness',
+        status: activeBusinesses === 0 || payoutReadyCount > 0 ? 'ready' : 'warning',
+        detail: `${payoutReadyCount} business${payoutReadyCount === 1 ? '' : 'es'} have bank details saved.`,
+      },
+      {
+        key: 'verification',
+        label: 'Verified businesses',
+        status: verifiedCount > 0 ? 'ready' : 'warning',
+        detail: `${verifiedCount} business${verifiedCount === 1 ? '' : 'es'} currently verified.`,
+      },
+      {
+        key: 'disputes',
+        label: 'Open disputes',
+        status: openDisputeCount === 0 ? 'ready' : 'warning',
+        detail: openDisputeCount === 0 ? 'No open disputes.' : `${openDisputeCount} dispute${openDisputeCount === 1 ? '' : 's'} need attention.`,
+      },
+      {
+        key: 'paid_bookings',
+        label: 'Payment records',
+        status: paidBookingCount > 0 ? 'ready' : 'warning',
+        detail: `${paidBookingCount} paid booking${paidBookingCount === 1 ? '' : 's'} recorded.`,
+      },
+    ];
+
+    const blocked = checks.filter(c => c.status === 'blocked').length;
+    const warnings = checks.filter(c => c.status === 'warning').length;
+    res.json({
+      launch_ready: blocked === 0,
+      blocked,
+      warnings,
+      checked_at: new Date().toISOString(),
+      checks,
+    });
+  } catch (err) {
+    console.error('[admin/launch-readiness]', err.message);
+    res.status(500).json({ error: 'Failed to load launch readiness' });
+  }
+};

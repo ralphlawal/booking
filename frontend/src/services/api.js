@@ -279,6 +279,7 @@ export const adminPanelAPI = {
   editBusiness: (id, data) => adminAxios.put(`/admin/businesses/${id}`, data),
   getConsumers: () => adminAxios.get('/admin/consumers'),
   getFinancialReport: (period) => adminAxios.get('/admin/financial', { params: { period } }),
+  getLaunchReadiness: () => adminAxios.get('/admin/launch-readiness'),
 };
 
 export const staffAPI = {

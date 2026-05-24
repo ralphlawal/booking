@@ -731,6 +731,84 @@ function FinancialPanel() {
   );
 }
 
+function LaunchReadinessPanel() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    adminPanelAPI.getLaunchReadiness()
+      .then(setData)
+      .catch(err => toast.error(err.message || 'Failed to load launch readiness'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const tone = {
+    ready: 'border-green-100 dark:border-green-900/50 bg-green-50 dark:bg-green-900/15 text-green-700 dark:text-green-300',
+    warning: 'border-amber-100 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/15 text-amber-700 dark:text-amber-300',
+    blocked: 'border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-900/15 text-red-700 dark:text-red-300',
+  };
+  const icon = {
+    ready: <CheckCircle className="w-4 h-4" />,
+    warning: <AlertTriangle className="w-4 h-4" />,
+    blocked: <XCircle className="w-4 h-4" />,
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full space-y-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-primary-600" /> Launch Readiness
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Critical checks for payments, security, email, payouts, disputes, and marketplace data.</p>
+        </div>
+        <button onClick={load} className="btn-secondary text-xs flex items-center gap-1.5">
+          <RefreshCw className="w-3.5 h-3.5" /> Refresh
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      ) : !data ? (
+        <p className="text-center text-gray-400 py-12">No readiness data available</p>
+      ) : (
+        <>
+          <div className={`rounded-2xl border p-4 ${data.launch_ready ? tone.ready : tone.blocked}`}>
+            <div className="flex items-center gap-3">
+              {data.launch_ready ? <CheckCircle className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
+              <div>
+                <p className="font-bold">{data.launch_ready ? 'No blocking config issues found' : 'Launch blockers need attention'}</p>
+                <p className="text-xs opacity-80 mt-0.5">{data.blocked} blocked · {data.warnings} warning{data.warnings === 1 ? '' : 's'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {data.checks?.map(check => (
+              <div key={check.key} className={`rounded-2xl border p-4 ${tone[check.status] || tone.warning}`}>
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5">{icon[check.status] || icon.warning}</div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm">{check.label}</p>
+                    <p className="text-xs opacity-80 mt-1 leading-relaxed">{check.detail}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-xs text-gray-400 text-center">
+            Last checked {new Date(data.checked_at).toLocaleString('en-GB')}. Legal policies and live Stripe payout onboarding still need real-world review before public launch.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
 function EditBusinessModal({ business, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: business.name || '',
@@ -948,6 +1026,7 @@ export default function AdminSupport() {
                 { id: 'users', icon: <Users className="w-3 h-3" />, label: 'Users' },
                 { id: 'stats', icon: <BarChart2 className="w-3 h-3" />, label: 'Stats' },
                 { id: 'financial', icon: <TrendingUp className="w-3 h-3" />, label: 'Revenue' },
+                { id: 'readiness', icon: <ShieldCheck className="w-3 h-3" />, label: 'Launch' },
               ].map(t => (
                 <button key={t.id} onClick={() => setMainTab(t.id)}
                   className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${mainTab === t.id ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}>
@@ -1008,6 +1087,12 @@ export default function AdminSupport() {
       {mainTab === 'financial' && (
         <div className="flex flex-1 overflow-hidden">
           <FinancialPanel />
+        </div>
+      )}
+
+      {mainTab === 'readiness' && (
+        <div className="flex flex-1 overflow-hidden">
+          <LaunchReadinessPanel />
         </div>
       )}
 

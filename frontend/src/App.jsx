@@ -16,6 +16,7 @@ import BookingPage from './pages/public/BookingPage';
 import BookingSuccess from './pages/public/BookingSuccess';
 import BookingLookup from './pages/public/BookingLookup';
 import VerifyEmail from './pages/public/VerifyEmail';
+import LegalPage from './pages/public/LegalPage';
 
 // Consumer pages
 import ExplorePage from './pages/consumer/ExplorePage';
@@ -135,6 +136,7 @@ export default function App() {
             <Route path="/book/:slug" element={<BookingPage />} />
             <Route path="/booking-success/:ref" element={<BookingSuccess />} />
             <Route path="/booking/lookup" element={<BookingLookup />} />
+            <Route path="/legal/:page" element={<LegalPage />} />
 
             {/* Auth */}
             <Route path="/admin/login" element={<GuestRoute><Login /></GuestRoute>} />
