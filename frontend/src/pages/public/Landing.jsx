@@ -83,12 +83,14 @@ export default function Landing() {
   const [searchQ, setSearchQ] = useState('');
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-gray-900">
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-8 sm:h-9 w-auto object-contain" />
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between">
+          <Link to="/" className="inline-flex items-center">
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 sm:h-10 w-auto object-contain" />
+          </Link>
           <div className="flex items-center gap-1 sm:gap-2">
             <Link to="/explore" className="hidden sm:inline-flex text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors px-2 sm:px-3 py-2">
               <span className="hidden sm:inline">Find services</span>
@@ -106,32 +108,32 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-50/80 to-transparent pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-primary-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f5f3ff_0%,#ffffff_55%,#ffffff_100%)] pointer-events-none" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-primary-300/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-12 sm:pb-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-white border border-primary-200 text-primary-700 text-xs font-semibold px-4 py-2 rounded-full mb-6 sm:mb-8 shadow-sm">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-7 sm:pt-10 pb-10 sm:pb-14 text-center">
+          <div className="inline-flex items-center gap-2 bg-white border border-primary-200 text-primary-700 text-xs font-semibold px-4 py-2 rounded-full mb-5 shadow-sm">
             <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
             Welcome to BookAm Business
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.08] tracking-tight max-w-4xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 leading-[1.05] tracking-tight max-w-4xl mx-auto">
             Book services or run your business,
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-400">
               all in one place
             </span>
           </h1>
 
-          <p className="mt-5 sm:mt-7 text-base sm:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed px-2">
+          <p className="mt-4 sm:mt-5 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed px-2">
             Customers can discover trusted local services and book instantly. Businesses can create a booking page, manage appointments, chat, and grow from one dashboard.
           </p>
 
-          <p className="mt-3 sm:mt-4 text-sm sm:text-base font-semibold text-primary-600 tracking-wide">
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base font-bold text-primary-600 tracking-wide">
             Book. Confirm. Be there.
           </p>
 
-          <div className="mt-8 sm:mt-10 grid gap-3 sm:grid-cols-2 max-w-3xl mx-auto text-left">
-            <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-card">
+          <div className="mt-6 sm:mt-8 grid gap-3 sm:grid-cols-2 max-w-3xl mx-auto text-left">
+            <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-card">
               <div className="w-11 h-11 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center mb-4">
                 <Search className="w-5 h-5" />
               </div>
@@ -143,7 +145,7 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 sm:p-5 shadow-card">
+            <div className="rounded-2xl border border-primary-200 bg-primary-50 p-4 sm:p-5 shadow-card ring-1 ring-primary-100">
               <div className="w-11 h-11 rounded-xl bg-white text-primary-600 flex items-center justify-center mb-4">
                 <CalendarDays className="w-5 h-5" />
               </div>
