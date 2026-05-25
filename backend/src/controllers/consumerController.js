@@ -21,6 +21,36 @@ const signToken = (consumer) =>
     { expiresIn: '30d' }
   );
 
+const createWelcomeNotification = (consumerId) => {
+  Notification.create({
+    consumer_id: consumerId,
+    type: 'welcome',
+    title: 'Welcome to BookAm Business',
+    body: 'Thanks for joining. We are working every week to make booking, messaging, payments, and support much better for you.',
+    link: '/explore',
+  }).catch(() => {});
+};
+
+const sendConsumerWelcomeEmail = (consumer) => {
+  const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
+  sendEmail({
+    to: consumer.email,
+    subject: 'Welcome to BookAm Business — start booking',
+    type: 'consumer_welcome',
+    html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0">
+      <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
+        <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779210788/IMG_0364_cgkeo4.png" alt="BookAm Business" style="height:32px;filter:brightness(0) invert(1)" />
+      </div>
+      <div style="padding:32px">
+        <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Welcome, ${consumer.full_name}!</h2>
+        <p style="color:#64748b;font-size:15px;margin:0 0 14px">Your BookAm Business account is ready. Discover and book local services instantly.</p>
+        <p style="color:#64748b;font-size:14px;margin:0 0 22px">We are actively working to make the app much better with smoother bookings, stronger payments, faster chat, and more useful updates for you.</p>
+        <a href="${FRONTEND}/explore" style="display:inline-block;background:#5b3eea;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">Browse services</a>
+      </div>
+    </div>`,
+  }).catch(() => {});
+};
+
 exports.register = async (req, res) => {
   try {
     const { email, password, full_name, phone } = req.body;
@@ -61,23 +91,9 @@ exports.register = async (req, res) => {
     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://bookam.business';
     sendVerificationEmail(consumer, `${FRONTEND_URL}/customer/verify-email?token=${verifyToken}`).catch(() => {});
 
-    // Send welcome email (fire and forget)
-    const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
-    sendEmail({
-      to: consumer.email,
-      subject: 'Welcome to BookAm Business — start booking',
-      type: 'consumer_welcome',
-      html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0">
-        <div style="background:linear-gradient(135deg,#4f46e5,#6d28d9);padding:28px 32px;text-align:center">
-          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1779210788/IMG_0364_cgkeo4.png" alt="BookAm Business" style="height:32px;filter:brightness(0) invert(1)" />
-        </div>
-        <div style="padding:32px">
-          <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Welcome, ${consumer.full_name}! 🎉</h2>
-          <p style="color:#64748b;font-size:15px;margin:0 0 20px">Your BookAm Business account is ready. Discover and book local services instantly.</p>
-          <a href="${FRONTEND}/explore" style="display:inline-block;background:#5b3eea;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">Browse services →</a>
-        </div>
-      </div>`,
-    }).catch(() => {});
+    // Send welcome email and in-app notification (fire and forget)
+    sendConsumerWelcomeEmail(consumer);
+    createWelcomeNotification(consumer.id);
 
     // Notify admin of new signup
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
@@ -114,6 +130,8 @@ exports.googleAuth = async (req, res) => {
     if (!consumer) {
       consumer = await ConsumerAccount.createFromGoogle({ email: payload.email, full_name: payload.name });
       ConsumerAccount.linkByEmail(consumer.id, payload.email).catch(() => {});
+      sendConsumerWelcomeEmail(consumer);
+      createWelcomeNotification(consumer.id);
       const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
       sendEmail({
         to: ADMIN_EMAIL,

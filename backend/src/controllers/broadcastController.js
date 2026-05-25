@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const Notification = require('../models/Notification');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -15,7 +16,7 @@ function isAdmin(req) {
 
 exports.create = async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
-  const { title, message, type = 'info', expires_at } = req.body;
+  const { title, message, type = 'info', expires_at, send_to_users = true } = req.body;
   if (!title?.trim() || !message?.trim()) return res.status(400).json({ error: 'title and message are required' });
   const id = crypto.randomUUID();
   try {
@@ -23,7 +24,16 @@ exports.create = async (req, res) => {
       `INSERT INTO broadcast_notifications (id, title, message, type, expires_at) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [id, title.trim(), message.trim(), type, expires_at || null]
     );
-    res.status(201).json(rows[0]);
+    let recipients = 0;
+    if (send_to_users) {
+      recipients = await Notification.createForAllConsumers({
+        type: 'broadcast',
+        title: title.trim(),
+        body: message.trim(),
+        link: '/customer/dashboard',
+      });
+    }
+    res.status(201).json({ ...rows[0], recipients });
   } catch (err) {
     console.error('[broadcast/create]', err.message);
     res.status(500).json({ error: 'Failed to create broadcast' });

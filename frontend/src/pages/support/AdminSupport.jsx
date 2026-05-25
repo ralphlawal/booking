@@ -275,7 +275,7 @@ function DisputesPanel() {
 function BroadcastsPanel() {
   const [broadcasts, setBroadcasts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ title: '', message: '', type: 'info' });
+  const [form, setForm] = useState({ title: '', message: '', type: 'info', send_to_users: true });
   const [sending, setSending] = useState(false);
 
   const load = () => broadcastAPI.list().then(setBroadcasts).catch(err => toast.error(err.message || 'Failed to load broadcasts')).finally(() => setLoading(false));
@@ -286,9 +286,9 @@ function BroadcastsPanel() {
     if (!form.title.trim() || !form.message.trim()) return toast.error('Title and message required');
     setSending(true);
     try {
-      await broadcastAPI.create(form);
-      toast.success('Broadcast sent to all users');
-      setForm({ title: '', message: '', type: 'info' });
+      const result = await broadcastAPI.create(form);
+      toast.success(form.send_to_users ? `Broadcast sent to ${result.recipients || 0} users` : 'Banner published');
+      setForm({ title: '', message: '', type: 'info', send_to_users: true });
       load();
     } catch (err) { toast.error(err.message); }
     finally { setSending(false); }
@@ -338,6 +338,15 @@ function BroadcastsPanel() {
               {sending ? 'Sending…' : 'Broadcast'}
             </button>
           </div>
+          <label className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <input
+              type="checkbox"
+              className="mt-0.5 w-4 h-4 rounded accent-primary-600"
+              checked={form.send_to_users}
+              onChange={e => setForm(p => ({ ...p, send_to_users: e.target.checked }))}
+            />
+            Also add this to every customer notification inbox and trigger phone/browser alerts where users allowed notifications.
+          </label>
         </form>
       </div>
 

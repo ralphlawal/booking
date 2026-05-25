@@ -16,10 +16,34 @@ const STATUS_STYLES = {
 };
 
 function fmtDate(d) {
-  if (!d) return '';
-  return new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+  const date = parseBookingDate(d);
+  if (!date) return 'Date unavailable';
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
   });
+}
+
+function parseBookingDate(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const dateOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (dateOnly) {
+    const [, y, m, d] = dateOnly;
+    return new Date(Number(y), Number(m) - 1, Number(d), 12, 0, 0);
+  }
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function bookingDateKey(value) {
+  const date = parseBookingDate(value);
+  if (!date) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function CopyRefButton({ refId }) {
@@ -38,10 +62,11 @@ function CopyRefButton({ refId }) {
 
 function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, onDispute, onReschedule, past, from }) {
   const today = new Date().toISOString().split('T')[0];
-  const isPastDate = booking.booking_date < today;
+  const bookingKey = bookingDateKey(booking.booking_date);
+  const isPastDate = bookingKey ? bookingKey < today : false;
   const isPaid = booking.payment_status === 'paid';
-  const serviceDate = new Date(booking.booking_date + 'T12:00:00Z');
-  const daysSinceService = (Date.now() - serviceDate.getTime()) / (1000 * 60 * 60 * 24);
+  const serviceDate = parseBookingDate(booking.booking_date);
+  const daysSinceService = serviceDate ? (Date.now() - serviceDate.getTime()) / (1000 * 60 * 60 * 24) : Infinity;
   const canDispute = isPaid && isPastDate && !booking.has_dispute && !booking.service_confirmed && daysSinceService <= 14;
   const canConfirm = isPaid && isPastDate && !booking.service_confirmed && !booking.has_dispute;
 
@@ -199,8 +224,8 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Leave a review</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -238,8 +263,8 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 
 function CancelModal({ booking, onConfirm, onClose, cancelling }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Cancel booking?</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -272,8 +297,8 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
 
 function ConfirmServiceModal({ booking, onConfirm, onClose, confirming }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Confirm service received?</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -333,8 +358,8 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Raise a dispute</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -407,8 +432,8 @@ function RescheduleModal({ booking, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Request Reschedule</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -489,7 +514,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
 
 export default function CustomerDashboard() {
   const { consumer, loading: authLoading, logout } = useCustomerAuth();
-  const { notifications, unreadCount, markAllRead, setNotifications } = useNotifications();
+  const { notifications, unreadCount, browserPermission, requestBrowserNotifications, markAllRead, setNotifications } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const [tab, setTab] = useState('upcoming');
@@ -544,9 +569,22 @@ export default function CustomerDashboard() {
     if (unreadCount > 0) markAllRead();
   };
 
+  const enableBrowserNotifications = async () => {
+    const permission = await requestBrowserNotifications();
+    if (permission === 'granted') toast.success('Phone and browser notifications enabled');
+    else if (permission === 'denied') toast.error('Notifications are blocked in your browser settings');
+    else toast.error('Notifications are not supported on this browser');
+  };
+
   const today = new Date().toISOString().split('T')[0];
-  const upcoming = bookings.filter((b) => b.booking_date >= today && !['cancelled', 'completed'].includes(b.status));
-  const past = bookings.filter((b) => b.booking_date < today || ['completed', 'cancelled'].includes(b.status));
+  const upcoming = bookings.filter((b) => {
+    const key = bookingDateKey(b.booking_date);
+    return key >= today && !['cancelled', 'completed'].includes(b.status);
+  });
+  const past = bookings.filter((b) => {
+    const key = bookingDateKey(b.booking_date);
+    return !key || key < today || ['completed', 'cancelled'].includes(b.status);
+  });
 
   const handleRebook = (booking) => {
     navigate(`/book/${booking.slug}`, { state: { prefill_service_id: booking.service_id } });
@@ -642,6 +680,14 @@ export default function CustomerDashboard() {
                 <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                     <p className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</p>
+                    {browserPermission !== 'granted' && (
+                      <button
+                        onClick={enableBrowserNotifications}
+                        className="mt-2 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+                      >
+                        Enable phone/browser alerts
+                      </button>
+                    )}
                   </div>
                   {notifications.length === 0 ? (
                     <div className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet</div>

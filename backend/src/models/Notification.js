@@ -11,6 +11,16 @@ const Notification = {
     );
   },
 
+  async createForAllConsumers({ type, title, body, link }) {
+    const { rowCount } = await db.query(
+      `INSERT INTO notifications (id, consumer_id, type, title, body, link)
+       SELECT uuid_generate_v4(), id, $1, $2, $3, $4
+       FROM consumer_accounts`,
+      [type, title, body || null, link || null]
+    );
+    return rowCount || 0;
+  },
+
   async getForConsumer(consumer_id) {
     const { rows } = await db.query(
       `SELECT * FROM notifications WHERE consumer_id = $1 ORDER BY created_at DESC LIMIT 30`,
