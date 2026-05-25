@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const Chat = require('../models/Chat');
 const Notification = require('../models/Notification');
 const db = require('../config/database');
@@ -7,14 +8,26 @@ const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
 exports.adminLogin = async (req, res) => {
   try {
-    const { password } = req.body;
+    const { password = '' } = req.body;
     const ADMIN_PASSWORD = process.env.ADMIN_SUPPORT_PASSWORD
       || (process.env.NODE_ENV === 'production' ? null : 'bookam-support-2024');
     if (!ADMIN_PASSWORD && process.env.NODE_ENV === 'production') {
       return res.status(503).json({ error: 'Admin support login is not configured' });
     }
-    if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Invalid password' });
-    const token = jwt.sign({ type: 'admin', role: 'superadmin' }, JWT_SECRET, { expiresIn: '30d' });
+    if (process.env.NODE_ENV === 'production' && ADMIN_PASSWORD.length < 16) {
+      return res.status(503).json({ error: 'Admin support login is not securely configured' });
+    }
+
+    const supplied = Buffer.from(String(password));
+    const expected = Buffer.from(String(ADMIN_PASSWORD));
+    const valid = supplied.length === expected.length && crypto.timingSafeEqual(supplied, expected);
+    if (!valid) return res.status(401).json({ error: 'Invalid password' });
+
+    const token = jwt.sign(
+      { type: 'admin', role: 'superadmin' },
+      JWT_SECRET,
+      { expiresIn: process.env.ADMIN_SESSION_TTL || '8h' }
+    );
     res.json({ token });
   } catch {
     res.status(500).json({ error: 'Login failed' });

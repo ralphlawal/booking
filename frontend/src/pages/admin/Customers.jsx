@@ -50,7 +50,7 @@ function CustomerPanel({ customer, onClose, onNotesUpdated }) {
     .reduce((sum, b) => sum + parseFloat(b.service_price || 0), 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 animate-fade-in">
+    <div className="fixed inset-0 z-[80] flex justify-end bg-black/40 animate-fade-in">
       <div
         ref={panelRef}
         className="w-full max-w-md bg-white dark:bg-gray-900 h-full overflow-y-auto shadow-2xl animate-slide-up sm:animate-none"

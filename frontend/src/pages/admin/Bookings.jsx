@@ -33,7 +33,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 animate-fade-in">
+    <div className="fixed inset-0 z-[80] flex justify-end bg-black/40 animate-fade-in">
       <div
         ref={ref}
         className="w-full max-w-md bg-white dark:bg-gray-900 h-full overflow-y-auto shadow-2xl"
@@ -506,7 +506,7 @@ export default function Bookings() {
 
       {/* Status modal */}
       {modal === 'status' && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white">Update Status</h2>
@@ -565,7 +565,7 @@ export default function Bookings() {
 
       {/* Reschedule modal */}
       {modal === 'reschedule' && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white">Reschedule Booking</h2>
@@ -604,7 +604,7 @@ export default function Bookings() {
 
       {/* Walk-in booking modal */}
       {walkinModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white flex items-center gap-2"><UserPlus className="w-4 h-4 text-primary-500"/>New Walk-in Booking</h2>

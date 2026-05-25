@@ -53,7 +53,7 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[80] flex items-end sm:items-center justify-center p-4">
       <div className="modal-panel w-full max-w-sm p-6 animate-slide-up">
         <h2 className="font-bold text-lg text-gray-900 dark:text-white mb-1">Leave a review</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">

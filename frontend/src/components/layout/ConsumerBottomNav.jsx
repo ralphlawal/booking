@@ -15,7 +15,7 @@ export default function ConsumerBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex safe-bottom shadow-[0_-8px_24px_rgba(15,23,42,0.06)]"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex safe-bottom shadow-[0_-8px_24px_rgba(15,23,42,0.06)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {NAV.map(({ to, icon: Icon, label }) => (

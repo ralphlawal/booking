@@ -16,36 +16,76 @@ const fs = require('fs');
 
 const app = express();
 
-// Security — disable CSP/COEP on API responses (they belong on HTML, not JSON)
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
-  crossOriginOpenerPolicy: false,
-}));
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
-app.use(cors({
+const allowedOrigins = new Set(
+  [
+    process.env.FRONTEND_URL,
+    ...(process.env.CORS_ORIGINS || '').split(','),
+    process.env.NODE_ENV !== 'production' ? 'http://localhost:5173' : null,
+    process.env.NODE_ENV !== 'production' ? 'http://127.0.0.1:5173' : null,
+  ]
+    .filter(Boolean)
+    .map(origin => origin.replace(/\/$/, ''))
+);
+
+const corsOptions = {
   origin: (origin, cb) => {
-    // Allow all origins — tokens are in Authorization headers (not cookies),
-    // so reflecting the origin with credentials is safe.
-    cb(null, true);
+    if (!origin) return cb(null, true);
+    const normalized = origin.replace(/\/$/, '');
+    if (allowedOrigins.has(normalized)) return cb(null, true);
+    return cb(new Error('Origin not allowed by CORS'));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'Stripe-Signature'],
+  maxAge: 86400,
+};
+
+const limiter = (options) => rateLimit({
+  standardHeaders: true,
+  legacyHeaders: false,
+  ...options,
+});
+
+// Security headers for API responses.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'none'"],
+      baseUri: ["'none'"],
+      frameAncestors: ["'none'"],
+      formAction: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
+  referrerPolicy: { policy: 'no-referrer' },
 }));
 
+app.use(cors(corsOptions));
+
 // Rate limiting
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many requests' } }));
-app.use('/api/consumer/register', rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: { error: 'Too many registrations from this IP' } }));
-app.use('/api/consumer/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many login attempts' } }));
-app.use('/api/bookings/public', rateLimit({ windowMs: 60 * 1000, max: 10, message: { error: 'Too many bookings' } }));
+app.use('/api', limiter({ windowMs: 15 * 60 * 1000, max: 500, message: { error: 'Too many requests' } }));
+app.use('/api/auth', limiter({ windowMs: 15 * 60 * 1000, max: 40, message: { error: 'Too many requests' } }));
+app.use('/api/consumer/register', limiter({ windowMs: 60 * 60 * 1000, max: 10, message: { error: 'Too many registrations from this IP' } }));
+app.use('/api/consumer/login', limiter({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Too many login attempts' } }));
+app.use('/api/chat/admin/login', limiter({ windowMs: 15 * 60 * 1000, max: 6, message: { error: 'Too many admin login attempts' } }));
+app.use('/api/chat', limiter({ windowMs: 60 * 1000, max: 90, message: { error: 'Too many chat requests' } }));
+app.use('/api/bookings/public', limiter({ windowMs: 60 * 1000, max: 10, message: { error: 'Too many bookings' } }));
+app.use('/api/payments/create-intent', limiter({ windowMs: 60 * 1000, max: 20, message: { error: 'Too many payment attempts' } }));
+app.use('/api/admin', limiter({ windowMs: 15 * 60 * 1000, max: 240, message: { error: 'Too many admin requests' } }));
 
 // Stripe webhooks must receive the exact raw body before JSON parsing.
 const paymentsCtrl = require('./controllers/paymentsController');
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentsCtrl.webhook);
 
 // Body parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '256kb', parameterLimit: 100 }));
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

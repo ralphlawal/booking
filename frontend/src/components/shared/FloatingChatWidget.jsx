@@ -127,7 +127,7 @@ export default function FloatingChatWidget() {
     <>
       {/* Panel */}
       {open && (
-        <div className={`fixed ${hasBottomNav ? 'bottom-[calc(8rem+env(safe-area-inset-bottom,0px))]' : 'bottom-20'} right-4 sm:right-5 z-50 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden animate-slide-up`}
+        <div className={`fixed ${hasBottomNav ? 'bottom-[calc(8rem+env(safe-area-inset-bottom,0px))]' : 'bottom-20'} right-4 sm:right-5 z-40 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden animate-slide-up`}
           style={{ height: '420px', maxHeight: 'calc(100dvh - 120px)' }}>
 
           {/* Header */}
@@ -233,7 +233,7 @@ export default function FloatingChatWidget() {
       <button
         onClick={openChat}
         title="Chat with BookAm Support"
-        className={`fixed ${hasBottomNav ? 'bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))]' : 'bottom-5'} right-4 sm:right-5 z-50 flex items-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-2xl shadow-xl shadow-primary-600/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 text-sm font-semibold`}
+        className={`fixed ${hasBottomNav ? 'bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))]' : 'bottom-5'} right-4 sm:right-5 z-40 flex items-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-2xl shadow-xl shadow-primary-600/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 text-sm font-semibold`}
       >
         <div className="relative">
           <MessageSquare className="w-5 h-5" />

@@ -202,7 +202,7 @@ export default function BookingSuccess() {
       </div>
 
       {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6">
             <h2 className="font-bold text-gray-900 text-lg mb-2">Cancel this booking?</h2>
             <p className="text-sm text-gray-500 mb-1">

@@ -828,7 +828,7 @@ export default function Settings() {
 
       {/* Delete Account Modal */}
       {deleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-fade-in">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 animate-fade-in">
           <div className="modal-panel w-full max-w-sm animate-slide-up">
             <div className="p-6">
               <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-4">
@@ -1068,7 +1068,7 @@ export function StaffTab({ staff, setStaff }) {
         </div>
       ))}
       {modal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[80] flex items-end sm:items-center justify-center p-4">
           <form onSubmit={save} className="modal-panel w-full max-w-md p-6 space-y-4 animate-slide-up">
             <div className="flex items-center justify-between"><h2 className="font-bold text-lg">{modal==='new'?'Add Staff Member':'Edit Staff Member'}</h2><button type="button" onClick={()=>setModal(null)}><X className="w-5 h-5 text-gray-400"/></button></div>
             <div><label className="label">Name *</label><input className="input" value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} required placeholder="e.g. Sarah"/></div>
