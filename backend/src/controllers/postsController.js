@@ -58,6 +58,7 @@ exports.list = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
+    console.error('[posts/list]', err.message);
     res.status(500).json({ error: 'Failed to load posts' });
   }
 };
@@ -77,6 +78,7 @@ exports.getPublic = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
+    console.error('[posts/public]', err.message);
     res.status(500).json({ error: 'Failed to load posts' });
   }
 };
@@ -132,6 +134,7 @@ exports.remove = async (req, res) => {
     if (!rowCount) return res.status(404).json({ error: 'Post not found' });
     res.json({ message: 'Deleted' });
   } catch (err) {
+    console.error('[posts/delete]', err.message);
     res.status(500).json({ error: 'Failed to delete post' });
   }
 };

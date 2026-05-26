@@ -53,12 +53,12 @@ async function runMigrations() {
     }
     db.exec(`CREATE TABLE IF NOT EXISTS business_posts (
       id TEXT PRIMARY KEY,
-      business_id INTEGER NOT NULL,
+      business_id TEXT NOT NULL,
       type TEXT NOT NULL DEFAULT 'photo',
       caption TEXT,
       image_url TEXT,
       cta_label TEXT,
-      cta_service_id INTEGER,
+      cta_service_id TEXT,
       offer_text TEXT,
       offer_expires_at TEXT,
       is_active INTEGER NOT NULL DEFAULT 1,

@@ -62,10 +62,32 @@ export default function Posts() {
   const fileRef = useRef(null);
 
   useEffect(() => {
-    Promise.all([postsAPI.list(), servicesAPI.list()])
-      .then(([p, s]) => { setPosts(p); setServices(s); })
-      .catch(() => toast.error('Failed to load posts'))
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    async function loadData() {
+      const [postsResult, servicesResult] = await Promise.allSettled([
+        postsAPI.list(),
+        servicesAPI.list(),
+      ]);
+
+      if (cancelled) return;
+
+      if (postsResult.status === 'fulfilled') {
+        setPosts(postsResult.value || []);
+      } else {
+        toast.error(postsResult.reason?.message || 'Failed to load posts');
+      }
+
+      if (servicesResult.status === 'fulfilled') {
+        setServices(servicesResult.value || []);
+      } else {
+        toast.error(servicesResult.reason?.message || 'Failed to load services');
+      }
+
+      setLoading(false);
+    }
+
+    loadData();
+    return () => { cancelled = true; };
   }, []);
 
   const handleImage = (e) => {

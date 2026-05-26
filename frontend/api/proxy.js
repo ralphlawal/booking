@@ -9,8 +9,9 @@ export default async function handler(req) {
   try {
     const url = new URL(req.url);
 
-    // Build the target URL: /api/proxy/auth/me → /api/auth/me
-    const targetPath = url.pathname.replace(/^\/api\/proxy\/?/, '/api/');
+    const targetPath = url.pathname.startsWith('/api/proxy')
+      ? url.pathname.replace(/^\/api\/proxy\/?/, '/api/')
+      : url.pathname;
     const target = `${BACKEND.replace(/\/$/, '')}${targetPath}${url.search}`;
 
     const headers = new Headers();
