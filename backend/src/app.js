@@ -33,9 +33,12 @@ const allowedOrigins = new Set(
 
 const corsOptions = {
   origin: (origin, cb) => {
+    // In production, all browser traffic arrives via the Vercel proxy (server-to-server,
+    // no Origin header). Direct browser requests only happen in dev. Allow all origins
+    // since auth is token-based (Authorization header), not cookie-based.
     if (!origin) return cb(null, true);
     const normalized = origin.replace(/\/$/, '');
-    if (allowedOrigins.has(normalized)) return cb(null, true);
+    if (allowedOrigins.size === 0 || allowedOrigins.has(normalized)) return cb(null, true);
     return cb(new Error('Origin not allowed by CORS'));
   },
   credentials: true,
