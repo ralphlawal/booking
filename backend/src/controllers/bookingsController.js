@@ -383,12 +383,62 @@ exports.confirmService = async (req, res) => {
       await Booking.updateStatus(booking.id, booking.business_id, 'completed', null);
     }
 
+    // Auto-transfer to business via Stripe Connect (best-effort — never blocks confirmation)
+    if (
+      process.env.STRIPE_SECRET_KEY &&
+      booking.stripe_payment_intent_id &&
+      booking.payment_status === 'paid' &&
+      !booking.stripe_transfer_id
+    ) {
+      transferToBusiness(booking).catch(err =>
+        console.error('[confirmService] transfer failed (will need manual payout):', err.message)
+      );
+    }
+
     res.json({ message: 'Service confirmed — thank you!' });
   } catch (err) {
     console.error('[confirmService]', err.message);
     res.status(500).json({ error: 'Failed to confirm service' });
   }
 };
+
+async function transferToBusiness(booking) {
+  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+  const { rows: bizRows } = await db.query(
+    'SELECT stripe_account_id, stripe_onboarding_complete FROM businesses WHERE id = $1',
+    [booking.business_id]
+  );
+  const biz = bizRows[0];
+  if (!biz?.stripe_account_id || !biz.stripe_onboarding_complete) return;
+
+  const amountPence = Math.round(parseFloat(booking.price || 0) * 100);
+  if (amountPence < 50) return; // nothing meaningful to transfer
+
+  const platformFeePercent = parseFloat(process.env.PLATFORM_FEE_PERCENT || '5');
+  const platformFee = Math.round(amountPence * platformFeePercent / 100);
+  const transferAmount = amountPence - platformFee;
+
+  // Get the charge ID from the PaymentIntent (needed for source_transaction)
+  const pi = await stripe.paymentIntents.retrieve(booking.stripe_payment_intent_id);
+  const chargeId = pi.latest_charge;
+
+  const transfer = await stripe.transfers.create({
+    amount:             transferAmount,
+    currency:           booking.currency || 'gbp',
+    destination:        biz.stripe_account_id,
+    source_transaction: chargeId,
+    description:        `Payout for booking ${booking.reference_id}`,
+    metadata:           { booking_reference: booking.reference_id },
+  });
+
+  await db.query(
+    `UPDATE bookings SET stripe_transfer_id = $1, stripe_transfer_status = 'transferred' WHERE id = $2`,
+    [transfer.id, booking.id]
+  );
+
+  console.log(`[stripe-transfer] £${(transferAmount / 100).toFixed(2)} sent to ${biz.stripe_account_id} for booking ${booking.reference_id}`);
+}
 
 // POST /bookings/ref/:ref/dispute  (consumer raises a dispute)
 exports.raiseDispute = async (req, res) => {

@@ -78,6 +78,12 @@ export const businessAPI = {
   saveBankDetails: (data) => api.put('/business/me/bank-details', data),
 };
 
+export const stripeConnectAPI = {
+  onboard: () => api.post('/business/me/stripe-connect/onboard'),
+  status: () => api.get('/business/me/stripe-connect/status'),
+  dashboard: () => api.post('/business/me/stripe-connect/dashboard'),
+};
+
 export const servicesAPI = {
   list: () => api.get('/services'),
   listPublic: (slug) => api.get(`/business/${slug}/services`),

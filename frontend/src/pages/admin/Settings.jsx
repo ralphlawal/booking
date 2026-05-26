@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI } from '../../services/api';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI, stripeConnectAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../config/firebase';
 import { QRCodeSVG } from 'qrcode.react';
@@ -36,7 +36,8 @@ const emptyBankForm = {
 export default function Settings() {
   const { business, updateBusiness, changePassword, resendVerificationEmail, deleteAccount } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('business');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get('tab') || 'business');
   const [bizForm, setBizForm] = useState({});
   const [avForm, setAvForm] = useState({ working_days: [], opening_time: '09:00', closing_time: '18:00', slot_interval_minutes: 30, buffer_minutes: 0 });
   const [blocked, setBlocked] = useState([]);
@@ -57,6 +58,11 @@ export default function Settings() {
   // Bank details
   const [bankForm, setBankForm] = useState(emptyBankForm);
   const [bankSaving, setBankSaving] = useState(false);
+
+  // Stripe Connect
+  const [connectStatus, setConnectStatus] = useState(null); // null | { status, charges_enabled, payouts_enabled, ... }
+  const [connectLoading, setConnectLoading] = useState(false);
+  const [connectWorking, setConnectWorking] = useState(false);
 
   // Verification details
   const [verForm, setVerForm] = useState({ legal_name: '', company_reg_number: '', sole_trader: false, business_address: '', contact_person: '', id_type: 'passport' });
@@ -291,6 +297,48 @@ export default function Settings() {
       bank_country: country,
       bank_currency: selected?.currency || p.bank_currency,
     }));
+  };
+
+  // Stripe Connect handlers
+  const loadConnectStatus = async () => {
+    setConnectLoading(true);
+    try {
+      const data = await stripeConnectAPI.status();
+      setConnectStatus(data);
+    } catch { /* ignore — Stripe may not be configured */ }
+    finally { setConnectLoading(false); }
+  };
+
+  useEffect(() => {
+    if (tab === 'payouts') {
+      loadConnectStatus();
+      // If Stripe redirected back with ?stripe=success, clear the param
+      if (searchParams.get('stripe')) {
+        setSearchParams(prev => { const p = new URLSearchParams(prev); p.delete('stripe'); return p; }, { replace: true });
+        toast.success('Stripe setup complete — checking status…');
+      }
+    }
+  }, [tab]);
+
+  const handleStripeOnboard = async () => {
+    setConnectWorking(true);
+    try {
+      const { url } = await stripeConnectAPI.onboard();
+      window.location.href = url;
+    } catch (err) {
+      toast.error(err.message || 'Could not start Stripe onboarding');
+      setConnectWorking(false);
+    }
+  };
+
+  const handleStripeDashboard = async () => {
+    setConnectWorking(true);
+    try {
+      const { url } = await stripeConnectAPI.dashboard();
+      window.open(url, '_blank', 'noopener');
+    } catch (err) {
+      toast.error(err.message || 'Could not open Stripe dashboard');
+    } finally { setConnectWorking(false); }
   };
 
   const submitVerification = async (e) => {
@@ -654,78 +702,173 @@ export default function Settings() {
       {/* Payouts */}
       {tab === 'payouts' && (
         <div className="max-w-2xl animate-slide-up space-y-5">
+
+          {/* Stripe Connect card */}
           <div className="card p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Payout Bank Details</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Add the bank account where your business should receive payouts. UK, US, IBAN/SWIFT, and other local bank accounts are supported.
-            </p>
-            <form onSubmit={saveBankDetails} className="space-y-4">
-              <div>
-                <label className="label">Account Holder Name</label>
-                <input className="input" placeholder="As it appears on your bank account" value={bankForm.holder_name}
-                  onChange={e => setBankForm(p => ({ ...p, holder_name: e.target.value }))} required />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Bank Country</label>
-                  <select className="input" value={bankForm.bank_country} onChange={e => updateBankCountry(e.target.value)} required>
-                    {BANK_COUNTRIES.map(country => (
-                      <option key={country.value} value={country.value}>{country.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Payout Currency</label>
-                  <select className="input" value={bankForm.bank_currency} onChange={e => setBankForm(p => ({ ...p, bank_currency: e.target.value }))} required>
-                    {BANK_CURRENCIES.map(currency => (
-                      <option key={currency} value={currency}>{currency}</option>
-                    ))}
-                  </select>
-                </div>
+            <div className="flex items-start gap-4 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                {/* Stripe-ish logo placeholder */}
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-primary-600" fill="currentColor"><path d="M13.479 9.883c-1.626-.604-2.512-1.067-2.512-1.803 0-.622.498-1.034 1.336-1.034 1.65 0 3.3.596 4.45 1.127l.658-3.957C16.25 3.714 14.596 3 12.47 3 9.536 3 7.48 4.718 7.48 7.333c0 2.595 2.092 3.83 3.826 4.5 1.756.683 2.316 1.18 2.316 1.873 0 .708-.598 1.148-1.562 1.148-1.424 0-3.39-.626-4.793-1.48L6.6 17.432c1.3.769 3.28 1.268 5.27 1.268 3.08 0 5.13-1.693 5.13-4.352-.002-2.71-2.063-3.86-3.521-4.465z"/></svg>
               </div>
               <div>
-                <label className="label">Bank Name</label>
-                <input className="input" placeholder="Bank name, e.g. Barclays, Chase, AIB" value={bankForm.bank_name}
-                  onChange={e => setBankForm(p => ({ ...p, bank_name: e.target.value }))} />
+                <h3 className="font-bold text-gray-900 dark:text-white">Stripe Payouts</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                  Connect your bank account via Stripe. Money is automatically transferred to you after each customer confirms a service was received.
+                </p>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="label">{bankForm.bank_country === 'US' ? 'Routing Number' : 'Sort / Routing Code'}</label>
-                  <input className="input" placeholder={bankForm.bank_country === 'US' ? '021000021' : '20-00-00'} value={bankForm.bank_country === 'US' ? bankForm.routing_number : bankForm.sort_code}
-                    onChange={e => setBankForm(p => bankForm.bank_country === 'US' ? ({ ...p, routing_number: e.target.value }) : ({ ...p, sort_code: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="label">Account Number</label>
-                  <input className="input" placeholder="12345678" value={bankForm.account_number}
-                    onChange={e => setBankForm(p => ({ ...p, account_number: e.target.value }))} />
-                </div>
+            </div>
+
+            {connectLoading ? (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-600 rounded-full animate-spin" />
+                Checking account status…
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="label">IBAN</label>
-                  <input className="input uppercase" placeholder="GB82 WEST 1234 5698 7654 32" value={bankForm.iban}
-                    onChange={e => setBankForm(p => ({ ...p, iban: e.target.value.toUpperCase() }))} />
+            ) : connectStatus?.status === 'active' ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-green-700 dark:text-green-400">Connected — Payouts active</p>
+                    <p className="text-xs text-green-600 dark:text-green-500">Your bank account receives automatic transfers after each confirmed service.</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="label">BIC / SWIFT</label>
-                  <input className="input uppercase" placeholder="BUKBGB22" value={bankForm.bic_swift}
-                    onChange={e => setBankForm(p => ({ ...p, bic_swift: e.target.value.toUpperCase() }))} />
+                <div className="flex gap-3">
+                  <button onClick={handleStripeDashboard} disabled={connectWorking} className="btn-primary text-sm disabled:opacity-50">
+                    {connectWorking ? 'Opening…' : 'View Earnings Dashboard →'}
+                  </button>
+                  <button onClick={handleStripeOnboard} disabled={connectWorking} className="btn-secondary text-sm disabled:opacity-50">
+                    Update bank details
+                  </button>
                 </div>
+                <p className="text-xs text-gray-400">Platform fee: {import.meta.env.VITE_PLATFORM_FEE_PERCENT || '5'}% per transaction. You receive the rest automatically.</p>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Use IBAN and BIC/SWIFT if your bank provides them. For countries without IBAN, enter the local routing/sort code and account number.
-              </p>
-              <button type="submit" disabled={bankSaving} className="btn-primary disabled:opacity-50">
-                {bankSaving ? 'Saving…' : 'Save Bank Details'}
-              </button>
-            </form>
+            ) : connectStatus?.status === 'pending_verification' ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
+                  <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Verification pending</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-500">Stripe is reviewing your details. Payouts will activate once verified (usually within 1–2 business days).</p>
+                  </div>
+                </div>
+                <button onClick={handleStripeOnboard} disabled={connectWorking} className="btn-secondary text-sm disabled:opacity-50">
+                  {connectWorking ? 'Opening Stripe…' : 'Complete remaining steps →'}
+                </button>
+              </div>
+            ) : connectStatus?.status === 'pending' ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-blue-700 dark:text-blue-400">Onboarding started</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-500">You haven't completed the Stripe setup yet. Continue below to add your bank details.</p>
+                  </div>
+                </div>
+                <button onClick={handleStripeOnboard} disabled={connectWorking} className="btn-primary text-sm disabled:opacity-50">
+                  {connectWorking ? 'Opening Stripe…' : 'Continue Stripe setup →'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+                  {[
+                    { step: '1', label: 'Click Connect below', sub: '2 minutes' },
+                    { step: '2', label: 'Add bank details on Stripe', sub: 'Secure & encrypted' },
+                    { step: '3', label: 'Receive payouts automatically', sub: 'After each confirmation' },
+                  ].map(({ step, label, sub }) => (
+                    <div key={step} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+                      <div className="w-7 h-7 bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center text-xs font-bold mx-auto mb-2">{step}</div>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{label}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={handleStripeOnboard} disabled={connectWorking} className="btn-primary w-full disabled:opacity-50">
+                  {connectWorking
+                    ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Opening Stripe…</>
+                    : 'Connect bank account with Stripe →'}
+                </button>
+                <p className="text-xs text-gray-400 text-center">
+                  Powered by Stripe. Your bank details are stored securely by Stripe — we never see your account numbers.
+                </p>
+              </div>
+            )}
           </div>
-          <div className="rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4">
-            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">Stripe Connect — Coming Soon</p>
-            <p className="text-xs text-blue-600 dark:text-blue-400">
-              We are adding Stripe Connect for instant automated payouts. Bank details entered above are used for manual transfers until that is live.
-            </p>
-          </div>
+
+          {/* Manual bank details (reference / fallback) */}
+          <details className="card overflow-hidden">
+            <summary className="p-5 cursor-pointer font-semibold text-gray-700 dark:text-gray-300 text-sm select-none list-none flex items-center justify-between">
+              Manual bank details (optional reference)
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div className="px-5 pb-5 border-t border-gray-100 dark:border-gray-800 pt-4">
+              <p className="text-xs text-gray-400 mb-4">Only needed if you want to receive manual bank transfers. Stripe Connect above is the recommended payout method.</p>
+              <form onSubmit={saveBankDetails} className="space-y-4">
+                <div>
+                  <label className="label">Account Holder Name</label>
+                  <input className="input" placeholder="As it appears on your bank account" value={bankForm.holder_name}
+                    onChange={e => setBankForm(p => ({ ...p, holder_name: e.target.value }))} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">Bank Country</label>
+                    <select className="input" value={bankForm.bank_country} onChange={e => updateBankCountry(e.target.value)}>
+                      {BANK_COUNTRIES.map(country => (
+                        <option key={country.value} value={country.value}>{country.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">Currency</label>
+                    <select className="input" value={bankForm.bank_currency} onChange={e => setBankForm(p => ({ ...p, bank_currency: e.target.value }))}>
+                      {BANK_CURRENCIES.map(currency => (
+                        <option key={currency} value={currency}>{currency}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="label">Bank Name</label>
+                  <input className="input" placeholder="e.g. Barclays, Chase" value={bankForm.bank_name}
+                    onChange={e => setBankForm(p => ({ ...p, bank_name: e.target.value }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">{bankForm.bank_country === 'US' ? 'Routing Number' : 'Sort Code'}</label>
+                    <input className="input" placeholder={bankForm.bank_country === 'US' ? '021000021' : '20-00-00'}
+                      value={bankForm.bank_country === 'US' ? bankForm.routing_number : bankForm.sort_code}
+                      onChange={e => setBankForm(p => bankForm.bank_country === 'US' ? ({ ...p, routing_number: e.target.value }) : ({ ...p, sort_code: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="label">Account Number</label>
+                    <input className="input" placeholder="12345678" value={bankForm.account_number}
+                      onChange={e => setBankForm(p => ({ ...p, account_number: e.target.value }))} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">IBAN</label>
+                    <input className="input uppercase" placeholder="GB82 WEST 1234 5698 7654 32" value={bankForm.iban}
+                      onChange={e => setBankForm(p => ({ ...p, iban: e.target.value.toUpperCase() }))} />
+                  </div>
+                  <div>
+                    <label className="label">BIC / SWIFT</label>
+                    <input className="input uppercase" placeholder="BUKBGB22" value={bankForm.bic_swift}
+                      onChange={e => setBankForm(p => ({ ...p, bic_swift: e.target.value.toUpperCase() }))} />
+                  </div>
+                </div>
+                <button type="submit" disabled={bankSaving} className="btn-secondary text-sm disabled:opacity-50">
+                  {bankSaving ? 'Saving…' : 'Save Bank Details'}
+                </button>
+              </form>
+            </div>
+          </details>
         </div>
       )}
 

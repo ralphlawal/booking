@@ -318,7 +318,7 @@ async function start() {
       for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT']) {
         addColumn('services', col);
       }
-      for (const col of ['consumer_id TEXT', 'mandate_id TEXT', 'stripe_payment_intent_id TEXT', "payment_status TEXT DEFAULT 'unpaid'", 'staff_member_id TEXT', 'promo_code TEXT', 'discount_amount REAL DEFAULT 0', 'intake_response_id TEXT']) {
+      for (const col of ['consumer_id TEXT', 'mandate_id TEXT', 'stripe_payment_intent_id TEXT', "payment_status TEXT DEFAULT 'unpaid'", 'staff_member_id TEXT', 'promo_code TEXT', 'discount_amount REAL DEFAULT 0', 'intake_response_id TEXT', 'stripe_transfer_id TEXT', "stripe_transfer_status TEXT DEFAULT 'pending'", 'currency TEXT DEFAULT \'gbp\'']) {
         addColumn('bookings', col);
       }
       try {
