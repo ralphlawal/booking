@@ -200,6 +200,8 @@ exports.myBookings = async (req, res) => {
   try {
     const bookings = await ConsumerAccount.getBookings(req.consumer.id);
     res.json(bookings);
+    // Background: auto-release any overdue confirmed bookings (no await — never blocks the response)
+    setImmediate(() => require('./bookingsController').runAutoRelease());
   } catch (err) {
     console.error('[consumer/bookings]', err.message);
     res.status(500).json({ error: 'Failed to load bookings' });

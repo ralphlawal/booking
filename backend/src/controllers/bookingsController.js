@@ -305,16 +305,44 @@ exports.cancelByCustomer = async (req, res) => {
       return res.status(400).json({ error: `Booking is already ${booking.status}` });
     }
 
-    // Prevent cancellation less than 2 hours before appointment
     const apptDateTime = new Date(`${booking.booking_date}T${booking.start_time}`);
     const hoursUntil = (apptDateTime - Date.now()) / (1000 * 60 * 60);
-    if (hoursUntil < 2) {
-      return res.status(400).json({ error: 'Bookings cannot be cancelled less than 2 hours before the appointment' });
+
+    if (hoursUntil < 0) {
+      return res.status(400).json({ error: 'Cannot cancel a booking that has already taken place' });
+    }
+
+    // Refund policy: >24h = full, ≤24h = 50%
+    const refundPercent = hoursUntil > 24 ? 100 : 50;
+    const amountPence   = Math.round(parseFloat(booking.price || 0) * 100);
+    const refundPence   = Math.round(amountPence * refundPercent / 100);
+    let   refundIssued  = false;
+
+    if (
+      booking.stripe_payment_intent_id &&
+      booking.payment_status === 'paid' &&
+      refundPence > 0 &&
+      process.env.STRIPE_SECRET_KEY
+    ) {
+      try {
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const refundParams = { payment_intent: booking.stripe_payment_intent_id };
+        if (refundPercent < 100) refundParams.amount = refundPence;
+        await stripe.refunds.create(refundParams);
+        await db.query(
+          'UPDATE bookings SET payment_status = $1 WHERE id = $2',
+          [refundPercent === 100 ? 'refunded' : 'partial_refund', booking.id]
+        );
+        refundIssued = true;
+      } catch (stripeErr) {
+        console.error('[cancel/refund]', stripeErr.message);
+      }
     }
 
     await Booking.updateStatus(booking.id, booking.business_id, 'cancelled', 'Cancelled by customer');
 
-    // Notify business owner
+    const refundAmountStr = refundPence > 0 ? `£${(refundPence / 100).toFixed(2)}` : null;
+
     if (booking.business_email) {
       sendEmail({
         to: booking.business_email,
@@ -341,12 +369,16 @@ exports.cancelByCustomer = async (req, res) => {
       }).catch(() => {});
     }
 
-    // Confirm cancellation to customer
     if (booking.customer_email) {
       sendBookingStatusUpdate({ ...booking, status: 'cancelled', cancelled_reason: 'Cancelled by customer' }).catch(() => {});
     }
 
-    res.json({ message: 'Booking cancelled successfully' });
+    res.json({
+      message: 'Booking cancelled successfully',
+      refund_percent:   refundIssued ? refundPercent   : 0,
+      refund_amount:    refundIssued ? refundPence / 100 : 0,
+      refund_amount_str: refundIssued ? refundAmountStr : null,
+    });
   } catch (err) {
     res.status(500).json({ error: 'Cancellation failed' });
   }
@@ -359,6 +391,12 @@ exports.confirmService = async (req, res) => {
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
     if (!['confirmed', 'completed', 'pending'].includes(booking.status)) {
       return res.status(400).json({ error: 'Cannot confirm service for this booking' });
+    }
+
+    // Appointment must have already started before customer can confirm
+    const apptEnd = new Date(`${booking.booking_date}T${booking.end_time || booking.start_time || '23:59'}`);
+    if (apptEnd > new Date()) {
+      return res.status(400).json({ error: 'You can only confirm after your appointment time has passed' });
     }
 
     const { rows: existing } = await db.query(
@@ -439,6 +477,55 @@ async function transferToBusiness(booking) {
 
   console.log(`[stripe-transfer] £${(transferAmount / 100).toFixed(2)} sent to ${biz.stripe_account_id} for booking ${booking.reference_id}`);
 }
+
+// Finds confirmed+paid bookings whose appointment ended >72h ago with no transfer and auto-releases payment.
+async function autoReleaseOverdueBookings() {
+  const isPostgres = !!process.env.DATABASE_URL;
+  const dateFilter = isPostgres
+    ? `(b.booking_date || 'T' || COALESCE(b.end_time, '23:59'))::timestamp < NOW() - INTERVAL '72 hours'`
+    : `datetime(b.booking_date || 'T' || COALESCE(b.end_time, '23:59')) < datetime('now', '-72 hours')`;
+
+  const { rows } = await db.query(`
+    SELECT b.id, b.reference_id, b.business_id, b.stripe_payment_intent_id,
+           b.payment_status, b.stripe_transfer_id, b.stripe_transfer_status,
+           b.booking_date, b.end_time, b.currency,
+           s.price
+    FROM bookings b
+    JOIN services s ON s.id = b.service_id
+    WHERE b.status = 'confirmed'
+      AND b.payment_status = 'paid'
+      AND (b.stripe_transfer_id IS NULL OR b.stripe_transfer_id = '')
+      AND (b.stripe_transfer_status IS NULL OR b.stripe_transfer_status = 'pending')
+      AND ${dateFilter}
+  `);
+
+  let released = 0;
+  for (const booking of rows) {
+    try {
+      await Booking.updateStatus(booking.id, booking.business_id, 'completed', 'Auto-completed after 72h');
+      await transferToBusiness(booking);
+      released++;
+    } catch (err) {
+      console.error(`[auto-release] ${booking.reference_id}: ${err.message}`);
+    }
+  }
+  return released;
+}
+
+// Exported so other controllers can fire it without going through HTTP
+exports.runAutoRelease = () => autoReleaseOverdueBookings().catch(err => console.error('[auto-release]', err.message));
+
+// POST /bookings/admin/auto-release  (admin-authenticated)
+exports.autoRelease = async (req, res) => {
+  if (!authenticateAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const released = await autoReleaseOverdueBookings();
+    res.json({ released, message: `${released} booking${released === 1 ? '' : 's'} auto-released` });
+  } catch (err) {
+    console.error('[auto-release]', err.message);
+    res.status(500).json({ error: 'Auto-release failed' });
+  }
+};
 
 // POST /bookings/ref/:ref/dispute  (consumer raises a dispute)
 exports.raiseDispute = async (req, res) => {

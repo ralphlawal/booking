@@ -15,6 +15,13 @@ const STATUS_STYLES = {
   completed: 'badge-completed',
 };
 
+const STATUS_LABELS = {
+  pending:   'Awaiting confirmation',
+  confirmed: 'Confirmed',
+  cancelled: 'Cancelled',
+  completed: 'Completed',
+};
+
 function fmtDate(d) {
   const date = parseBookingDate(d);
   if (!date) return 'Date unavailable';
@@ -87,7 +94,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
               <p className="text-xs text-gray-500 dark:text-gray-400">{booking.service_name}</p>
             </div>
             <span className={`badge ${STATUS_STYLES[booking.status] || 'badge-pending'}`}>
-              {booking.status}
+              {STATUS_LABELS[booking.status] || booking.status}
             </span>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
@@ -99,6 +106,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
                 £{parseFloat(booking.price).toFixed(2)}
                 {isPaid && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>}
                 {booking.payment_status === 'refunded' && <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Refunded</span>}
+                {booking.payment_status === 'partial_refund' && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">50% Refunded</span>}
               </p>
             )}
             {booking.location && <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{booking.location}</p>}
@@ -262,6 +270,22 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 }
 
 function CancelModal({ booking, onConfirm, onClose, cancelling }) {
+  const apptDateTime = booking.booking_date && booking.start_time
+    ? new Date(`${booking.booking_date}T${booking.start_time}`)
+    : null;
+  const hoursUntil = apptDateTime ? (apptDateTime - Date.now()) / (1000 * 60 * 60) : null;
+  const isPaid = booking.payment_status === 'paid';
+  const price = parseFloat(booking.price || 0);
+
+  let refundInfo = null;
+  if (isPaid && price > 0 && hoursUntil !== null) {
+    if (hoursUntil > 24) {
+      refundInfo = { percent: 100, amount: price, color: 'green', label: 'Full refund' };
+    } else if (hoursUntil > 0) {
+      refundInfo = { percent: 50, amount: price / 2, color: 'amber', label: '50% refund — late cancellation' };
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
       <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -274,12 +298,29 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
           <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           {fmtDate(booking.booking_date)} · {booking.start_time?.slice(0, 5)}
         </p>
-        <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-5">
-          Cancellations must be made at least 2 hours before the appointment.
-        </p>
+
+        {refundInfo ? (
+          <div className={`rounded-xl p-3 mb-5 text-sm ${refundInfo.color === 'green' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'}`}>
+            <p className="font-bold">{refundInfo.label}: £{refundInfo.amount.toFixed(2)}</p>
+            <p className="text-xs mt-0.5 opacity-80">
+              {refundInfo.percent === 100
+                ? 'Refunded to your original payment method within 5–10 business days.'
+                : 'You cancelled within 24h of the appointment — the business keeps 50%.'}
+            </p>
+          </div>
+        ) : isPaid && price > 0 ? (
+          <div className="rounded-xl p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+            No refund — this booking cannot be refunded at this stage.
+          </div>
+        ) : (
+          <div className="rounded-xl p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+            No payment was taken for this booking.
+          </div>
+        )}
+
         <div className="flex gap-3">
           <button onClick={onClose} className="btn-secondary flex-1">Keep it</button>
           <button
@@ -594,9 +635,19 @@ export default function CustomerDashboard() {
     if (!cancelTarget) return;
     setCancelling(true);
     try {
-      await consumerAPI.cancelBooking(cancelTarget.reference_id);
-      setBookings((prev) => prev.map((b) => b.id === cancelTarget.id ? { ...b, status: 'cancelled' } : b));
-      toast.success('Booking cancelled');
+      const result = await consumerAPI.cancelBooking(cancelTarget.reference_id);
+      setBookings((prev) => prev.map((b) => b.id === cancelTarget.id ? {
+        ...b,
+        status: 'cancelled',
+        payment_status: result.refund_percent === 100 ? 'refunded'
+          : result.refund_percent === 50 ? 'partial_refund'
+          : b.payment_status,
+      } : b));
+      if (result.refund_amount_str) {
+        toast.success(`Booking cancelled — ${result.refund_amount_str} refunded to your card`);
+      } else {
+        toast.success('Booking cancelled');
+      }
       setCancelTarget(null);
     } catch (err) {
       toast.error(err.message || 'Could not cancel booking');

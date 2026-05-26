@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2, Banknote, Copy, Check } from 'lucide-react';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2, Banknote, Copy, Check, Zap } from 'lucide-react';
 import { adminChatAPI, adminDisputesAPI, broadcastAPI, adminPanelAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -938,6 +938,32 @@ function UsersPanel({ onStartChat }) {
   );
 }
 
+function AutoReleaseButton() {
+  const [running, setRunning] = useState(false);
+  const run = async () => {
+    setRunning(true);
+    try {
+      const result = await adminPanelAPI.triggerAutoRelease();
+      toast.success(result.message || 'Auto-release complete');
+    } catch (err) {
+      toast.error(err.message || 'Auto-release failed');
+    } finally {
+      setRunning(false);
+    }
+  };
+  return (
+    <button
+      onClick={run}
+      disabled={running}
+      title="Auto-release payments for bookings >72h old with no customer confirmation"
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50 font-semibold"
+    >
+      <Zap className="w-3.5 h-3.5" />
+      {running ? 'Running…' : 'Auto-release'}
+    </button>
+  );
+}
+
 function CopyField({ label, value }) {
   const [copied, setCopied] = useState(false);
   if (!value) return null;
@@ -1078,9 +1104,12 @@ function PayoutsPanel() {
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Businesses that submitted bank details for manual transfer.</p>
         </div>
-        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <AutoReleaseButton />
+          <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {loading ? (

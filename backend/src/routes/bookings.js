@@ -44,9 +44,10 @@ router.post('/ref/:ref/confirm-service', ctrl.confirmService);
 // Public: customer raises a dispute
 router.post('/ref/:ref/dispute', ctrl.raiseDispute);
 
-// Admin: dispute management (auth checked inside controller)
+// Admin: dispute management + auto-release (auth checked inside controller)
 router.get('/admin/disputes', ctrl.getDisputes);
 router.post('/admin/disputes/:id/resolve', ctrl.resolveDispute);
+router.post('/admin/auto-release', ctrl.autoRelease);
 
 // Admin routes
 router.get('/analytics', authenticate, attachBusiness, ctrl.getAnalytics);
