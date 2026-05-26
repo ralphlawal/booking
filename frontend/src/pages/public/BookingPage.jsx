@@ -7,7 +7,7 @@ import BackButton from '../../components/shared/BackButton';
 import { format, addDays, isBefore, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : Promise.resolve(null);
@@ -56,6 +56,34 @@ export default function BookingPage() {
       }));
     }
   }, [consumer]);
+
+  // Detect redirect return from bank / redirect-based payment methods (e.g. BACS)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const piId = params.get('payment_intent');
+    const redirectStatus = params.get('redirect_status');
+    if (!piId) return;
+
+    window.history.replaceState({}, '', window.location.pathname);
+
+    if (redirectStatus === 'failed' || redirectStatus === 'canceled') {
+      toast.error('Payment was not completed. Please try again.');
+      return;
+    }
+    if (redirectStatus !== 'succeeded') return;
+
+    const saved = sessionStorage.getItem(`bookam_pending_${slug}`);
+    if (!saved) return;
+    sessionStorage.removeItem(`bookam_pending_${slug}`);
+    try {
+      const payload = JSON.parse(saved);
+      setSubmitting(true);
+      bookingsAPI.create(slug, { ...payload, stripe_payment_intent_id: piId })
+        .then(r => navigate(`/booking-success/${r.reference_id}`))
+        .catch(err => toast.error(err.message || 'Booking failed after payment', { duration: 10000 }))
+        .finally(() => setSubmitting(false));
+    } catch {}
+  }, [slug]);
 
   useEffect(() => {
     Promise.all([
@@ -129,6 +157,21 @@ export default function BookingPage() {
         });
         setClientSecret(client_secret);
         setPaymentIntentId(payment_intent_id);
+        // Persist booking data so redirect-based payment methods (e.g. BACS) can
+        // complete the booking after the user returns from the bank's page.
+        sessionStorage.setItem(`bookam_pending_${slug}`, JSON.stringify({
+          service_id: booking.service.id,
+          booking_date: format(booking.date, 'yyyy-MM-dd'),
+          start_time: booking.time.start,
+          customer_name: booking.name,
+          customer_phone: booking.phone,
+          customer_email: booking.email,
+          notes: booking.notes,
+          consumer_id: consumer?.id || undefined,
+          staff_member_id: selectedStaff?.id || undefined,
+          promo_code: promoData ? promoCode : undefined,
+          discount_amount: discount > 0 ? discount : undefined,
+        }));
         setStep(5);
       } catch (err) {
         if (err.code === 'STRIPE_NOT_CONFIGURED' || err.status === 503) {
@@ -567,13 +610,30 @@ export default function BookingPage() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M15 19l-7-7 7-7"/></svg> Back
               </button>
             </div>
-            <Elements stripe={stripePromise}>
+            <Elements
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: 'stripe',
+                  variables: {
+                    colorPrimary: '#4f46e5',
+                    colorBackground: '#ffffff',
+                    colorText: '#1e293b',
+                    colorDanger: '#ef4444',
+                    borderRadius: '12px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSizeBase: '15px',
+                  },
+                },
+              }}
+            >
               <PaymentForm
-                clientSecret={clientSecret}
                 onSuccess={(pi_id) => submit(pi_id)}
                 submitting={submitting}
                 setSubmitting={setSubmitting}
                 amount={finalPrice}
+                returnUrl={window.location.href}
               />
             </Elements>
           </div>
@@ -583,33 +643,23 @@ export default function BookingPage() {
   );
 }
 
-const CARD_STYLE = {
-  style: {
-    base: {
-      fontSize: '16px',
-      color: '#1e293b',
-      fontFamily: 'system-ui, sans-serif',
-      '::placeholder': { color: '#94a3b8' },
-    },
-    invalid: { color: '#ef4444' },
-  },
-};
-
-function PaymentForm({ clientSecret, onSuccess, submitting, setSubmitting, amount }) {
+function PaymentForm({ onSuccess, submitting, setSubmitting, amount, returnUrl }) {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [ready, setReady] = useState(false);
 
   const handlePay = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements || !clientSecret) return;
+    if (!stripe || !elements || !ready) return;
     setProcessing(true);
     setError(null);
 
-    const cardElement = elements.getElement(CardElement);
-    const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card: cardElement },
+    const { error: stripeErr, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: returnUrl },
+      redirect: 'if_required', // only redirects for methods that need it (e.g. BACS)
     });
 
     if (stripeErr) {
@@ -617,8 +667,9 @@ function PaymentForm({ clientSecret, onSuccess, submitting, setSubmitting, amoun
       setProcessing(false);
     } else if (paymentIntent?.status === 'succeeded') {
       onSuccess(paymentIntent.id);
-    } else {
-      setError('Payment was not completed. Please try again.');
+    } else if (paymentIntent) {
+      // processing / requires_action states — webhook will confirm
+      setError('Payment is being processed. You will receive confirmation shortly.');
       setProcessing(false);
     }
   };
@@ -626,12 +677,11 @@ function PaymentForm({ clientSecret, onSuccess, submitting, setSubmitting, amoun
   return (
     <form onSubmit={handlePay} className="space-y-4">
       <div className="card p-5 space-y-4">
-        <div>
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Card details</p>
-          <div className="border border-gray-200 rounded-xl px-4 py-3.5 bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent transition-all">
-            <CardElement options={CARD_STYLE} />
-          </div>
-        </div>
+        {/* Stripe Payment Element — shows cards, Apple Pay, Google Pay, BACS, Link etc. */}
+        <PaymentElement
+          onReady={() => setReady(true)}
+          options={{ layout: 'tabs' }}
+        />
 
         {error && (
           <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
@@ -650,7 +700,7 @@ function PaymentForm({ clientSecret, onSuccess, submitting, setSubmitting, amoun
 
         <button
           type="submit"
-          disabled={!stripe || !clientSecret || processing || submitting}
+          disabled={!stripe || !ready || processing || submitting}
           className="btn-primary w-full text-base py-3.5 flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {processing || submitting ? (
