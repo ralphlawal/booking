@@ -22,6 +22,8 @@ if (process.env.NODE_ENV === 'production') {
 
 const allowedOrigins = new Set(
   [
+    'https://bookam.business',
+    'https://www.bookam.business',
     process.env.FRONTEND_URL,
     ...(process.env.CORS_ORIGINS || '').split(','),
     process.env.NODE_ENV !== 'production' ? 'http://localhost:5173' : null,
@@ -33,12 +35,13 @@ const allowedOrigins = new Set(
 
 const corsOptions = {
   origin: (origin, cb) => {
-    // In production, all browser traffic arrives via the Vercel proxy (server-to-server,
-    // no Origin header). Direct browser requests only happen in dev. Allow all origins
-    // since auth is token-based (Authorization header), not cookie-based.
     if (!origin) return cb(null, true);
     const normalized = origin.replace(/\/$/, '');
-    if (allowedOrigins.size === 0 || allowedOrigins.has(normalized)) return cb(null, true);
+    let hostname = '';
+    try { hostname = new URL(normalized).hostname; } catch {}
+    if (allowedOrigins.has(normalized) || /\.vercel\.app$/i.test(hostname)) {
+      return cb(null, true);
+    }
     return cb(new Error('Origin not allowed by CORS'));
   },
   credentials: true,
