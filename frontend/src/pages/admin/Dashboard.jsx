@@ -348,7 +348,8 @@ export default function Dashboard() {
 
       {/* Quick links */}
       {business && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <QuickLink to="/admin/posts" label="Create a Post" desc="Share offers, availability, and updates" />
           <QuickLink to="/admin/services" label="Manage Services" desc="Add or edit what you offer" />
           <QuickLink to="/admin/settings" label="Set Availability" desc="Configure your working hours" />
           <QuickLink to="/admin/settings" label="Share Booking Link" desc="Get your QR code & link" />

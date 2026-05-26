@@ -162,6 +162,9 @@ export default function Landing() {
             <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700 px-3 py-2">
               Browse services <ArrowRight className="w-4 h-4" />
             </Link>
+            <Link to="/feed" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-800 px-3 py-2">
+              See what's new
+            </Link>
             <Link to="/booking/lookup" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-800 px-3 py-2">
               Find my booking
             </Link>
