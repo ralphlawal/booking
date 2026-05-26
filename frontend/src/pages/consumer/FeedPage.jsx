@@ -69,10 +69,14 @@ function PostCard({ post }) {
         </span>
       </Link>
 
-      {/* Image */}
+      {/* Media */}
       {post.image_url && (
         <div className="px-4">
-          <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-72" />
+          {post.image_url.startsWith('data:video') ? (
+            <video src={post.image_url} className="w-full rounded-xl object-cover max-h-72" controls playsInline />
+          ) : (
+            <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-72" />
+          )}
         </div>
       )}
 

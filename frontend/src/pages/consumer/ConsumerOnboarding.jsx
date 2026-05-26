@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Sparkles, ChevronRight, Check, Navigation, CalendarCheck, MessageSquare, Shield } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -33,6 +33,21 @@ export default function ConsumerOnboarding() {
 
   // Step 1: Preferences
   const [selected, setSelected] = useState([]);
+
+  useEffect(() => {
+    if (!consumer) return;
+    if (consumer.onboarding_complete) {
+      navigate('/customer/dashboard', { replace: true });
+      return;
+    }
+    setLocationText(consumer.location_text || '');
+    if (consumer.latitude && consumer.longitude) {
+      setCoords({ latitude: consumer.latitude, longitude: consumer.longitude });
+    }
+    if (Array.isArray(consumer.service_preferences)) {
+      setSelected(consumer.service_preferences);
+    }
+  }, [consumer, navigate]);
 
   const detectLocation = () => {
     if (!navigator.geolocation) return toast.error('Location not supported on this device — please type your city or postcode');

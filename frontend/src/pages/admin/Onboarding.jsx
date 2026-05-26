@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, X, Rocket } from 'lucide-react';
 import { businessAPI } from '../../services/api';
@@ -23,7 +23,7 @@ const STEPS = [
 ];
 
 export default function Onboarding() {
-  const { updateBusiness } = useAuth();
+  const { business, updateBusiness } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -32,6 +32,12 @@ export default function Onboarding() {
     name: '', category: '', description: '', phone: '', email: '', location: '', slug: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
+
+  useEffect(() => {
+    if (business) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [business, navigate]);
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 

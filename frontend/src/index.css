@@ -76,13 +76,13 @@
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
   }
   .card {
-    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-card;
+    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-card;
   }
   .card-hover {
     @apply card hover:shadow-card-hover hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-200;
   }
   .modal-panel {
-    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-2xl;
+    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl;
   }
 
   /* Badges */
@@ -195,6 +195,32 @@ img { display: block; }
 /* Better focus rings for accessibility */
 :focus-visible { outline: 2px solid #5b3eea; outline-offset: 2px; }
 :focus:not(:focus-visible) { outline: none; }
+
+select option {
+  color: #111827;
+  background: #ffffff;
+}
+
+.dark select option {
+  color: #f9fafb;
+  background: #111827;
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #111827;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #111827;
+}
+
+.dark input:-webkit-autofill,
+.dark textarea:-webkit-autofill,
+.dark select:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff;
+  box-shadow: 0 0 0 1000px #1f2937 inset;
+  caret-color: #ffffff;
+}
 
 /* Recharts dark mode */
 .dark .recharts-legend-item-text { color: #94a3b8 !important; }

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { postsAPI, servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
-  Plus, Trash2, Image, Tag, Calendar, Megaphone,
+  Plus, Trash2, Image, Tag, Calendar, Megaphone, Film,
   Eye, MousePointerClick, X, ChevronDown,
 } from 'lucide-react';
 
@@ -21,15 +21,18 @@ const EMPTY = {
 function PostCard({ post, onDelete }) {
   const meta = TYPE_META[post.type] || TYPE_META.photo;
   const Icon = meta.icon;
+  const isVideo = post.image_url?.startsWith('data:video');
   return (
     <div className="card p-4 flex gap-3">
-      {post.image_url && (
+      {post.image_url && isVideo ? (
+        <video src={post.image_url} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" muted playsInline controls />
+      ) : post.image_url ? (
         <img src={post.image_url} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
-      )}
+      ) : null}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${meta.color}`}>
-            <Icon className="w-3 h-3" />{meta.label}
+            {isVideo ? <Film className="w-3 h-3" /> : <Icon className="w-3 h-3" />}{isVideo ? 'Reel / Video' : meta.label}
           </span>
           <button onClick={() => onDelete(post.id)} className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
             <Trash2 className="w-4 h-4" />
@@ -103,6 +106,14 @@ export default function Posts() {
   const handleImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) && !/^video\/(mp4|webm|quicktime)$/.test(file.type)) {
+      toast.error('Use a JPEG, PNG, WebP, MP4, WebM, or MOV file');
+      return;
+    }
+    if (file.size > 35 * 1024 * 1024) {
+      toast.error('Media must be 35MB or less');
+      return;
+    }
     setForm(f => ({ ...f, image: file, preview: URL.createObjectURL(file) }));
   };
 
@@ -181,12 +192,16 @@ export default function Posts() {
               })}
             </div>
 
-            {/* Image upload */}
+            {/* Media upload */}
             <div>
-              <label className="label">Photo (optional)</label>
+              <label className="label">Photo or reel (optional)</label>
               {form.preview ? (
                 <div className="relative w-32 h-32">
-                  <img src={form.preview} alt="" className="w-32 h-32 rounded-xl object-cover" />
+                  {form.image?.type?.startsWith('video/') ? (
+                    <video src={form.preview} className="w-32 h-32 rounded-xl object-cover" muted playsInline controls />
+                  ) : (
+                    <img src={form.preview} alt="" className="w-32 h-32 rounded-xl object-cover" />
+                  )}
                   <button type="button" onClick={() => setForm(f => ({ ...f, image: null, preview: null }))}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
                     <X className="w-3 h-3" />
@@ -195,10 +210,11 @@ export default function Posts() {
               ) : (
                 <button type="button" onClick={() => fileRef.current?.click()}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors">
-                  <Image className="w-4 h-4" /> Add photo
+                  <Image className="w-4 h-4" /> Add media
                 </button>
               )}
-              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImage} />
+              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleImage} />
+              <p className="text-xs text-gray-400 mt-1">Supports images and short reels up to 35MB.</p>
             </div>
 
             <div>

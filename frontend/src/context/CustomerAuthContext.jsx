@@ -85,8 +85,9 @@ export function CustomerAuthProvider({ children }) {
   const update = async (data) => {
     const updated = await consumerAPI.updateMe(data);
     if (updated) {
-      setConsumer(updated);
-      saveCache(updated);
+      const merged = { ...(consumer || {}), ...updated };
+      setConsumer(merged);
+      saveCache(merged);
     }
     return updated;
   };

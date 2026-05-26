@@ -6,6 +6,7 @@ import { bookingsAPI } from '../../services/api';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
 import { auth } from '../../config/firebase';
 import toast from 'react-hot-toast';
+import VerifyRequired from '../shared/VerifyRequired';
 
 const NAV = [
   { to: '/admin/dashboard', icon: GridIcon,         label: 'Dashboard' },
@@ -35,6 +36,12 @@ export default function AdminLayout() {
   const [copied, setCopied] = useState(false);
   const [emailUnverified, setEmailUnverified] = useState(false);
   const [resendingVerif, setResendingVerif] = useState(false);
+
+  useEffect(() => {
+    if (!business) {
+      navigate('/admin/onboarding', { replace: true });
+    }
+  }, [business, navigate]);
 
   useEffect(() => {
     if (auth.currentUser) {
@@ -233,7 +240,7 @@ export default function AdminLayout() {
               </button>
             </div>
           )}
-          <Outlet />
+          {emailUnverified ? <VerifyRequired type="business" /> : <Outlet />}
         </main>
       </div>
 

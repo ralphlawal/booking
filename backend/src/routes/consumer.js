@@ -22,6 +22,16 @@ const authenticateConsumer = async (req, res, next) => {
   }
 };
 
+const requireVerifiedConsumer = (req, res, next) => {
+  if (req.consumer?.email_verified === false) {
+    return res.status(403).json({
+      error: 'Please verify your email address before using this feature.',
+      code: 'EMAIL_NOT_VERIFIED',
+    });
+  }
+  next();
+};
+
 router.post('/register', ctrl.register);
 router.post('/login', ctrl.login);
 router.post('/google-auth', ctrl.googleAuth);
@@ -31,10 +41,10 @@ router.get('/me', authenticateConsumer, ctrl.me);
 router.put('/me', authenticateConsumer, ctrl.update);
 router.post('/change-email', authenticateConsumer, ctrl.changeEmail);
 router.post('/change-password', authenticateConsumer, ctrl.changePassword);
-router.get('/bookings', authenticateConsumer, ctrl.myBookings);
-router.get('/preferences', authenticateConsumer, ctrl.getPreferences);
-router.post('/preferences', authenticateConsumer, ctrl.upsertPreference);
-router.delete('/preferences/:businessId', authenticateConsumer, ctrl.removePreference);
+router.get('/bookings', authenticateConsumer, requireVerifiedConsumer, ctrl.myBookings);
+router.get('/preferences', authenticateConsumer, requireVerifiedConsumer, ctrl.getPreferences);
+router.post('/preferences', authenticateConsumer, requireVerifiedConsumer, ctrl.upsertPreference);
+router.delete('/preferences/:businessId', authenticateConsumer, requireVerifiedConsumer, ctrl.removePreference);
 router.delete('/account', authenticateConsumer, ctrl.deleteAccount);
 router.get('/notifications', authenticateConsumer, ctrl.getNotifications);
 router.post('/notifications/read', authenticateConsumer, ctrl.markNotificationsRead);
@@ -45,3 +55,4 @@ router.post('/me/avatar', authenticateConsumer, avatarUpload.single('avatar'), c
 
 module.exports = router;
 module.exports.authenticateConsumer = authenticateConsumer;
+module.exports.requireVerifiedConsumer = requireVerifiedConsumer;

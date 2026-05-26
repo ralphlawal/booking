@@ -2,11 +2,11 @@ const db = require('../config/database');
 const crypto = require('crypto');
 const multer = require('multer');
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 35 * 1024 * 1024 } });
 exports.uploadMiddleware = upload.single('image');
 
 const ALLOWED_TYPES = ['photo', 'offer', 'availability', 'announcement'];
-const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
 
 // POST /api/posts
 exports.create = async (req, res) => {
@@ -18,7 +18,7 @@ exports.create = async (req, res) => {
     let image_url = null;
     if (req.file) {
       if (!ALLOWED_MIME.includes(req.file.mimetype))
-        return res.status(400).json({ error: 'Only JPEG, PNG, or WebP images are allowed' });
+        return res.status(400).json({ error: 'Only JPEG, PNG, WebP, MP4, WebM, or MOV files are allowed' });
       image_url = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     }
 

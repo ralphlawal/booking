@@ -2,7 +2,7 @@ const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const ctrl = require('../controllers/chatController');
 const { authenticate, attachBusiness } = require('../middleware/auth');
-const { authenticateConsumer } = require('./consumer');
+const { authenticateConsumer, requireVerifiedConsumer } = require('./consumer');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -34,9 +34,9 @@ router.get('/business/rooms/:id/messages', authenticate, attachBusiness, ctrl.ge
 router.post('/business/rooms/:id/messages', authenticate, attachBusiness, ctrl.sendMessage);
 
 // Consumer
-router.get('/consumer/rooms', authenticateConsumer, ctrl.getRooms);
-router.post('/consumer/rooms', authenticateConsumer, ctrl.getOrCreateRoom);
-router.get('/consumer/rooms/:id/messages', authenticateConsumer, ctrl.getMessages);
-router.post('/consumer/rooms/:id/messages', authenticateConsumer, ctrl.sendMessage);
+router.get('/consumer/rooms', authenticateConsumer, requireVerifiedConsumer, ctrl.getRooms);
+router.post('/consumer/rooms', authenticateConsumer, requireVerifiedConsumer, ctrl.getOrCreateRoom);
+router.get('/consumer/rooms/:id/messages', authenticateConsumer, requireVerifiedConsumer, ctrl.getMessages);
+router.post('/consumer/rooms/:id/messages', authenticateConsumer, requireVerifiedConsumer, ctrl.sendMessage);
 
 module.exports = router;

@@ -23,7 +23,7 @@ exports.createIntent = async (req, res) => {
       amount: Math.round(amount_pence),
       currency,
       description: `${service_name || 'Service'} at ${business_name || 'BookAm Business'}`,
-      payment_method_types: ['card'],
+      automatic_payment_methods: { enabled: true },
     });
 
     res.json({ client_secret: intent.client_secret, payment_intent_id: intent.id });

@@ -136,9 +136,14 @@ exports.firebaseSync = async (req, res) => {
       await User.linkFirebaseUid(user.id, firebaseUser.uid);
     }
 
+    if (firebaseUser.email_verified && user.email_verified === false) {
+      await User.markEmailVerified(user.id).catch(() => {});
+      user.email_verified = true;
+    }
+
     const business = await Business.findByUserId(user.id);
     res.json({
-      user: { id: user.id, email: user.email, full_name: user.full_name },
+      user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: firebaseUser.email_verified || !!user.email_verified },
       business: business || null,
       onboardingComplete: !!business,
     });

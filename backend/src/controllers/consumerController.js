@@ -145,7 +145,13 @@ exports.googleAuth = async (req, res) => {
       }).catch(() => {});
     }
 
-    const safe = { id: consumer.id, email: consumer.email, full_name: consumer.full_name, phone: consumer.phone, avatar_url: consumer.avatar_url, email_verified: true };
+    const freshConsumer = await ConsumerAccount.findById(consumer.id) || consumer;
+    const safe = {
+      ...freshConsumer,
+      email_verified: true,
+      onboarding_complete: !!freshConsumer?.onboarding_complete,
+      service_preferences: freshConsumer?.service_preferences || [],
+    };
     const token = signToken(safe);
     res.json({ consumer: safe, token, is_new: isNew });
   } catch (err) {

@@ -383,7 +383,11 @@ export default function BusinessProfile() {
               return (
                 <div key={post.id} className="card p-4">
                   {post.image_url && (
-                    <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-60 mb-3" loading="lazy" />
+                    post.image_url.startsWith('data:video') ? (
+                      <video src={post.image_url} className="w-full rounded-xl object-cover max-h-60 mb-3" controls playsInline />
+                    ) : (
+                      <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-60 mb-3" loading="lazy" />
+                    )
                   )}
                   {post.offer_text && (
                     <div className="flex items-center gap-2 mb-1">

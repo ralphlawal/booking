@@ -25,7 +25,7 @@ const User = {
 
   async findById(id) {
     const { rows } = await db.query(
-      'SELECT id, email, full_name, is_verified, created_at FROM users WHERE id = $1',
+      'SELECT id, email, full_name, is_verified, COALESCE(email_verified, TRUE) AS email_verified, created_at FROM users WHERE id = $1',
       [id]
     );
     return rows[0] || null;
