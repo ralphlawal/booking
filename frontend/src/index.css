@@ -27,8 +27,8 @@
   h1, h2, h3, h4, h5, h6 { @apply font-semibold; }
   :root {
     --radius: 0.75rem;
-    --consumer-nav-height: calc(56px + env(safe-area-inset-bottom, 0px));
-    --consumer-nav-padding: calc(7rem + env(safe-area-inset-bottom, 0px));
+    --consumer-nav-height: calc(72px + env(safe-area-inset-bottom, 0px));
+    --consumer-nav-padding: calc(6.25rem + env(safe-area-inset-bottom, 0px));
     --consumer-cta-padding: calc(10.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

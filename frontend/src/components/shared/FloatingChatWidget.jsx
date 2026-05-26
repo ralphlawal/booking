@@ -121,7 +121,7 @@ export default function FloatingChatWidget() {
     setSending(false);
   };
 
-  if (hide) return null;
+  if (hide || (isConsumer && hasBottomNav)) return null;
 
   return (
     <>
