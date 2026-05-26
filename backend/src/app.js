@@ -111,6 +111,7 @@ app.use('/api/chat', require('./routes/chat'));
 
 // New feature routes
 const { authenticate, attachBusiness } = require('./middleware/auth');
+const { consumerAuth } = require('./middleware/consumerAuth');
 const staffCtrl = require('./controllers/staffController');
 const photosCtrl = require('./controllers/photosController');
 const postsCtrl = require('./controllers/postsController');
@@ -140,6 +141,14 @@ app.post('/api/posts/:id/book-click', postsCtrl.recordBookClick);
 app.get('/api/posts', authenticate, attachBusiness, postsCtrl.list);
 app.post('/api/posts', authenticate, attachBusiness, postsCtrl.uploadMiddleware, postsCtrl.create);
 app.delete('/api/posts/:id', authenticate, attachBusiness, postsCtrl.remove);
+
+// Follows
+const followsCtrl = require('./controllers/followsController');
+app.get('/api/follows/count/:slug', followsCtrl.count);
+app.get('/api/follows/check/:slug', consumerAuth, followsCtrl.check);
+app.get('/api/follows/feed', consumerAuth, followsCtrl.feed);
+app.post('/api/follows/:slug', consumerAuth, followsCtrl.follow);
+app.delete('/api/follows/:slug', consumerAuth, followsCtrl.unfollow);
 
 // Waitlist
 app.post('/api/waitlist/:slug', waitlistCtrl.join);
@@ -263,6 +272,8 @@ async function start() {
       await pool.query(sql15);
       const sql16 = fs.readFileSync(path.join(__dirname, '../migrations/016_business_posts.sql'), 'utf8');
       await pool.query(sql16);
+      const sql17 = fs.readFileSync(path.join(__dirname, '../migrations/017_consumer_follows.sql'), 'utf8');
+      await pool.query(sql17);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -358,6 +369,15 @@ async function start() {
       try {
         db.exec(`ALTER TABLE bookings ADD COLUMN stripe_payment_intent_id TEXT`);
         db.exec(`ALTER TABLE bookings ADD COLUMN payment_status TEXT DEFAULT 'unpaid'`);
+      } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS consumer_follows (
+          id TEXT PRIMARY KEY,
+          consumer_id TEXT NOT NULL,
+          business_id TEXT NOT NULL,
+          created_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(consumer_id, business_id)
+        )`);
       } catch {}
       try {
         db.exec(`CREATE TABLE IF NOT EXISTS broadcast_notifications (

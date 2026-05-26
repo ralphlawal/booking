@@ -329,6 +329,14 @@ export const postsAPI = {
   recordBookClick: (id) => api.post(`/posts/${id}/book-click`),
 };
 
+export const followsAPI = {
+  follow: (slug) => consumerAxios.post(`/follows/${slug}`),
+  unfollow: (slug) => consumerAxios.delete(`/follows/${slug}`),
+  check: (slug) => consumerAxios.get(`/follows/check/${slug}`),
+  count: (slug) => api.get(`/follows/count/${slug}`),
+  feed: (params) => consumerAxios.get('/follows/feed', { params }),
+};
+
 export const intakeAPI = {
   getPublic: (slug) => api.get(`/intake/public/${slug}`),
   get: () => api.get('/intake'),

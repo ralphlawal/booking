@@ -36,7 +36,17 @@ function PostCard({ post, onDelete }) {
           </button>
         </div>
         {post.caption && <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{post.caption}</p>}
-        {post.offer_text && <p className="text-xs font-semibold text-amber-600 mt-1">{post.offer_text}</p>}
+        {post.offer_text && (
+          <div className="flex items-center gap-2 mt-1">
+            <p className={`text-xs font-semibold ${post.is_expired ? 'text-gray-400 line-through' : 'text-amber-600'}`}>{post.offer_text}</p>
+            {post.is_expired && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500">Expired</span>}
+          </div>
+        )}
+        {post.offer_expires_at && !post.is_expired && (
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Expires {new Date(post.offer_expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </p>
+        )}
         {post.cta_label && (
           <span className="mt-1.5 inline-block text-xs font-semibold text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-700 rounded-lg px-2 py-0.5">
             CTA: {post.cta_label}

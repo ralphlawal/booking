@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { postsAPI } from '../../services/api';
+import { postsAPI, followsAPI } from '../../services/api';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
-import { Image, Tag, Calendar, Megaphone, BadgeCheck, Star, ChevronDown } from 'lucide-react';
+import { Image, Tag, Calendar, Megaphone, BadgeCheck, Star, ChevronDown, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const TYPE_META = {
@@ -78,7 +79,10 @@ function PostCard({ post }) {
       {/* Content */}
       <div className="p-4 pt-3 space-y-2">
         {post.offer_text && (
-          <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{post.offer_text}</p>
+          <div className="flex items-center gap-2">
+            <p className={`text-sm font-bold ${post.is_expired ? 'text-gray-400 line-through' : 'text-amber-600 dark:text-amber-400'}`}>{post.offer_text}</p>
+            {post.is_expired && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Expired</span>}
+          </div>
         )}
         {post.caption && (
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{post.caption}</p>
@@ -98,9 +102,10 @@ function PostCard({ post }) {
           </Link>
           <button
             onClick={handleBook}
-            className="flex-1 btn-primary text-sm py-2.5"
+            disabled={post.is_expired}
+            className="flex-1 btn-primary text-sm py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {post.cta_label || 'Book now'}
+            {post.is_expired ? 'Offer ended' : (post.cta_label || 'Book now')}
           </button>
         </div>
       </div>
@@ -109,6 +114,9 @@ function PostCard({ post }) {
 }
 
 export default function FeedPage() {
+  const navigate = useNavigate();
+  const { consumer } = useCustomerAuth();
+  const [mode, setMode] = useState('all'); // 'all' | 'following'
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -117,13 +125,26 @@ export default function FeedPage() {
   const offsetRef = useRef(0);
   const LIMIT = 10;
 
+  const handleModeSwitch = (m) => {
+    if (m === 'following' && !consumer) {
+      return navigate('/customer/login', { state: { from: '/feed' } });
+    }
+    setMode(m);
+    setCategory('All');
+  };
+
   const load = useCallback(async (reset = false) => {
     const offset = reset ? 0 : offsetRef.current;
     if (reset) setLoading(true); else setLoadingMore(true);
     try {
       const params = { limit: LIMIT, offset };
-      if (category !== 'All') params.category = category;
-      const items = await postsAPI.getFeed(params);
+      let items;
+      if (mode === 'following') {
+        items = await followsAPI.feed(params);
+      } else {
+        if (category !== 'All') params.category = category;
+        items = await postsAPI.getFeed(params);
+      }
       if (reset) {
         setPosts(items);
         offsetRef.current = items.length;
@@ -138,7 +159,7 @@ export default function FeedPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [category]);
+  }, [category, mode]);
 
   useEffect(() => {
     offsetRef.current = 0;
@@ -154,25 +175,41 @@ export default function FeedPage() {
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <span className="text-sm font-bold text-gray-900 dark:text-white">Feed</span>
+          {/* Mode toggle */}
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5 gap-0.5">
+            <button
+              onClick={() => handleModeSwitch('all')}
+              className={`text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all ${mode === 'all' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
+            >
+              For you
+            </button>
+            <button
+              onClick={() => handleModeSwitch('following')}
+              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all ${mode === 'following' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
+            >
+              <Users className="w-3 h-3" />Following
+            </button>
+          </div>
           <div className="w-16" />
         </div>
-        {/* Category filters */}
-        <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 pb-3 scrollbar-none">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
-                category === cat
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Category filters — only in "For you" mode */}
+        {mode === 'all' && (
+          <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 pb-3 scrollbar-none">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
+                  category === cat
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
       </nav>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4">
@@ -183,11 +220,19 @@ export default function FeedPage() {
         ) : posts.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4">
-              <Megaphone className="w-7 h-7 text-primary-400" />
+              {mode === 'following' ? <Users className="w-7 h-7 text-primary-400" /> : <Megaphone className="w-7 h-7 text-primary-400" />}
             </div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Nothing here yet</h3>
-            <p className="text-sm text-gray-400">Businesses haven't posted in this category yet. Check back soon.</p>
-            <Link to="/explore" className="btn-primary mt-5 inline-block text-sm">Browse businesses</Link>
+            <h3 className="font-bold text-gray-900 dark:text-white mb-1">
+              {mode === 'following' ? 'No posts from businesses you follow' : 'Nothing here yet'}
+            </h3>
+            <p className="text-sm text-gray-400">
+              {mode === 'following'
+                ? 'Follow businesses to see their updates, offers, and availability here.'
+                : 'Businesses haven\'t posted in this category yet. Check back soon.'}
+            </p>
+            <Link to="/explore" className="btn-primary mt-5 inline-block text-sm">
+              {mode === 'following' ? 'Find businesses to follow' : 'Browse businesses'}
+            </Link>
           </div>
         ) : (
           <div className="space-y-4">

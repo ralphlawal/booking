@@ -3,9 +3,9 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
   Calendar, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
-  BadgeCheck, Megaphone,
+  BadgeCheck, Megaphone, UserPlus, UserCheck, Users,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI, followsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -113,6 +113,9 @@ export default function BusinessProfile() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -122,14 +125,18 @@ export default function BusinessProfile() {
       availabilityAPI.getPublicHours(slug).catch(() => null),
       photosAPI.listPublic(slug).catch(() => []),
       postsAPI.getPublic(slug).catch(() => []),
+      consumer ? followsAPI.check(slug).catch(() => ({ following: false, follower_count: 0 }))
+               : followsAPI.count(slug).catch(() => ({ follower_count: 0 })),
     ])
-      .then(([biz, svcs, rev, avail, pics, pts]) => {
+      .then(([biz, svcs, rev, avail, pics, pts, followData]) => {
         setBusiness(biz);
         setServices((svcs.filter ? svcs.filter(s => s.is_active) : svcs));
         setReviewData(rev);
         setHours(avail);
         setPhotos(Array.isArray(pics) ? pics : []);
         setPosts(Array.isArray(pts) ? pts : []);
+        setFollowing(followData?.following ?? false);
+        setFollowerCount(followData?.follower_count ?? 0);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -162,6 +169,23 @@ export default function BusinessProfile() {
     } catch {}
   };
 
+  const handleFollow = async () => {
+    if (!consumer) return navigate('/customer/login', { state: { from: `/profile/${slug}` } });
+    setFollowLoading(true);
+    try {
+      const result = following
+        ? await followsAPI.unfollow(slug)
+        : await followsAPI.follow(slug);
+      setFollowing(result.following);
+      setFollowerCount(result.follower_count);
+      toast.success(result.following ? 'Following!' : 'Unfollowed');
+    } catch {
+      toast.error('Could not update follow');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
       <div className="w-8 h-8 border-3 border-primary-600 border-t-transparent rounded-full animate-spin" />
@@ -188,7 +212,19 @@ export default function BusinessProfile() {
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleFollow}
+              disabled={followLoading}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-60 ${
+                following
+                  ? 'bg-primary-600 text-white hover:bg-primary-700'
+                  : 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20'
+              }`}
+            >
+              {following ? <UserCheck className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
+              {following ? 'Following' : 'Follow'}
+            </button>
             <button onClick={handleShare} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <Share2 className="w-4 h-4 text-gray-500" />
             </button>
@@ -235,6 +271,11 @@ export default function BusinessProfile() {
                 </span>
                 {totalReviews > 0 && (
                   <span className="text-sm text-gray-400">({totalReviews} review{totalReviews !== 1 ? 's' : ''})</span>
+                )}
+                {followerCount > 0 && (
+                  <span className="flex items-center gap-1 text-sm text-gray-400">
+                    <Users className="w-3.5 h-3.5" />{followerCount} follower{followerCount !== 1 ? 's' : ''}
+                  </span>
                 )}
               </div>
             </div>
@@ -344,13 +385,18 @@ export default function BusinessProfile() {
                   {post.image_url && (
                     <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-60 mb-3" loading="lazy" />
                   )}
-                  {post.offer_text && <p className="text-sm font-bold text-amber-600 dark:text-amber-400 mb-1">{post.offer_text}</p>}
+                  {post.offer_text && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className={`text-sm font-bold ${post.is_expired ? 'text-gray-400 line-through' : 'text-amber-600 dark:text-amber-400'}`}>{post.offer_text}</p>
+                      {post.is_expired && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Expired</span>}
+                    </div>
+                  )}
                   {post.caption && <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{post.caption}</p>}
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-xs text-gray-400">
                       {new Date(post.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     </span>
-                    {post.cta_label && (
+                    {post.cta_label && !post.is_expired && (
                       <Link
                         to={`/book/${slug}`}
                         state={{ from: location, prefill_service_id: post.cta_service_id || undefined }}

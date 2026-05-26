@@ -49,7 +49,10 @@ exports.create = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT p.*, s.name AS service_name
+      `SELECT p.*,
+              CASE WHEN p.offer_expires_at IS NOT NULL AND p.offer_expires_at < NOW()
+                   THEN TRUE ELSE FALSE END AS is_expired,
+              s.name AS service_name
        FROM business_posts p
        LEFT JOIN services s ON s.id = p.cta_service_id
        WHERE p.business_id = $1
@@ -69,7 +72,10 @@ exports.getPublic = async (req, res) => {
     const { rows: biz } = await db.query('SELECT id FROM businesses WHERE slug = $1', [req.params.slug]);
     if (!biz.length) return res.status(404).json({ error: 'Not found' });
     const { rows } = await db.query(
-      `SELECT p.*, s.name AS service_name, s.price AS service_price
+      `SELECT p.*,
+              CASE WHEN p.offer_expires_at IS NOT NULL AND p.offer_expires_at < NOW()
+                   THEN TRUE ELSE FALSE END AS is_expired,
+              s.name AS service_name, s.price AS service_price
        FROM business_posts p
        LEFT JOIN services s ON s.id = p.cta_service_id
        WHERE p.business_id = $1 AND p.is_active = TRUE
@@ -98,6 +104,8 @@ exports.getFeed = async (req, res) => {
 
     const { rows } = await db.query(
       `SELECT p.*,
+              CASE WHEN p.offer_expires_at IS NOT NULL AND p.offer_expires_at < NOW()
+                   THEN TRUE ELSE FALSE END AS is_expired,
               b.name AS business_name, b.slug AS business_slug,
               b.logo_url, b.category AS business_category, b.is_verified,
               COALESCE(r.avg_rating, 0) AS avg_rating,
