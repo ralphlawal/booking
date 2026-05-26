@@ -125,21 +125,21 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         </div>
       </div>
 
-      <div className="flex gap-2 mt-4 flex-wrap">
+      <div className="mt-4 space-y-2">
         {past ? (
-          <>
-            <button onClick={() => onRebook(booking)} className="btn-secondary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => onRebook(booking)} className="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5">
               <RotateCcw className="w-3.5 h-3.5" /> Rebook
             </button>
             {booking.status === 'completed' && !booking.reviewed && (
-              <button onClick={() => onReview(booking)} className="btn-primary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
+              <button onClick={() => onReview(booking)} className="btn-primary text-xs py-2 px-3 flex items-center gap-1.5">
                 <Star className="w-3.5 h-3.5" /> Review
               </button>
             )}
             {canConfirm && (
               <button
                 onClick={() => onConfirmService(booking)}
-                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 transition-colors"
+                className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 transition-colors"
               >
                 <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
               </button>
@@ -147,32 +147,32 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
             {canDispute && (
               <button
                 onClick={() => onDispute(booking)}
-                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 transition-colors"
+                className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 transition-colors"
               >
                 <AlertTriangle className="w-3.5 h-3.5" /> Dispute
               </button>
             )}
-          </>
+          </div>
         ) : (
           <>
-            <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary flex-1 text-sm py-2 text-center">
+            <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary w-full text-sm py-2 text-center justify-center">
               View business
             </Link>
             {(booking.status === 'pending' || booking.status === 'confirmed') && (
-              <>
+              <div className="flex gap-2">
                 <button
                   onClick={() => onReschedule(booking)}
-                  className="text-sm px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center gap-1"
+                  className="flex-1 text-xs px-2 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1 font-semibold"
                 >
-                  <CalendarClock className="w-3.5 h-3.5" /> Reschedule
+                  <CalendarClock className="w-3.5 h-3.5 flex-shrink-0" /> Reschedule
                 </button>
                 <button
                   onClick={() => onCancel(booking)}
-                  className="text-sm px-3 py-2 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="flex-1 text-xs px-2 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-semibold"
                 >
                   Cancel
                 </button>
-              </>
+              </div>
             )}
           </>
         )}

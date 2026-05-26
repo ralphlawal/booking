@@ -34,7 +34,7 @@ export default function ConsumerBottomNav() {
           >
             {({ isActive }) => (
               <>
-                <div className={`relative px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                <div className={`relative p-2 rounded-lg transition-all duration-200 ${
                   isActive ? 'bg-gray-950 text-white dark:bg-white dark:text-gray-950 shadow-sm' : ''
                 }`}>
                   <Icon
