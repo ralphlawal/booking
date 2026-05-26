@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
+const Notification = require('../models/Notification');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -120,6 +121,143 @@ exports.getConsumers = async (req, res) => {
   } catch (err) {
     console.error('[admin/consumers]', err.message);
     res.status(500).json({ error: 'Failed to load consumers' });
+  }
+};
+
+exports.updateConsumer = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { full_name, phone, email_verified, onboarding_complete } = req.body;
+    const { rows } = await db.query(
+      `UPDATE consumer_accounts
+       SET full_name = COALESCE($1, full_name),
+           phone = COALESCE($2, phone),
+           email_verified = COALESCE($3, email_verified),
+           onboarding_complete = COALESCE($4, onboarding_complete)
+       WHERE id = $5
+       RETURNING id, email, full_name, phone, email_verified, onboarding_complete, created_at`,
+      [
+        full_name === undefined ? null : full_name,
+        phone === undefined ? null : phone,
+        email_verified === undefined ? null : !!email_verified,
+        onboarding_complete === undefined ? null : !!onboarding_complete,
+        req.params.id,
+      ]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Customer not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('[admin/update-consumer]', err.message);
+    res.status(500).json({ error: 'Failed to update customer' });
+  }
+};
+
+exports.notifyConsumer = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { title, body, link } = req.body;
+    if (!title?.trim() || !body?.trim()) return res.status(400).json({ error: 'Title and message are required' });
+
+    const { rows } = await db.query('SELECT id, email FROM consumer_accounts WHERE id = $1', [req.params.id]);
+    if (!rows[0]) return res.status(404).json({ error: 'Customer not found' });
+
+    await Notification.create({
+      consumer_id: req.params.id,
+      type: 'admin_message',
+      title: title.trim(),
+      body: body.trim(),
+      link: link || '/customer/messages',
+    });
+    res.json({ message: 'Notification sent' });
+  } catch (err) {
+    console.error('[admin/notify-consumer]', err.message);
+    res.status(500).json({ error: 'Failed to send notification' });
+  }
+};
+
+exports.getPlatformBookings = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { status, payment_status, q } = req.query;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 100, 250);
+    const conditions = [];
+    const params = [];
+    let idx = 1;
+
+    if (status && status !== 'all') {
+      conditions.push(`b.status = $${idx++}`);
+      params.push(status);
+    }
+    if (payment_status && payment_status !== 'all') {
+      conditions.push(`COALESCE(b.payment_status, 'unpaid') = $${idx++}`);
+      params.push(payment_status);
+    }
+    if (q?.trim()) {
+      const search = `%${q.trim()}%`;
+      conditions.push(`(LOWER(b.reference_id) LIKE LOWER($${idx}) OR LOWER(biz.name) LIKE LOWER($${idx}) OR LOWER(COALESCE(ca.full_name, c.full_name, '')) LIKE LOWER($${idx}) OR LOWER(COALESCE(ca.email, c.email, '')) LIKE LOWER($${idx}))`);
+      params.push(search);
+      idx += 1;
+    }
+
+    params.push(limit);
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const { rows } = await db.query(
+      `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time,
+              b.status, b.payment_status, b.created_at, b.notes,
+              b.stripe_payment_intent_id, b.stripe_transfer_status,
+              s.name AS service_name, s.price AS service_price,
+              biz.id AS business_id, biz.name AS business_name, biz.slug AS business_slug,
+              COALESCE(ca.full_name, c.full_name) AS customer_name,
+              COALESCE(ca.email, c.email) AS customer_email,
+              COALESCE(ca.phone, c.phone) AS customer_phone
+       FROM bookings b
+       JOIN businesses biz ON biz.id = b.business_id
+       JOIN services s ON s.id = b.service_id
+       LEFT JOIN customers c ON c.id = b.customer_id
+       LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
+       ${where}
+       ORDER BY b.created_at DESC
+       LIMIT $${idx}`,
+      params
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('[admin/bookings]', err.message);
+    res.status(500).json({ error: 'Failed to load platform bookings' });
+  }
+};
+
+exports.updatePlatformBooking = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { status, payment_status, notes } = req.body;
+    const allowedStatus = ['pending', 'confirmed', 'cancelled', 'completed'];
+    const allowedPayments = ['unpaid', 'pending', 'paid', 'refunded'];
+    if (status !== undefined && !allowedStatus.includes(status)) return res.status(400).json({ error: 'Invalid booking status' });
+    if (payment_status !== undefined && !allowedPayments.includes(payment_status)) return res.status(400).json({ error: 'Invalid payment status' });
+
+    const current = await db.query('SELECT status, payment_status, notes FROM bookings WHERE id = $1', [req.params.id]);
+    if (!current.rows[0]) return res.status(404).json({ error: 'Booking not found' });
+
+    const { rows } = await db.query(
+      `UPDATE bookings
+       SET status = $1,
+           payment_status = $2,
+           notes = $3,
+           updated_at = NOW()
+       WHERE id = $4
+       RETURNING id, reference_id, status, payment_status, notes`,
+      [
+        status === undefined ? current.rows[0].status : status,
+        payment_status === undefined ? current.rows[0].payment_status : payment_status,
+        notes === undefined ? current.rows[0].notes : notes,
+        req.params.id,
+      ]
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('[admin/update-booking]', err.message);
+    res.status(500).json({ error: 'Failed to update booking' });
   }
 };
 

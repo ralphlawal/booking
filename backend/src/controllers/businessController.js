@@ -181,7 +181,6 @@ exports.submitVerificationDetails = async (req, res) => {
 
     const details = { legal_name, company_reg_number: company_reg_number || null, sole_trader: !!sole_trader, business_address, contact_person, id_type };
 
-    const db = require('../config/database');
     await db.query(
       `UPDATE businesses SET verification_details = $1, verification_status = 'pending',
        verification_requested_at = NOW() WHERE id = $2`,

@@ -116,5 +116,58 @@ exports.webhook = async (req, res) => {
     }
   }
 
+  // Sync refund status if a refund is created/updated directly on Stripe dashboard
+  if (event.type === 'charge.refunded' || event.type === 'charge.refund.updated') {
+    const charge = event.data.object;
+    const piId = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
+    if (piId) {
+      try {
+        const isFullRefund = charge.amount_refunded >= charge.amount;
+        await db.query(
+          `UPDATE bookings SET payment_status = $1
+           WHERE stripe_payment_intent_id = $2 AND payment_status NOT IN ('refunded', 'partial_refund')`,
+          [isFullRefund ? 'refunded' : 'partial_refund', piId]
+        );
+      } catch (err) {
+        console.error('[stripe-webhook] refund sync error:', err.message);
+      }
+    }
+  }
+
   res.json({ received: true });
+};
+
+// GET /api/payments/reconcile
+// Checks Stripe for any paid-but-not-recorded payments and syncs them.
+// Call from admin panel if a webhook was missed.
+exports.reconcile = async (req, res) => {
+  try {
+    const stripe = getStripe();
+    const { rows } = await db.query(`
+      SELECT id, stripe_payment_intent_id
+      FROM bookings
+      WHERE stripe_payment_intent_id IS NOT NULL
+        AND payment_status IN ('unpaid', 'failed')
+      LIMIT 100
+    `);
+
+    let updated = 0;
+    for (const booking of rows) {
+      try {
+        const pi = await stripe.paymentIntents.retrieve(booking.stripe_payment_intent_id);
+        if (pi.status === 'succeeded') {
+          await db.query(
+            "UPDATE bookings SET payment_status = 'paid' WHERE id = $1 AND payment_status != 'paid'",
+            [booking.id]
+          );
+          updated++;
+        }
+      } catch {}
+    }
+
+    res.json({ checked: rows.length, updated, message: `${updated} payment${updated === 1 ? '' : 's'} reconciled` });
+  } catch (err) {
+    console.error('[reconcile]', err.message);
+    res.status(500).json({ error: 'Reconciliation failed' });
+  }
 };

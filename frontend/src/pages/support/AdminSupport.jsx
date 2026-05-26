@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2, Banknote, Copy, Check, Zap } from 'lucide-react';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2, Banknote, Copy, Check, Zap, CalendarCheck } from 'lucide-react';
 import { adminChatAPI, adminDisputesAPI, broadcastAPI, adminPanelAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -623,9 +623,10 @@ function FinancialPanel() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary-600" /> Financial Report</h2>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 flex-wrap items-center">
+          <ReconcileButton />
           {[7, 30, 90].map(d => (
             <button key={d} onClick={() => { setPeriod(d); load(d); }}
               className={`text-xs px-3 py-1.5 rounded-xl font-semibold transition-colors ${period === d ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
@@ -735,6 +736,140 @@ function FinancialPanel() {
             </div>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+function PlatformBookingsPanel() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({ status: 'all', payment_status: 'all', q: '' });
+  const [acting, setActing] = useState(null);
+
+  const load = () => {
+    setLoading(true);
+    adminPanelAPI.getPlatformBookings({ ...filters, limit: 150 })
+      .then(setBookings)
+      .catch(err => toast.error(err.message || 'Failed to load bookings'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const update = async (booking, patch) => {
+    setActing(booking.id);
+    try {
+      const updated = await adminPanelAPI.updatePlatformBooking(booking.id, patch);
+      setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, ...updated } : b));
+      toast.success('Booking updated');
+    } catch (err) {
+      toast.error(err.message || 'Failed to update booking');
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const fmt = (v) => `£${parseFloat(v || 0).toFixed(2)}`;
+  const statusTone = {
+    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    confirmed: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="font-bold text-gray-900 dark:text-white">All Bookings <span className="text-sm font-normal text-gray-400">({bookings.length})</span></h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Search and correct booking/payment status across the whole platform.</p>
+        </div>
+        <button onClick={load} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-2">
+        <input
+          className="input"
+          placeholder="Search ref, business, customer, email..."
+          value={filters.q}
+          onChange={e => setFilters(p => ({ ...p, q: e.target.value }))}
+          onKeyDown={e => { if (e.key === 'Enter') load(); }}
+        />
+        <select className="input sm:w-36" value={filters.status} onChange={e => setFilters(p => ({ ...p, status: e.target.value }))}>
+          <option value="all">All status</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select className="input sm:w-36" value={filters.payment_status} onChange={e => setFilters(p => ({ ...p, payment_status: e.target.value }))}>
+          <option value="all">All payments</option>
+          <option value="unpaid">Unpaid</option>
+          <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
+          <option value="refunded">Refunded</option>
+        </select>
+        <button onClick={load} className="btn-primary px-5">Filter</button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-28 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      ) : bookings.length === 0 ? (
+        <div className="text-center py-16 text-gray-400"><CalendarCheck className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No bookings found</p></div>
+      ) : (
+        <div className="space-y-3">
+          {bookings.map(b => (
+            <div key={b.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-bold text-sm text-gray-900 dark:text-white">{b.business_name}</p>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${statusTone[b.status] || 'bg-gray-100 text-gray-500'}`}>{b.status}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">{b.payment_status || 'unpaid'}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{b.service_name} · {fmt(b.service_price)} · {b.customer_name || 'Customer'}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{b.booking_date} · {b.start_time} - {b.end_time} · {b.customer_email || 'no email'}</p>
+                  <p className="text-[10px] text-gray-400 font-mono mt-1">{b.reference_id}</p>
+                </div>
+                <p className="text-[10px] text-gray-400 flex-shrink-0">{new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 mt-3">
+                <select
+                  className="input text-sm"
+                  value={b.status || 'pending'}
+                  disabled={acting === b.id}
+                  onChange={e => update(b, { status: e.target.value })}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <select
+                  className="input text-sm"
+                  value={b.payment_status || 'unpaid'}
+                  disabled={acting === b.id}
+                  onChange={e => update(b, { payment_status: e.target.value })}
+                >
+                  <option value="unpaid">Unpaid</option>
+                  <option value="pending">Payment pending</option>
+                  <option value="paid">Paid</option>
+                  <option value="refunded">Refunded</option>
+                </select>
+                <button
+                  onClick={() => navigator.clipboard?.writeText(b.reference_id).then(() => toast.success('Reference copied'))}
+                  className="btn-secondary text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy ref
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -875,9 +1010,24 @@ function UsersPanel({ onStartChat }) {
   const [consumers, setConsumers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [acting, setActing] = useState(null);
+  const [notifyTarget, setNotifyTarget] = useState(null);
 
   const load = () => adminPanelAPI.getConsumers().then(setConsumers).catch(err => toast.error(err.message || 'Failed to load users'));
   useEffect(() => { load().finally(() => setLoading(false)); }, []);
+
+  const updateConsumer = async (consumer, patch) => {
+    setActing(consumer.id);
+    try {
+      const updated = await adminPanelAPI.updateConsumer(consumer.id, patch);
+      setConsumers(prev => prev.map(c => c.id === consumer.id ? { ...c, ...updated } : c));
+      toast.success('Customer updated');
+    } catch (err) {
+      toast.error(err.message || 'Failed to update customer');
+    } finally {
+      setActing(null);
+    }
+  };
 
   const filtered = consumers.filter(c => {
     if (!search.trim()) return true;
@@ -930,11 +1080,112 @@ function UsersPanel({ onStartChat }) {
               >
                 <MessageSquare className="w-4 h-4" />
               </button>
+              <button
+                onClick={() => setNotifyTarget(c)}
+                className="p-2 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex-shrink-0"
+                title="Send notification"
+              >
+                <Bell className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => updateConsumer(c, { email_verified: !c.email_verified })}
+                disabled={acting === c.id}
+                className={`p-2 rounded-xl border transition-colors flex-shrink-0 ${c.email_verified ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'}`}
+                title={c.email_verified ? 'Mark email unverified' : 'Force verify email'}
+              >
+                <ShieldCheck className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => updateConsumer(c, { onboarding_complete: !c.onboarding_complete })}
+                disabled={acting === c.id}
+                className={`p-2 rounded-xl border transition-colors flex-shrink-0 ${c.onboarding_complete ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                title={c.onboarding_complete ? 'Require onboarding again' : 'Mark onboarding complete'}
+              >
+                <Check className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
       )}
+      {notifyTarget && (
+        <NotifyConsumerModal
+          consumer={notifyTarget}
+          onClose={() => setNotifyTarget(null)}
+        />
+      )}
     </div>
+  );
+}
+
+function NotifyConsumerModal({ consumer, onClose }) {
+  const [form, setForm] = useState({
+    title: 'Message from BookAm',
+    body: '',
+    link: '/customer/messages',
+  });
+  const [sending, setSending] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    try {
+      await adminPanelAPI.notifyConsumer(consumer.id, form);
+      toast.success('Notification sent');
+      onClose();
+    } catch (err) {
+      toast.error(err.message || 'Failed to send notification');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-6 animate-slide-up">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-bold text-gray-900 dark:text-white">Notify Customer</h3>
+            <p className="text-xs text-gray-400 mt-0.5">{consumer.full_name || consumer.email}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
+        </div>
+        <form onSubmit={submit} className="space-y-3">
+          <input className="input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
+          <textarea className="input resize-none" rows={4} value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} placeholder="Write the notification message..." />
+          <input className="input" value={form.link} onChange={e => setForm(p => ({ ...p, link: e.target.value }))} placeholder="/customer/messages" />
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" disabled={sending || !form.title.trim() || !form.body.trim()} className="btn-primary flex-1 disabled:opacity-50">{sending ? 'Sending...' : 'Send'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ReconcileButton() {
+  const [running, setRunning] = useState(false);
+  const run = async () => {
+    setRunning(true);
+    try {
+      const result = await adminPanelAPI.reconcilePayments();
+      toast.success(result.message || 'Reconciliation complete');
+    } catch (err) {
+      toast.error(err.message || 'Reconciliation failed');
+    } finally {
+      setRunning(false);
+    }
+  };
+  return (
+    <button
+      onClick={run}
+      disabled={running}
+      title="Check Stripe for any payments that were missed by the webhook and sync their status"
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 font-semibold"
+    >
+      <RefreshCw className={`w-3.5 h-3.5 ${running ? 'animate-spin' : ''}`} />
+      {running ? 'Syncing…' : 'Reconcile'}
+    </button>
   );
 }
 
@@ -1236,6 +1487,7 @@ export default function AdminSupport() {
               {[
                 { id: 'messages', icon: <MessageSquare className="w-3 h-3" />, label: 'Messages' },
                 { id: 'disputes', icon: <AlertTriangle className="w-3 h-3" />, label: 'Disputes' },
+                { id: 'bookings', icon: <CalendarCheck className="w-3 h-3" />, label: 'Bookings' },
                 { id: 'broadcasts', icon: <Bell className="w-3 h-3" />, label: 'Alerts' },
                 { id: 'businesses', icon: <Building2 className="w-3 h-3" />, label: 'Businesses' },
                 { id: 'users', icon: <Users className="w-3 h-3" />, label: 'Users' },
@@ -1279,6 +1531,12 @@ export default function AdminSupport() {
       {mainTab === 'broadcasts' && (
         <div className="flex flex-1 overflow-hidden">
           <BroadcastsPanel />
+        </div>
+      )}
+
+      {mainTab === 'bookings' && (
+        <div className="flex flex-1 overflow-hidden">
+          <PlatformBookingsPanel />
         </div>
       )}
 

@@ -284,11 +284,16 @@ export const adminPanelAPI = {
   suspendBusiness: (id, active) => adminAxios.patch(`/admin/businesses/${id}/suspend`, { active }),
   editBusiness: (id, data) => adminAxios.put(`/admin/businesses/${id}`, data),
   getConsumers: () => adminAxios.get('/admin/consumers'),
+  updateConsumer: (id, data) => adminAxios.put(`/admin/consumers/${id}`, data),
+  notifyConsumer: (id, data) => adminAxios.post(`/admin/consumers/${id}/notify`, data),
+  getPlatformBookings: (params) => adminAxios.get('/admin/bookings', { params }),
+  updatePlatformBooking: (id, data) => adminAxios.patch(`/admin/bookings/${id}`, data),
   getFinancialReport: (period) => adminAxios.get('/admin/financial', { params: { period } }),
   getLaunchReadiness: () => adminAxios.get('/admin/launch-readiness'),
   getManualPayouts: () => adminAxios.get('/admin/manual-payouts'),
   markManualPaid: (businessId) => adminAxios.post(`/admin/manual-payouts/${businessId}/mark-paid`),
   triggerAutoRelease: () => adminAxios.post('/bookings/admin/auto-release'),
+  reconcilePayments: () => adminAxios.post('/admin/reconcile-payments'),
 };
 
 export const staffAPI = {

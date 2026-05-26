@@ -191,10 +191,15 @@ app.patch('/api/admin/businesses/:id/reject-verify', adminCtrl.rejectVerificatio
 app.patch('/api/admin/businesses/:id/suspend', adminCtrl.suspendBusiness);
 app.put('/api/admin/businesses/:id', adminCtrl.editBusiness);
 app.get('/api/admin/consumers', adminCtrl.getConsumers);
+app.put('/api/admin/consumers/:id', adminCtrl.updateConsumer);
+app.post('/api/admin/consumers/:id/notify', adminCtrl.notifyConsumer);
+app.get('/api/admin/bookings', adminCtrl.getPlatformBookings);
+app.patch('/api/admin/bookings/:id', adminCtrl.updatePlatformBooking);
 app.get('/api/admin/financial', adminCtrl.getFinancialReport);
 app.get('/api/admin/launch-readiness', adminCtrl.getLaunchReadiness);
 app.get('/api/admin/manual-payouts', adminCtrl.getManualPayouts);
 app.post('/api/admin/manual-payouts/:businessId/mark-paid', adminCtrl.markManualPaid);
+app.post('/api/admin/reconcile-payments', paymentsCtrl.reconcile);
 
 // Review replies (business authenticated)
 const reviewsCtrl = require('./controllers/reviewsController');
@@ -460,7 +465,18 @@ async function start() {
   startReminderJob();
 
   const PORT = process.env.PORT || 5001;
-  const server = app.listen(PORT, () => console.log(`BookAm API running on port ${PORT}`));
+  const server = app.listen(PORT, () => {
+    console.log(`BookAm API running on port ${PORT}`);
+
+    // Auto-release: run 5 min after startup then every 6 hours.
+    // Releases payment for confirmed+paid bookings whose appointment ended >72h ago
+    // with no customer confirmation, so businesses are never left waiting forever.
+    const { runAutoRelease } = require('./controllers/bookingsController');
+    setTimeout(() => {
+      runAutoRelease();
+      setInterval(runAutoRelease, 6 * 60 * 60 * 1000);
+    }, 5 * 60 * 1000);
+  });
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`Port ${PORT} is already in use. Set PORT to a free port, for example: PORT=5101 npm start`);
