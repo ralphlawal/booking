@@ -99,8 +99,8 @@ export default function AdminLayout() {
         className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transform lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ transition: 'transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
-        {/* Logo */}
-        <div className="h-16 flex items-center px-5 border-b border-gray-100 dark:border-gray-800">
+        {/* Logo — top padding clears notch in landscape */}
+        <div className="flex items-center px-5 border-b border-gray-100 dark:border-gray-800" style={{ height: 'calc(4rem + env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <img src={logoSrc} alt="BookAm Business" className="h-9 w-auto object-contain" />
         </div>
 
@@ -179,8 +179,12 @@ export default function AdminLayout() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {/* Topbar */}
-        <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+        {/* Topbar — padding-top pushes content below notch / Dynamic Island */}
+        <header
+          className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex-shrink-0"
+          style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        >
+        <div className="h-16 flex items-center justify-between px-4 lg:px-6">
           {/* Mobile: hamburger */}
           <button className="lg:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => setSidebarOpen(true)}>
             <MenuIcon className="w-5 h-5" />
@@ -225,6 +229,7 @@ export default function AdminLayout() {
               <LogoutIcon className="w-5 h-5" />
             </button>
           </div>
+        </div>
         </header>
 
         {/* Content */}

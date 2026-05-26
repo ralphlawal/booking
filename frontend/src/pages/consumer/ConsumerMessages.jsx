@@ -91,8 +91,8 @@ export default function ConsumerMessages() {
 
   return (
     <div className="flex flex-col bg-gray-50 dark:bg-gray-950 h-consumer-viewport">
-      {/* Nav */}
-      <nav className="flex-shrink-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      {/* Nav — padding-top clears notch / Dynamic Island */}
+      <nav className="flex-shrink-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
           {/* Mobile: show back to list when in a chat */}
           {showingChat ? (

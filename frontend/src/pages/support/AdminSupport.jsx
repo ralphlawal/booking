@@ -998,8 +998,8 @@ export default function AdminSupport() {
 
   return (
     <div className="flex flex-col bg-gray-50 dark:bg-gray-950" style={{ height: '100dvh' }}>
-      {/* Header */}
-      <header className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+      {/* Header — padding-top clears notch / Dynamic Island */}
+      <header className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="px-4 h-14 flex items-center gap-3">
           {/* Mobile back button when in chat */}
           {showingChat ? (
