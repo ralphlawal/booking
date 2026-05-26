@@ -2,17 +2,10 @@
 // The browser calls its own domain (no CORS). Render gets a server-to-server call (no CORS).
 export const config = { runtime: 'edge' };
 
-// VITE_* vars are build-time only and unavailable in edge functions at runtime.
-// BACKEND_URL must be set in Vercel so production never silently points at an old server.
-const BACKEND = process.env.BACKEND_URL;
+// BACKEND_URL should be set in Vercel env vars. Falls back to the known Render URL.
+const BACKEND = process.env.BACKEND_URL || 'https://bookly-api-3bz0.onrender.com';
 
 export default async function handler(req) {
-  if (!BACKEND) {
-    return new Response(JSON.stringify({ error: 'Backend proxy is not configured' }), {
-      status: 503,
-      headers: { 'content-type': 'application/json' },
-    });
-  }
 
   const url = new URL(req.url);
 
