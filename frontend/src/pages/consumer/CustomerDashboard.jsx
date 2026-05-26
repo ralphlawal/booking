@@ -837,13 +837,18 @@ export default function CustomerDashboard() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="card p-4 animate-pulse">
+              <div key={i} className="card p-4 animate-pulse" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="flex gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-gray-200 dark:bg-gray-800" />
+                  <div className="w-11 h-11 rounded-xl bg-gray-200 dark:bg-gray-800 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2" />
-                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/3" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded-full w-1/2" />
+                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/3" />
+                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-2/5" />
                   </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-xl flex-1" />
+                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-xl w-24" />
                 </div>
               </div>
             ))}
@@ -869,8 +874,10 @@ export default function CustomerDashboard() {
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
-              {upcoming.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} onReschedule={setRescheduleTarget} past={false} from={location} />
+              {upcoming.map((b, i) => (
+                <div key={b.id} className="animate-in" style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}>
+                  <BookingCard booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} onReschedule={setRescheduleTarget} past={false} from={location} />
+                </div>
               ))}
             </div>
           )
@@ -884,8 +891,10 @@ export default function CustomerDashboard() {
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
-              {past.map((b) => (
-                <BookingCard key={b.id} booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past from={location} />
+              {past.map((b, i) => (
+                <div key={b.id} className="animate-in" style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}>
+                  <BookingCard booking={b} onRebook={handleRebook} onCancel={setCancelTarget} onReview={setReviewTarget} onConfirmService={setConfirmTarget} onDispute={setDisputeTarget} past from={location} />
+                </div>
               ))}
             </div>
           )
@@ -901,13 +910,14 @@ export default function CustomerDashboard() {
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
-              {prefs.map((p) => (
-                <PreferenceCard
-                  key={p.business_id}
-                  pref={p}
-                  onRemove={handleRemovePref}
-                  onBook={(pref) => navigate(`/book/${pref.slug}`, { state: { prefill_service_id: pref.service_id } })}
-                />
+              {prefs.map((p, i) => (
+                <div key={p.business_id} className="animate-in" style={{ animationDelay: `${Math.min(i * 60, 300)}ms` }}>
+                  <PreferenceCard
+                    pref={p}
+                    onRemove={handleRemovePref}
+                    onBook={(pref) => navigate(`/book/${pref.slug}`, { state: { prefill_service_id: pref.service_id } })}
+                  />
+                </div>
               ))}
             </div>
           )

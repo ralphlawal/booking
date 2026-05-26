@@ -34,21 +34,21 @@
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm
-    hover:bg-primary-700 active:bg-primary-800 transition-all duration-150 shadow-primary hover:shadow-lg hover:-translate-y-px active:translate-y-0
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0;
+    hover:bg-primary-700 active:bg-primary-800 active:scale-[0.97] transition-all duration-150 shadow-primary hover:shadow-lg hover:-translate-y-px active:translate-y-0
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 disabled:active:scale-100;
   }
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
     bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200
     border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-sm
     hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600
-    active:bg-gray-100 dark:active:bg-gray-600
+    active:bg-gray-100 dark:active:bg-gray-600 active:scale-[0.97]
     transition-all duration-150
     disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl font-semibold text-sm
-    hover:bg-red-700 active:bg-red-800 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+    hover:bg-red-700 active:bg-red-800 active:scale-[0.97] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .input {
     @apply w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm
@@ -79,7 +79,7 @@
     @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-card;
   }
   .card-hover {
-    @apply card hover:shadow-card-hover hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-200;
+    @apply card hover:shadow-card-hover hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-0.5 transition-all duration-200;
   }
   .modal-panel {
     @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl;
@@ -112,13 +112,32 @@
   .pb-consumer-nav { padding-bottom: var(--consumer-nav-padding); }
   .pb-consumer-cta { padding-bottom: var(--consumer-cta-padding); }
   .h-consumer-viewport { height: calc(100dvh - var(--consumer-nav-height)); }
-  .animate-in { animation: animIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-in { animation: animIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
+  /* Stagger delays for list animations */
+  .delay-0  { animation-delay: 0ms; }
+  .delay-50 { animation-delay: 50ms; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-150 { animation-delay: 150ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-250 { animation-delay: 250ms; }
+  .delay-300 { animation-delay: 300ms; }
 }
 
 @keyframes animIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% center; }
+  to   { background-position: -200% center; }
+}
+/* Shimmer skeleton — apply on top of animate-pulse elements */
+.shimmer-bg {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
 }
 
 .bookam-loader {

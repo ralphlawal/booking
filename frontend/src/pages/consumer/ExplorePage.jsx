@@ -298,11 +298,12 @@ export default function ExplorePage() {
         {loading ? (
           <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="card p-0 overflow-hidden animate-pulse">
+              <div key={i} className="card p-0 overflow-hidden animate-pulse" style={{ animationDelay: `${i * 60}ms` }}>
                 <div className="h-28 bg-gray-200 dark:bg-gray-800" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4" />
-                  <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/2" />
+                <div className="p-4 space-y-2.5">
+                  <div className="h-3.5 bg-gray-200 dark:bg-gray-800 rounded-full w-3/4" />
+                  <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full w-1/2" />
+                  <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full w-2/3" />
                 </div>
               </div>
             ))}
@@ -350,7 +351,11 @@ export default function ExplorePage() {
               <MapView results={results} coords={coords} onSwitchList={() => setViewMode('list')} from={location} />
             ) : (
               <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {results.map((biz) => <BusinessCard key={biz.id} biz={biz} from={location} />)}
+                {results.map((biz, i) => (
+                  <div key={biz.id} className="animate-in" style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}>
+                    <BusinessCard biz={biz} from={location} />
+                  </div>
+                ))}
               </div>
             )}
           </>

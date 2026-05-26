@@ -127,6 +127,7 @@ export default function FeedPage() {
   const [hasMore, setHasMore] = useState(true);
   const [category, setCategory] = useState('All');
   const offsetRef = useRef(0);
+  const touchStartX = useRef(null);
   const LIMIT = 10;
 
   const handleModeSwitch = (m) => {
@@ -135,6 +136,17 @@ export default function FeedPage() {
     }
     setMode(m);
     setCategory('All');
+  };
+
+  // Swipe left/right to switch between For You / Following
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const dx = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+    if (Math.abs(dx) < 60) return;
+    if (dx > 0 && mode === 'all') handleModeSwitch('following');
+    else if (dx < 0 && mode === 'following') handleModeSwitch('all');
   };
 
   const load = useCallback(async (reset = false) => {
@@ -172,7 +184,11 @@ export default function FeedPage() {
   }, [load]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-consumer-nav">
+    <div
+      className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-consumer-nav"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -218,8 +234,23 @@ export default function FeedPage() {
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4">
         {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-3 border-primary-600 border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="card overflow-hidden animate-pulse" style={{ animationDelay: `${i * 80}ms` }}>
+                <div className="flex items-center gap-3 p-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-200 dark:bg-gray-800 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 bg-gray-200 dark:bg-gray-800 rounded-full w-2/5" />
+                    <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full w-1/4" />
+                  </div>
+                </div>
+                <div className="mx-4 h-44 bg-gray-200 dark:bg-gray-800 rounded-xl mb-2" />
+                <div className="p-4 pt-2 space-y-2">
+                  <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full w-3/4" />
+                  <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/2" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-16">
@@ -240,7 +271,11 @@ export default function FeedPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {posts.map(post => <PostCard key={post.id} post={post} />)}
+            {posts.map((post, i) => (
+              <div key={post.id} className="animate-in" style={{ animationDelay: `${Math.min(i * 70, 350)}ms` }}>
+                <PostCard post={post} />
+              </div>
+            ))}
             {hasMore && (
               <button
                 onClick={() => load(false)}

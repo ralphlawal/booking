@@ -95,7 +95,10 @@ export default function AdminLayout() {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transform transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transform lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ transition: 'transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)' }}
+      >
         {/* Logo */}
         <div className="h-16 flex items-center px-5 border-b border-gray-100 dark:border-gray-800">
           <img src={logoSrc} alt="BookAm Business" className="h-9 w-auto object-contain" />
