@@ -27,15 +27,15 @@ export default function ConsumerBottomNav() {
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center py-1.5 gap-0.5 min-h-[52px] tap-highlight-none transition-colors ${
                 isActive
-                  ? 'text-gray-950 dark:text-white'
-                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'text-primary-600 dark:text-primary-400'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
               }`
             }
           >
             {({ isActive }) => (
               <>
                 <div className={`relative p-1.5 rounded-lg transition-all duration-200 ${
-                  isActive ? 'bg-gray-950 text-white dark:bg-white dark:text-gray-950 shadow-sm' : ''
+                  isActive ? 'bg-primary-50 dark:bg-primary-900/40' : ''
                 }`}>
                   <Icon
                     className={`w-[18px] h-[18px] transition-transform duration-150 ${isActive ? 'scale-105' : ''}`}

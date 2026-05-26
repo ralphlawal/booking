@@ -35,8 +35,8 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-950 dark:bg-white text-white dark:text-gray-950 rounded-lg font-semibold text-sm
-    hover:bg-gray-800 dark:hover:bg-gray-100 active:bg-gray-900 dark:active:bg-gray-200 transition-all duration-150 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-lg font-semibold text-sm
+    hover:bg-primary-700 active:bg-primary-800 transition-all duration-150 shadow-primary hover:shadow-lg hover:-translate-y-px active:translate-y-0
     disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0;
   }
   .btn-secondary {
