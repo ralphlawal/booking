@@ -286,6 +286,8 @@ export const adminPanelAPI = {
   getConsumers: () => adminAxios.get('/admin/consumers'),
   getFinancialReport: (period) => adminAxios.get('/admin/financial', { params: { period } }),
   getLaunchReadiness: () => adminAxios.get('/admin/launch-readiness'),
+  getManualPayouts: () => adminAxios.get('/admin/manual-payouts'),
+  markManualPaid: (businessId) => adminAxios.post(`/admin/manual-payouts/${businessId}/mark-paid`),
 };
 
 export const staffAPI = {

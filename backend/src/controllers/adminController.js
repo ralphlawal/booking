@@ -385,3 +385,62 @@ exports.getLaunchReadiness = async (req, res) => {
     res.status(500).json({ error: 'Failed to load launch readiness' });
   }
 };
+
+// GET /api/admin/manual-payouts
+// Lists businesses with manual bank details + their pending payout totals.
+exports.getManualPayouts = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { rows } = await db.query(`
+      SELECT
+        b.id,
+        b.name,
+        b.email,
+        b.bank_holder_name,
+        b.bank_account_number,
+        b.bank_sort_code,
+        b.bank_iban,
+        b.bank_bic,
+        b.bank_routing_number,
+        b.bank_name,
+        b.bank_country,
+        b.bank_currency,
+        b.bank_updated_at,
+        b.stripe_account_id,
+        b.stripe_onboarding_complete,
+        COALESCE(SUM(CASE WHEN bk.payment_status = 'paid' AND (bk.stripe_transfer_status IS NULL OR bk.stripe_transfer_status = 'pending') THEN s.price ELSE 0 END), 0) AS pending_payout,
+        COUNT(CASE WHEN bk.payment_status = 'paid' AND (bk.stripe_transfer_status IS NULL OR bk.stripe_transfer_status = 'pending') THEN 1 END) AS pending_booking_count,
+        COUNT(CASE WHEN bk.stripe_transfer_status = 'manual_paid' THEN 1 END) AS paid_count
+      FROM businesses b
+      LEFT JOIN bookings bk ON bk.business_id = b.id
+      LEFT JOIN services s ON s.id = bk.service_id
+      WHERE b.bank_holder_name IS NOT NULL AND b.bank_holder_name <> ''
+      GROUP BY b.id
+      ORDER BY pending_payout DESC, b.name
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('[admin/manual-payouts]', err.message);
+    res.status(500).json({ error: 'Failed to load manual payouts' });
+  }
+};
+
+// POST /api/admin/manual-payouts/:businessId/mark-paid
+// Marks all pending bookings for a business as manually paid out.
+exports.markManualPaid = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  const { businessId } = req.params;
+  try {
+    const { rowCount } = await db.query(`
+      UPDATE bookings
+      SET stripe_transfer_status = 'manual_paid'
+      WHERE business_id = $1
+        AND payment_status = 'paid'
+        AND (stripe_transfer_status IS NULL OR stripe_transfer_status = 'pending')
+    `, [businessId]);
+    res.json({ updated: rowCount });
+  } catch (err) {
+    console.error('[admin/mark-manual-paid]', err.message);
+    res.status(500).json({ error: 'Failed to mark as paid' });
+  }
+};

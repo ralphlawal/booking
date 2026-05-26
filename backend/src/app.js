@@ -193,6 +193,8 @@ app.put('/api/admin/businesses/:id', adminCtrl.editBusiness);
 app.get('/api/admin/consumers', adminCtrl.getConsumers);
 app.get('/api/admin/financial', adminCtrl.getFinancialReport);
 app.get('/api/admin/launch-readiness', adminCtrl.getLaunchReadiness);
+app.get('/api/admin/manual-payouts', adminCtrl.getManualPayouts);
+app.post('/api/admin/manual-payouts/:businessId/mark-paid', adminCtrl.markManualPaid);
 
 // Review replies (business authenticated)
 const reviewsCtrl = require('./controllers/reviewsController');

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2 } from 'lucide-react';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2, Banknote, Copy, Check } from 'lucide-react';
 import { adminChatAPI, adminDisputesAPI, broadcastAPI, adminPanelAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -938,6 +938,183 @@ function UsersPanel({ onStartChat }) {
   );
 }
 
+function CopyField({ label, value }) {
+  const [copied, setCopied] = useState(false);
+  if (!value) return null;
+  const copy = () => {
+    navigator.clipboard.writeText(value).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+  return (
+    <div className="flex items-center justify-between gap-2 py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+      <span className="text-[11px] text-gray-400 w-28 flex-shrink-0">{label}</span>
+      <span className="text-[12px] font-mono font-semibold text-gray-800 dark:text-gray-200 flex-1 truncate">{value}</span>
+      <button onClick={copy} className="p-1 rounded text-gray-300 hover:text-primary-600 transition-colors flex-shrink-0">
+        {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+      </button>
+    </div>
+  );
+}
+
+function PayoutsPanel() {
+  const [businesses, setBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [marking, setMarking] = useState(null);
+  const [expanded, setExpanded] = useState(null);
+
+  const load = () => adminPanelAPI.getManualPayouts().then(setBusinesses).catch(err => toast.error(err.message || 'Failed to load payouts'));
+  useEffect(() => { load().finally(() => setLoading(false)); }, []);
+
+  const markPaid = async (b) => {
+    setMarking(b.id);
+    try {
+      const { updated } = await adminPanelAPI.markManualPaid(b.id);
+      toast.success(`Marked ${updated} booking${updated === 1 ? '' : 's'} as paid for ${b.name}`);
+      setBusinesses(prev => prev.map(x => x.id === b.id ? { ...x, pending_payout: 0, pending_booking_count: 0, paid_count: parseInt(x.paid_count) + parseInt(x.pending_booking_count) } : x));
+    } catch (err) {
+      toast.error(err.message || 'Failed');
+    } finally {
+      setMarking(null);
+    }
+  };
+
+  const hasPending = businesses.filter(b => parseFloat(b.pending_payout) > 0);
+  const noPending  = businesses.filter(b => parseFloat(b.pending_payout) <= 0);
+
+  const fmt = (v, currency) => {
+    const sym = (currency || 'GBP').toUpperCase() === 'USD' ? '$' : (currency || 'GBP').toUpperCase() === 'EUR' ? '€' : '₦';
+    const amount = parseFloat(v || 0).toFixed(2);
+    try {
+      return new Intl.NumberFormat('en-GB', { style: 'currency', currency: (currency || 'GBP').toUpperCase() }).format(amount);
+    } catch { return `${sym}${amount}`; }
+  };
+
+  const BizCard = ({ b }) => {
+    const open = expanded === b.id;
+    const pending = parseFloat(b.pending_payout);
+    return (
+      <div className={`bg-white dark:bg-gray-900 rounded-2xl border shadow-sm overflow-hidden ${pending > 0 ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800 opacity-70'}`}>
+        <button className="w-full flex items-start gap-3 p-4 text-left" onClick={() => setExpanded(open ? null : b.id)}>
+          <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 font-bold text-primary-600 dark:text-primary-400 text-sm">
+            {(b.name?.[0] || '?').toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="font-bold text-sm text-gray-900 dark:text-white">{b.name}</p>
+                <p className="text-xs text-gray-400 truncate">{b.email}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                {pending > 0 ? (
+                  <p className="text-base font-black text-amber-600 dark:text-amber-400">{fmt(pending, b.bank_currency)}</p>
+                ) : (
+                  <p className="text-xs font-semibold text-green-600 dark:text-green-400">All paid</p>
+                )}
+                <p className="text-[10px] text-gray-400">{b.pending_booking_count} booking{b.pending_booking_count === 1 ? '' : 's'} pending</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">{b.bank_country || '?'}</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">{(b.bank_currency || 'GBP').toUpperCase()}</span>
+              {b.stripe_onboarding_complete ? (
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Stripe active</span>
+              ) : b.stripe_account_id ? (
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">Stripe pending</span>
+              ) : (
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Manual bank</span>
+              )}
+              <span className="text-[10px] text-gray-400 ml-auto">{open ? '▲' : '▼'}</span>
+            </div>
+          </div>
+        </button>
+
+        {open && (
+          <div className="px-4 pb-4 border-t border-gray-50 dark:border-gray-800 pt-3 space-y-1">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Bank details — send payment manually</p>
+            <CopyField label="Account holder" value={b.bank_holder_name} />
+            <CopyField label="Bank name"      value={b.bank_name} />
+            <CopyField label="Account no."    value={b.bank_account_number} />
+            <CopyField label="Sort code"      value={b.bank_sort_code} />
+            <CopyField label="IBAN"           value={b.bank_iban} />
+            <CopyField label="BIC / SWIFT"    value={b.bank_bic} />
+            <CopyField label="Routing no."    value={b.bank_routing_number} />
+            <CopyField label="Country"        value={b.bank_country} />
+            <CopyField label="Currency"       value={b.bank_currency} />
+            {b.bank_updated_at && (
+              <p className="text-[10px] text-gray-400 pt-1">Updated {new Date(b.bank_updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            )}
+            {pending > 0 && (
+              <div className="pt-3">
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-3 text-xs">
+                  <p className="font-bold text-amber-800 dark:text-amber-300">Amount to transfer: {fmt(pending, b.bank_currency)}</p>
+                  <p className="text-amber-700 dark:text-amber-400 mt-0.5">
+                    {b.pending_booking_count} confirmed booking{b.pending_booking_count === 1 ? '' : 's'} awaiting payout.
+                    Transfer this amount to the account above, then click "Mark as paid."
+                  </p>
+                </div>
+                <button
+                  onClick={() => markPaid(b)}
+                  disabled={marking === b.id}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {marking === b.id ? 'Marking…' : `Mark ${fmt(pending, b.bank_currency)} as paid`}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-2xl mx-auto w-full space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Banknote className="w-5 h-5 text-primary-600" /> Manual Payouts
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Businesses that submitted bank details for manual transfer.</p>
+        </div>
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-28 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      ) : businesses.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <Banknote className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+          <p className="font-medium">No manual bank details yet</p>
+          <p className="text-sm mt-1">Businesses in unsupported Stripe countries will appear here.</p>
+        </div>
+      ) : (
+        <>
+          {hasPending.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Pending payout — {hasPending.length} business{hasPending.length === 1 ? '' : 'es'}
+              </p>
+              {hasPending.map(b => <BizCard key={b.id} b={b} />)}
+            </div>
+          )}
+          {noPending.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-4">
+                All settled — {noPending.length} business{noPending.length === 1 ? '' : 'es'}
+              </p>
+              {noPending.map(b => <BizCard key={b.id} b={b} />)}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function AdminSupport() {
   const [authed, setAuthed] = useState(!!localStorage.getItem(TOKEN_KEY));
   const [rooms, setRooms] = useState([]);
@@ -1035,6 +1212,7 @@ export default function AdminSupport() {
                 { id: 'users', icon: <Users className="w-3 h-3" />, label: 'Users' },
                 { id: 'stats', icon: <BarChart2 className="w-3 h-3" />, label: 'Stats' },
                 { id: 'financial', icon: <TrendingUp className="w-3 h-3" />, label: 'Revenue' },
+                { id: 'payouts',   icon: <Banknote className="w-3 h-3" />,   label: 'Payouts' },
                 { id: 'readiness', icon: <ShieldCheck className="w-3 h-3" />, label: 'Launch' },
               ].map(t => (
                 <button key={t.id} onClick={() => setMainTab(t.id)}
@@ -1096,6 +1274,12 @@ export default function AdminSupport() {
       {mainTab === 'financial' && (
         <div className="flex flex-1 overflow-hidden">
           <FinancialPanel />
+        </div>
+      )}
+
+      {mainTab === 'payouts' && (
+        <div className="flex flex-1 overflow-hidden">
+          <PayoutsPanel />
         </div>
       )}
 
