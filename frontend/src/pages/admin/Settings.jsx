@@ -10,6 +10,15 @@ import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check } from
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const INTERVALS = [15,30,45,60];
+
+// Countries where Stripe Connect Express accounts are supported
+const STRIPE_CONNECT_COUNTRIES = new Set([
+  'AU','AT','BE','BR','BG','CA','HR','CY','CZ','DK','EE','FI','FR','DE',
+  'GH','GI','GR','HK','HU','IN','ID','IE','IT','JP','LV','LI','LT','LU',
+  'MY','MT','MX','NL','NZ','NO','PL','PT','RO','SG','SK','SI','ES','SE',
+  'CH','TH','AE','GB','US',
+]);
+
 const BANK_COUNTRIES = [
   { value: 'GB', label: 'United Kingdom', currency: 'GBP' },
   { value: 'IE', label: 'Ireland', currency: 'EUR' },
@@ -333,10 +342,15 @@ export default function Settings() {
 
   const handleStripeDashboard = async () => {
     setConnectWorking(true);
+    // Open a blank window immediately (before the async call) so iOS Safari
+    // doesn't block it as a popup — then navigate it once we have the URL.
+    const win = window.open('', '_blank');
     try {
       const { url } = await stripeConnectAPI.dashboard();
-      window.open(url, '_blank', 'noopener');
+      if (win) win.location.href = url;
+      else window.location.href = url; // fallback if popup was blocked anyway
     } catch (err) {
+      if (win) win.close();
       toast.error(err.message || 'Could not open Stripe dashboard');
     } finally { setConnectWorking(false); }
   };
@@ -702,9 +716,23 @@ export default function Settings() {
       {/* Payouts */}
       {tab === 'payouts' && (
         <div className="max-w-2xl animate-slide-up space-y-5">
+        {(() => {
+          const stripeSupported = STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB');
+          return stripeSupported ? null : (
+            <div className="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex items-start gap-3">
+              <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>
+                <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Automatic payouts not available in your country</p>
+                <p className="text-xs text-amber-600 dark:text-amber-500 mt-0.5">
+                  Stripe Connect doesn't support your bank country yet. Add your bank details below — we'll transfer your earnings manually within 3–5 business days of each confirmed booking.
+                </p>
+              </div>
+            </div>
+          );
+        })()}
 
-          {/* Stripe Connect card */}
-          <div className="card p-6">
+          {/* Stripe Connect card — only shown for supported countries */}
+          {STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB') && <div className="card p-6">
             <div className="flex items-start gap-4 mb-5">
               <div className="w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
                 {/* Stripe-ish logo placeholder */}
@@ -799,9 +827,10 @@ export default function Settings() {
                 </p>
               </div>
             )}
-          </div>
+          </div>}
 
-          {/* Manual bank details (reference / fallback) */}
+          {/* Manual bank details — collapsible for Stripe countries, expanded for unsupported */}
+          {STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB') ? (
           <details className="card overflow-hidden">
             <summary className="p-5 cursor-pointer font-semibold text-gray-700 dark:text-gray-300 text-sm select-none list-none flex items-center justify-between">
               Manual bank details (optional reference)
@@ -863,12 +892,73 @@ export default function Settings() {
                       onChange={e => setBankForm(p => ({ ...p, bic_swift: e.target.value.toUpperCase() }))} />
                   </div>
                 </div>
-                <button type="submit" disabled={bankSaving} className="btn-secondary text-sm disabled:opacity-50">
+                <button type="submit" disabled={bankSaving} className="btn-primary text-sm disabled:opacity-50">
                   {bankSaving ? 'Saving…' : 'Save Bank Details'}
                 </button>
               </form>
             </div>
           </details>
+          ) : (
+          <div className="card p-6">
+            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Your Bank Details</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              We'll use these to send your earnings manually after each confirmed booking.
+            </p>
+            <form onSubmit={saveBankDetails} className="space-y-4">
+              <div>
+                <label className="label">Account Holder Name</label>
+                <input className="input" placeholder="As it appears on your bank account" value={bankForm.holder_name}
+                  onChange={e => setBankForm(p => ({ ...p, holder_name: e.target.value }))} required />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Bank Country</label>
+                  <select className="input" value={bankForm.bank_country} onChange={e => updateBankCountry(e.target.value)} required>
+                    {BANK_COUNTRIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Currency</label>
+                  <select className="input" value={bankForm.bank_currency} onChange={e => setBankForm(p => ({ ...p, bank_currency: e.target.value }))} required>
+                    {BANK_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="label">Bank Name</label>
+                <input className="input" placeholder="e.g. GTBank, Access Bank, Zenith" value={bankForm.bank_name}
+                  onChange={e => setBankForm(p => ({ ...p, bank_name: e.target.value }))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Sort / Routing Code</label>
+                  <input className="input" placeholder="000000" value={bankForm.sort_code}
+                    onChange={e => setBankForm(p => ({ ...p, sort_code: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label">Account Number</label>
+                  <input className="input" placeholder="0123456789" value={bankForm.account_number}
+                    onChange={e => setBankForm(p => ({ ...p, account_number: e.target.value }))} required />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label">IBAN (if applicable)</label>
+                  <input className="input uppercase" placeholder="GB82 WEST 1234 5698 7654 32" value={bankForm.iban}
+                    onChange={e => setBankForm(p => ({ ...p, iban: e.target.value.toUpperCase() }))} />
+                </div>
+                <div>
+                  <label className="label">BIC / SWIFT</label>
+                  <input className="input uppercase" placeholder="GTBINGLA" value={bankForm.bic_swift}
+                    onChange={e => setBankForm(p => ({ ...p, bic_swift: e.target.value.toUpperCase() }))} />
+                </div>
+              </div>
+              <button type="submit" disabled={bankSaving} className="btn-primary w-full disabled:opacity-50">
+                {bankSaving ? 'Saving…' : 'Save Bank Details'}
+              </button>
+            </form>
+          </div>
+          )}
         </div>
       )}
 
