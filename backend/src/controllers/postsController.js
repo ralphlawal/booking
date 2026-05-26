@@ -1,12 +1,16 @@
 const db = require('../config/database');
 const crypto = require('crypto');
-const multer = require('multer');
-
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 35 * 1024 * 1024 } });
-exports.uploadMiddleware = upload.single('image');
+const { createUpload } = require('../middleware/upload');
 
 const ALLOWED_TYPES = ['photo', 'offer', 'availability', 'announcement'];
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
+
+exports.uploadMiddleware = createUpload({
+  fieldName: 'image',
+  fileSize: 35 * 1024 * 1024,
+  label: 'Post media',
+  mimeTypes: ALLOWED_MIME,
+});
 
 // POST /api/posts
 exports.create = async (req, res) => {

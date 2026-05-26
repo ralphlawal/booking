@@ -1,9 +1,8 @@
 const db = require('../config/database');
 const crypto = require('crypto');
-const multer = require('multer');
+const { createImageUpload } = require('../middleware/upload');
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
-exports.uploadMiddleware = upload.single('photo');
+exports.uploadMiddleware = createImageUpload({ fieldName: 'photo', fileSize: 10 * 1024 * 1024, label: 'Photo' });
 
 exports.listPublic = async (req, res) => {
   try {

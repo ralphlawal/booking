@@ -6,6 +6,7 @@ import { consumerAPI, reviewsAPI, referralAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import BackButton from '../../components/shared/BackButton';
+import { compressImage } from '../../utils/compressImage';
 import toast from 'react-hot-toast';
 
 function StarPicker({ value, onChange }) {
@@ -230,9 +231,15 @@ export default function ConsumerProfile() {
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Please upload a JPG, PNG, or WebP image');
+      e.target.value = '';
+      return;
+    }
     setAvatarUploading(true);
     try {
-      const { avatar_url } = await consumerAPI.uploadAvatar(file);
+      const compressed = await compressImage(file, 640, 0.82);
+      const { avatar_url } = await consumerAPI.uploadAvatar(compressed);
       await update({ avatar_url });
       toast.success('Profile photo updated');
     } catch (err) {
@@ -295,7 +302,7 @@ export default function ConsumerProfile() {
                 ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 : <Camera className="w-3.5 h-3.5" />}
             </button>
-            <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">{consumer.full_name}</h1>
           <p className="text-sm text-gray-400">{consumer.email}</p>

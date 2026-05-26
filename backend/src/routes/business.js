@@ -3,22 +3,15 @@ const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const { authenticate, attachBusiness } = require('../middleware/auth');
 const ctrl = require('../controllers/businessController');
-const multer = require('multer');
+const { createImageUpload } = require('../middleware/upload');
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/image\/(jpeg|png|gif|webp)/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only JPG, PNG, WebP or GIF images are allowed'));
-  },
-});
+const logoUpload = createImageUpload({ fieldName: 'logo', fileSize: 6 * 1024 * 1024, label: 'Logo' });
 
 // Protected (must come before /:slug to avoid route collision)
 router.get('/me', authenticate, attachBusiness, ctrl.getMyBusiness);
 router.post('/', authenticate, ctrl.createBusiness);
 router.put('/me', authenticate, attachBusiness, ctrl.updateBusiness);
-router.post('/me/logo', authenticate, attachBusiness, upload.single('logo'), ctrl.uploadLogo);
+router.post('/me/logo', authenticate, attachBusiness, logoUpload, ctrl.uploadLogo);
 router.get('/me/qr', authenticate, attachBusiness, ctrl.getQRCode);
 router.post('/me/request-verification', authenticate, attachBusiness, ctrl.requestVerification);
 router.post('/me/verification-details', authenticate, attachBusiness, ctrl.submitVerificationDetails);

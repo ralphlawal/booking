@@ -192,8 +192,8 @@ export default function Settings() {
       toast.error('Please upload a JPG, PNG, or WebP image');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be under 5MB');
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error('Image must be under 15MB');
       return;
     }
 
@@ -1128,7 +1128,7 @@ export function PhotosTab({ photos, setPhotos }) {
         <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="btn-primary text-sm flex items-center gap-1.5">
           {uploading?<Spinner/>:<Plus className="w-4 h-4"/>}{uploading?'Uploading…':'Add Photo'}
         </button>
-        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload}/>
+        <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleUpload}/>
       </div>
       {photos.length === 0 ? (
         <div className="card p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary-300 transition-colors" onClick={()=>inputRef.current?.click()}>

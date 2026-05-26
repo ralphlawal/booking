@@ -1,5 +1,10 @@
 export function compressImage(file, maxPx = 512, quality = 0.85) {
   return new Promise((resolve, reject) => {
+    if (!file?.type?.startsWith('image/')) {
+      reject(new Error('Please choose an image file'));
+      return;
+    }
+
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
