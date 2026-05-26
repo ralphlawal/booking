@@ -107,6 +107,7 @@ app.use('/api/chat', require('./routes/chat'));
 const { authenticate, attachBusiness } = require('./middleware/auth');
 const staffCtrl = require('./controllers/staffController');
 const photosCtrl = require('./controllers/photosController');
+const postsCtrl = require('./controllers/postsController');
 const waitlistCtrl = require('./controllers/waitlistController');
 const promoCtrl = require('./controllers/promoController');
 const intakeCtrl = require('./controllers/intakeController');
@@ -124,6 +125,15 @@ app.get('/api/photos', authenticate, attachBusiness, photosCtrl.list);
 app.post('/api/photos', authenticate, attachBusiness, photosCtrl.uploadMiddleware, photosCtrl.upload);
 app.delete('/api/photos/:id', authenticate, attachBusiness, photosCtrl.remove);
 app.put('/api/photos/reorder', authenticate, attachBusiness, photosCtrl.reorder);
+
+// Business posts
+app.get('/api/posts/feed', postsCtrl.getFeed);
+app.get('/api/posts/public/:slug', postsCtrl.getPublic);
+app.post('/api/posts/:id/view', postsCtrl.recordView);
+app.post('/api/posts/:id/book-click', postsCtrl.recordBookClick);
+app.get('/api/posts', authenticate, attachBusiness, postsCtrl.list);
+app.post('/api/posts', authenticate, attachBusiness, postsCtrl.uploadMiddleware, postsCtrl.create);
+app.delete('/api/posts/:id', authenticate, attachBusiness, postsCtrl.remove);
 
 // Waitlist
 app.post('/api/waitlist/:slug', waitlistCtrl.join);
@@ -245,6 +255,8 @@ async function start() {
       await pool.query(sql14);
       const sql15 = fs.readFileSync(path.join(__dirname, '../migrations/015_flexible_bank_details.sql'), 'utf8');
       await pool.query(sql15);
+      const sql16 = fs.readFileSync(path.join(__dirname, '../migrations/016_business_posts.sql'), 'utf8');
+      await pool.query(sql16);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');

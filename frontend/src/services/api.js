@@ -319,6 +319,16 @@ export const promoAPI = {
     api.post('/promo/validate', { code, business_slug, order_amount }),
 };
 
+export const postsAPI = {
+  create: (formData) => api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  list: () => api.get('/posts'),
+  getPublic: (slug) => api.get(`/posts/public/${slug}`),
+  getFeed: (params) => api.get('/posts/feed', { params }),
+  remove: (id) => api.delete(`/posts/${id}`),
+  recordView: (id) => api.post(`/posts/${id}/view`),
+  recordBookClick: (id) => api.post(`/posts/${id}/book-click`),
+};
+
 export const intakeAPI = {
   getPublic: (slug) => api.get(`/intake/public/${slug}`),
   get: () => api.get('/intake'),

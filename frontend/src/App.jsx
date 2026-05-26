@@ -54,7 +54,9 @@ import Bookings from './pages/admin/Bookings';
 import Calendar from './pages/admin/Calendar';
 import Customers from './pages/admin/Customers';
 import Settings from './pages/admin/Settings';
+import Posts from './pages/admin/Posts';
 import Onboarding from './pages/admin/Onboarding';
+import FeedPage from './pages/consumer/FeedPage';
 
 class ErrorBoundary extends Component {
   state = { hasError: false };
@@ -146,6 +148,7 @@ export default function App() {
               <Route path="calendar" element={<Calendar />} />
               <Route path="customers" element={<Customers />} />
               <Route path="messages" element={<AdminInbox />} />
+              <Route path="posts" element={<Posts />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 
@@ -154,6 +157,7 @@ export default function App() {
             <Route path="/customer/verify-email" element={<VerifyEmail type="consumer" />} />
 
             {/* Consumer pages */}
+            <Route path="/feed" element={<FeedPage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/match" element={<SmartMatchPage />} />
             <Route path="/profile/:slug" element={<BusinessProfile />} />

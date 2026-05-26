@@ -51,6 +51,21 @@ async function runMigrations() {
     ]) {
       addColumn('businesses', col);
     }
+    db.exec(`CREATE TABLE IF NOT EXISTS business_posts (
+      id TEXT PRIMARY KEY,
+      business_id INTEGER NOT NULL,
+      type TEXT NOT NULL DEFAULT 'photo',
+      caption TEXT,
+      image_url TEXT,
+      cta_label TEXT,
+      cta_service_id INTEGER,
+      offer_text TEXT,
+      offer_expires_at TEXT,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      views INTEGER NOT NULL DEFAULT 0,
+      booking_clicks INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`);
     console.log('SQLite migrations completed.');
   }
 }

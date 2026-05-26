@@ -3,9 +3,9 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
   Calendar, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
-  BadgeCheck,
+  BadgeCheck, Megaphone,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -109,6 +109,7 @@ export default function BusinessProfile() {
   const [reviewData, setReviewData] = useState({ reviews: [], stats: null });
   const [hours, setHours] = useState(null);
   const [photos, setPhotos] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -120,13 +121,15 @@ export default function BusinessProfile() {
       reviewsAPI.getForBusiness(slug).catch(() => ({ reviews: [], stats: null })),
       availabilityAPI.getPublicHours(slug).catch(() => null),
       photosAPI.listPublic(slug).catch(() => []),
+      postsAPI.getPublic(slug).catch(() => []),
     ])
-      .then(([biz, svcs, rev, avail, pics]) => {
+      .then(([biz, svcs, rev, avail, pics, pts]) => {
         setBusiness(biz);
         setServices((svcs.filter ? svcs.filter(s => s.is_active) : svcs));
         setReviewData(rev);
         setHours(avail);
         setPhotos(Array.isArray(pics) ? pics : []);
+        setPosts(Array.isArray(pts) ? pts : []);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -326,6 +329,43 @@ export default function BusinessProfile() {
             ))}
           </div>
         </div>
+
+        {/* Posts */}
+        {posts.length > 0 && (
+          <div className="lg:col-span-2 space-y-3">
+            <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 px-1">
+              <Megaphone className="w-4 h-4 text-primary-500" />
+              Posts
+            </h2>
+            {posts.map(post => {
+              const postMeta = { photo: 'Portfolio', offer: 'Offer', availability: 'Slots open', announcement: 'Update' };
+              return (
+                <div key={post.id} className="card p-4">
+                  {post.image_url && (
+                    <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-60 mb-3" loading="lazy" />
+                  )}
+                  {post.offer_text && <p className="text-sm font-bold text-amber-600 dark:text-amber-400 mb-1">{post.offer_text}</p>}
+                  {post.caption && <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{post.caption}</p>}
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-xs text-gray-400">
+                      {new Date(post.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    </span>
+                    {post.cta_label && (
+                      <Link
+                        to={`/book/${slug}`}
+                        state={{ from: location, prefill_service_id: post.cta_service_id || undefined }}
+                        onClick={() => postsAPI.recordBookClick(post.id).catch(() => {})}
+                        className="btn-primary text-xs px-4 py-2"
+                      >
+                        {post.cta_label}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Photo Gallery */}
         {photos.length > 0 && (

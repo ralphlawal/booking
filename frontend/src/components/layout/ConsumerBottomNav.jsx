@@ -1,10 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { CalendarDays, Search, MessageSquare, User } from 'lucide-react';
+import { CalendarDays, Rss, Search, MessageSquare, User } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 
 const NAV = [
   { to: '/customer/dashboard', icon: CalendarDays,  label: 'Bookings' },
+  { to: '/feed',               icon: Rss,           label: 'Feed'     },
   { to: '/explore',            icon: Search,        label: 'Explore'  },
   { to: '/customer/messages',  icon: MessageSquare, label: 'Chat'     },
   { to: '/customer/profile',   icon: User,          label: 'Profile'  },
