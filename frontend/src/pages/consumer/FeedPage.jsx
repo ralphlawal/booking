@@ -35,14 +35,14 @@ function PostCard({ post }) {
   }, [post.id]);
 
   return (
-    <article className="card-hover overflow-hidden">
+    <article className="card overflow-hidden">
       {/* Business header */}
       <Link
         to={`/profile/${post.business_slug}`}
         state={{ from: location }}
-        className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+        className="flex items-center gap-3 p-4 pb-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
       >
-        <div className="w-11 h-11 rounded-2xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center shadow-sm">
+        <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {post.logo_url ? (
             <img src={post.logo_url} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -54,7 +54,7 @@ function PostCard({ post }) {
             <span className="font-bold text-sm text-gray-900 dark:text-white truncate">{post.business_name}</span>
             {post.is_verified && <BadgeCheck className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />}
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
             {post.business_category && <span>{post.business_category}</span>}
             {parseFloat(post.avg_rating) > 0 && (
               <span className="flex items-center gap-0.5">
@@ -64,26 +64,27 @@ function PostCard({ post }) {
             )}
           </div>
         </div>
-        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 flex-shrink-0 ${meta.color}`}>
+        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0 ${meta.color}`}>
           <Icon className="w-3 h-3" />{meta.label}
         </span>
       </Link>
 
-      {/* Media — full-bleed within card */}
+      {/* Media */}
       {post.image_url && (
-        post.image_url.startsWith('data:video') ? (
-          <video src={post.image_url} className="w-full object-cover max-h-80" controls playsInline />
-        ) : (
-          <img src={post.image_url} alt="" className="w-full object-cover max-h-80" />
-        )
+        <div className="px-4">
+          {post.image_url.startsWith('data:video') ? (
+            <video src={post.image_url} className="w-full rounded-xl object-cover max-h-72" controls playsInline />
+          ) : (
+            <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-72" />
+          )}
+        </div>
       )}
 
       {/* Content */}
-      <div className="px-4 py-3.5 space-y-2">
+      <div className="p-4 pt-3 space-y-2">
         {post.offer_text && (
           <div className="flex items-center gap-2">
-            <Tag className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" />
-            <p className={`text-sm font-semibold ${post.is_expired ? 'text-gray-400 line-through' : 'text-amber-600 dark:text-amber-400'}`}>{post.offer_text}</p>
+            <p className={`text-sm font-bold ${post.is_expired ? 'text-gray-400 line-through' : 'text-amber-600 dark:text-amber-400'}`}>{post.offer_text}</p>
             {post.is_expired && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Expired</span>}
           </div>
         )}
@@ -99,7 +100,7 @@ function PostCard({ post }) {
           <Link
             to={`/profile/${post.business_slug}`}
             state={{ from: location }}
-            className="flex-1 text-center text-sm font-semibold py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-300 hover:text-primary-600 dark:hover:border-primary-700 dark:hover:text-primary-400 transition-all"
+            className="flex-1 text-center text-sm font-semibold py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-400 hover:text-primary-600 transition-all"
           >
             View profile
           </Link>
@@ -171,24 +172,24 @@ export default function FeedPage() {
   }, [load]);
 
   return (
-    <div className="app-surface pb-consumer-nav">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-consumer-nav">
       {/* Nav */}
-      <nav className="app-topbar">
+      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           {/* Mode toggle */}
-          <div className="flex bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-0.5 gap-0.5">
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5 gap-0.5">
             <button
               onClick={() => handleModeSwitch('all')}
-              className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${mode === 'all' ? 'bg-gray-950 dark:bg-white text-white dark:text-gray-950 shadow-sm' : 'text-gray-500'}`}
+              className={`text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all ${mode === 'all' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
             >
               For you
             </button>
             <button
               onClick={() => handleModeSwitch('following')}
-              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-md transition-all ${mode === 'following' ? 'bg-gray-950 dark:bg-white text-white dark:text-gray-950 shadow-sm' : 'text-gray-500'}`}
+              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all ${mode === 'following' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
             >
               <Users className="w-3 h-3" />Following
             </button>
@@ -197,14 +198,14 @@ export default function FeedPage() {
         </div>
         {/* Category filters — only in "For you" mode */}
         {mode === 'all' && (
-          <div className="flex gap-1.5 overflow-x-auto px-4 sm:px-6 pb-3 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 pb-3 scrollbar-none">
             {CATEGORIES.map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`flex-shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all ${
+                className={`flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
                   category === cat
-                    ? 'bg-primary-600 text-white shadow-primary'
+                    ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >

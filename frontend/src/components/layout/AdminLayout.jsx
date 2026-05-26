@@ -88,30 +88,30 @@ export default function AdminLayout() {
   const logoSrc = isDark ? LOGO_WHITE_H : LOGO_BLUE_H;
 
   return (
-    <div className="flex h-dvh bg-gray-100 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-dvh bg-gray-50 dark:bg-gray-950 overflow-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col transform transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transform transition-transform duration-300 ease-out lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Logo */}
-        <div className="h-14 flex items-center px-5 border-b border-gray-100 dark:border-gray-800">
-          <img src={logoSrc} alt="BookAm Business" className="h-8 w-auto object-contain" />
+        <div className="h-16 flex items-center px-5 border-b border-gray-100 dark:border-gray-800">
+          <img src={logoSrc} alt="BookAm Business" className="h-9 w-auto object-contain" />
         </div>
 
         {/* Business badge + copy link */}
         {business && (
-          <div className="mx-3 mt-3 p-3.5 bg-gray-950 dark:bg-white rounded-lg border border-gray-900 dark:border-gray-200 shadow-card">
-            <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-1">Your booking page</p>
-            <p className="text-sm font-bold text-white dark:text-gray-950 truncate">/book/{business.slug}</p>
+          <div className="mx-3 mt-3 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800/50">
+            <p className="text-xs text-primary-500 dark:text-primary-400 font-medium">Your booking page</p>
+            <p className="text-sm font-bold text-primary-800 dark:text-primary-300 truncate mt-0.5">/book/{business.slug}</p>
             <button
               onClick={copyLink}
-              className="mt-2.5 w-full flex items-center justify-center gap-1.5 text-xs font-bold text-gray-950 dark:text-white bg-white dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg py-2 transition-colors border border-white/10"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/40 hover:bg-primary-200 dark:hover:bg-primary-900/60 rounded-lg py-1.5 transition-colors"
             >
-              {copied ? <CheckIcon className="w-3.5 h-3.5 text-green-500" /> : <CopyIcon className="w-3.5 h-3.5" />}
-              {copied ? 'Copied!' : 'Copy booking link'}
+              {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
+              {copied ? 'Copied!' : 'Copy link'}
             </button>
           </div>
         )}
@@ -124,25 +124,19 @@ export default function AdminLayout() {
               to={to}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-2.5 py-2 rounded-xl text-sm transition-all ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? 'text-gray-950 dark:text-white font-semibold'
-                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white font-medium'
+                    ? 'bg-primary-600 text-white shadow-primary'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                    isActive
-                      ? 'bg-gray-950 dark:bg-white text-white dark:text-gray-950 shadow-sm'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-                  }`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
+                  <Icon className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1">{label}</span>
                   {badge && pendingCount > 0 && (
-                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center bg-red-500 text-white">
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${isActive ? 'bg-white/25 text-white' : 'bg-red-500 text-white'}`}>
                       {pendingCount > 99 ? '99+' : pendingCount}
                     </span>
                   )}
@@ -156,7 +150,7 @@ export default function AdminLayout() {
         <div className="px-3 pb-2 space-y-1">
           <NavLink
             to="/admin/messages"
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-gray-950 dark:text-white bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-colors"
           >
             <HeadphonesIcon className="w-4 h-4 flex-shrink-0" />
             Contact Support
@@ -183,7 +177,7 @@ export default function AdminLayout() {
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Topbar */}
-        <header className="h-14 bg-white/90 dark:bg-gray-950/90 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+        <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
           {/* Mobile: hamburger */}
           <button className="lg:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => setSidebarOpen(true)}>
             <MenuIcon className="w-5 h-5" />
@@ -252,7 +246,7 @@ export default function AdminLayout() {
 
       {/* Mobile bottom nav */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex shadow-[0_-1px_0_0_rgb(0_0_0_/_0.04)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 flex shadow-[0_-8px_24px_rgba(15,23,42,0.06)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {BOTTOM_NAV.map(({ to, icon: Icon, label, badge }) => (
@@ -260,24 +254,23 @@ export default function AdminLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2 min-h-[56px] gap-0.5 transition-colors ${
+              `flex-1 flex flex-col items-center justify-center py-2.5 min-h-[56px] gap-0.5 text-[10px] xs:text-xs font-semibold transition-colors relative ${
                 isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <div className={`relative px-3 py-1.5 rounded-2xl transition-all duration-150 ${
-                  isActive ? 'bg-primary-50 dark:bg-primary-900/40' : ''
-                }`}>
-                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 1.75} />
+                {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-600 dark:bg-primary-400 rounded-full" />}
+                <div className="relative">
+                  <Icon className="w-5 h-5" />
                   {badge && pendingCount > 0 && (
-                    <span className="absolute top-1 right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
+                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
                       {pendingCount > 9 ? '9+' : pendingCount}
                     </span>
                   )}
                 </div>
-                <span className={`text-[10px] leading-none ${isActive ? 'font-bold' : 'font-medium'}`}>{label}</span>
+                <span className="leading-none">{label}</span>
               </>
             )}
           </NavLink>

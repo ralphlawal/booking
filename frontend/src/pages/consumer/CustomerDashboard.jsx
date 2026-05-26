@@ -125,21 +125,21 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="flex gap-2 mt-4 flex-wrap">
         {past ? (
-          <div className="flex gap-2 flex-wrap">
-            <button onClick={() => onRebook(booking)} className="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5">
+          <>
+            <button onClick={() => onRebook(booking)} className="btn-secondary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
               <RotateCcw className="w-3.5 h-3.5" /> Rebook
             </button>
             {booking.status === 'completed' && !booking.reviewed && (
-              <button onClick={() => onReview(booking)} className="btn-primary text-xs py-2 px-3 flex items-center gap-1.5">
+              <button onClick={() => onReview(booking)} className="btn-primary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
                 <Star className="w-3.5 h-3.5" /> Review
               </button>
             )}
             {canConfirm && (
               <button
                 onClick={() => onConfirmService(booking)}
-                className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 transition-colors"
+                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 transition-colors"
               >
                 <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
               </button>
@@ -147,32 +147,32 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
             {canDispute && (
               <button
                 onClick={() => onDispute(booking)}
-                className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 transition-colors"
+                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 transition-colors"
               >
                 <AlertTriangle className="w-3.5 h-3.5" /> Dispute
               </button>
             )}
-          </div>
+          </>
         ) : (
           <>
-            <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary w-full text-sm py-2 text-center justify-center">
+            <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary flex-1 text-sm py-2 text-center">
               View business
             </Link>
             {(booking.status === 'pending' || booking.status === 'confirmed') && (
-              <div className="flex gap-2">
+              <>
                 <button
                   onClick={() => onReschedule(booking)}
-                  className="flex-1 text-xs px-2 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1 font-semibold"
+                  className="text-sm px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center gap-1"
                 >
-                  <CalendarClock className="w-3.5 h-3.5 flex-shrink-0" /> Reschedule
+                  <CalendarClock className="w-3.5 h-3.5" /> Reschedule
                 </button>
                 <button
                   onClick={() => onCancel(booking)}
-                  className="flex-1 text-xs px-2 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-semibold"
+                  className="text-sm px-3 py-2 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   Cancel
                 </button>
-              </div>
+              </>
             )}
           </>
         )}
@@ -655,9 +655,9 @@ export default function CustomerDashboard() {
   if (authLoading || !consumer) return null;
 
   return (
-    <div className="app-surface animate-fade-in">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
-      <nav className="app-topbar">
+      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
@@ -724,20 +724,19 @@ export default function CustomerDashboard() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8 pb-consumer-nav">
         {/* Welcome header */}
-        <div className="mb-6 hero-panel p-4 sm:p-5 flex items-center gap-4">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-gray-950 dark:bg-white flex items-center justify-center text-white dark:text-gray-950 text-2xl font-bold shadow-sm flex-shrink-0">
+        <div className="mb-6 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">
             {consumer.full_name?.[0]?.toUpperCase() || '?'}
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Welcome back</p>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{consumer.full_name?.split(' ')[0]}</h1>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Hi, {consumer.full_name?.split(' ')[0]}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{consumer.email}</p>
             {bookings.length > 0 && (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+              <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mt-0.5">
                 {bookings.length} booking{bookings.length !== 1 ? 's' : ''} total
               </p>
             )}
           </div>
-          <Link to="/explore" className="hidden sm:inline-flex btn-secondary px-3 py-2 text-xs">Book now</Link>
         </div>
 
         {/* Email verification banner */}
@@ -761,20 +760,20 @@ export default function CustomerDashboard() {
 
         {/* First-time welcome guidance — shown only when user has no bookings yet */}
         {!loading && bookings.length === 0 && (
-          <div className="mb-5 rounded-lg bg-gray-950 dark:bg-white p-5 text-white dark:text-gray-950 shadow-card">
+          <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-5 text-white shadow-primary">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/15 dark:bg-gray-950/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
                 <p className="font-bold text-base">Welcome to BookAm!</p>
-                <p className="text-sm text-white/70 dark:text-gray-600 mt-0.5">Find and book services near you in seconds.</p>
-                <div className="mt-3 flex flex-col gap-2 text-sm text-white/75 dark:text-gray-600">
-                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/15 dark:bg-gray-950/10 flex items-center justify-center text-xs font-bold">1</span> Browse services below or use Smart Match</span>
-                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/15 dark:bg-gray-950/10 flex items-center justify-center text-xs font-bold">2</span> Pick a date &amp; time that works for you</span>
-                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/15 dark:bg-gray-950/10 flex items-center justify-center text-xs font-bold">3</span> Confirm — we'll send you a reminder</span>
+                <p className="text-sm text-primary-100 mt-0.5">Find and book services near you in seconds.</p>
+                <div className="mt-3 flex flex-col gap-2 text-sm text-primary-100">
+                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">1</span> Browse services below or use Smart Match</span>
+                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">2</span> Pick a date &amp; time that works for you</span>
+                  <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">3</span> Confirm — we'll send you a reminder</span>
                 </div>
-                <Link to="/explore" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold underline underline-offset-2">
+                <Link to="/explore" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-white underline underline-offset-2">
                   Explore services now →
                 </Link>
               </div>
@@ -784,27 +783,27 @@ export default function CustomerDashboard() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-          <Link to="/match" className="card-hover p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          <Link to="/match" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
               <p className="font-bold text-sm text-gray-900 dark:text-white">Smart Match</p>
               <p className="text-xs text-gray-400">Best available</p>
             </div>
           </Link>
-          <Link to="/explore" className="card-hover p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center flex-shrink-0">
-              <Search className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+          <Link to="/explore" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+              <Search className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
               <p className="font-bold text-sm text-gray-900 dark:text-white">Explore</p>
               <p className="text-xs text-gray-400">Browse services</p>
             </div>
           </Link>
-          <Link to="/customer/messages" className="card-hover p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center flex-shrink-0">
-              <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <Link to="/customer/messages" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow col-span-2 sm:col-span-1">
+            <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
+              <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="font-bold text-sm text-gray-900 dark:text-white">Messages</p>
@@ -814,24 +813,20 @@ export default function CustomerDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex bg-white/80 dark:bg-gray-900/80 border border-gray-200/80 dark:border-gray-800 rounded-lg p-1 gap-1 mb-5 shadow-sm">
+        <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
                 tab === t.id
-                  ? 'bg-gray-950 dark:bg-white text-white dark:text-gray-950 shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {t.label}
               {t.count > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
-                  tab === t.id
-                    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-                }`}>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${tab === t.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
                   {t.count}
                 </span>
               )}
