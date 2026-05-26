@@ -26,28 +26,32 @@ function BusinessCard({ biz, from }) {
     <Link
       to={`/profile/${biz.slug}`}
       state={{ from }}
-      className="group card p-0 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-lg flex flex-col min-w-0"
+      className="group card p-0 overflow-hidden hover:-translate-y-0.5 transition-all duration-200 hover:shadow-card-hover flex flex-col min-w-0"
     >
-      <div className="h-28 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative">
+      <div className="h-36 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative overflow-hidden">
         {biz.logo_url ? (
-          <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover" />
+          <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
-          <Building2 className="w-10 h-10 text-primary-300 dark:text-primary-600" />
+          <Building2 className="w-12 h-12 text-primary-200 dark:text-primary-700" />
         )}
         {biz.distance_km !== null && biz.distance_km !== undefined && (
-          <span className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 text-xs font-semibold px-2 py-1 rounded-full text-gray-700 dark:text-gray-200 flex items-center gap-1">
+          <span className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
             <MapPin className="w-3 h-3" />{biz.distance_km} km
           </span>
         )}
+        {verified && (
+          <span className="absolute top-2 left-2 bg-blue-500 text-white rounded-full p-0.5">
+            <BadgeCheck className="w-3.5 h-3.5" />
+          </span>
+        )}
       </div>
-      <div className="p-4 flex flex-col gap-1 flex-1">
+      <div className="p-3.5 flex flex-col gap-1 flex-1">
         <div className="flex items-start justify-between gap-2 min-w-0">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight flex items-center gap-1 min-w-0">
-            <span className="truncate min-w-0">{biz.name}</span>
-            {verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+          <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight min-w-0 truncate">
+            {biz.name}
           </h3>
           {biz.category && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 whitespace-nowrap flex-shrink min-w-0 max-w-[45%] truncate">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 whitespace-nowrap flex-shrink-0">
               {biz.category}
             </span>
           )}
@@ -59,18 +63,18 @@ function BusinessCard({ biz, from }) {
           </p>
         )}
         {biz.description && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5 leading-relaxed">
             {biz.description}
           </p>
         )}
-        <div className="mt-auto pt-3 flex items-center justify-between gap-2 min-w-0">
+        <div className="mt-auto pt-2 flex items-center justify-between gap-2 min-w-0">
           {biz.min_price != null ? (
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate min-w-0">
+            <span className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate min-w-0">
               From £{parseFloat(biz.min_price).toFixed(0)}
             </span>
           ) : <span />}
-          <span className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 font-semibold group-hover:underline flex-shrink-0">
-            View <ChevronRight className="w-3 h-3" />
+          <span className="flex items-center gap-0.5 text-xs text-primary-600 dark:text-primary-400 font-semibold flex-shrink-0">
+            View <ChevronRight className="w-3.5 h-3.5" />
           </span>
         </div>
       </div>
@@ -226,20 +230,20 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="bg-gradient-to-b from-primary-700 to-primary-900 px-4 py-8 text-center">
-        <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">Find services near you</h1>
-        <p className="text-primary-200 text-xs sm:text-sm mb-5">Book barbers, stylists, trainers and more — instantly</p>
+      <div className="bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 px-4 py-10 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight">Find services near you</h1>
+        <p className="text-primary-200 text-sm mb-6">Book barbers, stylists, trainers and more — instantly</p>
         <form onSubmit={handleSearch} className="max-w-lg mx-auto flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
-              className="w-full pl-9 pr-3 py-3 rounded-xl text-sm outline-none border-0 shadow-sm"
+              className="w-full pl-10 pr-3 py-3.5 rounded-2xl text-sm outline-none border-0 shadow-lg bg-white placeholder:text-gray-400"
               placeholder="Search barbers, nail techs…"
               value={q}
               onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
             />
           </div>
-          <button type="submit" className="bg-white text-primary-700 font-bold px-4 py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors flex items-center gap-1">
+          <button type="submit" className="bg-white text-primary-700 font-bold px-5 py-3.5 rounded-2xl text-sm hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center gap-1.5 shadow-lg">
             <Search className="w-4 h-4" />
             <span className="hidden sm:inline">Search</span>
           </button>
@@ -247,13 +251,16 @@ export default function ExplorePage() {
         <button
           onClick={getLocation}
           disabled={locating}
-          className="mt-3 text-primary-200 hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 mx-auto"
+          className="mt-4 text-primary-200 hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 mx-auto"
         >
           <Navigation className="w-3.5 h-3.5" />
           {locating ? 'Getting your location…' : 'Use my location for nearby results'}
         </button>
         {coords && (
-          <p className="text-primary-300 text-xs mt-1">Location found — results sorted by distance</p>
+          <p className="text-primary-300 text-xs mt-1.5 flex items-center justify-center gap-1">
+            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
+            Location found — results sorted by distance
+          </p>
         )}
       </div>
 

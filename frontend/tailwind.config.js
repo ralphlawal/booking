@@ -23,9 +23,11 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        card: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
-        'card-hover': '0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -1px rgb(0 0 0 / 0.04)',
-        primary: '0 4px 14px 0 rgb(91 62 234 / 0.35)',
+        card: '0 1px 2px 0 rgb(0 0 0 / 0.04), 0 2px 6px 0 rgb(0 0 0 / 0.05)',
+        'card-hover': '0 8px 24px 0 rgb(0 0 0 / 0.1), 0 2px 8px 0 rgb(0 0 0 / 0.06)',
+        primary: '0 4px 14px 0 rgb(91 62 234 / 0.28)',
+        modal: '0 24px 60px -8px rgb(0 0 0 / 0.28), 0 0 0 1px rgb(0 0 0 / 0.04)',
+        'inner-sm': 'inset 0 1px 2px 0 rgb(0 0 0 / 0.05)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',

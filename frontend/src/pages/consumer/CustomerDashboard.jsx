@@ -725,14 +725,14 @@ export default function CustomerDashboard() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8 pb-consumer-nav">
         {/* Welcome header */}
         <div className="mb-6 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary flex-shrink-0">
             {consumer.full_name?.[0]?.toUpperCase() || '?'}
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Hi, {consumer.full_name?.split(' ')[0]}</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{consumer.email}</p>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Welcome back</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{consumer.full_name?.split(' ')[0]}</h1>
             {bookings.length > 0 && (
-              <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mt-0.5">
+              <p className="text-xs text-primary-600 dark:text-primary-400 font-semibold mt-0.5">
                 {bookings.length} booking{bookings.length !== 1 ? 's' : ''} total
               </p>
             )}
@@ -813,20 +813,24 @@ export default function CustomerDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5">
+        <div className="flex bg-gray-100 dark:bg-gray-800/60 rounded-2xl p-1 gap-1 mb-5">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                 tab === t.id
-                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {t.label}
               {t.count > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${tab === t.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
+                  tab === t.id
+                    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                }`}>
                   {t.count}
                 </span>
               )}
