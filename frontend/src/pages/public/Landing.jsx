@@ -86,7 +86,7 @@ export default function Landing() {
     <div className="min-h-screen bg-white text-gray-900">
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-18 flex items-center justify-between">
           <Link to="/" className="inline-flex items-center">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 sm:h-10 w-auto object-contain" />
@@ -108,18 +108,15 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f5f3ff_0%,#ffffff_55%,#ffffff_100%)] pointer-events-none" />
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-primary-300/20 rounded-full blur-3xl pointer-events-none" />
-
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-7 sm:pt-10 pb-10 sm:pb-14 text-center">
-          <div className="inline-flex items-center gap-2 bg-white border border-primary-200 text-primary-700 text-xs font-semibold px-4 py-2 rounded-full mb-5 shadow-sm">
-            <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
+          <div className="chip mb-5">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full" />
             Welcome to BookAm Business
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 leading-[1.05] tracking-tight max-w-4xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 dark:text-white leading-[1.05] tracking-tight max-w-4xl mx-auto">
             Book services or run your business,
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-400">
+            <span className="block text-gray-500 dark:text-gray-300">
               all in one place
             </span>
           </h1>
@@ -128,13 +125,13 @@ export default function Landing() {
             Customers can discover trusted local services and book instantly. Businesses can create a booking page, manage appointments, chat, and grow from one dashboard.
           </p>
 
-          <p className="mt-2 sm:mt-3 text-sm sm:text-base font-bold text-primary-600 tracking-wide">
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base font-bold text-emerald-600 tracking-wide">
             Book. Confirm. Be there.
           </p>
 
           <div className="mt-6 sm:mt-8 grid gap-3 sm:grid-cols-2 max-w-3xl mx-auto text-left">
-            <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-card">
-              <div className="w-11 h-11 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center mb-4">
+            <div className="hero-panel p-4 sm:p-5">
+              <div className="w-11 h-11 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
                 <Search className="w-5 h-5" />
               </div>
               <h2 className="text-lg font-bold text-gray-900">I want to book</h2>
@@ -145,8 +142,8 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-primary-200 bg-primary-50 p-4 sm:p-5 shadow-card ring-1 ring-primary-100">
-              <div className="w-11 h-11 rounded-xl bg-white text-primary-600 flex items-center justify-center mb-4">
+            <div className="hero-panel p-4 sm:p-5 ring-1 ring-gray-950/5">
+              <div className="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
                 <CalendarDays className="w-5 h-5" />
               </div>
               <h2 className="text-lg font-bold text-gray-900">I run a business</h2>

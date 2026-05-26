@@ -26,9 +26,9 @@ function BusinessCard({ biz, from }) {
     <Link
       to={`/profile/${biz.slug}`}
       state={{ from }}
-      className="group card p-0 overflow-hidden hover:-translate-y-0.5 transition-all duration-200 hover:shadow-card-hover flex flex-col min-w-0"
+      className="group card-hover p-0 overflow-hidden flex flex-col min-w-0"
     >
-      <div className="h-36 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative overflow-hidden">
+      <div className="h-36 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden">
         {biz.logo_url ? (
           <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
@@ -204,9 +204,9 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
+    <div className="app-surface animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <nav className="app-topbar">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
@@ -230,20 +230,21 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 px-4 py-10 text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight">Find services near you</h1>
-        <p className="text-primary-200 text-sm mb-6">Book barbers, stylists, trainers and more — instantly</p>
+      <div className="px-4 py-8 sm:py-10">
+        <div className="mx-auto max-w-4xl rounded-lg bg-gray-950 dark:bg-white p-5 sm:p-8 text-center shadow-card">
+        <h1 className="text-2xl sm:text-4xl font-black text-white dark:text-gray-950 mb-1.5 tracking-tight">Find services near you</h1>
+        <p className="text-gray-300 dark:text-gray-600 text-sm mb-6">Book barbers, stylists, trainers and more, instantly.</p>
         <form onSubmit={handleSearch} className="max-w-lg mx-auto flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
-              className="w-full pl-10 pr-3 py-3.5 rounded-2xl text-sm outline-none border-0 shadow-lg bg-white placeholder:text-gray-400"
+              className="w-full pl-10 pr-3 py-3.5 rounded-lg text-sm outline-none border-0 shadow-lg bg-white placeholder:text-gray-400"
               placeholder="Search barbers, nail techs…"
               value={q}
               onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
             />
           </div>
-          <button type="submit" className="bg-white text-primary-700 font-bold px-5 py-3.5 rounded-2xl text-sm hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center gap-1.5 shadow-lg">
+          <button type="submit" className="bg-white text-gray-950 font-bold px-5 py-3.5 rounded-lg text-sm hover:bg-gray-50 active:bg-gray-100 transition-colors flex items-center gap-1.5 shadow-lg">
             <Search className="w-4 h-4" />
             <span className="hidden sm:inline">Search</span>
           </button>
@@ -251,17 +252,18 @@ export default function ExplorePage() {
         <button
           onClick={getLocation}
           disabled={locating}
-          className="mt-4 text-primary-200 hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 mx-auto"
+          className="mt-4 text-gray-300 dark:text-gray-600 hover:text-white dark:hover:text-gray-950 text-xs font-medium transition-colors flex items-center gap-1.5 mx-auto"
         >
           <Navigation className="w-3.5 h-3.5" />
           {locating ? 'Getting your location…' : 'Use my location for nearby results'}
         </button>
         {coords && (
-          <p className="text-primary-300 text-xs mt-1.5 flex items-center justify-center gap-1">
+          <p className="text-emerald-300 dark:text-emerald-700 text-xs mt-1.5 flex items-center justify-center gap-1">
             <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
             Location found — results sorted by distance
           </p>
         )}
+        </div>
       </div>
 
       {/* Category filter */}
@@ -287,12 +289,12 @@ export default function ExplorePage() {
       <div className="max-w-6xl mx-auto px-4 py-4">
         <Link
           to="/match"
-          className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-primary-600 to-indigo-600 text-white hover:opacity-95 transition-opacity"
+        className="flex items-center gap-3 p-4 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white hover:shadow-card-hover transition-all"
         >
           <Zap className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">
             <p className="font-bold text-sm">Try Smart Match</p>
-            <p className="text-primary-100 text-xs">Tell us what you need — we find the best available option for you</p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs">Tell us what you need and we find the best available option.</p>
           </div>
           <svg className="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path d="M13 7l5 5m0 0l-5 5m5-5H6" />

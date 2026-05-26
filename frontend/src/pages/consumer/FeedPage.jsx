@@ -35,7 +35,7 @@ function PostCard({ post }) {
   }, [post.id]);
 
   return (
-    <article className="card overflow-hidden">
+    <article className="card-hover overflow-hidden">
       {/* Business header */}
       <Link
         to={`/profile/${post.business_slug}`}
@@ -171,24 +171,24 @@ export default function FeedPage() {
   }, [load]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-consumer-nav">
+    <div className="app-surface pb-consumer-nav">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <nav className="app-topbar">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           {/* Mode toggle */}
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-0.5 gap-0.5">
+          <div className="flex bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-0.5 gap-0.5">
             <button
               onClick={() => handleModeSwitch('all')}
-              className={`text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all ${mode === 'all' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
+              className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${mode === 'all' ? 'bg-gray-950 dark:bg-white text-white dark:text-gray-950 shadow-sm' : 'text-gray-500'}`}
             >
               For you
             </button>
             <button
               onClick={() => handleModeSwitch('following')}
-              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-[10px] transition-all ${mode === 'following' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}
+              className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-md transition-all ${mode === 'following' ? 'bg-gray-950 dark:bg-white text-white dark:text-gray-950 shadow-sm' : 'text-gray-500'}`}
             >
               <Users className="w-3 h-3" />Following
             </button>

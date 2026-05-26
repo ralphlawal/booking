@@ -13,8 +13,8 @@ const STATUS_COLORS = { pending: '#f59e0b', confirmed: '#10b981', cancelled: '#e
 const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
 
 const StatCard = ({ label, value, color, darkColor, icon }) => (
-  <div className="card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color} ${darkColor}`}>
+  <div className="card-hover p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${color} ${darkColor}`}>
       {icon}
     </div>
     <div className="min-w-0">
@@ -101,10 +101,11 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="hero-panel p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Welcome back — here's what's happening</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Business command center</p>
+          <h1 className="text-2xl font-black text-gray-950 dark:text-white">Dashboard</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Today’s bookings, revenue, and customer activity in one place.</p>
         </div>
         {business && (
           <a href={`/book/${business.slug}`} target="_blank" rel="noopener noreferrer" className="btn-primary self-start">
