@@ -36,7 +36,7 @@ exports.onboard = async (req, res) => {
       });
       accountId = account.id;
       await db.query(
-        'UPDATE businesses SET stripe_account_id = $1, stripe_onboarding_complete = 0 WHERE id = $2',
+        'UPDATE businesses SET stripe_account_id = $1, stripe_onboarding_complete = false WHERE id = $2',
         [accountId, businessId]
       );
     }
@@ -83,7 +83,7 @@ exports.status = async (req, res) => {
     // Persist onboarding_complete flag once active
     if (status === 'active') {
       await db.query(
-        'UPDATE businesses SET stripe_onboarding_complete = 1 WHERE id = $1',
+        'UPDATE businesses SET stripe_onboarding_complete = true WHERE id = $1',
         [req.business.id]
       ).catch(() => {});
     }

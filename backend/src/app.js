@@ -301,7 +301,7 @@ async function start() {
         'verification_rejected_reason TEXT',
         'verification_notes TEXT',
         'stripe_account_id TEXT',
-        'stripe_onboarding_complete INTEGER DEFAULT 0',
+        'stripe_onboarding_complete BOOLEAN DEFAULT FALSE',
         'bank_holder_name TEXT',
         'bank_sort_code TEXT',
         'bank_account_number TEXT',
