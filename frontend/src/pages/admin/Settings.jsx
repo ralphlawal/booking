@@ -996,64 +996,91 @@ export default function Settings() {
                 Verified businesses get a badge and rank higher in search. If your profile is complete and details match, you may be verified automatically.
               </p>
 
-              <div className="mb-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { label: 'Business info', done: !!(business?.name && business?.phone && business?.email) },
+              {(() => {
+                const checks = [
+                  { label: 'Business name, phone & email', done: !!(business?.name && business?.phone && business?.email) },
+                  { label: 'Description added', done: !!(business?.description?.trim()) },
                   { label: 'Location set', done: !!business?.location },
                   { label: 'Logo uploaded', done: !!business?.logo_url },
-                  { label: 'Service listed', done: true },
-                ].map(item => (
-                  <div key={item.label} className={`rounded-xl p-3 text-center border ${item.done ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'}`}>
-                    <p className="text-lg">{item.done ? '✓' : '○'}</p>
-                    <p className={`text-xs font-medium mt-0.5 ${item.done ? 'text-green-700 dark:text-green-400' : 'text-gray-400'}`}>{item.label}</p>
-                  </div>
-                ))}
-              </div>
+                  { label: 'Active service listed', done: (business?.active_services_count ?? 0) > 0 },
+                ];
+                const allDone = checks.every(c => c.done);
+                const missing = checks.filter(c => !c.done).map(c => c.label);
 
-              <form onSubmit={submitVerification} className="space-y-4">
-                <div>
-                  <label className="label">Legal Business Name *</label>
-                  <input className="input" placeholder="Registered trading name" value={verForm.legal_name}
-                    onChange={e => setVerForm(p => ({ ...p, legal_name: e.target.value }))} required />
-                </div>
-                <div className="flex items-center gap-3 py-1">
-                  <input type="checkbox" id="sole_trader" className="w-4 h-4 rounded accent-primary-600"
-                    checked={verForm.sole_trader}
-                    onChange={e => setVerForm(p => ({ ...p, sole_trader: e.target.checked, company_reg_number: e.target.checked ? '' : p.company_reg_number }))} />
-                  <label htmlFor="sole_trader" className="text-sm text-gray-700 dark:text-gray-300 font-medium cursor-pointer">
-                    I am a sole trader (no company registration)
-                  </label>
-                </div>
-                {!verForm.sole_trader && (
-                  <div>
-                    <label className="label">Company Registration Number *</label>
-                    <input className="input" placeholder="e.g. 12345678" value={verForm.company_reg_number}
-                      onChange={e => setVerForm(p => ({ ...p, company_reg_number: e.target.value }))} />
-                    <p className="text-xs text-gray-400 mt-1">Find yours at <a href="https://find-and-update.company-information.service.gov.uk" target="_blank" rel="noopener" className="text-primary-600 underline">Companies House</a></p>
-                  </div>
-                )}
-                <div>
-                  <label className="label">Registered Business Address</label>
-                  <input className="input" placeholder="Full address including postcode" value={verForm.business_address}
-                    onChange={e => setVerForm(p => ({ ...p, business_address: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="label">Contact Person Full Name</label>
-                  <input className="input" placeholder="Person responsible for this account" value={verForm.contact_person}
-                    onChange={e => setVerForm(p => ({ ...p, contact_person: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="label">Identity Document Type</label>
-                  <select className="input" value={verForm.id_type} onChange={e => setVerForm(p => ({ ...p, id_type: e.target.value }))}>
-                    <option value="passport">Passport</option>
-                    <option value="driving_licence">UK Driving Licence</option>
-                    <option value="national_id">National ID Card</option>
-                  </select>
-                </div>
-                <button type="submit" disabled={verSaving} className="btn-primary w-full sm:w-auto disabled:opacity-50">
-                  {verSaving ? 'Submitting…' : 'Submit for Verification'}
-                </button>
-              </form>
+                return (
+                  <>
+                    <div className="mb-5">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Profile requirements</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {checks.map(item => (
+                          <div key={item.label} className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 border ${item.done ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/15'}`}>
+                            <span className={`text-base flex-shrink-0 ${item.done ? 'text-green-600' : 'text-red-400'}`}>{item.done ? '✓' : '✗'}</span>
+                            <p className={`text-xs font-medium ${item.done ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{item.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {!allDone && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-3 bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">
+                          Complete the items above first — go to your <button onClick={() => setTab('business')} className="underline font-semibold">Business</button> and <button onClick={() => setTab('services')} className="underline font-semibold">Services</button> tabs.
+                        </p>
+                      )}
+                    </div>
+
+                    <form onSubmit={submitVerification} className="space-y-4">
+                      <div>
+                        <label className="label">Legal Business Name *</label>
+                        <input className="input" placeholder="Registered trading name" value={verForm.legal_name}
+                          onChange={e => setVerForm(p => ({ ...p, legal_name: e.target.value }))} required />
+                      </div>
+                      <div className="flex items-center gap-3 py-1">
+                        <input type="checkbox" id="sole_trader" className="w-4 h-4 rounded accent-primary-600"
+                          checked={verForm.sole_trader}
+                          onChange={e => setVerForm(p => ({ ...p, sole_trader: e.target.checked, company_reg_number: e.target.checked ? '' : p.company_reg_number }))} />
+                        <label htmlFor="sole_trader" className="text-sm text-gray-700 dark:text-gray-300 font-medium cursor-pointer">
+                          I am a sole trader (no company registration)
+                        </label>
+                      </div>
+                      {!verForm.sole_trader && (
+                        <div>
+                          <label className="label">Company Registration Number *</label>
+                          <input className="input" placeholder="e.g. 12345678" value={verForm.company_reg_number}
+                            onChange={e => setVerForm(p => ({ ...p, company_reg_number: e.target.value }))} required={!verForm.sole_trader} />
+                          <p className="text-xs text-gray-400 mt-1">Find yours at <a href="https://find-and-update.company-information.service.gov.uk" target="_blank" rel="noopener" className="text-primary-600 underline">Companies House</a></p>
+                        </div>
+                      )}
+                      <div>
+                        <label className="label">Registered Business Address *</label>
+                        <input className="input" placeholder="Full address including postcode" value={verForm.business_address}
+                          onChange={e => setVerForm(p => ({ ...p, business_address: e.target.value }))} required />
+                      </div>
+                      <div>
+                        <label className="label">Contact Person Full Name *</label>
+                        <input className="input" placeholder="Person responsible for this account" value={verForm.contact_person}
+                          onChange={e => setVerForm(p => ({ ...p, contact_person: e.target.value }))} required />
+                      </div>
+                      <div>
+                        <label className="label">Identity Document Type</label>
+                        <select className="input" value={verForm.id_type} onChange={e => setVerForm(p => ({ ...p, id_type: e.target.value }))}>
+                          <option value="passport">Passport</option>
+                          <option value="driving_licence">UK Driving Licence</option>
+                          <option value="national_id">National ID Card</option>
+                        </select>
+                      </div>
+                      {!allDone && (
+                        <div className="rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3">
+                          <p className="text-xs font-semibold text-gray-500 mb-1">Still needed before you can submit:</p>
+                          <ul className="space-y-0.5">
+                            {missing.map(m => <li key={m} className="text-xs text-red-600 dark:text-red-400">• {m}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                      <button type="submit" disabled={verSaving || !allDone} className="btn-primary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
+                        {verSaving ? 'Submitting…' : 'Submit for Verification'}
+                      </button>
+                    </form>
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>

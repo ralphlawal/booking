@@ -26,7 +26,16 @@ function geocodeLocation(locationText) {
 }
 
 exports.getMyBusiness = async (req, res) => {
-  res.json(req.business);
+  try {
+    const db = require('../config/database');
+    const { rows: [{ active_services_count }] } = await db.query(
+      'SELECT COUNT(*) AS active_services_count FROM services WHERE business_id = $1 AND is_active = TRUE',
+      [req.business.id]
+    );
+    res.json({ ...req.business, active_services_count: parseInt(active_services_count) });
+  } catch {
+    res.json(req.business);
+  }
 };
 
 exports.createBusiness = async (req, res) => {
@@ -146,9 +155,29 @@ exports.submitVerificationDetails = async (req, res) => {
     if (biz.is_verified || biz.verification_status === 'verified')
       return res.status(400).json({ error: 'Already verified' });
 
+    // Profile completeness gate — must be done before we can verify them
+    if (!biz.logo_url)
+      return res.status(400).json({ error: 'Please upload a business logo before requesting verification.' });
+    if (!biz.location?.trim())
+      return res.status(400).json({ error: 'Please set your business location before requesting verification.' });
+    if (!biz.description?.trim())
+      return res.status(400).json({ error: 'Please add a business description before requesting verification.' });
+    if (!biz.phone?.trim())
+      return res.status(400).json({ error: 'Please add a phone number before requesting verification.' });
+
+    const db = require('../config/database');
+    const { rows: [{ count: svcCount }] } = await db.query(
+      'SELECT COUNT(*) FROM services WHERE business_id = $1 AND is_active = TRUE',
+      [biz.id]
+    );
+    if (parseInt(svcCount) < 1)
+      return res.status(400).json({ error: 'Please add at least one active service before requesting verification.' });
+
     const { legal_name, company_reg_number, sole_trader, business_address, contact_person, id_type } = req.body;
-    if (!legal_name) return res.status(400).json({ error: 'Legal business name is required' });
-    if (!company_reg_number && !sole_trader) return res.status(400).json({ error: 'Company registration number or sole trader declaration is required' });
+    if (!legal_name?.trim()) return res.status(400).json({ error: 'Legal business name is required.' });
+    if (!company_reg_number && !sole_trader) return res.status(400).json({ error: 'Company registration number or sole trader declaration is required.' });
+    if (!business_address?.trim()) return res.status(400).json({ error: 'Registered business address is required.' });
+    if (!contact_person?.trim()) return res.status(400).json({ error: 'Contact person name is required.' });
 
     const details = { legal_name, company_reg_number: company_reg_number || null, sole_trader: !!sole_trader, business_address, contact_person, id_type };
 

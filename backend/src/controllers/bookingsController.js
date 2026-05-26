@@ -314,7 +314,8 @@ exports.cancelByCustomer = async (req, res) => {
 
     // Refund policy: >24h = full, ≤24h = 50%
     const refundPercent = hoursUntil > 24 ? 100 : 50;
-    const amountPence   = Math.round(parseFloat(booking.price || 0) * 100);
+    // findByReference returns service_price (joined from services table), not booking.price
+    const amountPence   = Math.round(parseFloat(booking.service_price || booking.price || 0) * 100);
     const refundPence   = Math.round(amountPence * refundPercent / 100);
     let   refundIssued  = false;
 
@@ -450,7 +451,8 @@ async function transferToBusiness(booking) {
   const biz = bizRows[0];
   if (!biz?.stripe_account_id || !biz.stripe_onboarding_complete) return;
 
-  const amountPence = Math.round(parseFloat(booking.price || 0) * 100);
+  // findByReference returns service_price; autoRelease query returns price directly
+  const amountPence = Math.round(parseFloat(booking.service_price || booking.price || 0) * 100);
   if (amountPence < 50) return; // nothing meaningful to transfer
 
   const platformFeePercent = parseFloat(process.env.PLATFORM_FEE_PERCENT || '5');
