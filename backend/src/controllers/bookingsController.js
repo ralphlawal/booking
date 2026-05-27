@@ -193,6 +193,31 @@ exports.updateStatus = async (req, res) => {
       }
     }
 
+    // If the business confirms a booking whose appointment has already ended,
+    // immediately send the attended email (cron is unreliable on free-tier hosting).
+    if (status === 'confirmed' && fullBooking.customer_email) {
+      const apptEnd = new Date(`${fullBooking.booking_date}T${fullBooking.end_time || fullBooking.start_time || '23:59'}`);
+      if (apptEnd <= new Date()) {
+        db.query('SELECT attended_email_sent_at FROM bookings WHERE id = $1', [fullBooking.id])
+          .then(async ({ rows }) => {
+            if (rows[0]?.attended_email_sent_at) return; // already sent
+            const { rows: scRows } = await db.query('SELECT id FROM service_confirmations WHERE booking_id = $1', [fullBooking.id]);
+            if (scRows.length > 0) return; // already confirmed
+            const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
+            const token = jwt.sign(
+              { purpose: 'attended_check', reference_id: fullBooking.reference_id, booking_id: fullBooking.id, consumer_id: fullBooking.consumer_id || null },
+              JWT_SECRET, { expiresIn: '7d' }
+            );
+            await sendAttendedConfirmationEmail(fullBooking,
+              `${FRONTEND}/booking/attended?token=${token}&action=confirm`,
+              `${FRONTEND}/booking/attended?token=${token}&action=dispute`
+            );
+            await db.query('UPDATE bookings SET attended_email_sent_at = NOW() WHERE id = $1', [fullBooking.id]);
+          })
+          .catch(() => {});
+      }
+    }
+
     if (fullBooking.consumer_id && ['confirmed','cancelled'].includes(status)) {
       const notifTitle = status === 'confirmed'
         ? `Booking confirmed — ${fullBooking.service_name}`

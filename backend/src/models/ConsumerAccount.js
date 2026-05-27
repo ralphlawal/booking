@@ -98,7 +98,13 @@ const ConsumerAccount = {
     return normalizeConsumer(rows[0]);
   },
 
-  async getBookings(consumer_id) {
+  async getBookings(consumer_id, consumer_email) {
+    // Match bookings by consumer_id OR by email (guest bookings made without logging in)
+    const emailClause = consumer_email
+      ? `AND (b.consumer_id = $1 OR (b.consumer_id IS NULL AND c2.email = $2))`
+      : `AND b.consumer_id = $1`;
+    const params = consumer_email ? [consumer_id, consumer_email] : [consumer_id];
+
     const fullQuery = `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
             b.notes, b.cancelled_reason, b.created_at,
             b.payment_status, b.stripe_payment_intent_id,
@@ -112,10 +118,11 @@ const ConsumerAccount = {
      FROM bookings b
      JOIN businesses biz ON biz.id = b.business_id
      JOIN services s ON s.id = b.service_id
+     JOIN customers c2 ON c2.id = b.customer_id
      LEFT JOIN reviews rv ON rv.booking_id = b.id
      LEFT JOIN service_confirmations sc ON sc.booking_id = b.id
      LEFT JOIN disputes d ON d.booking_id = b.id
-     WHERE b.consumer_id = $1
+     WHERE 1=1 ${emailClause}
      ORDER BY b.booking_date DESC, b.start_time DESC`;
 
     const fallbackQuery = `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
@@ -131,16 +138,17 @@ const ConsumerAccount = {
      FROM bookings b
      JOIN businesses biz ON biz.id = b.business_id
      JOIN services s ON s.id = b.service_id
-     WHERE b.consumer_id = $1
+     JOIN customers c2 ON c2.id = b.customer_id
+     WHERE 1=1 ${emailClause}
      ORDER BY b.booking_date DESC, b.start_time DESC`;
 
     try {
-      const { rows } = await db.query(fullQuery, [consumer_id]);
+      const { rows } = await db.query(fullQuery, params);
       return rows;
     } catch (err) {
       if (!isMissingRelationError(err)) throw err;
       console.warn('[consumer bookings] Falling back without trust/dispute joins:', err.message);
-      const { rows } = await db.query(fallbackQuery, [consumer_id]);
+      const { rows } = await db.query(fallbackQuery, params);
       return rows;
     }
   },

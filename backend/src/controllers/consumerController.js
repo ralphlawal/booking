@@ -198,7 +198,7 @@ exports.update = async (req, res) => {
 
 exports.myBookings = async (req, res) => {
   try {
-    const bookings = await ConsumerAccount.getBookings(req.consumer.id);
+    const bookings = await ConsumerAccount.getBookings(req.consumer.id, req.consumer.email);
     res.json(bookings);
   } catch (err) {
     console.error('[consumer/bookings]', err.message);

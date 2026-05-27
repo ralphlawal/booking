@@ -638,6 +638,16 @@ export default function CustomerDashboard() {
     return !key || key < today || ['completed', 'cancelled'].includes(b.status);
   });
 
+  // Bookings where the appointment has ended but the customer hasn't confirmed or disputed yet
+  const needsConfirmation = bookings.filter((b) => {
+    if (b.service_confirmed || b.has_dispute) return false;
+    if (['cancelled'].includes(b.status)) return false;
+    const key = bookingDateKey(b.booking_date);
+    const endTime = b.end_time || b.start_time || '23:59';
+    const apptEnd = key ? new Date(`${key}T${endTime}`) : null;
+    return apptEnd ? apptEnd < new Date() : false;
+  });
+
   const handleRebook = (booking) => {
     navigate(`/book/${booking.slug}`, { state: { prefill_service_id: booking.service_id } });
   };
@@ -848,6 +858,41 @@ export default function CustomerDashboard() {
                 <Link to="/explore" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-white underline underline-offset-2">
                   Explore services now →
                 </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* "Confirm attendance" nudge — shown whenever there are past unconfirmed bookings */}
+        {!loading && needsConfirmation.length > 0 && (
+          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                  {needsConfirmation.length === 1 ? '1 booking needs your confirmation' : `${needsConfirmation.length} bookings need your confirmation`}
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 mb-2">
+                  Please confirm whether the service was completed so we can finalise your booking and release payment to the business.
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {needsConfirmation.map(b => (
+                    <div key={b.id} className="flex items-center justify-between gap-2 bg-white dark:bg-gray-900 rounded-lg px-3 py-2 border border-amber-100 dark:border-amber-800">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">{b.service_name} · {b.business_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{fmtDate(b.booking_date)}</p>
+                      </div>
+                      <button
+                        onClick={() => setConfirmTarget(b)}
+                        className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
