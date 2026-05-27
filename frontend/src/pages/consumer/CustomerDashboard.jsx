@@ -81,7 +81,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
 
   // Dispute window matches backend: 6h from appointment end
   const canDispute = isPaid && appointmentPassed && !booking.has_dispute && !booking.service_confirmed && hoursSinceEnd <= 6;
-  const canConfirm = isPaid && appointmentPassed && !booking.service_confirmed && !booking.has_dispute;
+  const canConfirm = appointmentPassed && !booking.service_confirmed && !booking.has_dispute;
 
   return (
     <div className="card p-4 h-full">

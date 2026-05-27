@@ -721,7 +721,6 @@ async function sendAttendedConfirmationEmails() {
     LEFT JOIN service_confirmations sc ON sc.booking_id = b.id
     LEFT JOIN disputes d ON d.booking_id = b.id
     WHERE b.status IN ('confirmed', 'pending')
-      AND b.payment_status = 'paid'
       AND b.attended_email_sent_at IS NULL
       AND sc.id IS NULL
       AND d.id IS NULL

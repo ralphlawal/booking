@@ -105,6 +105,7 @@ const sendBookingStatusUpdate = (booking) => {
         ${detailRow('Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, true)}
       </table>
       ${booking.cancelled_reason ? `<div style="margin:16px 0 0;padding:12px 16px;background:#fef2f2;border-radius:8px;border-left:3px solid #ef4444"><p style="margin:0;color:#dc2626;font-size:13px"><strong>Reason:</strong> ${booking.cancelled_reason}</p></div>` : ''}
+      ${booking.status === 'confirmed' ? `<div style="margin:20px 0 0;padding:14px 16px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;text-align:center"><p style="margin:0 0 4px;color:#166534;font-size:13px;font-weight:600">After your appointment</p><p style="margin:0;color:#15803d;font-size:13px">We'll email you to confirm the service was completed. You can also confirm (or raise an issue) anytime from your <a href="${process.env.FRONTEND_URL || 'https://bookam.business'}/customer/dashboard" style="color:#16a34a;font-weight:600">BookAm dashboard</a>.</p></div>` : ''}
       <p style="margin:20px 0 0;color:#94a3b8;font-size:13px;text-align:center">Questions? Contact ${booking.business_name}${booking.business_phone ? ` at ${booking.business_phone}` : ''}.</p>
     `),
   });
