@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle, CalendarClock } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle, CalendarClock, Sun, Moon } from 'lucide-react';
 import { consumerAPI, reviewsAPI } from '../../services/api';
 import { useNotifications } from '../../context/NotificationContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
@@ -70,12 +71,17 @@ function CopyRefButton({ refId }) {
 function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, onDispute, onReschedule, past, from }) {
   const today = new Date().toISOString().split('T')[0];
   const bookingKey = bookingDateKey(booking.booking_date);
-  const isPastDate = bookingKey ? bookingKey < today : false;
   const isPaid = booking.payment_status === 'paid';
-  const serviceDate = parseBookingDate(booking.booking_date);
-  const daysSinceService = serviceDate ? (Date.now() - serviceDate.getTime()) / (1000 * 60 * 60 * 24) : Infinity;
-  const canDispute = isPaid && isPastDate && !booking.has_dispute && !booking.service_confirmed && daysSinceService <= 14;
-  const canConfirm = isPaid && isPastDate && !booking.service_confirmed && !booking.has_dispute;
+
+  // Use actual appointment end time — catches same-day ended appointments, not just past dates
+  const endTime = booking.end_time || booking.start_time || '23:59';
+  const apptEnd = bookingKey ? new Date(`${bookingKey}T${endTime}`) : null;
+  const appointmentPassed = apptEnd ? apptEnd < new Date() : false;
+  const hoursSinceEnd = apptEnd ? (Date.now() - apptEnd.getTime()) / (1000 * 60 * 60) : Infinity;
+
+  // Dispute window matches backend: 6h from appointment end
+  const canDispute = isPaid && appointmentPassed && !booking.has_dispute && !booking.service_confirmed && hoursSinceEnd <= 6;
+  const canConfirm = isPaid && appointmentPassed && !booking.service_confirmed && !booking.has_dispute;
 
   return (
     <div className="card p-4 h-full">
@@ -134,6 +140,24 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
       </div>
 
       <div className="flex gap-2 mt-4 flex-wrap">
+        {/* Confirm received & Dispute — shown whenever appointment has ended, regardless of tab */}
+        {canConfirm && (
+          <button
+            onClick={() => onConfirmService(booking)}
+            className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
+          </button>
+        )}
+        {canDispute && (
+          <button
+            onClick={() => onDispute(booking)}
+            className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+          >
+            <AlertTriangle className="w-3.5 h-3.5" /> Report issue
+          </button>
+        )}
+
         {past ? (
           <>
             <button onClick={() => onRebook(booking)} className="btn-secondary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
@@ -144,29 +168,15 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
                 <Star className="w-3.5 h-3.5" /> Review
               </button>
             )}
-            {canConfirm && (
-              <button
-                onClick={() => onConfirmService(booking)}
-                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 transition-colors"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
-              </button>
-            )}
-            {canDispute && (
-              <button
-                onClick={() => onDispute(booking)}
-                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 transition-colors"
-              >
-                <AlertTriangle className="w-3.5 h-3.5" /> Dispute
-              </button>
-            )}
           </>
         ) : (
           <>
-            <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary flex-1 text-sm py-2 text-center">
-              View business
-            </Link>
-            {(booking.status === 'pending' || booking.status === 'confirmed') && (
+            {!appointmentPassed && (
+              <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary flex-1 text-sm py-2 text-center">
+                View business
+              </Link>
+            )}
+            {(booking.status === 'pending' || booking.status === 'confirmed') && !appointmentPassed && (
               <>
                 <button
                   onClick={() => onReschedule(booking)}
@@ -555,6 +565,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
 
 export default function CustomerDashboard() {
   const { consumer, loading: authLoading, logout } = useCustomerAuth();
+  const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, browserPermission, requestBrowserNotifications, markAllRead, setNotifications } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
@@ -759,6 +770,16 @@ export default function CustomerDashboard() {
               )}
             </div>
 
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark'
+                ? <Sun className="w-4 h-4 text-amber-400" />
+                : <Moon className="w-4 h-4 text-gray-500" />
+              }
+            </button>
             <Link to="/customer/profile" className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Profile settings">
               <Settings className="w-4 h-4 text-gray-500" />
             </Link>

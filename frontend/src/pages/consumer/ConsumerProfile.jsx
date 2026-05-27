@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users, Camera } from 'lucide-react';
+import { User, Phone, Mail, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users, Camera, Sun, Moon, Bell, HelpCircle, ChevronRight, Shield } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { consumerAPI, reviewsAPI, referralAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -89,6 +91,8 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 
 export default function ConsumerProfile() {
   const { consumer, update, logout, loading: authLoading } = useCustomerAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { browserPermission, requestBrowserNotifications } = useNotifications();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ full_name: '', phone: '', location_text: '' });
@@ -250,6 +254,13 @@ export default function ConsumerProfile() {
     }
   };
 
+  const enablePush = async () => {
+    const result = await requestBrowserNotifications();
+    if (result === 'granted') toast.success('Push notifications enabled');
+    else if (result === 'denied') toast.error('Notifications blocked — enable them in browser settings');
+    else toast.error('Push notifications are not supported on this browser');
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirm !== consumer.email) return toast.error('Email does not match');
     setDeletingAccount(true);
@@ -311,10 +322,11 @@ export default function ConsumerProfile() {
         {/* Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5">
           {[
-            { id: 'profile', label: 'Profile' },
-            { id: 'reviews', label: 'Reviews' },
-            { id: 'referral', label: 'Refer' },
-            { id: 'security', label: 'Security' },
+            { id: 'profile',  label: 'Profile'   },
+            { id: 'reviews',  label: 'Reviews'   },
+            { id: 'referral', label: 'Refer'     },
+            { id: 'security', label: 'Security'  },
+            { id: 'settings', label: 'Settings'  },
           ].map(t => (
             <button
               key={t.id}
@@ -602,6 +614,136 @@ export default function ConsumerProfile() {
                   {deletingAccount ? 'Deleting…' : 'Delete my account'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'settings' && (
+          <div className="max-w-3xl mx-auto space-y-4">
+
+            {/* Appearance */}
+            <div className="card p-5">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  {theme === 'dark' ? <Moon className="w-4 h-4 text-indigo-500" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                </span>
+                Appearance
+              </h3>
+              <p className="text-xs text-gray-400 mb-3">Choose how BookAm looks on this device.</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => { if (theme !== 'light') toggleTheme(); }}
+                  className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${theme === 'light' ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                >
+                  <Sun className={`w-6 h-6 ${theme === 'light' ? 'text-amber-500' : 'text-gray-400'}`} />
+                  <span className={`text-sm font-semibold ${theme === 'light' ? 'text-amber-700 dark:text-amber-400' : 'text-gray-500'}`}>Light</span>
+                </button>
+                <button
+                  onClick={() => { if (theme !== 'dark') toggleTheme(); }}
+                  className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${theme === 'dark' ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                >
+                  <Moon className={`w-6 h-6 ${theme === 'dark' ? 'text-indigo-500' : 'text-gray-400'}`} />
+                  <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-500'}`}>Dark</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <div className="card p-5">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
+                </span>
+                Notifications
+              </h3>
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Push / browser alerts</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {browserPermission === 'granted' ? 'Active — you\'ll get alerts for bookings & messages' : 'Enable to receive booking alerts on this device'}
+                    </p>
+                  </div>
+                  {browserPermission === 'granted' ? (
+                    <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full">On</span>
+                  ) : (
+                    <button onClick={enablePush} className="text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
+                      Enable
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Email notifications</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Confirmations, reminders, receipts & dispute updates</p>
+                  </div>
+                  <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full">On</span>
+                </div>
+                <div className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Service confirmations</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Email 2h after your appointment asking if you were attended to</p>
+                  </div>
+                  <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full">On</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Trust & Safety */}
+            <div className="card p-5">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                </span>
+                Trust & Safety
+              </h3>
+              <div className="divide-y divide-gray-100 dark:divide-gray-800 text-sm text-gray-600 dark:text-gray-400">
+                <div className="py-3">
+                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Confirming service</p>
+                  <p className="text-xs">After your appointment ends, tap <strong>"Confirm received"</strong> on the booking card (or click the link in the email we send you). This releases payment to the business.</p>
+                </div>
+                <div className="py-3">
+                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Raising a dispute</p>
+                  <p className="text-xs">If the service was not rendered, tap <strong>"Report issue"</strong> within <strong>6 hours</strong> of your appointment end time. Payment is held while we investigate.</p>
+                </div>
+                <div className="py-3">
+                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Cancellation refunds</p>
+                  <p className="text-xs">Cancel <strong>more than 24h before</strong> → full refund. Cancel within 24h → 50% refund. Refunds arrive within 5–10 business days.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Help & Support */}
+            <div className="card p-5">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </span>
+                Help & Support
+              </h3>
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {[
+                  { label: 'Contact support', href: 'mailto:hello@bookam.business' },
+                  { label: 'Privacy policy', href: '/legal/privacy' },
+                  { label: 'Terms of service', href: '/legal/terms' },
+                  { label: 'Cookie policy', href: '/legal/cookies' },
+                ].map(({ label, href }) => (
+                  <a key={label} href={href} className="flex items-center justify-between py-2.5 px-1 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Sign out */}
+            <div className="card p-4">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold text-sm border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+              >
+                <LogOut className="w-4 h-4" /> Sign out
+              </button>
             </div>
           </div>
         )}
