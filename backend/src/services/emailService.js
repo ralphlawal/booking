@@ -312,4 +312,33 @@ const sendVerificationEmail = (user, verifyUrl, type = 'business') =>
     `),
   });
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail };
+const sendBusinessPaymentReleasedEmail = (booking) =>
+  sendEmail({
+    to: booking.business_email,
+    subject: `Payment released — ${booking.customer_name} confirmed service · ${booking.reference_id}`,
+    type: 'business_payment_released',
+    business_id: booking.business_id,
+    booking_id: booking.id,
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#10b98115;border-radius:50%;font-size:24px;margin-bottom:12px">💰</div>
+        <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">Payment Released</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Your customer confirmed the service was completed.</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0">
+        ${detailRow('Reference', `<span style="font-family:monospace;color:#4f46e5">${booking.reference_id}</span>`, false)}
+        ${detailRow('Customer', booking.customer_name, true)}
+        ${detailRow('Service', booking.service_name, false)}
+        ${detailRow('Date', booking.booking_date, true)}
+        ${detailRow('Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, false)}
+        ${booking.service_price || booking.price ? detailRow('Amount', `£${parseFloat(booking.service_price || booking.price).toFixed(2)}`, true) : ''}
+      </table>
+      <div style="margin:20px 0 0;padding:14px 16px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;text-align:center">
+        <p style="margin:0;color:#166534;font-size:14px;font-weight:600">Payment is on its way to your account</p>
+        <p style="margin:6px 0 0;color:#15803d;font-size:13px">Transfers typically arrive within 2–5 business days depending on your bank.</p>
+      </div>
+      <p style="margin:20px 0 0;color:#94a3b8;font-size:13px;text-align:center">Log in to your <a href="${process.env.FRONTEND_URL || 'https://bookam.business'}/admin/dashboard" style="color:#4f46e5">dashboard</a> to view your bookings.</p>
+    `),
+  });
+
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail, sendBusinessPaymentReleasedEmail };

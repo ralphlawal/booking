@@ -3,7 +3,7 @@ const Customer = require('../models/Customer');
 const Service = require('../models/Service');
 const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
-const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail } = require('../services/emailService');
+const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendBusinessPaymentReleasedEmail } = require('../services/emailService');
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -464,10 +464,9 @@ exports.confirmService = async (req, res) => {
       );
     }
 
-    // Now that service is confirmed, send the review reminder
-    if (booking.customer_email) {
-      sendReviewReminder(booking).catch(() => {});
-    }
+    // Send review reminder to customer and payment-released notification to business
+    if (booking.customer_email) sendReviewReminder(booking).catch(() => {});
+    if (booking.business_email) sendBusinessPaymentReleasedEmail(booking).catch(() => {});
 
     res.json({ message: 'Service confirmed — thank you!' });
   } catch (err) {
@@ -579,8 +578,8 @@ exports.raiseDispute = async (req, res) => {
     if (hoursAfterEnd < 0) {
       return res.status(400).json({ error: 'Cannot raise a dispute for an appointment that has not yet happened' });
     }
-    if (hoursAfterEnd > 6) {
-      return res.status(400).json({ error: 'Disputes must be raised within 6 hours of your appointment ending' });
+    if (hoursAfterEnd > 48) {
+      return res.status(400).json({ error: 'Disputes must be raised within 48 hours of your appointment ending' });
     }
 
     // Fraud guard: max 2 open disputes per consumer at any time
@@ -813,6 +812,7 @@ exports.attendedAction = async (req, res) => {
       transferToBusiness(booking).catch(err => console.error('[attendedAction/transfer]', err.message));
     }
     if (booking.customer_email) sendReviewReminder(booking).catch(() => {});
+    if (booking.business_email) sendBusinessPaymentReleasedEmail(booking).catch(() => {});
 
     return res.json({ message: 'Thank you! Your confirmation has been recorded and payment is being released to the business.' });
   }

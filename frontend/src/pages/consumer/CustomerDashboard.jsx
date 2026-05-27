@@ -79,8 +79,8 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
   const appointmentPassed = apptEnd ? apptEnd < new Date() : false;
   const hoursSinceEnd = apptEnd ? (Date.now() - apptEnd.getTime()) / (1000 * 60 * 60) : Infinity;
 
-  // Dispute window matches backend: 6h from appointment end
-  const canDispute = isPaid && appointmentPassed && !booking.has_dispute && !booking.service_confirmed && hoursSinceEnd <= 6;
+  // Dispute window matches backend: 48h from appointment end, any payment method
+  const canDispute = appointmentPassed && !booking.has_dispute && !booking.service_confirmed && hoursSinceEnd <= 48;
   const canConfirm = appointmentPassed && !booking.service_confirmed && !booking.has_dispute;
 
   return (
@@ -879,17 +879,25 @@ export default function CustomerDashboard() {
                 </p>
                 <div className="flex flex-col gap-1.5">
                   {needsConfirmation.map(b => (
-                    <div key={b.id} className="flex items-center justify-between gap-2 bg-white dark:bg-gray-900 rounded-lg px-3 py-2 border border-amber-100 dark:border-amber-800">
-                      <div className="min-w-0">
+                    <div key={b.id} className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-lg px-3 py-2 border border-amber-100 dark:border-amber-800">
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">{b.service_name} · {b.business_name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{fmtDate(b.booking_date)}</p>
                       </div>
-                      <button
-                        onClick={() => setConfirmTarget(b)}
-                        className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
-                      >
-                        Confirm
-                      </button>
+                      <div className="flex gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => setDisputeTarget(b)}
+                          className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          Didn't show
+                        </button>
+                        <button
+                          onClick={() => setConfirmTarget(b)}
+                          className="text-xs font-bold px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
+                        >
+                          Confirm
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
