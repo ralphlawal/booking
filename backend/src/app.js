@@ -174,6 +174,8 @@ app.post('/api/intake/respond', intakeCtrl.respond);
 const bookingsCtrl = require('./controllers/bookingsController');
 app.post('/api/bookings/walkin', authenticate, attachBusiness, bookingsCtrl.createWalkin);
 app.post('/api/bookings/ref/:ref/reschedule-request', bookingsCtrl.rescheduleRequest);
+// Token-based attended confirmation/dispute via email link (no login required)
+app.post('/api/bookings/attended-action', bookingsCtrl.attendedAction);
 
 // Broadcast notifications
 const bcastCtrl = require('./controllers/broadcastController');
@@ -281,6 +283,8 @@ async function start() {
       await pool.query(sql16);
       const sql17 = fs.readFileSync(path.join(__dirname, '../migrations/017_consumer_follows.sql'), 'utf8');
       await pool.query(sql17);
+      const sql18 = fs.readFileSync(path.join(__dirname, '../migrations/018_attended_fraud_guards.sql'), 'utf8');
+      await pool.query(sql18);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -373,6 +377,10 @@ async function start() {
           created_at TEXT DEFAULT (datetime('now')), resolved_at TEXT, UNIQUE(booking_id)
         )`);
       } catch {}
+      try { db.exec(`ALTER TABLE bookings ADD COLUMN attended_email_sent_at TEXT`); } catch {}
+      for (const col of ['fraud_dispute_count INTEGER DEFAULT 0', 'is_flagged INTEGER DEFAULT 0', 'flagged_reason TEXT']) {
+        try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN ${col}`); } catch {}
+      }
       try {
         db.exec(`ALTER TABLE bookings ADD COLUMN stripe_payment_intent_id TEXT`);
         db.exec(`ALTER TABLE bookings ADD COLUMN payment_status TEXT DEFAULT 'unpaid'`);
@@ -471,10 +479,12 @@ async function start() {
     // Auto-release: run 5 min after startup then every 6 hours.
     // Releases payment for confirmed+paid bookings whose appointment ended >72h ago
     // with no customer confirmation, so businesses are never left waiting forever.
-    const { runAutoRelease } = require('./controllers/bookingsController');
+    const { runAutoRelease, runAttendedEmails } = require('./controllers/bookingsController');
     setTimeout(() => {
       runAutoRelease();
+      runAttendedEmails();
       setInterval(runAutoRelease, 6 * 60 * 60 * 1000);
+      setInterval(runAttendedEmails, 30 * 60 * 1000); // every 30 minutes
     }, 5 * 60 * 1000);
   });
   server.on('error', (err) => {

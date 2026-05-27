@@ -250,6 +250,44 @@ const sendReviewReminder = (booking) => {
   });
 };
 
+const sendAttendedConfirmationEmail = (booking, confirmUrl, disputeUrl) =>
+  sendEmail({
+    to: booking.customer_email,
+    subject: `Were you attended to? – ${booking.reference_id}`,
+    type: 'attended_confirmation',
+    business_id: booking.business_id,
+    booking_id: booking.id,
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:12px">🙋</div>
+        <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">Were you attended to?</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Hi ${booking.customer_name}, your appointment at <strong>${booking.business_name}</strong> was scheduled for today.</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:24px">
+        ${detailRow('Service', booking.service_name, false)}
+        ${detailRow('Date', booking.booking_date, true)}
+        ${detailRow('Time', `${booking.start_time?.slice(0,5)} – ${booking.end_time?.slice(0,5)}`, false)}
+        ${detailRow('Reference', `<span style="font-family:monospace;color:#4f46e5">${booking.reference_id}</span>`, true)}
+      </table>
+      <p style="color:#64748b;font-size:14px;text-align:center;margin:0 0 20px">Please let us know — your response releases payment to the business or opens a refund investigation. You have 6 hours from your appointment end time to respond.</p>
+      <table style="width:100%;border-collapse:collapse">
+        <tr>
+          <td style="padding:0 6px 0 0;width:50%">
+            <a href="${confirmUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#10b981,#059669);color:white;padding:14px 12px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px">
+              ✅ Yes, I was attended to
+            </a>
+          </td>
+          <td style="padding:0 0 0 6px;width:50%">
+            <a href="${disputeUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;padding:14px 12px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px">
+              ❌ No, I wasn't attended to
+            </a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:20px 0 0;color:#cbd5e1;font-size:12px;text-align:center">These links expire in 7 days. If you have already responded, you can safely ignore this email.</p>
+    `),
+  });
+
 const sendVerificationEmail = (user, verifyUrl, type = 'business') =>
   sendEmail({
     to: user.email,
@@ -273,4 +311,4 @@ const sendVerificationEmail = (user, verifyUrl, type = 'business') =>
     `),
   });
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendVerificationEmail };
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail };

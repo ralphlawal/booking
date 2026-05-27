@@ -3,7 +3,7 @@ const Customer = require('../models/Customer');
 const Service = require('../models/Service');
 const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
-const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder } = require('../services/emailService');
+const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail } = require('../services/emailService');
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -185,7 +185,12 @@ exports.updateStatus = async (req, res) => {
     }
 
     if (status === 'completed' && fullBooking.customer_email) {
-      sendReviewReminder(fullBooking).catch(() => {});
+      // Only send review reminder once the appointment time has actually passed.
+      // Prevents premature "how was it?" emails when a business confirms a future booking.
+      const apptEnd = new Date(`${fullBooking.booking_date}T${fullBooking.end_time || fullBooking.start_time || '23:59'}`);
+      if (apptEnd <= new Date()) {
+        sendReviewReminder(fullBooking).catch(() => {});
+      }
     }
 
     if (fullBooking.consumer_id && ['confirmed','cancelled'].includes(status)) {
@@ -434,6 +439,11 @@ exports.confirmService = async (req, res) => {
       );
     }
 
+    // Now that service is confirmed, send the review reminder
+    if (booking.customer_email) {
+      sendReviewReminder(booking).catch(() => {});
+    }
+
     res.json({ message: 'Service confirmed — thank you!' });
   } catch (err) {
     console.error('[confirmService]', err.message);
@@ -538,11 +548,25 @@ exports.raiseDispute = async (req, res) => {
     const { reason, description, consumer_id } = req.body;
     if (!reason?.trim()) return res.status(400).json({ error: 'Reason is required' });
 
-    // Only allow disputes for paid bookings within 14 days of service date
-    const serviceDate = new Date(booking.booking_date + 'T12:00:00Z');
-    const daysSince = (Date.now() - serviceDate.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSince > 14) {
-      return res.status(400).json({ error: 'Disputes must be raised within 14 days of the service date' });
+    // Dispute window: must be raised within 6 hours of appointment end time
+    const apptEnd = new Date(`${booking.booking_date}T${booking.end_time || '23:59'}`);
+    const hoursAfterEnd = (Date.now() - apptEnd.getTime()) / (1000 * 60 * 60);
+    if (hoursAfterEnd < 0) {
+      return res.status(400).json({ error: 'Cannot raise a dispute for an appointment that has not yet happened' });
+    }
+    if (hoursAfterEnd > 6) {
+      return res.status(400).json({ error: 'Disputes must be raised within 6 hours of your appointment ending' });
+    }
+
+    // Fraud guard: max 2 open disputes per consumer at any time
+    if (consumer_id) {
+      const { rows: openDisputes } = await db.query(
+        "SELECT COUNT(*) AS cnt FROM disputes WHERE consumer_id = $1 AND status = 'open'",
+        [consumer_id]
+      );
+      if (parseInt(openDisputes[0].cnt) >= 2) {
+        return res.status(400).json({ error: 'You already have 2 open disputes. Please wait for them to be resolved before raising another.' });
+      }
     }
 
     const { rows: existing } = await db.query(
@@ -654,11 +678,164 @@ exports.resolveDispute = async (req, res) => {
       [status, admin_notes || null, stripe_refund_id, dispute.id]
     );
 
+    // Fraud guard: if admin rejects a dispute (customer was wrong), track it on their account.
+    // After 3 fraudulent disputes in their history, flag the account for review.
+    if (action === 'reject' && dispute.consumer_id) {
+      db.query(
+        `UPDATE consumer_accounts
+         SET fraud_dispute_count = COALESCE(fraud_dispute_count, 0) + 1,
+             is_flagged = CASE WHEN COALESCE(fraud_dispute_count, 0) + 1 >= 3 THEN TRUE ELSE is_flagged END,
+             flagged_reason = CASE WHEN COALESCE(fraud_dispute_count, 0) + 1 >= 3 THEN 'Multiple fraudulent disputes' ELSE flagged_reason END
+         WHERE id = $1`,
+        [dispute.consumer_id]
+      ).catch(err => console.error('[resolveDispute] fraud tracking error:', err.message));
+    }
+
     res.json({ message: action === 'refund' ? 'Refund issued successfully' : 'Dispute rejected' });
   } catch (err) {
     console.error('[resolveDispute]', err.message);
     res.status(500).json({ error: 'Failed to resolve dispute' });
   }
+};
+
+// Cron: find paid+confirmed bookings whose appointment ended >2h ago with no confirmation/dispute,
+// generate a signed token, and email the customer asking if they were attended to.
+async function sendAttendedConfirmationEmails() {
+  const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
+  const isPostgres = !!process.env.DATABASE_URL;
+  const dateFilter = isPostgres
+    ? `(b.booking_date || 'T' || COALESCE(b.end_time, '23:59'))::timestamp < NOW() - INTERVAL '2 hours'`
+    : `datetime(b.booking_date || 'T' || COALESCE(b.end_time, '23:59')) < datetime('now', '-2 hours')`;
+
+  const { rows } = await db.query(`
+    SELECT b.id, b.reference_id, b.business_id, b.stripe_payment_intent_id,
+           b.payment_status, b.booking_date, b.end_time, b.start_time, b.currency,
+           b.consumer_id,
+           c.full_name AS customer_name, c.email AS customer_email,
+           s.name AS service_name, s.price,
+           biz.name AS business_name, biz.slug, biz.phone AS business_phone
+    FROM bookings b
+    JOIN services s ON s.id = b.service_id
+    JOIN customers c ON c.id = b.customer_id
+    JOIN businesses biz ON biz.id = b.business_id
+    LEFT JOIN service_confirmations sc ON sc.booking_id = b.id
+    LEFT JOIN disputes d ON d.booking_id = b.id
+    WHERE b.status IN ('confirmed', 'pending')
+      AND b.payment_status = 'paid'
+      AND b.attended_email_sent_at IS NULL
+      AND sc.id IS NULL
+      AND d.id IS NULL
+      AND c.email IS NOT NULL
+      AND ${dateFilter}
+    LIMIT 50
+  `);
+
+  let sent = 0;
+  for (const booking of rows) {
+    try {
+      const token = jwt.sign(
+        { purpose: 'attended_check', reference_id: booking.reference_id, booking_id: booking.id, consumer_id: booking.consumer_id || null },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      const confirmUrl = `${FRONTEND}/booking/attended?token=${token}&action=confirm`;
+      const disputeUrl = `${FRONTEND}/booking/attended?token=${token}&action=dispute`;
+      await sendAttendedConfirmationEmail(booking, confirmUrl, disputeUrl);
+      await db.query('UPDATE bookings SET attended_email_sent_at = NOW() WHERE id = $1', [booking.id]);
+      sent++;
+    } catch (err) {
+      console.error(`[attended-email] ${booking.reference_id}: ${err.message}`);
+    }
+  }
+  if (sent > 0) console.log(`[attended-email] Sent ${sent} attended confirmation emails`);
+  return sent;
+}
+
+exports.runAttendedEmails = () => sendAttendedConfirmationEmails().catch(err => console.error('[attended-email]', err.message));
+
+// POST /api/bookings/attended-action  — processes email link with signed JWT token.
+// Allows customers to confirm attendance or raise a dispute directly from their email,
+// without requiring them to log in. The token was signed when the email was sent.
+exports.attendedAction = async (req, res) => {
+  const { token, action, reason, description } = req.body;
+  if (!token) return res.status(400).json({ error: 'Token required' });
+  if (!['confirm', 'dispute'].includes(action)) return res.status(400).json({ error: 'Invalid action' });
+
+  let payload;
+  try {
+    payload = jwt.verify(token, JWT_SECRET);
+    if (payload.purpose !== 'attended_check') throw new Error('wrong purpose');
+  } catch {
+    return res.status(401).json({ error: 'This link has expired or is invalid. Please contact support.' });
+  }
+
+  const booking = await Booking.findByReference(payload.reference_id).catch(() => null);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+  if (action === 'confirm') {
+    const { rows: existing } = await db.query('SELECT id FROM service_confirmations WHERE booking_id = $1', [booking.id]);
+    if (existing.length > 0) return res.json({ message: 'You have already confirmed this service. Thank you!', already_done: true });
+
+    const { rows: dispRows } = await db.query("SELECT id FROM disputes WHERE booking_id = $1 AND status = 'open'", [booking.id]);
+    if (dispRows.length > 0) return res.status(400).json({ error: 'A dispute is open for this booking — contact support.' });
+
+    await db.query('INSERT INTO service_confirmations (id, booking_id, consumer_id) VALUES ($1, $2, $3)',
+      [crypto.randomUUID(), booking.id, payload.consumer_id || null]);
+
+    if (booking.status !== 'completed') {
+      await Booking.updateStatus(booking.id, booking.business_id, 'completed', null);
+    }
+    if (process.env.STRIPE_SECRET_KEY && booking.stripe_payment_intent_id && booking.payment_status === 'paid' && !booking.stripe_transfer_id) {
+      transferToBusiness(booking).catch(err => console.error('[attendedAction/transfer]', err.message));
+    }
+    if (booking.customer_email) sendReviewReminder(booking).catch(() => {});
+
+    return res.json({ message: 'Thank you! Your confirmation has been recorded and payment is being released to the business.' });
+  }
+
+  // action === 'dispute'
+  if (!reason?.trim()) return res.status(400).json({ error: 'Please describe why you were not attended to.' });
+
+  const { rows: confirmRows } = await db.query('SELECT id FROM service_confirmations WHERE booking_id = $1', [booking.id]);
+  if (confirmRows.length > 0) return res.status(400).json({ error: 'You already confirmed this service. A dispute cannot be raised.' });
+
+  const { rows: existDisp } = await db.query('SELECT id FROM disputes WHERE booking_id = $1', [booking.id]);
+  if (existDisp.length > 0) return res.json({ message: 'A dispute has already been raised for this booking.', already_done: true });
+
+  const consumer_id = payload.consumer_id;
+  if (consumer_id) {
+    const { rows: openDisputes } = await db.query(
+      "SELECT COUNT(*) AS cnt FROM disputes WHERE consumer_id = $1 AND status = 'open'", [consumer_id]
+    );
+    if (parseInt(openDisputes[0].cnt) >= 2) {
+      return res.status(400).json({ error: 'You already have 2 open disputes. Please wait for them to be resolved.' });
+    }
+  }
+
+  await db.query(
+    'INSERT INTO disputes (id, booking_id, consumer_id, reason, description) VALUES ($1, $2, $3, $4, $5)',
+    [crypto.randomUUID(), booking.id, consumer_id || null, reason.trim(), description?.trim() || null]
+  );
+
+  sendEmail({
+    to: process.env.ADMIN_EMAIL || 'hello@bookam.business',
+    subject: `New Dispute (via email): ${booking.reference_id}`,
+    type: 'dispute_raised',
+    html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
+      <h2 style="color:#dc2626">New Dispute Raised</h2>
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:6px 0;color:#64748b;width:130px">Reference</td><td style="font-weight:600;font-family:monospace">${booking.reference_id}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Customer</td><td>${booking.customer_name}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Business</td><td>${booking.business_name}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Service</td><td>${booking.service_name}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Reason</td><td>${reason}</td></tr>
+        ${description ? `<tr><td style="padding:6px 0;color:#64748b">Details</td><td>${description}</td></tr>` : ''}
+      </table>
+      <p style="margin-top:20px"><a href="${process.env.FRONTEND_URL || 'https://bookam.business'}/admin-support">View in admin dashboard →</a></p>
+    </div>`,
+  }).catch(() => {});
+
+  return res.json({ message: 'Your dispute has been raised. Our team will investigate within 48 hours and payment is held until resolved.' });
 };
 
 // POST /bookings/walkin  — business creates walk-in booking from dashboard (authenticated)
