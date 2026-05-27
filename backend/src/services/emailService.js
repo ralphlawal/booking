@@ -221,7 +221,9 @@ const sendWelcomeEmail = (user) =>
 
 const sendReviewReminder = (booking) => {
   const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
-  const reviewLink = `${FRONTEND}/profile/${booking.slug}#reviews`;
+  const reviewLink = booking.slug
+    ? `${FRONTEND}/profile/${booking.slug}#reviews`
+    : `${FRONTEND}/explore`;
   return sendEmail({
     to: booking.customer_email,
     subject: `How was your visit to ${booking.business_name}?`,

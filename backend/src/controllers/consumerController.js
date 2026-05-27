@@ -26,7 +26,7 @@ const createWelcomeNotification = (consumerId) => {
     consumer_id: consumerId,
     type: 'welcome',
     title: 'Welcome to BookAm Business',
-    body: 'Thanks for joining. We are working every week to make booking, messaging, payments, and support much better for you.',
+    body: 'Thanks for joining. We are consistently building to make the app better — smoother bookings, faster responses, and better support every week.',
     link: '/explore',
   }).catch(() => {});
 };
@@ -44,7 +44,7 @@ const sendConsumerWelcomeEmail = (consumer) => {
       <div style="padding:32px">
         <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px">Welcome, ${consumer.full_name}!</h2>
         <p style="color:#64748b;font-size:15px;margin:0 0 14px">Your BookAm Business account is ready. Discover and book local services instantly.</p>
-        <p style="color:#64748b;font-size:14px;margin:0 0 22px">We are actively working to make the app much better with smoother bookings, stronger payments, faster chat, and more useful updates for you.</p>
+        <p style="color:#64748b;font-size:14px;margin:0 0 22px">We are consistently building to make the app better — new features every week, smoother bookings, stronger payments, and more. You're here from the beginning.</p>
         <a href="${FRONTEND}/explore" style="display:inline-block;background:#5b3eea;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px">Browse services</a>
       </div>
     </div>`,

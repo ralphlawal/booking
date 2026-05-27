@@ -202,6 +202,8 @@ app.get('/api/admin/launch-readiness', adminCtrl.getLaunchReadiness);
 app.get('/api/admin/manual-payouts', adminCtrl.getManualPayouts);
 app.post('/api/admin/manual-payouts/:businessId/mark-paid', adminCtrl.markManualPaid);
 app.post('/api/admin/reconcile-payments', paymentsCtrl.reconcile);
+const businessCtrl = require('./controllers/businessController');
+app.post('/api/admin/geocode-backfill', businessCtrl.geocodeBackfill);
 
 // Review replies (business authenticated)
 const reviewsCtrl = require('./controllers/reviewsController');
@@ -389,7 +391,7 @@ async function start() {
         db.exec(`CREATE TABLE IF NOT EXISTS consumer_follows (
           id TEXT PRIMARY KEY,
           consumer_id TEXT NOT NULL,
-          business_id TEXT NOT NULL,
+          business_id TEXT NOT NULL, 
           created_at TEXT DEFAULT (datetime('now')),
           UNIQUE(consumer_id, business_id)
         )`);

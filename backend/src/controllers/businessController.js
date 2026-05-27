@@ -46,7 +46,13 @@ exports.createBusiness = async (req, res) => {
     const slugExists = await Business.slugExists(req.body.slug);
     if (slugExists) return res.status(409).json({ error: 'This username is already taken' });
 
-    const business = await Business.create({ ...req.body, user_id: req.user.id });
+    const body = { ...req.body };
+    if (body.location && body.latitude === undefined && body.longitude === undefined) {
+      const geo = await geocodeLocation(body.location);
+      if (geo) { body.latitude = geo.lat; body.longitude = geo.lon; }
+    }
+
+    const business = await Business.create({ ...body, user_id: req.user.id });
     res.status(201).json(business);
   } catch (err) {
     console.error('Create business error:', err);
@@ -214,6 +220,40 @@ exports.submitVerificationDetails = async (req, res) => {
   } catch (err) {
     console.error('submitVerificationDetails error:', err);
     res.status(500).json({ error: 'Failed to submit details' });
+  }
+};
+
+// POST /api/business/admin/geocode-backfill
+// One-time operation: geocodes all businesses that have location text but no coordinates.
+// Rate-limited to 1 request/second to respect Nominatim ToS.
+exports.geocodeBackfill = async (req, res) => {
+  const db = require('../config/database');
+  try {
+    const { rows } = await db.query(
+      `SELECT id, location FROM businesses
+       WHERE location IS NOT NULL AND location != ''
+         AND (latitude IS NULL OR longitude IS NULL)
+       LIMIT 50`
+    );
+    if (!rows.length) return res.json({ updated: 0, message: 'All businesses already have coordinates' });
+
+    let updated = 0;
+    for (const biz of rows) {
+      const geo = await geocodeLocation(biz.location);
+      if (geo) {
+        await db.query(
+          'UPDATE businesses SET latitude = $1, longitude = $2 WHERE id = $3',
+          [geo.lat, geo.lon, biz.id]
+        );
+        updated++;
+      }
+      // 1 second delay to respect Nominatim rate limit
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    res.json({ checked: rows.length, updated, message: `${updated} businesses geocoded` });
+  } catch (err) {
+    console.error('[geocode-backfill]', err.message);
+    res.status(500).json({ error: 'Backfill failed' });
   }
 };
 

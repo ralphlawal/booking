@@ -1,4 +1,26 @@
 const db = require('../config/database');
+const https = require('https');
+
+function geocodeLocationBg(businessId, locationText) {
+  const q = encodeURIComponent(locationText);
+  https.get({
+    hostname: 'nominatim.openstreetmap.org',
+    path: `/search?format=json&q=${q}&limit=1`,
+    headers: { 'User-Agent': 'BookAm/1.0 (bookam.business)' },
+  }, (res) => {
+    let data = '';
+    res.on('data', c => { data += c; });
+    res.on('end', () => {
+      try {
+        const json = JSON.parse(data);
+        if (json[0]) {
+          db.query('UPDATE businesses SET latitude=$1,longitude=$2 WHERE id=$3',
+            [parseFloat(json[0].lat), parseFloat(json[0].lon), businessId]).catch(() => {});
+        }
+      } catch {}
+    });
+  }).on('error', () => {});
+}
 
 function haversineKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
@@ -112,6 +134,10 @@ exports.search = async (req, res) => {
           if (b.distance_km === null) return -1;
           return a.distance_km - b.distance_km;
         });
+
+      // Lazily geocode up to 3 businesses with location text but no coordinates (fire-and-forget)
+      const needsGeo = rows.filter(b => b.location && !b.latitude && !b.longitude).slice(0, 3);
+      needsGeo.forEach((b, i) => setTimeout(() => geocodeLocationBg(b.id, b.location), i * 1200));
     }
 
     res.json(results);
