@@ -116,6 +116,23 @@ exports.webhook = async (req, res) => {
     }
   }
 
+  // Auto-activate business Stripe accounts when Stripe verifies them.
+  // Without this, stripe_onboarding_complete only updates when the business visits Settings.
+  if (event.type === 'account.updated') {
+    const acct = event.data.object;
+    if (acct.charges_enabled && acct.payouts_enabled) {
+      try {
+        await db.query(
+          'UPDATE businesses SET stripe_onboarding_complete = true WHERE stripe_account_id = $1',
+          [acct.id]
+        );
+        console.log(`[stripe-webhook] account ${acct.id} marked active`);
+      } catch (err) {
+        console.error('[stripe-webhook] account.updated db error:', err.message);
+      }
+    }
+  }
+
   // Sync refund status if a refund is created/updated directly on Stripe dashboard
   if (event.type === 'charge.refunded' || event.type === 'charge.refund.updated') {
     const charge = event.data.object;

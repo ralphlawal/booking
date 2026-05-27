@@ -452,21 +452,37 @@ exports.confirmService = async (req, res) => {
       await Booking.updateStatus(booking.id, booking.business_id, 'completed', null);
     }
 
-    // Auto-transfer to business via Stripe Connect (best-effort — never blocks confirmation)
-    if (
-      process.env.STRIPE_SECRET_KEY &&
-      booking.stripe_payment_intent_id &&
-      booking.payment_status === 'paid' &&
-      !booking.stripe_transfer_id
-    ) {
-      transferToBusiness(booking).catch(err =>
-        console.error('[confirmService] transfer failed (will need manual payout):', err.message)
-      );
+    // Transfer to business via Stripe Connect. Errors are surfaced to admin, never silently lost.
+    if (process.env.STRIPE_SECRET_KEY && booking.stripe_payment_intent_id && booking.payment_status === 'paid' && !booking.stripe_transfer_id) {
+      transferToBusiness(booking).then(() => {
+        // Send payment-released email only after transfer succeeds
+        if (booking.business_email) sendBusinessPaymentReleasedEmail(booking).catch(() => {});
+      }).catch(err => {
+        console.error('[confirmService] transfer failed:', err.message);
+        sendEmail({
+          to: process.env.ADMIN_EMAIL || 'hello@bookam.business',
+          subject: `⚠️ Transfer failed — ${booking.reference_id}`,
+          type: 'transfer_failed',
+          html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
+            <h2 style="color:#dc2626">Stripe Transfer Failed</h2>
+            <p>The automatic transfer for booking <strong>${booking.reference_id}</strong> failed and requires manual action.</p>
+            <table style="width:100%;border-collapse:collapse">
+              <tr><td style="padding:6px 0;color:#64748b;width:130px">Reference</td><td style="font-weight:600;font-family:monospace">${booking.reference_id}</td></tr>
+              <tr><td style="padding:6px 0;color:#64748b">Business</td><td>${booking.business_name}</td></tr>
+              <tr><td style="padding:6px 0;color:#64748b">Customer</td><td>${booking.customer_name}</td></tr>
+              <tr><td style="padding:6px 0;color:#64748b">Error</td><td style="color:#dc2626">${err.message}</td></tr>
+            </table>
+            <p style="margin-top:16px">Please transfer manually via the <a href="https://dashboard.stripe.com">Stripe dashboard</a>.</p>
+          </div>`,
+        }).catch(() => {});
+      });
+    } else if (booking.business_email) {
+      // Non-Stripe (cash) bookings — still notify business the service was confirmed
+      sendBusinessPaymentReleasedEmail(booking).catch(() => {});
     }
 
-    // Send review reminder to customer and payment-released notification to business
+    // Send review reminder to customer
     if (booking.customer_email) sendReviewReminder(booking).catch(() => {});
-    if (booking.business_email) sendBusinessPaymentReleasedEmail(booking).catch(() => {});
 
     res.json({ message: 'Service confirmed — thank you!' });
   } catch (err) {
@@ -479,31 +495,40 @@ async function transferToBusiness(booking) {
   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
   const { rows: bizRows } = await db.query(
-    'SELECT stripe_account_id, stripe_onboarding_complete FROM businesses WHERE id = $1',
+    'SELECT stripe_account_id FROM businesses WHERE id = $1',
     [booking.business_id]
   );
   const biz = bizRows[0];
-  if (!biz?.stripe_account_id || !biz.stripe_onboarding_complete) return;
+  if (!biz?.stripe_account_id) return; // no Stripe account connected
+
+  // Verify account is active directly from Stripe — never trust the stale DB flag.
+  // The DB flag may be false if the business completed onboarding without revisiting Settings.
+  const account = await stripe.accounts.retrieve(biz.stripe_account_id);
+  if (!account.charges_enabled || !account.payouts_enabled) {
+    console.warn(`[stripe-transfer] ${booking.reference_id}: account ${biz.stripe_account_id} not yet active — skipping`);
+    return;
+  }
+  // Keep DB in sync so future checks are consistent
+  db.query('UPDATE businesses SET stripe_onboarding_complete = true WHERE stripe_account_id = $1', [biz.stripe_account_id]).catch(() => {});
 
   // findByReference returns service_price; autoRelease query returns price directly
   const amountPence = Math.round(parseFloat(booking.service_price || booking.price || 0) * 100);
-  if (amountPence < 50) return; // nothing meaningful to transfer
+  if (amountPence < 50) return; // free or near-free service
 
   const platformFeePercent = parseFloat(process.env.PLATFORM_FEE_PERCENT || '5');
   const platformFee = Math.round(amountPence * platformFeePercent / 100);
   const transferAmount = amountPence - platformFee;
 
-  // Get the charge ID from the PaymentIntent (needed for source_transaction)
-  const pi = await stripe.paymentIntents.retrieve(booking.stripe_payment_intent_id);
-  const chargeId = pi.latest_charge;
-
+  // Transfer from platform balance to connected account.
+  // We do NOT use source_transaction — it requires the specific charge to be settled
+  // in the platform balance first, which can fail for recent payments.
+  // Transferring from general platform balance is simpler and more reliable.
   const transfer = await stripe.transfers.create({
-    amount:             transferAmount,
-    currency:           booking.currency || 'gbp',
-    destination:        biz.stripe_account_id,
-    source_transaction: chargeId,
-    description:        `Payout for booking ${booking.reference_id}`,
-    metadata:           { booking_reference: booking.reference_id },
+    amount:      transferAmount,
+    currency:    booking.currency || 'gbp',
+    destination: biz.stripe_account_id,
+    description: `Payout for booking ${booking.reference_id}`,
+    metadata:    { booking_reference: booking.reference_id, booking_id: booking.id },
   });
 
   await db.query(
@@ -511,7 +536,7 @@ async function transferToBusiness(booking) {
     [transfer.id, booking.id]
   );
 
-  console.log(`[stripe-transfer] £${(transferAmount / 100).toFixed(2)} sent to ${biz.stripe_account_id} for booking ${booking.reference_id}`);
+  console.log(`[stripe-transfer] £${(transferAmount / 100).toFixed(2)} → ${biz.stripe_account_id} for booking ${booking.reference_id} (transfer ${transfer.id})`);
 }
 
 // Finds confirmed+paid bookings whose appointment ended >72h ago with no transfer and auto-releases payment.
@@ -809,10 +834,21 @@ exports.attendedAction = async (req, res) => {
       await Booking.updateStatus(booking.id, booking.business_id, 'completed', null);
     }
     if (process.env.STRIPE_SECRET_KEY && booking.stripe_payment_intent_id && booking.payment_status === 'paid' && !booking.stripe_transfer_id) {
-      transferToBusiness(booking).catch(err => console.error('[attendedAction/transfer]', err.message));
+      transferToBusiness(booking).then(() => {
+        if (booking.business_email) sendBusinessPaymentReleasedEmail(booking).catch(() => {});
+      }).catch(err => {
+        console.error('[attendedAction/transfer]', err.message);
+        sendEmail({
+          to: process.env.ADMIN_EMAIL || 'hello@bookam.business',
+          subject: `⚠️ Transfer failed — ${booking.reference_id}`,
+          type: 'transfer_failed',
+          html: `<div style="font-family:sans-serif;padding:24px"><h2 style="color:#dc2626">Transfer Failed (email link)</h2><p>Booking <strong>${booking.reference_id}</strong> — ${booking.business_name}. Error: ${err.message}</p></div>`,
+        }).catch(() => {});
+      });
+    } else if (booking.business_email) {
+      sendBusinessPaymentReleasedEmail(booking).catch(() => {});
     }
     if (booking.customer_email) sendReviewReminder(booking).catch(() => {});
-    if (booking.business_email) sendBusinessPaymentReleasedEmail(booking).catch(() => {});
 
     return res.json({ message: 'Thank you! Your confirmation has been recorded and payment is being released to the business.' });
   }
