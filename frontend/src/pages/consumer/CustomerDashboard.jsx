@@ -84,9 +84,9 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
   const canConfirm = appointmentPassed && !booking.service_confirmed && !booking.has_dispute;
 
   return (
-    <div className="card p-4 h-full">
+    <div className="card p-4 h-full transition-all hover:border-primary-200 dark:hover:border-primary-800">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {booking.logo_url ? (
             <img src={booking.logo_url} alt={booking.business_name} className="w-full h-full object-cover" />
           ) : (
@@ -95,11 +95,11 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div>
+            <div className="min-w-0">
               <h3 className="font-bold text-gray-900 dark:text-white text-sm">{booking.business_name}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">{booking.service_name}</p>
             </div>
-            <span className={`badge ${STATUS_STYLES[booking.status] || 'badge-pending'}`}>
+            <span className={`badge ${STATUS_STYLES[booking.status] || 'badge-pending'} max-w-[9.5rem] justify-center text-center`}>
               {STATUS_LABELS[booking.status] || booking.status}
             </span>
           </div>
@@ -139,12 +139,12 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         </div>
       </div>
 
-      <div className="flex gap-2 mt-4 flex-wrap">
+      <div className="grid grid-cols-2 sm:flex gap-2 mt-4">
         {/* Confirm received & Dispute — shown whenever appointment has ended, regardless of tab */}
         {canConfirm && (
           <button
             onClick={() => onConfirmService(booking)}
-            className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
           </button>
@@ -152,7 +152,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         {canDispute && (
           <button
             onClick={() => onDispute(booking)}
-            className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             <AlertTriangle className="w-3.5 h-3.5" /> Report issue
           </button>
@@ -172,7 +172,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         ) : (
           <>
             {!appointmentPassed && (
-              <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary flex-1 text-sm py-2 text-center">
+              <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary text-sm py-2 text-center">
                 View business
               </Link>
             )}
@@ -180,13 +180,13 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
               <>
                 <button
                   onClick={() => onReschedule(booking)}
-                  className="text-sm px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center gap-1"
+                  className="text-sm px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1"
                 >
                   <CalendarClock className="w-3.5 h-3.5" /> Reschedule
                 </button>
                 <button
                   onClick={() => onCancel(booking)}
-                  className="text-sm px-3 py-2 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="text-sm px-3 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   Cancel
                 </button>
@@ -243,7 +243,7 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Leave a review</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -298,7 +298,7 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Cancel booking?</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -313,7 +313,7 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
         </p>
 
         {refundInfo ? (
-          <div className={`rounded-xl p-3 mb-5 text-sm ${refundInfo.color === 'green' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'}`}>
+          <div className={`rounded-lg p-3 mb-5 text-sm ${refundInfo.color === 'green' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'}`}>
             <p className="font-bold">{refundInfo.label}: £{refundInfo.amount.toFixed(2)}</p>
             <p className="text-xs mt-0.5 opacity-80">
               {refundInfo.percent === 100
@@ -322,11 +322,11 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
             </p>
           </div>
         ) : isPaid && price > 0 ? (
-          <div className="rounded-xl p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
             No refund — this booking cannot be refunded at this stage.
           </div>
         ) : (
-          <div className="rounded-xl p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
             No payment was taken for this booking.
           </div>
         )}
@@ -336,7 +336,7 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
           <button
             onClick={onConfirm}
             disabled={cancelling}
-            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
           >
             {cancelling ? 'Cancelling…' : 'Yes, cancel'}
           </button>
@@ -349,7 +349,7 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
 function ConfirmServiceModal({ booking, onConfirm, onClose, confirming }) {
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Confirm service received?</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -362,7 +362,7 @@ function ConfirmServiceModal({ booking, onConfirm, onClose, confirming }) {
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           {fmtDate(booking.booking_date)} · {booking.start_time?.slice(0, 5)}
         </p>
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 mb-5 text-xs text-green-700 dark:text-green-400">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-5 text-xs text-green-700 dark:text-green-400">
           By confirming, you let us know the service was completed as expected. This helps us release payment to the business and keeps your booking history accurate.
         </div>
         <div className="flex gap-3">
@@ -370,7 +370,7 @@ function ConfirmServiceModal({ booking, onConfirm, onClose, confirming }) {
           <button
             onClick={onConfirm}
             disabled={confirming}
-            className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <ShieldCheck className="w-4 h-4" />
             {confirming ? 'Confirming…' : 'Yes, confirm'}
@@ -410,7 +410,7 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Raise a dispute</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -444,7 +444,7 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
             />
           </div>
         </div>
-        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-5 text-xs text-amber-700 dark:text-amber-400">
+        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 mb-5 text-xs text-amber-700 dark:text-amber-400">
           Our team will review your dispute within 48 hours. If valid, a full refund will be issued to your original payment method.
         </div>
         <div className="flex gap-3">
@@ -452,7 +452,7 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
           <button
             onClick={submit}
             disabled={submitting || !reason}
-            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
           >
             {submitting ? 'Submitting…' : 'Submit dispute'}
           </button>
@@ -484,7 +484,7 @@ function RescheduleModal({ booking, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Request Reschedule</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -507,7 +507,7 @@ function RescheduleModal({ booking, onClose }) {
             <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Message (optional)</label>
             <textarea className="input resize-none text-sm" rows={2} placeholder="Any specific preferences or notes…" value={form.message} onChange={set('message')} maxLength={300} />
           </div>
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-xs text-blue-700 dark:text-blue-400">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-xs text-blue-700 dark:text-blue-400">
             This sends a request to the business — they'll confirm the new time directly with you.
           </div>
           <div className="flex gap-3">
@@ -527,7 +527,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
   return (
     <div className="card p-4">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {pref.logo_url ? (
             <img src={pref.logo_url} alt={pref.business_name} className="w-full h-full object-cover" />
           ) : (
@@ -554,7 +554,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
         </button>
         <button
           onClick={() => onRemove(pref.business_id)}
-          className="p-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-500 transition-colors"
+          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-500 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -729,7 +729,7 @@ export default function CustomerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
@@ -740,7 +740,7 @@ export default function CustomerDashboard() {
             <div className="relative" ref={notifRef}>
               <button
                 onClick={openNotifications}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
                 title="Notifications"
               >
                 <Bell className="w-4 h-4 text-gray-500" />
@@ -749,7 +749,7 @@ export default function CustomerDashboard() {
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                     <p className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</p>
                     {browserPermission !== 'granted' && (
@@ -782,7 +782,7 @@ export default function CustomerDashboard() {
 
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'dark'
@@ -790,12 +790,12 @@ export default function CustomerDashboard() {
                 : <Moon className="w-4 h-4 text-gray-500" />
               }
             </button>
-            <Link to="/customer/profile" className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Profile settings">
+            <Link to="/customer/profile" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Profile settings">
               <Settings className="w-4 h-4 text-gray-500" />
             </Link>
             <button
               onClick={() => { logout(); navigate('/'); }}
-              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 hover:text-red-500 dark:hover:text-red-400"
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />
@@ -806,13 +806,14 @@ export default function CustomerDashboard() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8 pb-consumer-nav">
         {/* Welcome header */}
-        <div className="mb-6 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">
+        <div className="mb-6 surface p-4 sm:p-5 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">
             {consumer.full_name?.[0]?.toUpperCase() || '?'}
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Hi, {consumer.full_name?.split(' ')[0]}</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{consumer.email}</p>
+          <div className="min-w-0">
+            <p className="page-kicker">Customer home</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">Hi, {consumer.full_name?.split(' ')[0]}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{consumer.email}</p>
             {bookings.length > 0 && (
               <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mt-0.5">
                 {bookings.length} booking{bookings.length !== 1 ? 's' : ''} total
@@ -823,7 +824,7 @@ export default function CustomerDashboard() {
 
         {/* Email verification banner */}
         {consumer.email_verified === false && (
-          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <p className="text-xs text-amber-800 dark:text-amber-300 font-medium truncate">
@@ -842,9 +843,9 @@ export default function CustomerDashboard() {
 
         {/* First-time welcome guidance — shown only when user has no bookings yet */}
         {!loading && bookings.length === 0 && (
-          <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-5 text-white shadow-primary">
+          <div className="mb-5 rounded-lg bg-gradient-to-br from-primary-600 to-primary-700 p-5 text-white shadow-primary">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
@@ -865,9 +866,9 @@ export default function CustomerDashboard() {
 
         {/* "Confirm attendance" nudge — shown whenever there are past unconfirmed bookings */}
         {!loading && needsConfirmation.length > 0 && (
-          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
@@ -908,8 +909,8 @@ export default function CustomerDashboard() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-          <Link to="/match" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
+          <Link to="/match" className="card p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
+            <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
               <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
@@ -917,8 +918,8 @@ export default function CustomerDashboard() {
               <p className="text-xs text-gray-400">Best available</p>
             </div>
           </Link>
-          <Link to="/explore" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+          <Link to="/explore" className="card p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
+            <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
               <Search className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
@@ -926,8 +927,8 @@ export default function CustomerDashboard() {
               <p className="text-xs text-gray-400">Browse services</p>
             </div>
           </Link>
-          <Link to="/customer/messages" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow col-span-2 sm:col-span-1">
-            <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
+          <Link to="/customer/messages" className="card p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all col-span-2 sm:col-span-1">
+            <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
               <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
@@ -938,15 +939,15 @@ export default function CustomerDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5">
+        <div className="surface p-1 flex mb-5 overflow-x-auto scrollbar-hide">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
+              className={`flex-1 min-w-0 py-2.5 px-2 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
                 tab === t.id
-                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'bg-primary-600 text-white shadow-primary'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
             >
               {t.label}
@@ -964,7 +965,7 @@ export default function CustomerDashboard() {
             {[1, 2, 3].map((i) => (
               <div key={i} className="card p-4 animate-pulse" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="flex gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-gray-200 dark:bg-gray-800 flex-shrink-0" />
+                  <div className="w-11 h-11 rounded-lg bg-gray-200 dark:bg-gray-800 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded-full w-1/2" />
                     <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/3" />
@@ -972,15 +973,15 @@ export default function CustomerDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-xl flex-1" />
-                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-xl w-24" />
+                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-lg flex-1" />
+                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-lg w-24" />
                 </div>
               </div>
             ))}
           </div>
         ) : bookingsError ? (
           <div className="text-center py-12">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-3">
               <AlertTriangle className="w-7 h-7 text-amber-400" />
             </div>
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">Could not load your bookings</h3>
@@ -990,7 +991,7 @@ export default function CustomerDashboard() {
         ) : tab === 'upcoming' ? (
           upcoming.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3">
                 <Calendar className="w-7 h-7 text-primary-400" />
               </div>
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">No upcoming bookings</h3>
@@ -1009,7 +1010,7 @@ export default function CustomerDashboard() {
         ) : tab === 'past' ? (
           past.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mx-auto mb-3">
                 <Sparkles className="w-7 h-7 text-indigo-400" />
               </div>
               <p className="text-gray-500 dark:text-gray-400 text-sm">No past bookings yet</p>
@@ -1026,7 +1027,7 @@ export default function CustomerDashboard() {
         ) : (
           prefs.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-lg bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-3">
                 <Heart className="w-7 h-7 text-rose-400" />
               </div>
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">No favourites yet</h3>

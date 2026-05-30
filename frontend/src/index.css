@@ -13,7 +13,7 @@
     overflow-x: hidden;
   }
   body {
-    @apply bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased;
+    @apply bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     min-height: 100%;
@@ -32,38 +32,47 @@
   .h-screen { height: 100dvh; }
   h1, h2, h3, h4, h5, h6 { @apply font-semibold; }
   :root {
-    --radius: 0.75rem;
+    --radius: 0.625rem;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
-    --consumer-nav-height: calc(56px + env(safe-area-inset-bottom, 0px));
-    --consumer-nav-padding: calc(7rem + env(safe-area-inset-bottom, 0px));
-    --consumer-cta-padding: calc(10.5rem + env(safe-area-inset-bottom, 0px));
+    --consumer-nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
+    --consumer-nav-padding: calc(6.75rem + env(safe-area-inset-bottom, 0px));
+    --consumer-cta-padding: calc(10rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
 @layer components {
+  .page-shell {
+    @apply w-full max-w-6xl mx-auto space-y-5 sm:space-y-6;
+  }
+  .page-header {
+    @apply flex flex-col sm:flex-row sm:items-end justify-between gap-3;
+  }
+  .page-kicker {
+    @apply text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400;
+  }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm
-    hover:bg-primary-700 active:bg-primary-800 active:scale-[0.97] transition-all duration-150 shadow-primary hover:shadow-lg hover:-translate-y-px active:translate-y-0
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-lg font-semibold text-sm
+    hover:bg-primary-700 active:bg-primary-800 active:scale-[0.98] transition-all duration-150 shadow-primary hover:shadow-lg hover:-translate-y-px active:translate-y-0
     disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 disabled:active:scale-100;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5
     bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200
-    border border-gray-200 dark:border-gray-700 rounded-xl font-semibold text-sm
+    border border-gray-200 dark:border-gray-700 rounded-lg font-semibold text-sm
     hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600
     active:bg-gray-100 dark:active:bg-gray-600 active:scale-[0.97]
     transition-all duration-150
     disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl font-semibold text-sm
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg font-semibold text-sm
     hover:bg-red-700 active:bg-red-800 active:scale-[0.97] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .input {
-    @apply w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm
+    @apply w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm
     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
     transition-all duration-150 placeholder:text-gray-400 dark:placeholder:text-gray-500
@@ -75,7 +84,7 @@
     .input { font-size: 0.875rem; }
   }
   .input-error {
-    @apply w-full px-3.5 py-2.5 border border-red-400 dark:border-red-600 rounded-xl text-sm
+    @apply w-full px-3.5 py-2.5 border border-red-400 dark:border-red-600 rounded-lg text-sm
     bg-white dark:bg-gray-800 text-gray-900 dark:text-white
     focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent
     transition-all duration-150 placeholder:text-gray-400 dark:placeholder:text-gray-500;
@@ -88,13 +97,19 @@
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
   }
   .card {
-    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-card;
+    @apply bg-white dark:bg-gray-900 rounded-lg border border-gray-200/80 dark:border-gray-800 shadow-card;
   }
   .card-hover {
     @apply card hover:shadow-card-hover hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-0.5 transition-all duration-200;
   }
   .modal-panel {
-    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl;
+    @apply bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-2xl;
+  }
+  .surface {
+    @apply bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg shadow-card;
+  }
+  .surface-soft {
+    @apply bg-slate-50 dark:bg-gray-900/60 border border-gray-200/70 dark:border-gray-800 rounded-lg;
   }
 
   /* Badges */
@@ -108,7 +123,7 @@
 
   .stat-card   { @apply card p-5 flex items-center gap-4; }
   .section-title { @apply text-lg font-bold text-gray-900 dark:text-white; }
-  .empty-state { @apply flex flex-col items-center justify-center py-16 text-center text-gray-400 dark:text-gray-500; }
+  .empty-state { @apply flex flex-col items-center justify-center py-16 text-center text-gray-500 dark:text-gray-400; }
   .page-title  { @apply text-2xl font-bold text-gray-900 dark:text-white; }
   .page-sub    { @apply text-sm text-gray-500 dark:text-gray-400 mt-0.5; }
   .divider     { @apply border-t border-gray-100 dark:border-gray-800; }
@@ -277,6 +292,7 @@ select:-webkit-autofill {
   .btn-primary, .btn-secondary { min-height: 44px; }
   /* Prevent iOS Safari from zooming in when any input is focused (requires ≥16px) */
   input, textarea, select { font-size: 16px !important; }
+  .page-title { @apply text-xl; }
 }
 
 /* Stripe Elements dark mode */

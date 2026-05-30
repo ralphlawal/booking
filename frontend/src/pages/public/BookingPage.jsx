@@ -247,7 +247,7 @@ export default function BookingPage() {
   const dateOptions = Array.from({ length: 60 }, (_, i) => addDays(today, i));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50/30 animate-fade-in">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -259,9 +259,9 @@ export default function BookingPage() {
             {null}
           </BackButton>
           {business.logo_url ? (
-            <img src={business.logo_url} alt={business.name} className="w-9 h-9 rounded-xl object-cover flex-shrink-0" />
+            <img src={business.logo_url} alt={business.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
           ) : (
-            <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+            <div className="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               {business.name[0]}
             </div>
           )}
@@ -276,7 +276,7 @@ export default function BookingPage() {
       <main className="max-w-2xl mx-auto px-4 py-6 pb-16">
         {/* Business info */}
         {step === 0 && business.description && (
-          <div className="mb-5 p-4 bg-white rounded-xl border border-gray-100">
+          <div className="mb-5 p-4 bg-white rounded-lg border border-gray-100">
             <p className="text-gray-600 text-sm">{business.description}</p>
             {business.location && <p className="text-xs text-gray-400 mt-2 flex items-center gap-1"><MapPin className="w-3 h-3 flex-shrink-0" />{business.location}</p>}
           </div>
@@ -312,7 +312,7 @@ export default function BookingPage() {
             <h2 className="font-bold text-xl text-gray-900 mb-1">Choose a Service</h2>
             <p className="text-sm text-gray-500 mb-4">Select what you'd like to book</p>
             {services.length === 0 ? (
-              <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-100">
+              <div className="text-center py-16 text-gray-400 bg-white rounded-lg border border-gray-100">
                 <Wrench className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">No services available yet</p>
               </div>
@@ -320,7 +320,7 @@ export default function BookingPage() {
               <button
                 key={svc.id}
                 onClick={() => { set('service')(svc); goNext(); }}
-                className="w-full text-left p-4 sm:p-5 rounded-2xl border-2 border-gray-100 bg-white hover:border-primary-400 hover:shadow-md transition-all duration-150 group"
+                className="w-full text-left p-4 sm:p-5 rounded-lg border border-gray-200 bg-white hover:border-primary-400 hover:shadow-md transition-all duration-150 group"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -361,7 +361,7 @@ export default function BookingPage() {
                   <button
                     key={date.toISOString()}
                     onClick={() => { set('date')(date); set('time')(null); goNext(); }}
-                    className={`flex flex-col items-center py-3.5 px-4 rounded-2xl border-2 flex-shrink-0 snap-start transition-all duration-150 ${
+                    className={`flex flex-col items-center py-3.5 px-4 rounded-lg border flex-shrink-0 snap-start transition-all duration-150 ${
                       isSelected
                         ? 'border-primary-600 bg-primary-600 text-white shadow-lg shadow-primary-200'
                         : 'border-gray-100 bg-white hover:border-primary-300 text-gray-700 hover:shadow-sm'
@@ -397,10 +397,10 @@ export default function BookingPage() {
             <div className="mt-4">
             {loadingSlots ? (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {[...Array(9)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}
+                {[...Array(9)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />)}
               </div>
             ) : slots.length === 0 ? (
-              <div className="text-center py-14 bg-white rounded-2xl border border-gray-100">
+              <div className="text-center py-14 bg-white rounded-lg border border-gray-100">
                 <CalendarX className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="font-bold text-gray-900">No slots available</p>
                 <p className="text-sm text-gray-500 mt-1">This day is fully booked — try another date</p>
@@ -412,7 +412,7 @@ export default function BookingPage() {
                   <button
                     key={slot.start}
                     onClick={() => { set('time')(slot); goNext(); }}
-                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-all duration-150 ${
+                    className={`py-3 rounded-lg text-sm font-bold border transition-all duration-150 ${
                       booking.time?.start === slot.start
                         ? 'border-primary-600 bg-primary-600 text-white shadow-md shadow-primary-200'
                         : 'border-gray-100 bg-white hover:border-primary-400 text-gray-700 hover:shadow-sm'
@@ -437,7 +437,7 @@ export default function BookingPage() {
               </button>
             </div>
             {!consumer ? (
-              <div className="mb-4 mt-3 p-3.5 rounded-xl bg-primary-50 border border-primary-100 flex items-center justify-between gap-3">
+              <div className="mb-4 mt-3 p-3.5 rounded-lg bg-primary-50 border border-primary-100 flex items-center justify-between gap-3">
                 <p className="text-sm text-primary-700 font-medium">Sign in to auto-fill your details</p>
                 <a href="/customer/login" className="text-xs font-bold text-primary-600 bg-white border border-primary-200 px-3 py-1.5 rounded-lg hover:bg-primary-50 transition-colors whitespace-nowrap">Sign in →</a>
               </div>
@@ -576,9 +576,9 @@ export default function BookingPage() {
                     disabled={!!promoData}
                   />
                   {promoData ? (
-                    <button type="button" onClick={() => { setPromoData(null); setPromoCode(''); }} className="px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">Remove</button>
+                    <button type="button" onClick={() => { setPromoData(null); setPromoCode(''); }} className="px-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">Remove</button>
                   ) : (
-                    <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()} className="px-3 py-2 rounded-xl bg-primary-600 text-white text-xs font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 whitespace-nowrap">
+                    <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()} className="px-3 py-2 rounded-lg bg-primary-600 text-white text-xs font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 whitespace-nowrap">
                       {promoLoading ? '…' : 'Apply'}
                     </button>
                   )}
@@ -598,7 +598,7 @@ export default function BookingPage() {
                   { icon: <Shield className="w-4 h-4 mx-auto text-primary-600" />, title: 'Protected funds', desc: 'Held until service confirmed' },
                   { icon: <RotateCcw className="w-4 h-4 mx-auto text-primary-600" />, title: 'Refund policy', desc: 'Dispute within 14 days' },
                 ].map(b => (
-                  <div key={b.title} className="bg-white border border-gray-100 rounded-xl p-3 text-center">
+                  <div key={b.title} className="bg-white border border-gray-100 rounded-lg p-3 text-center">
                     <div className="mb-1">{b.icon}</div>
                     <p className="text-xs font-semibold text-gray-700">{b.title}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{b.desc}</p>
@@ -695,13 +695,13 @@ function PaymentForm({ onSuccess, submitting, setSubmitting, amount, returnUrl }
         />
 
         {error && (
-          <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
             <svg className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl p-3 flex items-start gap-2.5">
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-lg p-3 flex items-start gap-2.5">
           <Shield className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-semibold text-indigo-800 dark:text-indigo-300">BookAm Buyer Protection</p>

@@ -79,7 +79,7 @@ function NewChatModal({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 animate-slide-up">
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-sm p-6 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-gray-900 dark:text-white">New Conversation</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
@@ -186,7 +186,7 @@ function DisputesPanel() {
         <h2 className="font-bold text-gray-900 dark:text-white">
           Disputes <span className="ml-1 text-sm font-normal text-gray-400">({open.length} open)</span>
         </h2>
-        <button onClick={() => load()} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <button onClick={() => load()} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -203,7 +203,7 @@ function DisputesPanel() {
         <div className="space-y-3">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Open disputes</p>
           {open.map(d => (
-            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-red-200 dark:border-red-800 p-4 shadow-sm">
+            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-lg border border-red-200 dark:border-red-800 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="font-bold text-sm text-gray-900 dark:text-white">{d.customer_name || d.customer_email || 'Customer'}</p>
@@ -212,7 +212,7 @@ function DisputesPanel() {
                 </div>
                 <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded-full font-semibold">Open</span>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 mb-3">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-3">
                 <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Reason: {d.reason}</p>
                 {d.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{d.description}</p>}
               </div>
@@ -231,7 +231,7 @@ function DisputesPanel() {
                 <button
                   onClick={() => resolve(d.id, 'reject')}
                   disabled={!!resolving}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
                   <XCircle className="w-4 h-4" /> {resolving === d.id + 'reject' ? 'Rejecting…' : 'Reject'}
                 </button>
@@ -239,7 +239,7 @@ function DisputesPanel() {
                   <button
                     onClick={() => resolve(d.id, 'refund')}
                     disabled={!!resolving}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
                   >
                     <CheckCircle className="w-4 h-4" /> {resolving === d.id + 'refund' ? 'Refunding…' : 'Issue refund'}
                   </button>
@@ -254,7 +254,7 @@ function DisputesPanel() {
         <div className="space-y-2">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-4">Resolved</p>
           {closed.map(d => (
-            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-3 opacity-60">
+            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-3 opacity-60">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{d.customer_name || d.customer_email}</p>
@@ -308,7 +308,7 @@ function BroadcastsPanel() {
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-2xl mx-auto w-full space-y-6">
       {/* Compose */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-5">
         <p className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Bell className="w-4 h-4 text-primary-600" /> Send notification to all users
         </p>
@@ -360,7 +360,7 @@ function BroadcastsPanel() {
         ) : (
           <div className="space-y-2">
             {broadcasts.map(b => (
-              <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-xl border p-3 flex items-start gap-3 ${b.is_active ? 'border-gray-100 dark:border-gray-800' : 'border-gray-50 dark:border-gray-900 opacity-50'}`}>
+              <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-lg border p-3 flex items-start gap-3 ${b.is_active ? 'border-gray-100 dark:border-gray-800' : 'border-gray-50 dark:border-gray-900 opacity-50'}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${b.type === 'warning' ? 'bg-amber-100 text-amber-700' : b.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-primary-100 text-primary-700'}`}>{b.type}</span>
@@ -404,18 +404,18 @@ function StatsPanel() {
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full">
       <div className="flex items-center justify-between mb-5">
         <h2 className="font-bold text-gray-900 dark:text-white text-lg">Platform Overview</h2>
-        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+          {[...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {cards.map(c => (
-            <div key={c.label} className={`${c.color} rounded-2xl p-4 flex flex-col gap-2`}>
+            <div key={c.label} className={`${c.color} rounded-lg p-4 flex flex-col gap-2`}>
               {c.icon}
               <p className="text-2xl font-black">{c.value}</p>
               <p className="text-xs font-semibold opacity-70">{c.label}</p>
@@ -493,7 +493,7 @@ function BusinessesPanel({ onStartChat }) {
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-gray-900 dark:text-white">Businesses <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
-        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -501,20 +501,20 @@ function BusinessesPanel({ onStartChat }) {
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {filters.map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)}
-            className={`text-xs px-3 py-1.5 rounded-xl font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+            className={`text-xs px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
             {f.label}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-24 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-24 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400"><Building2 className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No businesses</p></div>
       ) : (
         <div className="space-y-3">
           {filtered.map(b => (
-            <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-2xl border p-4 shadow-sm ${!b.is_active ? 'opacity-50 border-gray-100 dark:border-gray-800' : b.verification_status === 'pending' ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800'}`}>
+            <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-lg border p-4 shadow-sm ${!b.is_active ? 'opacity-50 border-gray-100 dark:border-gray-800' : b.verification_status === 'pending' ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800'}`}>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
@@ -530,7 +530,7 @@ function BusinessesPanel({ onStartChat }) {
               </div>
 
               {b.verification_status === 'pending' && b.verification_details && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-3 text-xs space-y-0.5">
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 mb-3 text-xs space-y-0.5">
                   <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">Verification request</p>
                   {b.verification_details.legal_name && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Legal name:</span> {b.verification_details.legal_name}</p>}
                   {b.verification_details.company_reg_number && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Reg no:</span> {b.verification_details.company_reg_number}</p>}
@@ -545,14 +545,14 @@ function BusinessesPanel({ onStartChat }) {
                     <button
                       onClick={() => verify(b.id, b.name)}
                       disabled={!!acting}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" /> {acting === b.id + 'verify' ? 'Verifying…' : 'Approve'}
                     </button>
                     <button
                       onClick={() => reject(b.id, b.name)}
                       disabled={!!acting}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                     >
                       <ShieldX className="w-3.5 h-3.5" /> {acting === b.id + 'reject' ? 'Rejecting…' : 'Reject'}
                     </button>
@@ -562,7 +562,7 @@ function BusinessesPanel({ onStartChat }) {
                   <button
                     onClick={() => verify(b.id, b.name)}
                     disabled={!!acting}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-xs font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-xs font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors disabled:opacity-50"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" /> Force verify
                   </button>
@@ -570,20 +570,20 @@ function BusinessesPanel({ onStartChat }) {
                 <button
                   onClick={() => toggleSuspend(b)}
                   disabled={!!acting}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors disabled:opacity-50 ${b.is_active ? 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors disabled:opacity-50 ${b.is_active ? 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                 >
                   {b.is_active ? <Ban className="w-3.5 h-3.5" /> : <ToggleRight className="w-3.5 h-3.5" />}
                   {acting === b.id + 'suspend' ? 'Updating…' : b.is_active ? 'Suspend' : 'Reactivate'}
                 </button>
                 <button
                   onClick={() => setEditTarget(b)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <Edit2 className="w-3.5 h-3.5" /> Edit
                 </button>
                 <button
                   onClick={() => onStartChat?.({ type: 'admin_business', business_id: b.id, subject: 'Business Support' })}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <MessageSquare className="w-3.5 h-3.5" /> Message
                 </button>
@@ -629,7 +629,7 @@ function FinancialPanel() {
           <ReconcileButton />
           {[7, 30, 90].map(d => (
             <button key={d} onClick={() => { setPeriod(d); load(d); }}
-              className={`text-xs px-3 py-1.5 rounded-xl font-semibold transition-colors ${period === d ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${period === d ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
               {d}d
             </button>
           ))}
@@ -637,29 +637,29 @@ function FinancialPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
       ) : !data ? (
         <p className="text-center text-gray-400 py-12">No data available</p>
       ) : (
         <>
           {/* Summary totals */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl p-4">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
               <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide mb-1">Total Revenue</p>
               <p className="text-2xl font-black text-green-800 dark:text-green-300">{fmt(data.revenue_by_day?.reduce((s, r) => s + parseFloat(r.revenue || 0), 0))}</p>
               <p className="text-xs text-green-600 dark:text-green-500 mt-1">Last {period} days</p>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
               <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-1">Paid Bookings</p>
               <p className="text-2xl font-black text-blue-800 dark:text-blue-300">{data.revenue_by_day?.reduce((s, r) => s + parseInt(r.paid_bookings || 0), 0) || 0}</p>
               <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">Last {period} days</p>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-800">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Booked Value</p>
               <p className="text-2xl font-black text-gray-900 dark:text-white">{fmt(summary.booked_value)}</p>
               <p className="text-xs text-gray-400 mt-1">Paid + unpaid services</p>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-800">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Payment Status</p>
               <p className="text-sm font-bold text-gray-900 dark:text-white">{parseInt(summary.paid || 0)} paid · {parseInt(summary.unpaid || 0)} unpaid</p>
               <p className="text-xs text-gray-400 mt-1">{parseInt(summary.refunded || 0)} refunded · {parseInt(summary.other || 0)} other</p>
@@ -668,7 +668,7 @@ function FinancialPanel() {
 
           {/* Revenue by day */}
           {data.revenue_by_day?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Revenue by day</p>
               <div className="space-y-1.5 max-h-60 overflow-y-auto">
                 {[...data.revenue_by_day].reverse().map(r => (
@@ -686,7 +686,7 @@ function FinancialPanel() {
 
           {/* Top businesses */}
           {data.top_businesses?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top businesses by revenue</p>
               <div className="space-y-2">
                 {data.top_businesses.map((b, i) => (
@@ -703,7 +703,7 @@ function FinancialPanel() {
 
           {/* Top services */}
           {data.top_services?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top services</p>
               <div className="space-y-2">
                 {data.top_services.map((s, i) => (
@@ -720,7 +720,7 @@ function FinancialPanel() {
 
           {/* Recent transactions */}
           {data.recent_payments?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent transactions</p>
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {data.recent_payments.map(p => (
@@ -785,7 +785,7 @@ function PlatformBookingsPanel() {
           <h2 className="font-bold text-gray-900 dark:text-white">All Bookings <span className="text-sm font-normal text-gray-400">({bookings.length})</span></h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Search and correct booking/payment status across the whole platform.</p>
         </div>
-        <button onClick={load} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <button onClick={load} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -816,13 +816,13 @@ function PlatformBookingsPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-28 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-28 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
       ) : bookings.length === 0 ? (
         <div className="text-center py-16 text-gray-400"><CalendarCheck className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No bookings found</p></div>
       ) : (
         <div className="space-y-3">
           {bookings.map(b => (
-            <div key={b.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 shadow-sm">
+            <div key={b.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -902,13 +902,13 @@ function AuditPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(8)].map((_, i) => <div key={i} className="h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(8)].map((_, i) => <div key={i} className="h-16 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
       ) : logs.length === 0 ? (
         <div className="text-center py-16 text-gray-400"><History className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No audit activity yet</p></div>
       ) : (
         <div className="space-y-2">
           {logs.map(log => (
-            <div key={log.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+            <div key={log.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-bold text-sm text-gray-900 dark:text-white">{log.action}</p>
@@ -970,12 +970,12 @@ function LaunchReadinessPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
       ) : !data ? (
         <p className="text-center text-gray-400 py-12">No readiness data available</p>
       ) : (
         <>
-          <div className={`rounded-2xl border p-4 ${data.launch_ready ? tone.ready : tone.blocked}`}>
+          <div className={`rounded-lg border p-4 ${data.launch_ready ? tone.ready : tone.blocked}`}>
             <div className="flex items-center gap-3">
               {data.launch_ready ? <CheckCircle className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
               <div>
@@ -987,7 +987,7 @@ function LaunchReadinessPanel() {
 
           <div className="grid grid-cols-1 gap-3">
             {data.checks?.map(check => (
-              <div key={check.key} className={`rounded-2xl border p-4 ${tone[check.status] || tone.warning}`}>
+              <div key={check.key} className={`rounded-lg border p-4 ${tone[check.status] || tone.warning}`}>
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5">{icon[check.status] || icon.warning}</div>
                   <div className="min-w-0">
@@ -1037,7 +1037,7 @@ function EditBusinessModal({ business, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-md p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-gray-900 dark:text-white">Edit Business</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
@@ -1094,7 +1094,7 @@ function UsersPanel({ onStartChat }) {
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-gray-900 dark:text-white">Customers <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
-        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -1107,13 +1107,13 @@ function UsersPanel({ onStartChat }) {
       />
 
       {loading ? (
-        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-16 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400"><Users className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No customers found</p></div>
       ) : (
         <div className="space-y-2">
           {filtered.map(c => (
-            <div key={c.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
+            <div key={c.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary-600 dark:text-primary-400">
                 {(c.full_name?.[0] || c.email[0]).toUpperCase()}
               </div>
@@ -1130,14 +1130,14 @@ function UsersPanel({ onStartChat }) {
               </div>
               <button
                 onClick={() => onStartChat?.({ type: 'admin_consumer', consumer_id: c.id, subject: 'Customer Support' })}
-                className="p-2 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0"
+                className="p-2 rounded-lg border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0"
                 title="Message customer"
               >
                 <MessageSquare className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setNotifyTarget(c)}
-                className="p-2 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex-shrink-0"
+                className="p-2 rounded-lg border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex-shrink-0"
                 title="Send notification"
               >
                 <Bell className="w-4 h-4" />
@@ -1145,7 +1145,7 @@ function UsersPanel({ onStartChat }) {
               <button
                 onClick={() => updateConsumer(c, { email_verified: !c.email_verified })}
                 disabled={acting === c.id}
-                className={`p-2 rounded-xl border transition-colors flex-shrink-0 ${c.email_verified ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'}`}
+                className={`p-2 rounded-lg border transition-colors flex-shrink-0 ${c.email_verified ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'}`}
                 title={c.email_verified ? 'Mark email unverified' : 'Force verify email'}
               >
                 <ShieldCheck className="w-4 h-4" />
@@ -1153,7 +1153,7 @@ function UsersPanel({ onStartChat }) {
               <button
                 onClick={() => updateConsumer(c, { onboarding_complete: !c.onboarding_complete })}
                 disabled={acting === c.id}
-                className={`p-2 rounded-xl border transition-colors flex-shrink-0 ${c.onboarding_complete ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                className={`p-2 rounded-lg border transition-colors flex-shrink-0 ${c.onboarding_complete ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                 title={c.onboarding_complete ? 'Require onboarding again' : 'Mark onboarding complete'}
               >
                 <Check className="w-4 h-4" />
@@ -1196,7 +1196,7 @@ function NotifyConsumerModal({ consumer, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-6 animate-slide-up">
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-md p-6 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-bold text-gray-900 dark:text-white">Notify Customer</h3>
@@ -1236,7 +1236,7 @@ function ReconcileButton() {
       onClick={run}
       disabled={running}
       title="Check Stripe for any payments that were missed by the webhook and sync their status"
-      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 font-semibold"
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 font-semibold"
     >
       <RefreshCw className={`w-3.5 h-3.5 ${running ? 'animate-spin' : ''}`} />
       {running ? 'Syncing…' : 'Reconcile'}
@@ -1262,7 +1262,7 @@ function AutoReleaseButton() {
       onClick={run}
       disabled={running}
       title="Auto-release payments for bookings >72h old with no customer confirmation"
-      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50 font-semibold"
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50 font-semibold"
     >
       <Zap className="w-3.5 h-3.5" />
       {running ? 'Running…' : 'Auto-release'}
@@ -1326,7 +1326,7 @@ function PayoutsPanel() {
     const open = expanded === b.id;
     const pending = parseFloat(b.pending_payout);
     return (
-      <div className={`bg-white dark:bg-gray-900 rounded-2xl border shadow-sm overflow-hidden ${pending > 0 ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800 opacity-70'}`}>
+      <div className={`bg-white dark:bg-gray-900 rounded-lg border shadow-sm overflow-hidden ${pending > 0 ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800 opacity-70'}`}>
         <button className="w-full flex items-start gap-3 p-4 text-left" onClick={() => setExpanded(open ? null : b.id)}>
           <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 font-bold text-primary-600 dark:text-primary-400 text-sm">
             {(b.name?.[0] || '?').toUpperCase()}
@@ -1378,7 +1378,7 @@ function PayoutsPanel() {
             )}
             {pending > 0 && (
               <div className="pt-3">
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-3 text-xs">
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 mb-3 text-xs">
                   <p className="font-bold text-amber-800 dark:text-amber-300">Amount to transfer: {fmt(pending, b.bank_currency)}</p>
                   <p className="text-amber-700 dark:text-amber-400 mt-0.5">
                     {b.pending_booking_count} confirmed booking{b.pending_booking_count === 1 ? '' : 's'} awaiting payout.
@@ -1388,7 +1388,7 @@ function PayoutsPanel() {
                 <button
                   onClick={() => markPaid(b)}
                   disabled={marking === b.id}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
                 >
                   <CheckCircle className="w-4 h-4" />
                   {marking === b.id ? 'Marking…' : `Mark ${fmt(pending, b.bank_currency)} as paid`}
@@ -1412,14 +1412,14 @@ function PayoutsPanel() {
         </div>
         <div className="flex items-center gap-2">
           <AutoReleaseButton />
-          <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-28 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-28 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
       ) : businesses.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <Banknote className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
@@ -1509,15 +1509,15 @@ export default function AdminSupport() {
   const showingChat = !!activeRoom;
 
   return (
-    <div className="flex flex-col bg-gray-50 dark:bg-gray-950" style={{ height: '100dvh' }}>
+    <div className="flex flex-col bg-slate-50 dark:bg-gray-950" style={{ height: '100dvh' }}>
       {/* Header — padding-top clears notch / Dynamic Island */}
-      <header className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div className="px-4 h-14 flex items-center gap-3">
+      <header className="flex-shrink-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <div className="px-4 h-auto min-h-16 py-2 flex items-center gap-3">
           {/* Mobile back button when in chat */}
           {showingChat ? (
             <button
               onClick={() => setActiveRoom(null)}
-              className="md:hidden p-2 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500"
+              className="md:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -1533,12 +1533,15 @@ export default function AdminSupport() {
               <p className="text-xs text-gray-400">{TYPE_LABELS[activeRoomData?.type]?.label}</p>
             </div>
           ) : (
-            <span className="font-bold text-gray-900 dark:text-white">Support Panel</span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400">Platform command</p>
+              <p className="font-bold text-sm text-gray-900 dark:text-white">Support Panel</p>
+            </div>
           )}
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 min-w-0">
             {/* Tab switcher */}
-            <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 overflow-x-auto scrollbar-hide max-w-[calc(100vw-9rem)] md:max-w-none">
               {[
                 { id: 'messages', icon: <MessageSquare className="w-3 h-3" />, label: 'Messages' },
                 { id: 'disputes', icon: <AlertTriangle className="w-3 h-3" />, label: 'Disputes' },
@@ -1553,7 +1556,7 @@ export default function AdminSupport() {
                 { id: 'readiness', icon: <ShieldCheck className="w-3 h-3" />, label: 'Launch' },
               ].map(t => (
                 <button key={t.id} onClick={() => setMainTab(t.id)}
-                  className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${mainTab === t.id ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}>
+                  className={`text-xs px-2.5 py-1.5 rounded-md font-semibold transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${mainTab === t.id ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>
                   {t.icon} <span className="hidden sm:inline">{t.label}</span>
                 </button>
               ))}
@@ -1569,7 +1572,7 @@ export default function AdminSupport() {
             )}
             <button
               onClick={() => { localStorage.removeItem(TOKEN_KEY); setAuthed(false); setActiveRoom(null); }}
-              className="p-2 text-gray-400 hover:text-red-500 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />
@@ -1647,7 +1650,7 @@ export default function AdminSupport() {
               <button
                 key={f.id}
                 onClick={() => setFilter(f.id)}
-                className={`text-xs px-3 py-1.5 rounded-xl font-semibold whitespace-nowrap transition-colors ${
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors ${
                   filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                 }`}
               >
@@ -1707,7 +1710,7 @@ export default function AdminSupport() {
               subtitle={null}
             />
           ) : (
-            <div className="flex-1 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col items-center justify-center text-center p-8 text-gray-400">
+            <div className="flex-1 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col items-center justify-center text-center p-8 text-gray-400">
               <Headphones className="w-16 h-16 mb-4 text-gray-200 dark:text-gray-700" />
               <p className="font-bold text-gray-700 dark:text-gray-200 text-lg">Support Panel</p>
               <p className="text-sm mt-1 text-gray-400">Select a conversation from the list, or start a new one.</p>

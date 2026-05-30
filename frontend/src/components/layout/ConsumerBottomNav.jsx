@@ -16,59 +16,52 @@ export default function ConsumerBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex safe-bottom shadow-[0_-8px_24px_rgba(15,23,42,0.06)]"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed bottom-0 left-0 right-0 z-40 px-3 sm:px-4 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pointer-events-none"
     >
-      {NAV.map(({ to, icon: Icon, label }) => (
-        <NavLink
-          key={to}
-          to={to}
-          className={({ isActive }) =>
-            `flex-1 flex flex-col items-center justify-center py-3 gap-0.5 text-[11px] font-semibold transition-colors relative min-h-[56px] tap-highlight-none ${
-              isActive
-                ? 'text-primary-600 dark:text-primary-400'
-                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
-            }`
-          }
-        >
-          {({ isActive }) => (
-            <>
-              {/* Animated top indicator — slides + scales in with spring */}
-              <span
-                className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 bg-primary-600 dark:bg-primary-400 rounded-full"
-                style={{
-                  width: isActive ? '2rem' : '0rem',
-                  opacity: isActive ? 1 : 0,
-                  transition: 'width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease',
-                }}
-              />
-              <div className="relative">
-                <Icon
-                  className="w-5 h-5"
-                  strokeWidth={isActive ? 2.5 : 2}
+      <div className="pointer-events-auto max-w-md mx-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-800 flex rounded-lg shadow-[0_14px_42px_rgba(15,23,42,0.18)] overflow-hidden">
+        {NAV.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              `flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[11px] font-semibold transition-colors relative min-h-[58px] tap-highlight-none ${
+                isActive
+                  ? 'text-primary-600 dark:text-primary-400'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 bg-primary-600 dark:bg-primary-400 rounded-full"
                   style={{
-                    transform: isActive ? 'scale(1.12)' : 'scale(1)',
-                    transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), stroke-width 0.2s ease',
+                    width: isActive ? '2rem' : '0rem',
+                    opacity: isActive ? 1 : 0,
+                    transition: 'width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease',
                   }}
                 />
-                {label === 'Chat' && unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </div>
-              <span
-                style={{
-                  fontWeight: isActive ? 700 : 600,
-                  transition: 'font-weight 0.2s ease',
-                }}
-              >
-                {label}
-              </span>
-            </>
-          )}
-        </NavLink>
-      ))}
+                <div className={`relative grid place-items-center w-8 h-7 rounded-lg transition-colors ${isActive ? 'bg-primary-50 dark:bg-primary-900/30' : ''}`}>
+                  <Icon
+                    className="w-5 h-5"
+                    strokeWidth={isActive ? 2.5 : 2}
+                    style={{
+                      transform: isActive ? 'scale(1.08)' : 'scale(1)',
+                      transition: 'transform 0.3s ease, stroke-width 0.2s ease',
+                    }}
+                  />
+                  {label === 'Chat' && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </div>
+                <span className="leading-none">{label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </div>
     </nav>
   );
 }

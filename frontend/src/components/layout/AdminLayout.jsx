@@ -88,7 +88,7 @@ export default function AdminLayout() {
   const logoSrc = isDark ? LOGO_WHITE_H : LOGO_BLUE_H;
 
   return (
-    <div className="flex h-dvh bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-dvh bg-slate-50 dark:bg-gray-950 overflow-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -106,7 +106,7 @@ export default function AdminLayout() {
 
         {/* Business badge + copy link */}
         {business && (
-          <div className="mx-3 mt-3 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800/50">
+          <div className="mx-3 mt-3 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-100 dark:border-primary-800/50">
             <p className="text-xs text-primary-500 dark:text-primary-400 font-medium">Your booking page</p>
             <p className="text-sm font-bold text-primary-800 dark:text-primary-300 truncate mt-0.5">/book/{business.slug}</p>
             <button
@@ -127,7 +127,7 @@ export default function AdminLayout() {
               to={to}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-primary-600 text-white shadow-primary'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
@@ -153,7 +153,7 @@ export default function AdminLayout() {
         <div className="px-3 pb-2 space-y-1">
           <NavLink
             to="/admin/messages"
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
           >
             <HeadphonesIcon className="w-4 h-4 flex-shrink-0" />
             Contact Support
@@ -181,7 +181,7 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Topbar — padding-top pushes content below notch / Dynamic Island */}
         <header
-          className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex-shrink-0"
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 flex-shrink-0"
           style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
         <div className="h-16 flex items-center justify-between px-4 lg:px-6">
@@ -235,7 +235,7 @@ export default function AdminLayout() {
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 lg:pb-6 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
           {emailUnverified && (
-            <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
               <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
                 ⚠️ Your email address is not verified. Check your inbox for a verification link.
               </p>
@@ -254,7 +254,7 @@ export default function AdminLayout() {
 
       {/* Mobile bottom nav */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 flex shadow-[0_-8px_24px_rgba(15,23,42,0.06)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 flex shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {BOTTOM_NAV.map(({ to, icon: Icon, label, badge }) => (
@@ -262,7 +262,7 @@ export default function AdminLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2.5 min-h-[56px] gap-0.5 text-[10px] xs:text-xs font-semibold transition-colors relative ${
+              `flex-1 flex flex-col items-center justify-center py-2.5 min-h-[58px] gap-0.5 text-[10px] xs:text-xs font-semibold transition-colors relative ${
                 isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'
               }`
             }

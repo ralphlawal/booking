@@ -4,7 +4,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { CalendarDays, CheckCircle2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ClipboardList, ExternalLink, MessageSquare, Sparkles } from 'lucide-react';
 import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -14,7 +14,7 @@ const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
 
 const StatCard = ({ label, value, color, darkColor, icon }) => (
   <div className="card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color} ${darkColor}`}>
+    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${color} ${darkColor}`}>
       {icon}
     </div>
     <div className="min-w-0">
@@ -27,7 +27,7 @@ const StatCard = ({ label, value, color, darkColor, icon }) => (
 const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-lg px-4 py-3 text-sm">
+    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg shadow-lg px-4 py-3 text-sm">
       <p className="font-semibold text-gray-700 dark:text-gray-200 mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className="font-medium">
@@ -99,18 +99,56 @@ export default function Dashboard() {
   const topServices = analytics?.topServices || [];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="page-shell animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Welcome back — here's what's happening</p>
+          <p className="page-kicker">Business workspace</p>
+          <h1 className="page-title">Today at {business?.name || 'your business'}</h1>
+          <p className="page-sub">Bookings, money, setup, and customer actions in one place.</p>
         </div>
         {business && (
           <a href={`/book/${business.slug}`} target="_blank" rel="noopener noreferrer" className="btn-primary self-start">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <ExternalLink className="w-4 h-4" />
             Open Booking Page
           </a>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.9fr] gap-4">
+        <div className="surface p-5 sm:p-6 bg-white dark:bg-gray-900">
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-gray-900 dark:text-white">Your next best move</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {stats?.pending > 0
+                  ? `You have ${stats.pending} booking${stats.pending === 1 ? '' : 's'} waiting. Confirm or message customers while intent is fresh.`
+                  : checklist
+                    ? 'Finish services and availability before sharing your booking link widely.'
+                    : 'Share a post or your booking link to bring customers back today.'}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Link to="/admin/bookings" className="btn-primary text-xs"><ClipboardList className="w-3.5 h-3.5" />Review bookings</Link>
+                <Link to="/admin/messages" className="btn-secondary text-xs"><MessageSquare className="w-3.5 h-3.5" />Messages</Link>
+                <Link to="/admin/posts" className="btn-secondary text-xs">Post update</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {business && (
+          <div className="surface-soft p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Booking link</p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white truncate mt-2">/book/{business.slug}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Keep this visible on Instagram, Google, WhatsApp, and your bio.</p>
+            <div className="flex gap-2 mt-4">
+              <a href={`/book/${business.slug}`} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs flex-1">Preview</a>
+              <Link to="/admin/settings" className="btn-primary text-xs flex-1">Share tools</Link>
+            </div>
+          </div>
         )}
       </div>
 
@@ -126,7 +164,7 @@ export default function Dashboard() {
         const pct = Math.round(((5 - missing.length) / 5) * 100);
         if (missing.length === 0) return null;
         return (
-          <div className="card p-4 border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10">
+          <div className="card p-4 border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-900/10">
             <div className="flex items-start justify-between gap-3 mb-3">
               <div>
                 <p className="font-semibold text-amber-900 dark:text-amber-200 text-sm">Complete your profile — {pct}% done</p>
@@ -192,7 +230,7 @@ export default function Dashboard() {
         <div className="card p-5 lg:col-span-2">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bookings — Last 30 Days</h3>
           {analyticsLoading ? (
-            <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+            <div className="h-48 bg-gray-50 rounded-lg animate-pulse" />
           ) : chartData.length === 0 ? (
             <EmptyChart />
           ) : (
@@ -218,7 +256,7 @@ export default function Dashboard() {
         <div className="card p-5">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Status Breakdown</h3>
           {analyticsLoading ? (
-            <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+            <div className="h-48 bg-gray-50 rounded-lg animate-pulse" />
           ) : statusData.length === 0 ? (
             <EmptyChart />
           ) : (
@@ -247,7 +285,7 @@ export default function Dashboard() {
         <div className="card p-5 lg:col-span-2">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Revenue — Last 30 Days</h3>
           {analyticsLoading ? (
-            <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+            <div className="h-48 bg-gray-50 rounded-lg animate-pulse" />
           ) : chartData.length === 0 ? (
             <EmptyChart />
           ) : (
@@ -300,11 +338,11 @@ export default function Dashboard() {
         </div>
         {loading ? (
           <div className="p-5 space-y-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}
+            {[...Array(3)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />)}
           </div>
         ) : data?.bookings?.length === 0 ? (
           <div className="p-10 text-center text-gray-400">
-            <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3">
               <CalendarDays className="w-6 h-6 text-primary-400" />
             </div>
             <p className="font-medium">No bookings yet</p>
