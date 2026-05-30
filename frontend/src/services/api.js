@@ -292,6 +292,7 @@ export const adminPanelAPI = {
   getLaunchReadiness: () => adminAxios.get('/admin/launch-readiness'),
   getManualPayouts: () => adminAxios.get('/admin/manual-payouts'),
   markManualPaid: (businessId) => adminAxios.post(`/admin/manual-payouts/${businessId}/mark-paid`),
+  getAuditLogs: () => adminAxios.get('/admin/audit-logs'),
   triggerAutoRelease: () => adminAxios.post('/bookings/admin/auto-release'),
   reconcilePayments: () => adminAxios.post('/admin/reconcile-payments'),
 };

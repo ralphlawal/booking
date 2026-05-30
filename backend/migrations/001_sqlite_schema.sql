@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending','confirmed','cancelled','completed')),
   notes TEXT,
   cancelled_reason TEXT,
+  idempotency_key TEXT,
   reminder_24h_sent INTEGER DEFAULT 0,
   reminder_1h_sent INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (NOW()),
@@ -127,3 +128,17 @@ CREATE INDEX IF NOT EXISTS idx_services_business_id ON services(business_id);
 CREATE INDEX IF NOT EXISTS idx_customers_business_id ON customers(business_id);
 CREATE INDEX IF NOT EXISTS idx_blocked_slots_business_date ON blocked_slots(business_id, blocked_date);
 CREATE INDEX IF NOT EXISTS idx_businesses_slug ON businesses(slug);
+
+CREATE TABLE IF NOT EXISTS admin_audit_logs (
+  id TEXT PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  admin_role TEXT,
+  action TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  details TEXT DEFAULT '{}',
+  ip_address TEXT,
+  user_agent TEXT,
+  created_at TEXT DEFAULT (NOW())
+);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created_at ON admin_audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_action ON admin_audit_logs(action);

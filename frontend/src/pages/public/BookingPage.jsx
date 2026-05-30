@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { MapPin, Wrench, CalendarX, Search, Lock, Shield, RotateCcw, Tag, User } from 'lucide-react';
 import { businessAPI, servicesAPI, availabilityAPI, bookingsAPI, consumerAPI, paymentsAPI, staffAPI, intakeAPI, promoAPI } from '../../services/api';
@@ -20,6 +20,7 @@ export default function BookingPage() {
   const location = useLocation();
   const { consumer } = useCustomerAuth();
   const prefillServiceId = location.state?.prefill_service_id;
+  const bookingAttemptKeyRef = useRef(null);
 
   const [business, setBusiness] = useState(null);
   const [services, setServices] = useState([]);
@@ -113,6 +114,12 @@ export default function BookingPage() {
   }, [booking.service, booking.date, slug]);
 
   const set = (k) => (v) => setBooking(p => ({ ...p, [k]: v }));
+  const getBookingAttemptKey = () => {
+    if (!bookingAttemptKeyRef.current) {
+      bookingAttemptKeyRef.current = `bk_${Date.now()}_${window.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)}`;
+    }
+    return bookingAttemptKeyRef.current;
+  };
 
   const servicePrice = booking.service ? parseFloat(booking.service.price || 0) : 0;
   const discount = promoData ? parseFloat(promoData.discount_amount || 0) : 0;
@@ -136,8 +143,8 @@ export default function BookingPage() {
 
   const goNext = () => setStep(s => Math.min(s + 1, 4));
   const goBack = () => {
-    // If on payment step (5), go back to confirm (4)
-    if (step === 5) { setStep(4); setClientSecret(null); setPaymentIntentId(null); return; }
+    // If on payment step (5), go back to confirm (4) and start a fresh payment attempt.
+    if (step === 5) { setStep(4); setClientSecret(null); setPaymentIntentId(null); bookingAttemptKeyRef.current = null; return; }
     setStep(s => Math.max(s - 1, 0));
   };
 
@@ -150,10 +157,12 @@ export default function BookingPage() {
       }
       setSubmitting(true);
       try {
+        const idempotencyKey = getBookingAttemptKey();
         const { client_secret, payment_intent_id } = await paymentsAPI.createIntent({
           amount_pence: Math.round(finalPrice * 100),
           business_name: business.name,
           service_name: booking.service.name,
+          idempotency_key: idempotencyKey,
         });
         setClientSecret(client_secret);
         setPaymentIntentId(payment_intent_id);
@@ -171,6 +180,7 @@ export default function BookingPage() {
           staff_member_id: selectedStaff?.id || undefined,
           promo_code: promoData ? promoCode : undefined,
           discount_amount: discount > 0 ? discount : undefined,
+          idempotency_key: idempotencyKey,
         }));
         setStep(5);
       } catch (err) {
@@ -205,6 +215,7 @@ export default function BookingPage() {
         staff_member_id: selectedStaff?.id || undefined,
         promo_code: promoData ? promoCode : undefined,
         discount_amount: discount > 0 ? discount : undefined,
+        idempotency_key: getBookingAttemptKey(),
       });
       if (consumer && business) {
         consumerAPI.savePreference({ business_id: business.id, service_id: booking.service.id }).catch(() => {});

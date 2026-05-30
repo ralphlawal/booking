@@ -37,6 +37,16 @@ async function runMigrations() {
     const addColumn = (table, column) => {
       try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${column}`); } catch {}
     };
+    addColumn('bookings', 'idempotency_key TEXT');
+    try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency_key ON bookings(idempotency_key) WHERE idempotency_key IS NOT NULL AND idempotency_key <> ''`); } catch {}
+    try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_active_slot ON bookings(business_id, booking_date, start_time) WHERE status <> 'cancelled'`); } catch {}
+    try {
+      db.exec(`CREATE TABLE IF NOT EXISTS admin_audit_logs (
+        id TEXT PRIMARY KEY, admin_role TEXT, action TEXT NOT NULL,
+        target_type TEXT, target_id TEXT, details TEXT DEFAULT '{}',
+        ip_address TEXT, user_agent TEXT, created_at TEXT DEFAULT (datetime('now'))
+      )`);
+    } catch {}
     for (const col of [
       'bank_holder_name TEXT',
       'bank_sort_code TEXT',

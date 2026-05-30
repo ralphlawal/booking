@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 const Notification = require('../models/Notification');
+const { logAdminAction } = require('../utils/adminAudit');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -80,6 +81,7 @@ exports.verifyBusiness = async (req, res) => {
       [req.params.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
+    logAdminAction(req, { action: 'business.verify', target_type: 'business', target_id: req.params.id, details: { name: rows[0].name } });
     res.json({ message: `${rows[0].name} has been verified`, business: rows[0] });
   } catch (err) {
     console.error('[admin/verify]', err.message);
@@ -97,6 +99,7 @@ exports.rejectVerification = async (req, res) => {
       [req.params.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
+    logAdminAction(req, { action: 'business.reject_verification', target_type: 'business', target_id: req.params.id, details: { name: rows[0].name } });
     res.json({ message: `Verification rejected for ${rows[0].name}`, business: rows[0] });
   } catch (err) {
     console.error('[admin/reject-verify]', err.message);
@@ -145,6 +148,12 @@ exports.updateConsumer = async (req, res) => {
       ]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Customer not found' });
+    logAdminAction(req, {
+      action: 'consumer.update',
+      target_type: 'consumer',
+      target_id: req.params.id,
+      details: { changed: Object.keys(req.body || {}) },
+    });
     res.json(rows[0]);
   } catch (err) {
     console.error('[admin/update-consumer]', err.message);
@@ -168,6 +177,7 @@ exports.notifyConsumer = async (req, res) => {
       body: body.trim(),
       link: link || '/customer/messages',
     });
+    logAdminAction(req, { action: 'consumer.notify', target_type: 'consumer', target_id: req.params.id, details: { title: title.trim(), link: link || '/customer/messages' } });
     res.json({ message: 'Notification sent' });
   } catch (err) {
     console.error('[admin/notify-consumer]', err.message);
@@ -254,6 +264,12 @@ exports.updatePlatformBooking = async (req, res) => {
         req.params.id,
       ]
     );
+    logAdminAction(req, {
+      action: 'booking.update',
+      target_type: 'booking',
+      target_id: req.params.id,
+      details: { status, payment_status, notes_changed: notes !== undefined },
+    });
     res.json(rows[0]);
   } catch (err) {
     console.error('[admin/update-booking]', err.message);
@@ -271,6 +287,7 @@ exports.suspendBusiness = async (req, res) => {
     );
     if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
     const action = rows[0].is_active ? 'reactivated' : 'suspended';
+    logAdminAction(req, { action: rows[0].is_active ? 'business.reactivate' : 'business.suspend', target_type: 'business', target_id: req.params.id, details: { name: rows[0].name } });
     res.json({ message: `${rows[0].name} has been ${action}`, business: rows[0] });
   } catch (err) {
     console.error('[admin/suspend]', err.message);
@@ -291,6 +308,7 @@ exports.editBusiness = async (req, res) => {
       [name||null, description||null, category||null, location||null, phone||null, email||null, req.params.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Business not found' });
+    logAdminAction(req, { action: 'business.edit', target_type: 'business', target_id: req.params.id, details: { changed: Object.keys(req.body || {}) } });
     res.json(rows[0]);
   } catch (err) {
     console.error('[admin/edit-business]', err.message);
@@ -472,6 +490,40 @@ exports.getLaunchReadiness = async (req, res) => {
         detail: process.env.STRIPE_WEBHOOK_SECRET ? 'Stripe webhook signing secret is configured.' : 'STRIPE_WEBHOOK_SECRET is missing. Payment status may not update.',
       },
       {
+        key: 'push_notifications',
+        label: 'Real push notifications',
+        status: process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY ? 'ready' : 'warning',
+        detail: process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY
+          ? 'Web Push keys are configured.'
+          : 'Browser polling works, but real phone/web push needs VAPID keys and a service worker.',
+      },
+      {
+        key: 'media_storage',
+        label: 'External media storage',
+        status: process.env.CLOUDINARY_URL || process.env.S3_BUCKET || process.env.R2_BUCKET ? 'ready' : 'warning',
+        detail: process.env.CLOUDINARY_URL || process.env.S3_BUCKET || process.env.R2_BUCKET
+          ? 'External media storage appears configured.'
+          : 'Images/videos are still stored inline. Use Cloudinary, S3, or R2 before heavy public usage.',
+      },
+      {
+        key: 'monitoring',
+        label: 'Error monitoring',
+        status: process.env.SENTRY_DSN ? 'ready' : 'warning',
+        detail: process.env.SENTRY_DSN ? 'Sentry is configured.' : 'Add Sentry or equivalent before public launch so crashes are visible.',
+      },
+      {
+        key: 'slot_protection',
+        label: 'Double-booking protection',
+        status: 'ready',
+        detail: 'Active booking slots are protected with a database-level unique index and idempotency keys.',
+      },
+      {
+        key: 'audit_logs',
+        label: 'Admin audit logs',
+        status: 'ready',
+        detail: 'Sensitive admin actions are recorded in admin_audit_logs.',
+      },
+      {
         key: 'businesses',
         label: 'Active businesses',
         status: activeBusinesses > 0 ? 'ready' : 'warning',
@@ -577,8 +629,29 @@ exports.markManualPaid = async (req, res) => {
         AND (stripe_transfer_status IS NULL OR stripe_transfer_status = 'pending')
     `, [businessId]);
     res.json({ updated: rowCount });
+    logAdminAction(req, { action: 'payout.mark_manual_paid', target_type: 'business', target_id: businessId, details: { updated_bookings: rowCount } });
   } catch (err) {
     console.error('[admin/mark-manual-paid]', err.message);
     res.status(500).json({ error: 'Failed to mark as paid' });
+  }
+};
+
+exports.getAuditLogs = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 100, 250);
+    const { rows } = await db.query(
+      `SELECT * FROM admin_audit_logs ORDER BY created_at DESC LIMIT $1`,
+      [limit]
+    );
+    res.json(rows.map(row => {
+      if (typeof row.details === 'string') {
+        try { return { ...row, details: JSON.parse(row.details) }; } catch {}
+      }
+      return row;
+    }));
+  } catch (err) {
+    console.error('[admin/audit]', err.message);
+    res.status(500).json({ error: 'Failed to load audit logs' });
   }
 };

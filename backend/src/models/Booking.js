@@ -2,18 +2,31 @@ const db = require('../config/database');
 const crypto = require('crypto');
 
 const Booking = {
-  async create({ reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id }) {
+  async create({ reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id, idempotency_key }) {
+    if (idempotency_key) {
+      const existing = await this.findByIdempotencyKey(idempotency_key);
+      if (existing) return existing;
+    }
     const id = crypto.randomUUID();
     const payment_status = stripe_payment_intent_id ? 'pending' : 'unpaid';
     try {
       const { rows } = await db.query(
         `INSERT INTO bookings
-           (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id, payment_status)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-        [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes, stripe_payment_intent_id || null, payment_status]
+           (id, reference_id, business_id, service_id, customer_id, consumer_id, booking_date, start_time, end_time, notes, stripe_payment_intent_id, payment_status, idempotency_key)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+        [id, reference_id, business_id, service_id, customer_id, consumer_id || null, booking_date, start_time, end_time, notes, stripe_payment_intent_id || null, payment_status, idempotency_key || null]
       );
       return rows[0];
     } catch (err) {
+      if (idempotency_key && /idempotency|unique|duplicate/i.test(err.message || '')) {
+        const existing = await this.findByIdempotencyKey(idempotency_key);
+        if (existing) return existing;
+      }
+      if (/idx_bookings_active_slot|bookings_active_slot|unique/i.test(err.message || '')) {
+        const conflict = new Error('This time slot is no longer available');
+        conflict.code = 'SLOT_CONFLICT';
+        throw conflict;
+      }
       // Fallback: payment columns may not exist yet (migration pending) — insert without them
       if (err.message?.includes('column') && (err.message.includes('stripe_payment_intent_id') || err.message.includes('payment_status'))) {
         const { rows } = await db.query(
@@ -27,6 +40,23 @@ const Booking = {
       }
       throw err;
     }
+  },
+
+  async findByIdempotencyKey(idempotency_key) {
+    if (!idempotency_key) return null;
+    const { rows } = await db.query(
+      `SELECT b.*,
+        s.name AS service_name, s.price AS service_price,
+        c.full_name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
+        bus.name AS business_name, bus.phone AS business_phone, bus.email AS business_email, bus.slug, bus.location AS business_location
+       FROM bookings b
+       JOIN services s ON s.id = b.service_id
+       JOIN customers c ON c.id = b.customer_id
+       JOIN businesses bus ON bus.id = b.business_id
+       WHERE b.idempotency_key = $1`,
+      [idempotency_key]
+    );
+    return rows[0] || null;
   },
 
   async findByBusinessId(business_id, { status, date, page = 1, limit = 20 } = {}) {

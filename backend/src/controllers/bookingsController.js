@@ -23,7 +23,7 @@ exports.create = async (req, res) => {
   // Honeypot: bots fill hidden fields, humans don't
   if (req.body.website) return res.status(201).json({ reference_id: 'BOT-BLOCKED', honeypot: true });
   try {
-    const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id,
+    const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id, idempotency_key,
             consumer_id, staff_member_id, promo_code, discount_amount } = req.body;
 
     const service = await Service.findById(service_id);
@@ -60,6 +60,7 @@ exports.create = async (req, res) => {
       end_time,
       notes,
       stripe_payment_intent_id: stripe_payment_intent_id || null,
+      idempotency_key: idempotency_key || null,
     });
 
     // Save optional new-feature fields (requires migration 014 columns to exist)
@@ -103,6 +104,7 @@ exports.create = async (req, res) => {
     res.status(201).json(fullBooking);
   } catch (err) {
     console.error('Create booking error:', err);
+    if (err.code === 'SLOT_CONFLICT') return res.status(409).json({ error: err.message });
     res.status(500).json({ error: 'Booking failed' });
   }
 };

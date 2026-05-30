@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2, Banknote, Copy, Check, Zap, CalendarCheck } from 'lucide-react';
+import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle, CheckCircle, XCircle, RefreshCw, Bell, Trash2, BarChart2, Users, Building2, ShieldCheck, ShieldX, Ban, ToggleRight, TrendingUp, Edit2, Banknote, Copy, Check, Zap, CalendarCheck, History } from 'lucide-react';
 import { adminChatAPI, adminDisputesAPI, broadcastAPI, adminPanelAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -875,6 +875,61 @@ function PlatformBookingsPanel() {
   );
 }
 
+function AuditPanel() {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    adminPanelAPI.getAuditLogs()
+      .then(setLogs)
+      .catch(err => toast.error(err.message || 'Failed to load audit logs'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-4xl mx-auto w-full space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><History className="w-5 h-5 text-primary-600" /> Audit Trail</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Sensitive admin changes are recorded here for launch safety.</p>
+        </div>
+        <button onClick={load} className="btn-secondary text-xs flex items-center gap-1.5">
+          <RefreshCw className="w-3.5 h-3.5" /> Refresh
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{[...Array(8)].map((_, i) => <div key={i} className="h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      ) : logs.length === 0 ? (
+        <div className="text-center py-16 text-gray-400"><History className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No audit activity yet</p></div>
+      ) : (
+        <div className="space-y-2">
+          {logs.map(log => (
+            <div key={log.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-bold text-sm text-gray-900 dark:text-white">{log.action}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{log.target_type || 'platform'}{log.target_id ? ` · ${log.target_id}` : ''}</p>
+                  {log.details && Object.keys(log.details).length > 0 && (
+                    <p className="text-[11px] text-gray-400 mt-1 truncate">{JSON.stringify(log.details)}</p>
+                  )}
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-[10px] text-gray-400">{new Date(log.created_at).toLocaleString('en-GB')}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{log.admin_role || 'admin'}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LaunchReadinessPanel() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1494,6 +1549,7 @@ export default function AdminSupport() {
                 { id: 'stats', icon: <BarChart2 className="w-3 h-3" />, label: 'Stats' },
                 { id: 'financial', icon: <TrendingUp className="w-3 h-3" />, label: 'Revenue' },
                 { id: 'payouts',   icon: <Banknote className="w-3 h-3" />,   label: 'Payouts' },
+                { id: 'audit', icon: <History className="w-3 h-3" />, label: 'Audit' },
                 { id: 'readiness', icon: <ShieldCheck className="w-3 h-3" />, label: 'Launch' },
               ].map(t => (
                 <button key={t.id} onClick={() => setMainTab(t.id)}
@@ -1567,6 +1623,12 @@ export default function AdminSupport() {
       {mainTab === 'payouts' && (
         <div className="flex flex-1 overflow-hidden">
           <PayoutsPanel />
+        </div>
+      )}
+
+      {mainTab === 'audit' && (
+        <div className="flex flex-1 overflow-hidden">
+          <AuditPanel />
         </div>
       )}
 

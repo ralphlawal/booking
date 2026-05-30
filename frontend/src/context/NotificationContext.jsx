@@ -32,6 +32,7 @@ export function NotificationProvider({ children }) {
         icon: LOGO_BLUE_ICON,
         badge: LOGO_BLUE_ICON,
         tag: notification.id,
+        data: { url: notification.link || '/' },
       });
       n.onclick = () => {
         window.focus();

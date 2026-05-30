@@ -24,6 +24,7 @@ router.post(
     body('customer_name').notEmpty().trim().withMessage('Name required'),
     body('customer_phone').notEmpty().trim().withMessage('Phone required'),
     body('customer_email').optional().isEmail(),
+    body('idempotency_key').optional().isLength({ min: 12, max: 120 }).withMessage('Invalid booking idempotency key'),
   ],
   validate,
   ctrl.create

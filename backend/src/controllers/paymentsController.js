@@ -14,17 +14,20 @@ const getStripe = () => {
 // Called before booking is submitted — creates a PaymentIntent for the service price.
 exports.createIntent = async (req, res) => {
   try {
-    const { amount_pence, currency = 'gbp', business_name, service_name } = req.body;
+    const { amount_pence, currency = 'gbp', business_name, service_name, idempotency_key } = req.body;
     if (!amount_pence || amount_pence < 50)
       return res.status(400).json({ error: 'amount_pence must be at least 50' });
 
     const stripe = getStripe();
-    const intent = await stripe.paymentIntents.create({
+    const createParams = {
       amount: Math.round(amount_pence),
       currency,
       description: `${service_name || 'Service'} at ${business_name || 'BookAm Business'}`,
       automatic_payment_methods: { enabled: true },
-    });
+      metadata: idempotency_key ? { booking_idempotency_key: idempotency_key } : undefined,
+    };
+    const requestOptions = idempotency_key ? { idempotencyKey: `booking-payment-${idempotency_key}` } : undefined;
+    const intent = await stripe.paymentIntents.create(createParams, requestOptions);
 
     res.json({ client_secret: intent.client_secret, payment_intent_id: intent.id });
   } catch (err) {

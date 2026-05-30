@@ -201,6 +201,7 @@ app.get('/api/admin/financial', adminCtrl.getFinancialReport);
 app.get('/api/admin/launch-readiness', adminCtrl.getLaunchReadiness);
 app.get('/api/admin/manual-payouts', adminCtrl.getManualPayouts);
 app.post('/api/admin/manual-payouts/:businessId/mark-paid', adminCtrl.markManualPaid);
+app.get('/api/admin/audit-logs', adminCtrl.getAuditLogs);
 app.post('/api/admin/reconcile-payments', paymentsCtrl.reconcile);
 const businessCtrl = require('./controllers/businessController');
 app.post('/api/admin/geocode-backfill', businessCtrl.geocodeBackfill);
@@ -287,6 +288,8 @@ async function start() {
       await pool.query(sql17);
       const sql18 = fs.readFileSync(path.join(__dirname, '../migrations/018_attended_fraud_guards.sql'), 'utf8');
       await pool.query(sql18);
+      const sql19 = fs.readFileSync(path.join(__dirname, '../migrations/019_launch_hardening.sql'), 'utf8');
+      await pool.query(sql19);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -331,9 +334,11 @@ async function start() {
       for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT']) {
         addColumn('services', col);
       }
-      for (const col of ['consumer_id TEXT', 'mandate_id TEXT', 'stripe_payment_intent_id TEXT', "payment_status TEXT DEFAULT 'unpaid'", 'staff_member_id TEXT', 'promo_code TEXT', 'discount_amount REAL DEFAULT 0', 'intake_response_id TEXT', 'stripe_transfer_id TEXT', "stripe_transfer_status TEXT DEFAULT 'pending'", 'currency TEXT DEFAULT \'gbp\'']) {
+      for (const col of ['consumer_id TEXT', 'mandate_id TEXT', 'stripe_payment_intent_id TEXT', "payment_status TEXT DEFAULT 'unpaid'", 'staff_member_id TEXT', 'promo_code TEXT', 'discount_amount REAL DEFAULT 0', 'intake_response_id TEXT', 'stripe_transfer_id TEXT', "stripe_transfer_status TEXT DEFAULT 'pending'", 'currency TEXT DEFAULT \'gbp\'', 'idempotency_key TEXT']) {
         addColumn('bookings', col);
       }
+      try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency_key ON bookings(idempotency_key) WHERE idempotency_key IS NOT NULL AND idempotency_key <> ''`); } catch {}
+      try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_active_slot ON bookings(business_id, booking_date, start_time) WHERE status <> 'cancelled'`); } catch {}
       try {
         db.exec(`CREATE TABLE IF NOT EXISTS consumer_accounts (
           id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
@@ -402,6 +407,15 @@ async function start() {
           type TEXT NOT NULL DEFAULT 'info', is_active INTEGER NOT NULL DEFAULT 1,
           created_at TEXT DEFAULT (datetime('now')), expires_at TEXT
         )`);
+      } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS admin_audit_logs (
+          id TEXT PRIMARY KEY, admin_role TEXT, action TEXT NOT NULL,
+          target_type TEXT, target_id TEXT, details TEXT DEFAULT '{}',
+          ip_address TEXT, user_agent TEXT, created_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created_at ON admin_audit_logs(created_at)`);
+        db.exec(`CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_action ON admin_audit_logs(action)`);
       } catch {}
       for (const col of ['referral_code TEXT', 'referred_by TEXT', 'referral_credits INTEGER DEFAULT 0']) {
         try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN ${col}`); } catch {}
