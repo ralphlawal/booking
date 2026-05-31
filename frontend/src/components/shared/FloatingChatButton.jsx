@@ -5,6 +5,12 @@ import { MessageSquare } from 'lucide-react';
 // Hide on pages that have their own chat UI or bottom nav
 const HIDE_ON_PREFIXES = [
   '/customer/messages',
+  '/customer/',
+  '/feed',
+  '/explore',
+  '/match',
+  '/profile',
+  '/admin/',
   '/admin/messages',
   '/admin/dashboard',
   '/admin/bookings',

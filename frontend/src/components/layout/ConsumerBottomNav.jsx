@@ -16,15 +16,16 @@ export default function ConsumerBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 px-3 sm:px-4 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pointer-events-none"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="pointer-events-auto max-w-md mx-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-800 flex rounded-lg shadow-[0_14px_42px_rgba(15,23,42,0.18)] overflow-hidden">
+      <div className="max-w-md mx-auto px-1.5 sm:px-2 flex">
         {NAV.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[11px] font-semibold transition-colors relative min-h-[58px] tap-highlight-none ${
+              `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[11px] font-semibold transition-colors relative min-h-[58px] tap-highlight-none ${
                 isActive
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'

@@ -804,16 +804,16 @@ export default function CustomerDashboard() {
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8 pb-consumer-nav">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 lg:py-8 pb-consumer-nav">
         {/* Welcome header */}
-        <div className="mb-6 surface p-4 sm:p-5 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-2xl font-bold shadow-primary">
+        <div className="mb-4 sm:mb-6 surface p-3.5 sm:p-5 flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-primary flex-shrink-0">
             {consumer.full_name?.[0]?.toUpperCase() || '?'}
           </div>
           <div className="min-w-0">
             <p className="page-kicker">Customer home</p>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">Hi, {consumer.full_name?.split(' ')[0]}</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{consumer.email}</p>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">Hi, {consumer.full_name?.split(' ')[0]}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 truncate no-underline max-w-[58vw] sm:max-w-none">{consumer.email}</p>
             {bookings.length > 0 && (
               <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mt-0.5">
                 {bookings.length} booking{bookings.length !== 1 ? 's' : ''} total
@@ -866,35 +866,35 @@ export default function CustomerDashboard() {
 
         {/* "Confirm attendance" nudge — shown whenever there are past unconfirmed bookings */}
         {!loading && needsConfirmation.length > 0 && (
-          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3">
-            <div className="flex items-start gap-3">
+          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 sm:p-4">
+            <div className="flex items-start gap-2.5 sm:gap-3">
               <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                <p className="text-sm sm:text-base font-bold text-amber-800 dark:text-amber-300">
                   {needsConfirmation.length === 1 ? '1 booking needs your confirmation' : `${needsConfirmation.length} bookings need your confirmation`}
                 </p>
                 <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 mb-2">
                   Please confirm whether the service was completed so we can finalise your booking and release payment to the business.
                 </p>
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   {needsConfirmation.map(b => (
-                    <div key={b.id} className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-lg px-3 py-2 border border-amber-100 dark:border-amber-800">
+                    <div key={b.id} className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2 bg-white dark:bg-gray-900 rounded-lg p-3 border border-amber-100 dark:border-amber-800">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">{b.service_name} · {b.business_name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{fmtDate(b.booking_date)}</p>
                       </div>
-                      <div className="flex gap-1.5 flex-shrink-0">
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-shrink-0">
                         <button
                           onClick={() => setDisputeTarget(b)}
-                          className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          className="min-h-10 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
                           Didn't show
                         </button>
                         <button
                           onClick={() => setConfirmTarget(b)}
-                          className="text-xs font-bold px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
+                          className="min-h-10 text-xs font-bold px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
                         >
                           Confirm
                         </button>
@@ -908,30 +908,30 @@ export default function CustomerDashboard() {
         )}
 
         {/* Quick actions */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-          <Link to="/match" className="card p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
-            <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 mb-5 sm:mb-6">
+          <Link to="/match" className="card p-3 sm:p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
               <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="font-bold text-sm text-gray-900 dark:text-white">Smart Match</p>
               <p className="text-xs text-gray-400">Best available</p>
             </div>
           </Link>
-          <Link to="/explore" className="card p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
-            <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+          <Link to="/explore" className="card p-3 sm:p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
               <Search className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="font-bold text-sm text-gray-900 dark:text-white">Explore</p>
               <p className="text-xs text-gray-400">Browse services</p>
             </div>
           </Link>
-          <Link to="/customer/messages" className="card p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all col-span-2 sm:col-span-1">
-            <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
+          <Link to="/customer/messages" className="card p-3 sm:p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all col-span-2 sm:col-span-1">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
               <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="font-bold text-sm text-gray-900 dark:text-white">Messages</p>
               <p className="text-xs text-gray-400">Chat &amp; support</p>
             </div>

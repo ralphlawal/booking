@@ -184,15 +184,15 @@ export default function AdminLayout() {
           className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 flex-shrink-0"
           style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
-        <div className="h-16 flex items-center justify-between px-4 lg:px-6">
+        <div className="min-h-14 lg:min-h-16 flex items-center justify-between px-3 sm:px-4 lg:px-6 py-2 lg:py-0">
           {/* Mobile: hamburger */}
           <button className="lg:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => setSidebarOpen(true)}>
             <MenuIcon className="w-5 h-5" />
           </button>
 
           {/* Mobile: centered logo */}
-          <div className="lg:hidden absolute left-1/2 -translate-x-1/2">
-            <img src={logoSrc} alt="BookAm Business" className="h-8 w-auto object-contain" />
+          <div className="lg:hidden absolute left-1/2 -translate-x-1/2 max-w-[42vw]">
+            <img src={logoSrc} alt="BookAm Business" className="h-7 sm:h-8 w-auto object-contain" />
           </div>
 
           {/* Right actions */}
@@ -233,16 +233,16 @@ export default function AdminLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 lg:pb-6 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 lg:pb-6 pb-admin-nav">
           {emailUnverified && (
-            <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
+            <div className="mb-4 sm:mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
               <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
                 ⚠️ Your email address is not verified. Check your inbox for a verification link.
               </p>
               <button
                 onClick={handleResendVerif}
                 disabled={resendingVerif}
-                className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline whitespace-nowrap disabled:opacity-50 flex-shrink-0"
+                className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline whitespace-nowrap disabled:opacity-50 flex-shrink-0 self-start sm:self-auto"
               >
                 {resendingVerif ? 'Sending…' : 'Resend →'}
               </button>
@@ -262,7 +262,7 @@ export default function AdminLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2.5 min-h-[58px] gap-0.5 text-[10px] xs:text-xs font-semibold transition-colors relative ${
+              `flex-1 flex flex-col items-center justify-center py-2 min-h-[58px] gap-0.5 text-[10px] sm:text-xs font-semibold transition-colors relative ${
                 isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'
               }`
             }

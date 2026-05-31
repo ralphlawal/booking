@@ -8,6 +8,12 @@ import { businessChatAPI, consumerChatAPI } from '../../services/api';
 // Hide only on pages that already have a full dedicated chat/support UI
 const HIDE_ON = [
   '/customer/messages',
+  '/customer/',
+  '/feed',
+  '/explore',
+  '/match',
+  '/profile',
+  '/admin/',
   '/admin/messages',
   '/admin-support',
 ];
@@ -15,8 +21,10 @@ const HIDE_ON = [
 // Pages with a fixed bottom nav — position button higher so it doesn't overlap
 const HAS_BOTTOM_NAV_PREFIXES = [
   '/customer/',
+  '/feed',
   '/explore',
   '/match',
+  '/profile',
   '/admin/',
 ];
 

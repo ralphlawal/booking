@@ -73,10 +73,10 @@ export default function BrowserNotificationPrompt() {
   };
 
   return (
-    <div className="fixed left-4 right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[70] sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm">
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl p-4">
+    <div className="fixed left-3 right-3 bottom-[calc(var(--consumer-nav-height)+0.75rem)] z-[70] sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm">
+      <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl p-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 flex items-center justify-center flex-shrink-0">
             <Bell className="w-5 h-5" />
           </div>
           <div className="min-w-0 flex-1">

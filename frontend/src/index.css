@@ -38,8 +38,10 @@
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
     --consumer-nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
-    --consumer-nav-padding: calc(6.75rem + env(safe-area-inset-bottom, 0px));
-    --consumer-cta-padding: calc(10rem + env(safe-area-inset-bottom, 0px));
+    --consumer-nav-padding: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+    --consumer-cta-padding: calc(9.5rem + env(safe-area-inset-bottom, 0px));
+    --admin-nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
+    --admin-nav-padding: calc(5.75rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -142,6 +144,7 @@
   .safe-right  { padding-right:  env(safe-area-inset-right,  0px); }
   .pb-consumer-nav { padding-bottom: var(--consumer-nav-padding); }
   .pb-consumer-cta { padding-bottom: var(--consumer-cta-padding); }
+  .pb-admin-nav { padding-bottom: var(--admin-nav-padding); }
   .h-consumer-viewport { height: calc(100dvh - var(--consumer-nav-height)); }
   .animate-in { animation: animIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
