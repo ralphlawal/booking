@@ -3,7 +3,11 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, AlertTriangle, Loader, Star } from 'lucide-react';
 import { LOGO_BLUE_H } from '../../config/logos';
 
-const API = import.meta.env.VITE_API_URL || 'https://bookly-api.onrender.com/api';
+const API = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : import.meta.env.PROD
+  ? '/api'
+  : '/api';
 
 const DISPUTE_REASONS = [
   'Service provider did not show up',

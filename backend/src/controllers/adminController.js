@@ -456,12 +456,36 @@ exports.getLaunchReadiness = async (req, res) => {
         detail: process.env.DATABASE_URL ? 'DATABASE_URL is configured.' : 'Using local SQLite. Use PostgreSQL before public launch.',
       },
       {
+        key: 'database_backups',
+        label: 'Database backups',
+        status: process.env.DB_BACKUPS_ENABLED === 'true' || process.env.DATABASE_BACKUP_URL || process.env.RENDER_POSTGRES_BACKUPS === 'true' ? 'ready' : 'warning',
+        detail: process.env.DB_BACKUPS_ENABLED === 'true' || process.env.DATABASE_BACKUP_URL || process.env.RENDER_POSTGRES_BACKUPS === 'true'
+          ? 'Database backup configuration is marked as enabled.'
+          : 'Confirm automated production database backups and restore access before launch.',
+      },
+      {
         key: 'security',
         label: 'JWT secret',
         status: process.env.JWT_SECRET && process.env.JWT_SECRET !== 'bookam-jwt-secret-change-in-prod' ? 'ready' : 'blocked',
         detail: process.env.JWT_SECRET && process.env.JWT_SECRET !== 'bookam-jwt-secret-change-in-prod'
           ? 'JWT_SECRET is configured.'
           : 'Set a strong JWT_SECRET in production.',
+      },
+      {
+        key: 'frontend_url',
+        label: 'Production frontend URL',
+        status: /^https:\/\/.+/i.test(process.env.FRONTEND_URL || '') ? 'ready' : 'blocked',
+        detail: /^https:\/\/.+/i.test(process.env.FRONTEND_URL || '')
+          ? `FRONTEND_URL is set to ${process.env.FRONTEND_URL}.`
+          : 'Set FRONTEND_URL to the live https:// app URL so email links, redirects, and CORS work.',
+      },
+      {
+        key: 'cors',
+        label: 'CORS origins',
+        status: process.env.CORS_ORIGINS || process.env.FRONTEND_URL ? 'ready' : 'warning',
+        detail: process.env.CORS_ORIGINS
+          ? 'CORS_ORIGINS is configured.'
+          : 'Using default production origins. Set CORS_ORIGINS if deploying to additional domains.',
       },
       {
         key: 'admin_password',
@@ -510,6 +534,20 @@ exports.getLaunchReadiness = async (req, res) => {
         label: 'Error monitoring',
         status: process.env.SENTRY_DSN ? 'ready' : 'warning',
         detail: process.env.SENTRY_DSN ? 'Sentry is configured.' : 'Add Sentry or equivalent before public launch so crashes are visible.',
+      },
+      {
+        key: 'legal_pages',
+        label: 'Legal and policy pages',
+        status: 'ready',
+        detail: 'Terms, privacy, and cookie policy routes are available at /legal/terms, /legal/privacy, and /legal/cookies.',
+      },
+      {
+        key: 'support_contact',
+        label: 'Support contact path',
+        status: process.env.RESEND_API_KEY ? 'ready' : 'warning',
+        detail: process.env.RESEND_API_KEY
+          ? 'Support and transactional email can be delivered.'
+          : 'Support exists in-app, but outbound email delivery is not configured.',
       },
       {
         key: 'slot_protection',

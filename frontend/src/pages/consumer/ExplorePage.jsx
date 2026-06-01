@@ -28,7 +28,7 @@ function BusinessCard({ biz, from }) {
       state={{ from }}
       className="group card p-0 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-lg flex flex-col min-w-0"
     >
-      <div className="h-28 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative">
+      <div className="h-24 sm:h-28 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative">
         {biz.logo_url ? (
           <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover" />
         ) : (
@@ -40,7 +40,7 @@ function BusinessCard({ biz, from }) {
           </span>
         )}
       </div>
-      <div className="p-4 flex flex-col gap-1 flex-1">
+      <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1">
         <div className="flex items-start justify-between gap-2 min-w-0">
           <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight flex items-center gap-1 min-w-0">
             <span className="truncate min-w-0">{biz.name}</span>
@@ -99,7 +99,7 @@ function MapView({ results, coords, onSwitchList, from }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800" style={{ height: '55vh', minHeight: 320 }}>
+      <div className="rounded-lg overflow-hidden border border-gray-100 dark:border-gray-800" style={{ height: 'min(55vh, 520px)', minHeight: 300 }}>
         <iframe
           title="Business map"
           src={src}
@@ -200,14 +200,14 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2 sm:gap-4">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Link to="/feed" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
               <Rss className="w-4 h-4" /> Feed
             </Link>
@@ -215,31 +215,31 @@ export default function ExplorePage() {
               <Zap className="w-4 h-4" /> Smart Match
             </Link>
             {consumer ? (
-              <Link to="/customer/dashboard" className="btn-primary text-sm py-1.5 flex items-center gap-1.5">
+              <Link to="/customer/dashboard" className="btn-primary text-xs sm:text-sm py-1.5 flex items-center gap-1.5 whitespace-nowrap">
                 <User className="w-3.5 h-3.5" /> My Bookings
               </Link>
             ) : (
-              <Link to="/customer/login" className="btn-primary text-sm py-1.5">Sign in</Link>
+              <Link to="/customer/login" className="btn-primary text-xs sm:text-sm py-1.5 whitespace-nowrap">Sign in</Link>
             )}
           </div>
         </div>
       </nav>
 
       {/* Hero search */}
-      <div className="bg-gradient-to-b from-primary-700 to-primary-900 px-4 py-8 text-center">
+      <div className="bg-gradient-to-b from-primary-700 to-primary-900 px-3 sm:px-6 py-6 sm:py-8 text-center">
         <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">Find services near you</h1>
         <p className="text-primary-200 text-xs sm:text-sm mb-5">Book barbers, stylists, trainers and more — instantly</p>
-        <form onSubmit={handleSearch} className="max-w-lg mx-auto flex gap-2">
+        <form onSubmit={handleSearch} className="max-w-lg mx-auto grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
-              className="w-full pl-9 pr-3 py-3 rounded-xl text-sm outline-none border-0 shadow-sm"
+              className="w-full pl-9 pr-3 py-3 rounded-lg text-sm outline-none border-0 shadow-sm"
               placeholder="Search barbers, nail techs…"
               value={q}
               onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
             />
           </div>
-          <button type="submit" className="bg-white text-primary-700 font-bold px-4 py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors flex items-center gap-1">
+          <button type="submit" className="bg-white text-primary-700 font-bold px-4 py-3 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1">
             <Search className="w-4 h-4" />
             <span className="hidden sm:inline">Search</span>
           </button>
@@ -259,7 +259,7 @@ export default function ExplorePage() {
 
       {/* Category filter */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 overflow-x-auto scrollbar-hide">
-        <div className="flex items-center gap-2 px-4 py-3 min-w-max mx-auto max-w-6xl">
+        <div className="flex items-center gap-2 px-3 sm:px-6 py-3 min-w-max mx-auto max-w-6xl">
           {topCategories.map((c) => (
             <button
               key={c.value}
@@ -277,10 +277,10 @@ export default function ExplorePage() {
       </div>
 
       {/* Smart match banner */}
-      <div className="max-w-6xl mx-auto px-4 py-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4">
         <Link
           to="/match"
-          className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-primary-600 to-indigo-600 text-white hover:opacity-95 transition-opacity"
+          className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-primary-600 to-indigo-600 text-white hover:opacity-95 transition-opacity"
         >
           <Zap className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">
@@ -294,7 +294,7 @@ export default function ExplorePage() {
       </div>
 
       {/* Results */}
-      <div className="max-w-6xl mx-auto px-4 pb-consumer-nav">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 pb-consumer-nav">
         {loading ? (
           <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -310,14 +310,14 @@ export default function ExplorePage() {
           </div>
         ) : searchError ? (
           <div className="text-center py-16">
-            <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-7 h-7 text-red-400" /></div>
+            <div className="w-14 h-14 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-7 h-7 text-red-400" /></div>
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">Something went wrong</h3>
             <p className="text-gray-500 text-sm mb-4">Could not load results — please try again</p>
             <button onClick={() => doSearch()} className="btn-primary text-sm">Retry</button>
           </div>
         ) : results.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4"><Search className="w-7 h-7 text-gray-400" /></div>
+            <div className="w-14 h-14 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4"><Search className="w-7 h-7 text-gray-400" /></div>
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">No results found</h3>
             <p className="text-gray-500 text-sm">Try a different search or browse all categories</p>
             <button onClick={() => { setSearchParams({}); doSearch({ q: '', category: 'all' }); }} className="btn-primary mt-4 text-sm">
@@ -326,7 +326,7 @@ export default function ExplorePage() {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {results.length} result{results.length !== 1 ? 's' : ''} {coords ? 'near you' : 'found'}
               </p>

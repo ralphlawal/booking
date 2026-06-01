@@ -10,32 +10,115 @@ const getStripe = () => {
   return require('stripe')(process.env.STRIPE_SECRET_KEY);
 };
 
+async function calculateServerAmount({ service_id, business_slug, promo_code }) {
+  if (!service_id || !business_slug) {
+    const err = new Error('service_id and business_slug are required');
+    err.status = 400;
+    throw err;
+  }
+
+  const { rows } = await db.query(
+    `SELECT s.id, s.name AS service_name, s.price, b.id AS business_id, b.name AS business_name
+     FROM services s
+     JOIN businesses b ON b.id = s.business_id
+     WHERE s.id = $1 AND b.slug = $2 AND b.is_active = TRUE AND s.is_active = TRUE`,
+    [service_id, String(business_slug).toLowerCase()]
+  );
+  const item = rows[0];
+  if (!item) {
+    const err = new Error('Service is not available for this business');
+    err.status = 404;
+    throw err;
+  }
+
+  const price = Math.max(0, parseFloat(item.price || 0));
+  let discount = 0;
+  let promoCode = null;
+
+  if (promo_code?.trim()) {
+    const today = new Date().toISOString().split('T')[0];
+    const { rows: promoRows } = await db.query(
+      `SELECT * FROM promo_codes
+       WHERE business_id = $1 AND UPPER(code) = UPPER($2) AND is_active = TRUE
+         AND (valid_from IS NULL OR valid_from <= $3)
+         AND (valid_until IS NULL OR valid_until >= $3)
+         AND (max_uses IS NULL OR uses_count < max_uses)`,
+      [item.business_id, promo_code.trim(), today]
+    );
+    const promo = promoRows[0];
+    if (!promo) {
+      const err = new Error('Invalid or expired promo code');
+      err.status = 400;
+      throw err;
+    }
+    if (price < parseFloat(promo.min_order_amount || 0)) {
+      const err = new Error(`Minimum order £${parseFloat(promo.min_order_amount || 0).toFixed(2)} required for this code`);
+      err.status = 400;
+      throw err;
+    }
+    discount = promo.type === 'percent'
+      ? Math.round((price * parseFloat(promo.value || 0) / 100) * 100) / 100
+      : Math.min(parseFloat(promo.value || 0), price);
+    promoCode = promo.code;
+  }
+
+  const finalAmount = Math.max(0, Math.round((price - discount) * 100));
+  return {
+    ...item,
+    price,
+    discount,
+    promoCode,
+    amount_pence: finalAmount,
+  };
+}
+
 // POST /api/payments/create-intent
-// Called before booking is submitted — creates a PaymentIntent for the service price.
+// Called before booking is submitted — creates a PaymentIntent for the server-verified service price.
 exports.createIntent = async (req, res) => {
   try {
-    const { amount_pence, currency = 'gbp', business_name, service_name, idempotency_key } = req.body;
-    if (!amount_pence || amount_pence < 50)
-      return res.status(400).json({ error: 'amount_pence must be at least 50' });
+    const { currency = 'gbp', idempotency_key, service_id, business_slug, promo_code } = req.body;
+    const normalizedCurrency = String(currency || 'gbp').toLowerCase();
+    if (!['gbp', 'eur', 'usd'].includes(normalizedCurrency)) {
+      return res.status(400).json({ error: 'Unsupported payment currency' });
+    }
+
+    const amount = await calculateServerAmount({ service_id, business_slug, promo_code });
+    if (amount.amount_pence < 50) {
+      return res.status(400).json({ error: 'Online payment amount must be at least 50p' });
+    }
 
     const stripe = getStripe();
     const createParams = {
-      amount: Math.round(amount_pence),
-      currency,
-      description: `${service_name || 'Service'} at ${business_name || 'BookAm Business'}`,
+      amount: amount.amount_pence,
+      currency: normalizedCurrency,
+      description: `${amount.service_name || 'Service'} at ${amount.business_name || 'BookAm Business'}`,
       automatic_payment_methods: { enabled: true },
-      metadata: idempotency_key ? { booking_idempotency_key: idempotency_key } : undefined,
+      metadata: {
+        service_id,
+        business_id: amount.business_id,
+        business_slug,
+        server_amount_pence: String(amount.amount_pence),
+        ...(amount.promoCode ? { promo_code: amount.promoCode, discount_amount: amount.discount.toFixed(2) } : {}),
+        ...(idempotency_key ? { booking_idempotency_key: idempotency_key } : {}),
+      },
     };
     const requestOptions = idempotency_key ? { idempotencyKey: `booking-payment-${idempotency_key}` } : undefined;
     const intent = await stripe.paymentIntents.create(createParams, requestOptions);
 
-    res.json({ client_secret: intent.client_secret, payment_intent_id: intent.id });
+    res.json({
+      client_secret: intent.client_secret,
+      payment_intent_id: intent.id,
+      amount_pence: amount.amount_pence,
+      discount_amount: amount.discount,
+    });
   } catch (err) {
     console.error('[payments/create-intent]', err.message);
-    const status = err.code === 'STRIPE_NOT_CONFIGURED' ? 503 : 500;
+    const status = err.status || (err.code === 'STRIPE_NOT_CONFIGURED' ? 503 : 500);
     res.status(status).json({ error: err.message || 'Failed to create payment', code: err.code });
   }
 };
+
+exports.calculateServerAmount = calculateServerAmount;
 
 // GET /api/payments/booking/:bookingId
 exports.getForBooking = async (req, res) => {

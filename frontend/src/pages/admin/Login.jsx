@@ -41,7 +41,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center px-3 py-6 sm:p-4">
       <div className="w-full max-w-sm animate-slide-up">
         <Link to="/" className="flex items-center justify-center mb-8">
           <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
@@ -54,7 +54,7 @@ export default function Login() {
           </span>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4 sm:p-6 shadow-2xl">
           <h1 className="text-xl font-bold text-white text-center mb-1">Business Sign In</h1>
           <p className="text-white/50 text-sm text-center mb-6">Sign in to manage your bookings and dashboard</p>
 
@@ -62,7 +62,7 @@ export default function Login() {
             <div>
               <label className="block text-sm font-medium text-white/80 mb-1.5">Email</label>
               <input
-                className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                 type="email"
                 placeholder="you@business.com"
                 required
@@ -78,7 +78,7 @@ export default function Login() {
                 </Link>
               </div>
               <input
-                className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                 type="password"
                 placeholder="••••••••"
                 required
@@ -89,7 +89,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? <Spinner /> : 'Sign In to Dashboard'}
             </button>
@@ -108,7 +108,7 @@ export default function Login() {
           <p className="text-white/40 text-xs mb-2">Not a business owner?</p>
           <Link
             to="/customer/login"
-            className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
           >
             <CustomerIcon /> Sign in as Customer
           </Link>

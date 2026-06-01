@@ -12,14 +12,42 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-78Y2SFEHR1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-78Y2SFEHR1');
-  </script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-78Y2SFEHR1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-78Y2SFEHR1');
+    </script>
+    <!-- Sentry frontend monitoring -->
+    <script
+      src="https://js-de.sentry-cdn.com/25a565d0c045f642bcd34995918db4c5.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      if (window.Sentry && Sentry.onLoad) {
+        Sentry.onLoad(function() {
+        var isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        var integrations = [];
+        if (Sentry.replayIntegration) {
+          integrations.push(Sentry.replayIntegration({
+            maskAllText: true,
+            blockAllMedia: true,
+          }));
+        }
+        Sentry.init({
+          dsn: 'https://25a565d0c045f642bcd34995918db4c5@o4511488931266560.ingest.de.sentry.io/4511488948437072',
+          environment: isLocal ? 'development' : 'production',
+          tracesSampleRate: isLocal ? 0.2 : 0.1,
+          replaysSessionSampleRate: isLocal ? 0 : 0.05,
+          replaysOnErrorSampleRate: 1.0,
+          sendDefaultPii: false,
+          integrations: integrations,
+        });
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

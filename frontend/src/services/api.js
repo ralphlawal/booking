@@ -32,17 +32,26 @@ api.interceptors.response.use(
   err => {
     // Auto-retry GET requests once after a delay when the server is cold-starting
     const config = err.config;
+    const isNetwork = err.message === 'Network Error' || !err.response;
     const isTimeout = err.code === 'ECONNABORTED'
       || err.message?.includes('timeout')
       || err.response?.status === 504;
     const isGet = config?.method === 'get';
-    if (isGet && isTimeout && !config._retried) {
+    if (isGet && (isTimeout || isNetwork) && !config._retried) {
       config._retried = true;
       return new Promise(resolve =>
         setTimeout(() => resolve(api(config)), RETRY_DELAY_MS)
       );
     }
-    const error = new Error(err.response?.data?.error || err.message || 'Something went wrong');
+    let message = err.response?.data?.error || err.message || 'Something went wrong';
+    if (isNetwork) {
+      message = typeof navigator !== 'undefined' && navigator.onLine === false
+        ? 'You appear to be offline. Check your internet connection and try again.'
+        : 'Could not connect to BookAm. Please try again in a moment.';
+    } else if (err.response?.status === 503 || err.response?.status === 504) {
+      message = 'BookAm is temporarily unavailable. Please try again shortly.';
+    }
+    const error = new Error(message);
     error.status = err.response?.status;
     error.code = err.response?.data?.code;
     return Promise.reject(error);

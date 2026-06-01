@@ -204,43 +204,43 @@ export default function BusinessProfile() {
   const verified = !!business.is_verified || business.verification_status === 'verified';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2">
           <BackButton fallback="/explore" />
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
             <button
               onClick={handleFollow}
               disabled={followLoading}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-60 ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-60 whitespace-nowrap ${
                 following
                   ? 'bg-primary-600 text-white hover:bg-primary-700'
                   : 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20'
               }`}
             >
               {following ? <UserCheck className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
-              {following ? 'Following' : 'Follow'}
+              <span className="hidden min-[380px]:inline">{following ? 'Following' : 'Follow'}</span>
             </button>
-            <button onClick={handleShare} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <Share2 className="w-4 h-4 text-gray-500" />
             </button>
-            <button onClick={handleSave} disabled={saved} className={`p-2 rounded-xl transition-colors ${saved ? 'text-red-500' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500'}`}>
+            <button onClick={handleSave} disabled={saved} className={`p-2 rounded-lg transition-colors ${saved ? 'text-red-500' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500'}`}>
               <Heart className={`w-4 h-4 ${saved ? 'fill-red-500' : ''}`} />
             </button>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 lg:py-8 pb-consumer-cta">
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 lg:py-8 pb-consumer-cta">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         {/* Business header */}
-        <div className="card p-5 lg:col-span-2">
-          <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center border border-gray-100 dark:border-gray-800">
+        <div className="card p-4 sm:p-5 lg:col-span-2">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center border border-gray-100 dark:border-gray-800">
               {business.logo_url ? (
                 <img src={business.logo_url} alt={business.name} className="w-full h-full object-cover" />
               ) : (
@@ -250,7 +250,7 @@ export default function BusinessProfile() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1.5 min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1.5 min-w-0">
                 <span className="truncate min-w-0">{business.name}</span>
                 {verified && <BadgeCheck title="Verified Business" className="w-5 h-5 text-blue-500 flex-shrink-0" />}
               </h1>
@@ -260,7 +260,7 @@ export default function BusinessProfile() {
                 </span>
               )}
               {/* Rating */}
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2">
                 <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map(s => (
                     <Star key={s} className={`w-4 h-4 ${s <= Math.round(avgRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 dark:text-gray-700'}`} />
@@ -288,7 +288,7 @@ export default function BusinessProfile() {
           )}
 
           {/* Contact info */}
-          <div className="mt-4 space-y-2.5">
+          <div className="mt-4 space-y-2.5 min-w-0">
             {business.location && (
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`}
@@ -297,19 +297,19 @@ export default function BusinessProfile() {
                 className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors group"
               >
                 <MapPin className="w-4 h-4 flex-shrink-0 text-primary-500" />
-                <span className="group-hover:underline">{business.location}</span>
+                <span className="group-hover:underline break-words">{business.location}</span>
               </a>
             )}
             {business.phone && (
               <a href={`tel:${business.phone}`} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
                 <Phone className="w-4 h-4 flex-shrink-0 text-primary-500" />
-                {business.phone}
+                <span className="break-all">{business.phone}</span>
               </a>
             )}
             {business.email && (
               <a href={`mailto:${business.email}`} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
                 <Mail className="w-4 h-4 flex-shrink-0 text-primary-500" />
-                {business.email}
+                <span className="break-all">{business.email}</span>
               </a>
             )}
             {hours && formatHours(hours) && (
@@ -333,7 +333,7 @@ export default function BusinessProfile() {
         </div>
 
         {/* Services */}
-        <div className="card p-5">
+        <div className="card p-4 sm:p-5">
           <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary-500" />
             Services
@@ -346,11 +346,11 @@ export default function BusinessProfile() {
                 key={s.id}
                 to={`/book/${slug}`}
                 state={{ prefill_service_id: s.id, from: location }}
-                className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-transparent hover:border-primary-200 dark:hover:border-primary-800 transition-all group"
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-transparent hover:border-primary-200 dark:hover:border-primary-800 transition-all group"
               >
-                <div>
-                  <p className="font-semibold text-sm text-gray-900 dark:text-white">{s.name}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{s.name}</p>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                     <Clock className="w-3 h-3 text-gray-400" />
                     <span className="text-xs text-gray-400">{s.duration_minutes} min</span>
                     {s.deposit_required && s.deposit_amount > 0 && (
@@ -360,7 +360,7 @@ export default function BusinessProfile() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="font-bold text-gray-900 dark:text-white text-sm">
                     {parseFloat(s.price) > 0 ? `£${parseFloat(s.price).toFixed(0)}` : 'Free'}
                   </span>
@@ -381,12 +381,12 @@ export default function BusinessProfile() {
             {posts.map(post => {
               const postMeta = { photo: 'Portfolio', offer: 'Offer', availability: 'Slots open', announcement: 'Update' };
               return (
-                <div key={post.id} className="card p-4">
+                <div key={post.id} className="card p-3 sm:p-4">
                   {post.image_url && (
                     post.image_url.startsWith('data:video') ? (
-                      <video src={post.image_url} className="w-full rounded-xl object-cover max-h-60 mb-3" controls playsInline />
+                      <video src={post.image_url} className="w-full rounded-lg object-cover max-h-[34rem] mb-3 bg-gray-900" controls playsInline />
                     ) : (
-                      <img src={post.image_url} alt="" className="w-full rounded-xl object-cover max-h-60 mb-3" loading="lazy" />
+                      <img src={post.image_url} alt="" className="w-full rounded-lg object-cover max-h-[34rem] mb-3" loading="lazy" />
                     )
                   )}
                   {post.offer_text && (
@@ -395,8 +395,8 @@ export default function BusinessProfile() {
                       {post.is_expired && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Expired</span>}
                     </div>
                   )}
-                  {post.caption && <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{post.caption}</p>}
-                  <div className="flex items-center justify-between mt-3">
+                  {post.caption && <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed break-words">{post.caption}</p>}
+                  <div className="flex items-center justify-between gap-3 mt-3">
                     <span className="text-xs text-gray-400">
                       {new Date(post.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     </span>
@@ -419,14 +419,14 @@ export default function BusinessProfile() {
 
         {/* Photo Gallery */}
         {photos.length > 0 && (
-          <div className="card p-5 lg:col-span-2">
+          <div className="card p-4 sm:p-5 lg:col-span-2">
             <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Image className="w-4 h-4 text-primary-500" />
               Gallery
             </h2>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
               {photos.map(p => (
-                <div key={p.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
                   <img src={p.url} alt={p.caption || ''} className="w-full h-full object-cover" loading="lazy" />
                 </div>
               ))}
@@ -435,7 +435,7 @@ export default function BusinessProfile() {
         )}
 
         {/* Reviews */}
-        <div className="card p-5 lg:col-span-2">
+        <div className="card p-4 sm:p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -447,7 +447,7 @@ export default function BusinessProfile() {
           </div>
 
           {totalReviews > 0 && (
-            <div className="flex items-start gap-4 mb-5 pb-5 border-b border-gray-100 dark:border-gray-800">
+            <div className="grid grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)] gap-4 mb-5 pb-5 border-b border-gray-100 dark:border-gray-800">
               <div className="text-center">
                 <p className="text-4xl font-black text-gray-900 dark:text-white">{avgRating.toFixed(1)}</p>
                 <div className="flex items-center gap-0.5 mt-1 justify-center">
@@ -487,12 +487,12 @@ export default function BusinessProfile() {
 
         {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
         <div className="fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]" style={{ bottom: 'var(--consumer-nav-height)' }}>
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex gap-2">
-            <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-xl border-2 border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
+          <div className="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 grid grid-cols-2 gap-2">
+            <button onClick={handleMessage} className="flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-lg border border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
               <Sparkles className="w-4 h-4" />
               Message
             </button>
-            <Link to={`/book/${slug}`} state={{ from: location }} className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 text-sm">
+            <Link to={`/book/${slug}`} state={{ from: location }} className="btn-primary flex items-center justify-center gap-2 py-3 text-sm">
               <CheckCircle className="w-4 h-4" />
               Book now
             </Link>

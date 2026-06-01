@@ -12,6 +12,28 @@ function validateProductionEnv() {
     'STRIPE_SECRET_KEY',
     'STRIPE_WEBHOOK_SECRET',
   ];
+  const recommended = [
+    {
+      ok: process.env.CORS_ORIGINS || process.env.FRONTEND_URL,
+      message: '[env] CORS_ORIGINS is not set — add every production frontend/admin origin if you use more than one domain',
+    },
+    {
+      ok: process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
+      message: '[env] VAPID keys are not set — real web push notifications will be limited to in-app polling/browser prompts',
+    },
+    {
+      ok: process.env.SENTRY_DSN,
+      message: '[env] SENTRY_DSN is not set — production crashes will not be reported automatically',
+    },
+    {
+      ok: process.env.DB_BACKUPS_ENABLED === 'true' || process.env.DATABASE_BACKUP_URL || process.env.RENDER_POSTGRES_BACKUPS === 'true',
+      message: '[env] Database backups are not marked as enabled — confirm automated backups before launch',
+    },
+    {
+      ok: process.env.CLOUDINARY_URL || process.env.S3_BUCKET || process.env.R2_BUCKET,
+      message: '[env] Production media storage is not configured — local uploads are not durable on most hosts',
+    },
+  ];
 
   const missingVars = [];
   for (const entry of required) {
@@ -45,6 +67,10 @@ function validateProductionEnv() {
     const message = '[env] FRONTEND_URL should be an https:// URL in production';
     if (strict) throw new Error(message);
     console.error(message);
+  }
+
+  for (const check of recommended) {
+    if (!check.ok) console.warn(check.message);
   }
 }
 

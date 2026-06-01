@@ -159,9 +159,9 @@ export default function BookingPage() {
       try {
         const idempotencyKey = getBookingAttemptKey();
         const { client_secret, payment_intent_id } = await paymentsAPI.createIntent({
-          amount_pence: Math.round(finalPrice * 100),
-          business_name: business.name,
-          service_name: booking.service.name,
+          business_slug: slug,
+          service_id: booking.service.id,
+          promo_code: promoData ? promoCode : undefined,
           idempotency_key: idempotencyKey,
         });
         setClientSecret(client_secret);

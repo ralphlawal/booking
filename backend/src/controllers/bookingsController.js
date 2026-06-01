@@ -7,6 +7,7 @@ const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNe
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const { calculateServerAmount } = require('./paymentsController');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -24,11 +25,45 @@ exports.create = async (req, res) => {
   if (req.body.website) return res.status(201).json({ reference_id: 'BOT-BLOCKED', honeypot: true });
   try {
     const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id, idempotency_key,
-            consumer_id, staff_member_id, promo_code, discount_amount } = req.body;
+            consumer_id, staff_member_id, promo_code } = req.body;
 
     const service = await Service.findById(service_id);
     if (!service || service.business_id !== req.business.id || !service.is_active) {
       return res.status(404).json({ error: 'Service not found' });
+    }
+
+    let verifiedPromoCode = null;
+    let verifiedDiscount = 0;
+    let expectedAmountPence = Math.max(0, Math.round(parseFloat(service.price || 0) * 100));
+    if (promo_code || stripe_payment_intent_id) {
+      const amount = await calculateServerAmount({
+        service_id,
+        business_slug: req.business.slug,
+        promo_code,
+      });
+      verifiedPromoCode = amount.promoCode;
+      verifiedDiscount = amount.discount;
+      expectedAmountPence = amount.amount_pence;
+    }
+
+    if (stripe_payment_intent_id) {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(503).json({ error: 'Online payments are not configured' });
+      }
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      const intent = await stripe.paymentIntents.retrieve(stripe_payment_intent_id);
+      if (!intent || intent.amount !== expectedAmountPence) {
+        return res.status(400).json({ error: 'Payment amount does not match this booking' });
+      }
+      if (!['succeeded', 'processing', 'requires_capture'].includes(intent.status)) {
+        return res.status(400).json({ error: 'Payment has not completed yet' });
+      }
+      if (intent.metadata?.service_id && intent.metadata.service_id !== service_id) {
+        return res.status(400).json({ error: 'Payment does not match this service' });
+      }
+      if (intent.metadata?.business_id && intent.metadata.business_id !== req.business.id) {
+        return res.status(400).json({ error: 'Payment does not match this business' });
+      }
     }
 
     // Calculate end time
@@ -64,22 +99,22 @@ exports.create = async (req, res) => {
     });
 
     // Save optional new-feature fields (requires migration 014 columns to exist)
-    if (staff_member_id || promo_code || discount_amount) {
+    if (staff_member_id || verifiedPromoCode || verifiedDiscount) {
       db.query(
         `UPDATE bookings SET
            staff_member_id = COALESCE($1, staff_member_id),
            promo_code = COALESCE($2, promo_code),
            discount_amount = COALESCE($3, discount_amount)
          WHERE id = $4`,
-        [staff_member_id || null, promo_code || null, discount_amount || null, booking.id]
+        [staff_member_id || null, verifiedPromoCode || null, verifiedDiscount || null, booking.id]
       ).catch(() => {});
     }
     // Increment promo uses_count
-    if (promo_code) {
+    if (verifiedPromoCode) {
       db.query(
         `UPDATE promo_codes SET uses_count = uses_count + 1
          WHERE business_id = $1 AND UPPER(code) = UPPER($2)`,
-        [req.business.id, promo_code]
+        [req.business.id, verifiedPromoCode]
       ).catch(() => {});
     }
 
