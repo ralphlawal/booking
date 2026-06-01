@@ -823,7 +823,7 @@ export default function CustomerDashboard() {
         </div>
 
         {/* Email verification banner */}
-        {consumer.email_verified === false && (
+        {consumer.email_verified !== true && (
           <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />

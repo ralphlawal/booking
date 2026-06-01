@@ -103,7 +103,7 @@ export default function Services() {
                     <span className="text-primary-700 dark:text-primary-400 font-bold">£{parseFloat(svc.price).toFixed(2)}</span>
                     <span className="text-gray-400 text-sm">·</span>
                     <span className="text-gray-600 dark:text-gray-400 text-sm">{svc.duration_minutes} min</span>
-                    {svc.deposit_required && svc.deposit_amount > 0 && (
+                    {Boolean(svc.deposit_required) && Number(svc.deposit_amount) > 0 && (
                       <span className="inline-flex items-center gap-1 text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
                         <Lock className="w-3 h-3" /> £{parseFloat(svc.deposit_amount).toFixed(0)} deposit
                       </span>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Cookie, ShieldCheck, X } from 'lucide-react';
 
 const STORAGE_KEY = 'bookam_cookie_consent_v1';
@@ -19,6 +19,7 @@ export function hasAnalyticsConsent() {
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     setVisible(!getCookieConsent());
@@ -35,12 +36,30 @@ export default function CookieConsent() {
 
   if (!visible) return null;
 
+  const hasBottomNav = [
+    '/explore',
+    '/feed',
+    '/match',
+    '/profile',
+    '/customer/dashboard',
+    '/customer/messages',
+    '/customer/profile',
+    '/customer/favourites',
+  ].some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
+
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[70] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6 pointer-events-none">
+    <div
+      className="fixed inset-x-0 z-[70] px-3 sm:px-6 pointer-events-none"
+      style={{
+        bottom: hasBottomNav
+          ? 'calc(var(--consumer-nav-height) + 0.5rem)'
+          : 'calc(0.75rem + env(safe-area-inset-bottom, 0px))',
+      }}
+    >
       <div className="mx-auto max-w-4xl rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl pointer-events-auto overflow-hidden">
-        <div className="p-4 sm:p-5">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-300 flex items-center justify-center flex-shrink-0">
+        <div className="p-3 sm:p-5">
+          <div className="flex items-start gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-300 flex items-center justify-center flex-shrink-0">
               <Cookie className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -48,7 +67,8 @@ export default function CookieConsent() {
                 <div>
                   <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Cookies and app storage</h2>
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    BookAm uses essential cookies and local storage to keep you signed in, protect accounts, remember preferences, and make bookings work. Optional analytics helps us improve the product.
+                    <span className="sm:hidden">Essential storage keeps sign-in, bookings, chat, and preferences working.</span>
+                    <span className="hidden sm:inline">BookAm uses essential cookies and local storage to keep you signed in, protect accounts, remember preferences, and make bookings work. Optional analytics helps us improve the product.</span>
                   </p>
                 </div>
                 <button
@@ -75,7 +95,7 @@ export default function CookieConsent() {
                 </div>
               )}
 
-              <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                   <button onClick={() => setShowDetails(v => !v)} className="font-semibold text-primary-600 dark:text-primary-300 hover:underline">
                     {showDetails ? 'Hide details' : 'Manage details'}
@@ -87,11 +107,11 @@ export default function CookieConsent() {
                     Privacy policy
                   </Link>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button onClick={() => saveChoice(false)} className="btn-secondary text-xs px-4 py-2">
+                <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
+                  <button onClick={() => saveChoice(false)} className="btn-secondary text-xs px-3 sm:px-4 py-2">
                     Essential only
                   </button>
-                  <button onClick={() => saveChoice(true)} className="btn-primary text-xs px-4 py-2">
+                  <button onClick={() => saveChoice(true)} className="btn-primary text-xs px-3 sm:px-4 py-2">
                     Accept all
                   </button>
                 </div>

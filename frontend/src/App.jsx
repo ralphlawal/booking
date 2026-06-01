@@ -111,7 +111,7 @@ const ConsumerVerifiedRoute = ({ children }) => {
   const location = useLocation();
   if (loading) return <PageLoader />;
   if (!consumer) return <Navigate to="/customer/login" replace state={{ from: location }} />;
-  if (consumer.email_verified === false) return <VerifyRequired type="customer" />;
+  if (consumer.email_verified !== true) return <VerifyRequired type="customer" />;
   return children;
 };
 

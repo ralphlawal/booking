@@ -32,10 +32,10 @@ const ConsumerAccount = {
     const { rows } = await db.query(
       `INSERT INTO consumer_accounts (id, email, password_hash, full_name, phone)
        VALUES ($1,$2,$3,$4,$5)
-       RETURNING id, email, full_name, phone, avatar_url, created_at`,
+       RETURNING id, email, full_name, phone, avatar_url, created_at, FALSE AS email_verified`,
       [id, email.toLowerCase().trim(), password_hash, full_name.trim(), phone || null]
     );
-    return rows[0];
+    return normalizeConsumer(rows[0]);
   },
 
   async createFromGoogle({ email, full_name }) {
@@ -62,7 +62,7 @@ const ConsumerAccount = {
   async findById(id) {
     const { rows } = await db.query(
       `SELECT id, email, full_name, phone, avatar_url, created_at,
-              COALESCE(email_verified, TRUE) AS email_verified,
+              COALESCE(email_verified, FALSE) AS email_verified,
               location_text, latitude, longitude,
               COALESCE(service_preferences, '[]'::jsonb) AS service_preferences,
               COALESCE(onboarding_complete, FALSE) AS onboarding_complete

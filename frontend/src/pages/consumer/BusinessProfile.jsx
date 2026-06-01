@@ -353,7 +353,7 @@ export default function BusinessProfile() {
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                     <Clock className="w-3 h-3 text-gray-400" />
                     <span className="text-xs text-gray-400">{s.duration_minutes} min</span>
-                    {s.deposit_required && s.deposit_amount > 0 && (
+                    {Boolean(s.deposit_required) && Number(s.deposit_amount) > 0 && (
                       <span className="text-xs text-amber-600 dark:text-amber-400">
                         · £{parseFloat(s.deposit_amount).toFixed(0)} deposit at appointment
                       </span>
