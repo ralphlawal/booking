@@ -14,6 +14,26 @@ const STATUS_COLORS = {
 const STATUSES = ['all', 'pending', 'confirmed', 'cancelled', 'completed'];
 const PAGE_SIZE = 20;
 
+function bookingDateKey(value) {
+  const match = String(value || '').match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : '';
+}
+
+function getRescheduleRequest(booking) {
+  const matches = [...String(booking?.notes || '').matchAll(/\[Reschedule Request\] Customer prefers: (\d{4}-\d{2}-\d{2})(?: at (\d{2}:\d{2}))?(?:\. Message: ([^\n]+))?/g)];
+  if (!matches.length) return null;
+  const latest = matches[matches.length - 1];
+  const request = {
+    date: latest[1],
+    time: latest[2] || '',
+    message: latest[3] || '',
+  };
+  const currentDate = bookingDateKey(booking.booking_date);
+  const currentTime = booking.start_time?.slice(0, 5) || '';
+  request.pending = request.date !== currentDate || (!!request.time && request.time !== currentTime);
+  return request;
+}
+
 // ── Detail drawer ────────────────────────────────────────────────────────────
 function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
   const ref = useRef(null);
@@ -27,6 +47,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
   }, [onClose]);
 
   const price = parseFloat(booking.service_price || 0);
+  const rescheduleRequest = getRescheduleRequest(booking);
 
   const copyRef = () => {
     navigator.clipboard.writeText(booking.reference_id).then(() => toast.success('Reference copied'));
@@ -63,6 +84,24 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
               Booked {booking.created_at?.slice(0, 10)}
             </span>
           </div>
+
+          {rescheduleRequest?.pending && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+              <p className="text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300">Customer requested reschedule</p>
+              <p className="mt-1 text-sm font-semibold text-blue-950 dark:text-blue-100">
+                {rescheduleRequest.date}{rescheduleRequest.time ? ` at ${rescheduleRequest.time}` : ''}
+              </p>
+              {rescheduleRequest.message && (
+                <p className="mt-1 text-sm text-blue-800 dark:text-blue-200">{rescheduleRequest.message}</p>
+              )}
+              <button
+                onClick={() => { onClose(); onOpenReschedule(booking); }}
+                className="mt-3 btn-primary text-xs py-2"
+              >
+                Review request
+              </button>
+            </div>
+          )}
 
           {/* Customer */}
           <div className="card p-4 space-y-2">
@@ -197,8 +236,12 @@ export default function Bookings() {
     setModal('status');
   };
   const openReschedule = (b) => {
+    const request = getRescheduleRequest(b);
     setSelected(b);
-    setRescheduleForm({ booking_date: b.booking_date, start_time: b.start_time?.slice(0, 5) });
+    setRescheduleForm({
+      booking_date: request?.pending ? request.date : bookingDateKey(b.booking_date),
+      start_time: request?.pending && request.time ? request.time : b.start_time?.slice(0, 5),
+    });
     setModal('reschedule');
   };
   const closeModal = () => { setModal(null); setSelected(null); };
@@ -399,6 +442,11 @@ export default function Bookings() {
                       <td className="px-4 py-3">
                         <p className="dark:text-gray-300">{b.service_name}</p>
                         <p className="text-xs text-gray-400">£{parseFloat(b.service_price || 0).toFixed(2)}</p>
+                        {getRescheduleRequest(b)?.pending && (
+                          <span className="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 ring-1 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800">
+                            Reschedule requested
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap dark:text-gray-300">
                         <p>{b.booking_date}</p>
@@ -449,6 +497,11 @@ export default function Bookings() {
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       {b.service_name} · <span className="font-semibold">£{parseFloat(b.service_price || 0).toFixed(2)}</span>
                     </p>
+                    {getRescheduleRequest(b)?.pending && (
+                      <p className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 ring-1 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800">
+                        Reschedule requested
+                      </p>
+                    )}
                     <p className="text-xs text-gray-400">{b.booking_date} · {b.start_time?.slice(0, 5)} – {b.end_time?.slice(0, 5)}</p>
                     <p className="text-xs font-mono text-primary-600 dark:text-primary-400">{b.reference_id}</p>
                     <div className="flex gap-2 pt-1" onClick={e => e.stopPropagation()}>
@@ -506,13 +559,13 @@ export default function Bookings() {
 
       {/* Status modal */}
       {modal === 'status' && (
-        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up">
+        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center overflow-y-auto p-3 sm:p-4 bg-black/50 animate-fade-in" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white">Update Status</h2>
               <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon /></button>
             </div>
-            <form onSubmit={saveStatus} className="p-5 space-y-4">
+            <form onSubmit={saveStatus} className="p-5 space-y-4 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               <div>
                 <p className="text-sm text-gray-500 mb-3">{selected?.reference_id} · {selected?.customer_name}</p>
                 <label className="label">New Status</label>
@@ -554,7 +607,7 @@ export default function Bookings() {
                   )}
                 </div>
               )}
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancel</button>
                 <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? <Spinner /> : 'Update'}</button>
               </div>
@@ -565,13 +618,13 @@ export default function Bookings() {
 
       {/* Reschedule modal */}
       {modal === 'reschedule' && (
-        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up">
+        <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center overflow-y-auto p-3 sm:p-4 bg-black/50 animate-fade-in" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white">Reschedule Booking</h2>
               <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon /></button>
             </div>
-            <form onSubmit={saveReschedule} className="p-5 space-y-4">
+            <form onSubmit={saveReschedule} className="p-5 space-y-4 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               <p className="text-sm text-gray-500">{selected?.reference_id} · {selected?.customer_name} · {selected?.service_name}</p>
               <div>
                 <label className="label">New Date</label>
@@ -593,7 +646,7 @@ export default function Bookings() {
                   onChange={e => setRescheduleForm(p => ({ ...p, start_time: e.target.value }))}
                 />
               </div>
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancel</button>
                 <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? <Spinner /> : 'Reschedule'}</button>
               </div>

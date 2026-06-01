@@ -228,11 +228,11 @@ const Booking = {
     const isPg = !!process.env.DATABASE_URL;
     const now = isPg ? `NOW()` : `DATETIME('now')`;
     const h24 = isPg
-      ? `booking_date::timestamp + start_time::interval BETWEEN NOW() AND NOW() + INTERVAL '25 hours'`
-      : `DATETIME(booking_date || ' ' || start_time) BETWEEN DATETIME('now') AND DATETIME('now', '+25 hours')`;
+      ? `(booking_date::date + start_time::time) BETWEEN NOW() AND NOW() + INTERVAL '25 hours'`
+      : `DATETIME(substr(booking_date, 1, 10) || ' ' || start_time) BETWEEN DATETIME('now') AND DATETIME('now', '+25 hours')`;
     const h1 = isPg
-      ? `booking_date::timestamp + start_time::interval BETWEEN NOW() AND NOW() + INTERVAL '70 minutes'`
-      : `DATETIME(booking_date || ' ' || start_time) BETWEEN DATETIME('now') AND DATETIME('now', '+70 minutes')`;
+      ? `(booking_date::date + start_time::time) BETWEEN NOW() AND NOW() + INTERVAL '70 minutes'`
+      : `DATETIME(substr(booking_date, 1, 10) || ' ' || start_time) BETWEEN DATETIME('now') AND DATETIME('now', '+70 minutes')`;
 
     const [reminders24h, reminders1h] = await Promise.all([
       db.query(

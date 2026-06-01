@@ -492,7 +492,7 @@ async function start() {
   const server = app.listen(PORT, () => {
     console.log(`BookAm API running on port ${PORT}`);
 
-    // Auto-release: run 5 min after startup then every 6 hours.
+    // Auto-release: run shortly after startup, then on an interval.
     // Releases payment for confirmed+paid bookings whose appointment ended >72h ago
     // with no customer confirmation, so businesses are never left waiting forever.
     const { runAutoRelease, runAttendedEmails } = require('./controllers/bookingsController');
@@ -501,7 +501,7 @@ async function start() {
       runAttendedEmails();
       setInterval(runAutoRelease, 6 * 60 * 60 * 1000);
       setInterval(runAttendedEmails, 30 * 60 * 1000); // every 30 minutes
-    }, 5 * 60 * 1000);
+    }, 30 * 1000);
   });
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {

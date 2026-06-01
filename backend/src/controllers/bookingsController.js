@@ -11,6 +11,23 @@ const { calculateServerAmount } = require('./paymentsController');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
+function bookingDateKey(value) {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  const match = String(value).match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : null;
+}
+
+function bookingDateTime(dateValue, timeValue, fallback = '23:59') {
+  const key = bookingDateKey(dateValue);
+  if (!key) return null;
+  const time = String(timeValue || fallback).slice(0, 5);
+  const dt = new Date(`${key}T${time}`);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
 function authenticateAdmin(req) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) return false;
@@ -224,8 +241,8 @@ exports.updateStatus = async (req, res) => {
     if (status === 'completed' && fullBooking.customer_email) {
       // Only send review reminder once the appointment time has actually passed.
       // Prevents premature "how was it?" emails when a business confirms a future booking.
-      const apptEnd = new Date(`${fullBooking.booking_date}T${fullBooking.end_time || fullBooking.start_time || '23:59'}`);
-      if (apptEnd <= new Date()) {
+      const apptEnd = bookingDateTime(fullBooking.booking_date, fullBooking.end_time || fullBooking.start_time);
+      if (apptEnd && apptEnd <= new Date()) {
         sendReviewReminder(fullBooking).catch(() => {});
       }
     }
@@ -233,8 +250,8 @@ exports.updateStatus = async (req, res) => {
     // If the business confirms a booking whose appointment has already ended,
     // immediately send the attended email (cron is unreliable on free-tier hosting).
     if (status === 'confirmed' && fullBooking.customer_email) {
-      const apptEnd = new Date(`${fullBooking.booking_date}T${fullBooking.end_time || fullBooking.start_time || '23:59'}`);
-      if (apptEnd <= new Date()) {
+      const apptEnd = bookingDateTime(fullBooking.booking_date, fullBooking.end_time || fullBooking.start_time);
+      if (apptEnd && apptEnd <= new Date()) {
         db.query('SELECT attended_email_sent_at FROM bookings WHERE id = $1', [fullBooking.id])
           .then(async ({ rows }) => {
             if (rows[0]?.attended_email_sent_at) return; // already sent
@@ -372,7 +389,8 @@ exports.cancelByCustomer = async (req, res) => {
       return res.status(400).json({ error: `Booking is already ${booking.status}` });
     }
 
-    const apptDateTime = new Date(`${booking.booking_date}T${booking.start_time}`);
+    const apptDateTime = bookingDateTime(booking.booking_date, booking.start_time, '00:00');
+    if (!apptDateTime) return res.status(400).json({ error: 'Booking date is invalid' });
     const hoursUntil = (apptDateTime - Date.now()) / (1000 * 60 * 60);
 
     if (hoursUntil < 0) {
@@ -462,7 +480,8 @@ exports.confirmService = async (req, res) => {
     }
 
     // Appointment must have already started before customer can confirm
-    const apptEnd = new Date(`${booking.booking_date}T${booking.end_time || booking.start_time || '23:59'}`);
+    const apptEnd = bookingDateTime(booking.booking_date, booking.end_time || booking.start_time);
+    if (!apptEnd) return res.status(400).json({ error: 'Booking date is invalid' });
     if (apptEnd > new Date()) {
       return res.status(400).json({ error: 'You can only confirm after your appointment time has passed' });
     }
@@ -580,8 +599,8 @@ async function transferToBusiness(booking) {
 async function autoReleaseOverdueBookings() {
   const isPostgres = !!process.env.DATABASE_URL;
   const dateFilter = isPostgres
-    ? `(b.booking_date || 'T' || COALESCE(b.end_time, '23:59'))::timestamp < NOW() - INTERVAL '72 hours'`
-    : `datetime(b.booking_date || 'T' || COALESCE(b.end_time, '23:59')) < datetime('now', '-72 hours')`;
+    ? `(b.booking_date::date + COALESCE(b.end_time, '23:59')::time) < NOW() - INTERVAL '72 hours'`
+    : `datetime(substr(b.booking_date, 1, 10) || 'T' || COALESCE(b.end_time, '23:59')) < datetime('now', '-72 hours')`;
 
   const { rows } = await db.query(`
     SELECT b.id, b.reference_id, b.business_id, b.stripe_payment_intent_id,
@@ -635,7 +654,8 @@ exports.raiseDispute = async (req, res) => {
     if (!reason?.trim()) return res.status(400).json({ error: 'Reason is required' });
 
     // Dispute window: must be raised within 6 hours of appointment end time
-    const apptEnd = new Date(`${booking.booking_date}T${booking.end_time || '23:59'}`);
+    const apptEnd = bookingDateTime(booking.booking_date, booking.end_time);
+    if (!apptEnd) return res.status(400).json({ error: 'Booking date is invalid' });
     const hoursAfterEnd = (Date.now() - apptEnd.getTime()) / (1000 * 60 * 60);
     if (hoursAfterEnd < 0) {
       return res.status(400).json({ error: 'Cannot raise a dispute for an appointment that has not yet happened' });
@@ -790,8 +810,8 @@ async function sendAttendedConfirmationEmails() {
   const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
   const isPostgres = !!process.env.DATABASE_URL;
   const dateFilter = isPostgres
-    ? `(b.booking_date || 'T' || COALESCE(b.end_time, '23:59'))::timestamp < NOW() - INTERVAL '2 hours'`
-    : `datetime(b.booking_date || 'T' || COALESCE(b.end_time, '23:59')) < datetime('now', '-2 hours')`;
+    ? `(b.booking_date::date + COALESCE(b.end_time, '23:59')::time) < NOW() - INTERVAL '2 hours'`
+    : `datetime(substr(b.booking_date, 1, 10) || 'T' || COALESCE(b.end_time, '23:59')) < datetime('now', '-2 hours')`;
 
   const { rows } = await db.query(`
     SELECT b.id, b.reference_id, b.business_id, b.stripe_payment_intent_id,

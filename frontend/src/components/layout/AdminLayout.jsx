@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { bookingsAPI } from '../../services/api';
@@ -31,6 +31,7 @@ export default function AdminLayout() {
   const { user, business, logout, resendVerificationEmail } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -49,11 +50,28 @@ export default function AdminLayout() {
     }
   }, [user]);
 
-  useEffect(() => {
+  const refreshPendingCount = useCallback(() => {
     bookingsAPI.list({ status: 'pending', limit: 200 })
       .then(data => setPendingCount(data?.total ?? data?.bookings?.length ?? 0))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    refreshPendingCount();
+    const timer = setInterval(() => {
+      if (!document.hidden) refreshPendingCount();
+    }, 30000);
+    const onFocus = () => refreshPendingCount();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [refreshPendingCount]);
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin/bookings')) refreshPendingCount();
+  }, [location.pathname, refreshPendingCount]);
 
   const handleResendVerif = async () => {
     setResendingVerif(true);
@@ -138,7 +156,7 @@ export default function AdminLayout() {
                 <>
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1">{label}</span>
-                  {badge && pendingCount > 0 && (
+                  {badge && pendingCount > 0 && !isActive && (
                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${isActive ? 'bg-white/25 text-white' : 'bg-red-500 text-white'}`}>
                       {pendingCount > 99 ? '99+' : pendingCount}
                     </span>
@@ -272,7 +290,7 @@ export default function AdminLayout() {
                 {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-600 dark:bg-primary-400 rounded-full" />}
                 <div className="relative">
                   <Icon className="w-5 h-5" />
-                  {badge && pendingCount > 0 && (
+                  {badge && pendingCount > 0 && !isActive && (
                     <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
                       {pendingCount > 9 ? '9+' : pendingCount}
                     </span>

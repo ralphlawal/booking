@@ -44,6 +44,10 @@
           replaysOnErrorSampleRate: 1.0,
           sendDefaultPii: false,
           integrations: integrations,
+          ignoreErrors: [
+            "Can't find variable: EmptyRanges",
+            'EmptyRanges',
+          ],
         });
         });
       }
