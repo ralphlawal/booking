@@ -250,7 +250,7 @@ export default function BookingPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
           <BackButton
             fallback={`/profile/${slug}`}
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 flex-shrink-0"
@@ -273,7 +273,7 @@ export default function BookingPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 pb-16">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-8 pb-16">
         {/* Business info */}
         {step === 0 && business.description && (
           <div className="mb-5 p-4 bg-white rounded-lg border border-gray-100">

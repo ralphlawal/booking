@@ -4,7 +4,7 @@ import { postsAPI, followsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
-import { Image, Tag, Calendar, Megaphone, BadgeCheck, Star, ChevronDown, Users } from 'lucide-react';
+import { Image, Tag, Calendar, Megaphone, BadgeCheck, Star, ChevronDown, Users, Search, Zap, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const TYPE_META = {
@@ -191,7 +191,7 @@ export default function FeedPage() {
     >
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-2xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
@@ -210,11 +210,22 @@ export default function FeedPage() {
               <Users className="w-3 h-3" />Following
             </button>
           </div>
-          <div className="w-8 sm:w-16" />
+          <div className="hidden lg:flex items-center gap-3">
+            <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
+              <Search className="w-4 h-4" /> Explore
+            </Link>
+            <Link to="/match" className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
+              <Zap className="w-4 h-4" /> Smart Match
+            </Link>
+            <Link to={consumer ? '/customer/dashboard' : '/customer/login'} className="btn-primary text-sm py-1.5">
+              <User className="w-3.5 h-3.5" /> {consumer ? 'My Bookings' : 'Sign in'}
+            </Link>
+          </div>
+          <div className="w-8 sm:w-16 lg:hidden" />
         </div>
         {/* Category filters — only in "For you" mode */}
         {mode === 'all' && (
-          <div className="flex gap-2 overflow-x-auto px-3 sm:px-6 pb-3 scrollbar-hide">
+          <div className="max-w-6xl mx-auto flex gap-2 overflow-x-auto px-3 sm:px-6 pb-3 scrollbar-hide">
             {CATEGORIES.map(cat => (
               <button
                 key={cat}
@@ -232,9 +243,9 @@ export default function FeedPage() {
         )}
       </nav>
 
-      <div className="max-w-2xl mx-auto px-3 sm:px-6 pt-4 pb-10">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-10">
         {loading ? (
-          <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="card overflow-hidden animate-pulse" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="flex items-center gap-3 p-4">
@@ -270,7 +281,7 @@ export default function FeedPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {posts.map((post, i) => (
               <div key={post.id} className="animate-in" style={{ animationDelay: `${Math.min(i * 70, 350)}ms` }}>
                 <PostCard post={post} />
