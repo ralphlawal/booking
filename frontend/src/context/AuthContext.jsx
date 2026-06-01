@@ -5,6 +5,8 @@ import {
   signOut,
   onAuthStateChanged,
   onIdTokenChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
   updateProfile,
   sendPasswordResetEmail,
   confirmPasswordReset,
@@ -124,6 +126,19 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const googleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    const token = await cred.user.getIdToken(true);
+    localStorage.setItem('fbToken', token);
+    const data = await authAPI.firebaseSync(token, cred.user.displayName);
+    syncedUidRef.current = cred.user.uid;
+    setUser(data.user);
+    setBusiness(data.business || null);
+    saveAuthCache(data.user, data.business || null);
+    return data;
+  };
+
   const changePassword = async (currentPassword, newPassword) => {
     const fbUser = auth.currentUser;
     if (!fbUser) throw new Error('Not signed in');
@@ -180,7 +195,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user, business, loading,
-      login, register, logout, forgotPassword, resetPasswordWithCode,
+      login, register, googleLogin, logout, forgotPassword, resetPasswordWithCode,
       updateBusiness, changePassword, resendVerificationEmail, deleteAccount,
     }}>
       {children}
