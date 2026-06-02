@@ -272,7 +272,7 @@ export default function AdminLayout() {
 
       {/* Mobile bottom nav */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-primary-950/98 text-white backdrop-blur-xl border-t border-white/10 flex shadow-[0_-10px_30px_rgba(30,19,86,0.28)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-primary-950 text-white border-t border-primary-800 flex shadow-[0_-10px_30px_rgba(30,19,86,0.36)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {BOTTOM_NAV.map(({ to, icon: Icon, label, badge }) => (
@@ -281,7 +281,7 @@ export default function AdminLayout() {
             to={to}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center py-2 min-h-[58px] gap-0.5 text-[10px] sm:text-xs font-semibold transition-colors relative ${
-                isActive ? 'text-white' : 'text-white/45'
+                isActive ? 'text-white' : 'text-primary-100/80'
               }`
             }
           >

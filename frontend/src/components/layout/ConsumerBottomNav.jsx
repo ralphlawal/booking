@@ -16,7 +16,7 @@ export default function ConsumerBottomNav() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-primary-950/98 text-white backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_30px_rgba(30,19,86,0.28)]"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-primary-950 text-white border-t border-primary-800 shadow-[0_-10px_30px_rgba(30,19,86,0.36)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       <div className="max-w-md mx-auto px-2 flex">
@@ -28,7 +28,7 @@ export default function ConsumerBottomNav() {
               `flex-1 flex flex-col items-center justify-center py-2.5 gap-1 text-[11px] font-semibold transition-colors relative min-h-[66px] tap-highlight-none ${
                 isActive
                   ? 'text-white'
-                  : 'text-white/45 hover:text-white/75'
+                  : 'text-primary-100/80 hover:text-white'
               }`
             }
           >
