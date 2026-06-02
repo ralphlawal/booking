@@ -7,6 +7,22 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
 
+const POPULAR_SERVICES = ['Haircut', 'Beard trim', 'Shave', 'Nails', 'Lashes', 'Massage', 'Tutoring', 'Cleaning'];
+
+const CATEGORY_VISUALS = {
+  hair: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=240&q=70',
+  barber: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=240&q=70',
+  barbers: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=240&q=70',
+  nails: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=240&q=70',
+  beauty: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=240&q=70',
+  fitness: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=240&q=70',
+  cleaning: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=240&q=70',
+};
+
+function categoryImage(label) {
+  const key = String(label || '').toLowerCase();
+  return CATEGORY_VISUALS[key] || CATEGORY_VISUALS[key.split(' ')[0]] || null;
+}
 
 function StarRating({ rating }) {
   const r = parseFloat(rating) || 0;
@@ -26,19 +42,25 @@ function BusinessCard({ biz, from }) {
     <Link
       to={`/profile/${biz.slug}`}
       state={{ from }}
-      className="group card p-0 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-lg flex flex-col min-w-0"
+      className="group bg-white dark:bg-gray-900 rounded-lg border border-gray-200/90 dark:border-gray-800 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-xl flex flex-col min-w-0"
     >
-      <div className="h-24 sm:h-28 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center relative">
+      <div className="h-40 sm:h-44 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative">
         {biz.logo_url ? (
           <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover" />
         ) : (
-          <Building2 className="w-10 h-10 text-primary-300 dark:text-primary-600" />
+          <div className="w-full h-full bg-[radial-gradient(circle_at_30%_20%,#a5f3fc,transparent_32%),linear-gradient(135deg,#f2f2ef,#e5e7eb)] flex items-center justify-center">
+            <Building2 className="w-11 h-11 text-primary-700/55" />
+          </div>
         )}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/40 to-transparent" />
         {biz.distance_km !== null && biz.distance_km !== undefined && (
-          <span className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 text-xs font-semibold px-2 py-1 rounded-full text-gray-700 dark:text-gray-200 flex items-center gap-1">
+          <span className="absolute top-2 right-2 bg-white/95 text-xs font-semibold px-2.5 py-1 rounded-full text-gray-800 flex items-center gap-1 shadow-sm">
             <MapPin className="w-3 h-3" />{biz.distance_km} km
           </span>
         )}
+        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+          {parseFloat(biz.avg_rating) > 0 ? `${parseFloat(biz.avg_rating).toFixed(1)} rating` : 'New'}
+        </span>
       </div>
       <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1">
         <div className="flex items-start justify-between gap-2 min-w-0">
@@ -47,7 +69,7 @@ function BusinessCard({ biz, from }) {
             {verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
           </h3>
           {biz.category && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 whitespace-nowrap flex-shrink min-w-0 max-w-[45%] truncate">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 whitespace-nowrap flex-shrink min-w-0 max-w-[45%] truncate font-semibold">
               {biz.category}
             </span>
           )}
@@ -69,7 +91,7 @@ function BusinessCard({ biz, from }) {
               From £{parseFloat(biz.min_price).toFixed(0)}
             </span>
           ) : <span />}
-          <span className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 font-semibold group-hover:underline flex-shrink-0">
+          <span className="flex items-center gap-1 text-xs bg-primary-600 text-white px-3 py-1.5 rounded-lg font-semibold flex-shrink-0">
             View <ChevronRight className="w-3 h-3" />
           </span>
         </div>
@@ -226,35 +248,61 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="bg-gradient-to-b from-primary-700 to-primary-900 px-3 sm:px-6 py-6 sm:py-8 text-center">
-        <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">Find services near you</h1>
-        <p className="text-primary-200 text-xs sm:text-sm mb-5">Book barbers, stylists, trainers and more — instantly</p>
-        <form onSubmit={handleSearch} className="max-w-lg mx-auto grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+      <div className="bg-gradient-to-br from-primary-950 via-primary-900 to-slate-950 px-3 sm:px-6 py-7 sm:py-10 text-center">
+        <h1 className="text-2xl sm:text-4xl font-black text-white mb-2 tracking-tight">Find services near you</h1>
+        <p className="text-white/65 text-sm sm:text-base mb-6">Book barbers, stylists, trainers and more instantly</p>
+        <form onSubmit={handleSearch} className="max-w-3xl mx-auto grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
-              className="w-full pl-9 pr-3 py-3 rounded-lg text-sm outline-none border-0 shadow-sm"
-              placeholder="Search barbers, nail techs…"
+              className="w-full pl-11 pr-4 py-4 rounded-lg text-base outline-none border-0 shadow-sm bg-white text-gray-950"
+              placeholder="Search services or businesses"
               value={q}
               onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
             />
           </div>
-          <button type="submit" className="bg-white text-primary-700 font-bold px-4 py-3 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1">
+          <button
+            type="button"
+            onClick={getLocation}
+            disabled={locating}
+            className="bg-white/10 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-white/15 transition-colors flex items-center justify-center gap-2"
+          >
+            <Navigation className="w-4 h-4" />
+            {locating ? 'Locating' : 'Near me'}
+          </button>
+          <button type="submit" className="bg-primary-600 text-white font-bold px-5 py-3 rounded-lg text-sm hover:bg-primary-500 transition-colors flex items-center justify-center gap-1 shadow-primary">
             <Search className="w-4 h-4" />
             <span className="hidden sm:inline">Search</span>
           </button>
         </form>
-        <button
-          onClick={getLocation}
-          disabled={locating}
-          className="mt-3 text-primary-200 hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 mx-auto"
-        >
-          <Navigation className="w-3.5 h-3.5" />
-          {locating ? 'Getting your location…' : 'Use my location for nearby results'}
-        </button>
         {coords && (
-          <p className="text-primary-300 text-xs mt-1">Location found — results sorted by distance</p>
+          <p className="text-primary-200 text-xs mt-3">Location found — results sorted by distance</p>
         )}
+        <div className="max-w-6xl mx-auto mt-6 overflow-x-auto scrollbar-hide">
+          <div className="flex items-start gap-4 min-w-max px-1 justify-center">
+            {topCategories.slice(0, 7).map((c) => {
+              const image = categoryImage(c.label);
+              return (
+                <button
+                  key={c.value}
+                  onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('category', c.value); return n; })}
+                  className="group w-20 sm:w-24 flex-shrink-0 text-center"
+                >
+                  <span className={`mx-auto mb-2 grid h-16 w-16 sm:h-20 sm:w-20 place-items-center overflow-hidden rounded-full border-2 transition-all ${
+                    category === c.value ? 'border-primary-400 scale-105' : 'border-white/10 group-hover:border-white/35'
+                  }`}>
+                    {image ? (
+                      <img src={image} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    ) : (
+                      <span className="h-full w-full bg-white/10 flex items-center justify-center text-white font-black">{c.label[0]}</span>
+                    )}
+                  </span>
+                  <span className={`block truncate text-xs font-bold ${category === c.value ? 'text-white' : 'text-white/70'}`}>{c.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Category filter */}
@@ -277,10 +325,23 @@ export default function ExplorePage() {
       </div>
 
       {/* Smart match banner */}
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-5">
+        <div className="mb-4 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 min-w-max">
+            {POPULAR_SERVICES.map((service) => (
+              <button
+                key={service}
+                onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', service); return n; })}
+                className="rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-800 hover:border-primary-300"
+              >
+                {service}
+              </button>
+            ))}
+          </div>
+        </div>
         <Link
           to="/match"
-          className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-primary-600 to-indigo-600 text-white hover:opacity-95 transition-opacity"
+          className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-primary-700 to-primary-950 text-white hover:opacity-95 transition-opacity shadow-primary"
         >
           <Zap className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">

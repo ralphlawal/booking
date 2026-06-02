@@ -37,11 +37,14 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
-    --consumer-nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
+    --consumer-nav-height: calc(72px + env(safe-area-inset-bottom, 0px));
     --consumer-nav-padding: calc(5.75rem + env(safe-area-inset-bottom, 0px));
     --consumer-cta-padding: calc(9.5rem + env(safe-area-inset-bottom, 0px));
     --admin-nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
     --admin-nav-padding: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+    --bookam-ink: #0b1020;
+    --bookam-paper: #f8fafc;
+    --bookam-line: rgba(148, 163, 184, 0.24);
   }
 }
 
@@ -100,6 +103,7 @@
   }
   .card {
     @apply bg-white dark:bg-gray-900 rounded-lg border border-gray-200/80 dark:border-gray-800 shadow-card;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 24px rgb(15 23 42 / 0.04);
   }
   .card-hover {
     @apply card hover:shadow-card-hover hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-0.5 transition-all duration-200;
@@ -109,6 +113,7 @@
   }
   .surface {
     @apply bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg shadow-card;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 24px rgb(15 23 42 / 0.04);
   }
   .surface-soft {
     @apply bg-slate-50 dark:bg-gray-900/60 border border-gray-200/70 dark:border-gray-800 rounded-lg;
@@ -187,7 +192,7 @@
 
 .bookam-loader-ring {
   background:
-    conic-gradient(from 0deg, transparent 0deg, transparent 74deg, #5b3eea 108deg, #10b981 154deg, transparent 216deg),
+    conic-gradient(from 0deg, transparent 0deg, transparent 74deg, #5b3eea 108deg, #0f172a 154deg, transparent 216deg),
     linear-gradient(#fff, #fff) padding-box;
   border: 2px solid transparent;
   mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
@@ -199,7 +204,7 @@
 
 .dark .bookam-loader-ring {
   background:
-    conic-gradient(from 0deg, transparent 0deg, transparent 74deg, #8b7cf6 108deg, #34d399 154deg, transparent 216deg),
+    conic-gradient(from 0deg, transparent 0deg, transparent 74deg, #22d3ee 108deg, #34d399 154deg, transparent 216deg),
     linear-gradient(#030712, #030712) padding-box;
 }
 

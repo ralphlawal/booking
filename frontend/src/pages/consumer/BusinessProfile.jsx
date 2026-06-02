@@ -202,6 +202,10 @@ export default function BusinessProfile() {
   const avgRating = parseFloat(reviewData.stats?.avg_rating || 0);
   const totalReviews = parseInt(reviewData.stats?.total || 0);
   const verified = !!business.is_verified || business.verification_status === 'verified';
+  const heroPhotos = [
+    ...photos.map(p => p.url),
+    ...posts.filter(p => p.image_url && !p.image_url.startsWith('data:video')).map(p => p.image_url),
+  ].slice(0, 5);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950">
@@ -235,10 +239,25 @@ export default function BusinessProfile() {
         </div>
       </nav>
 
+      {heroPhotos.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+          <div className="max-w-5xl mx-auto grid grid-cols-4 sm:grid-cols-5 gap-0.5 h-44 sm:h-64 lg:h-80">
+            <div className="col-span-2 sm:col-span-3 row-span-2 overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <img src={heroPhotos[0]} alt="" className="h-full w-full object-cover" />
+            </div>
+            {heroPhotos.slice(1, 5).map((src, idx) => (
+              <div key={src + idx} className="overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 lg:py-8 pb-consumer-cta">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         {/* Business header */}
-        <div className="card p-4 sm:p-5 lg:col-span-2">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg p-4 sm:p-6 lg:col-span-2 shadow-card">
           <div className="flex items-start gap-3 sm:gap-4">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center border border-gray-100 dark:border-gray-800">
               {business.logo_url ? (
@@ -250,7 +269,7 @@ export default function BusinessProfile() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-1.5 min-w-0">
+              <h1 className="text-2xl sm:text-4xl font-black text-slate-950 dark:text-white flex items-center gap-1.5 min-w-0 tracking-tight">
                 <span className="truncate min-w-0">{business.name}</span>
                 {verified && <BadgeCheck title="Verified Business" className="w-5 h-5 text-blue-500 flex-shrink-0" />}
               </h1>
@@ -266,7 +285,7 @@ export default function BusinessProfile() {
                     <Star key={s} className={`w-4 h-4 ${s <= Math.round(avgRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 dark:text-gray-700'}`} />
                   ))}
                 </div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-bold text-gray-800 dark:text-gray-300">
                   {avgRating > 0 ? avgRating.toFixed(1) : 'New'}
                 </span>
                 {totalReviews > 0 && (
@@ -288,26 +307,26 @@ export default function BusinessProfile() {
           )}
 
           {/* Contact info */}
-          <div className="mt-4 space-y-2.5 min-w-0">
+          <div className="mt-5 grid gap-2.5 sm:grid-cols-2 min-w-0">
             {business.location && (
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors group"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors group"
               >
                 <MapPin className="w-4 h-4 flex-shrink-0 text-primary-500" />
                 <span className="group-hover:underline break-words">{business.location}</span>
               </a>
             )}
             {business.phone && (
-              <a href={`tel:${business.phone}`} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
+              <a href={`tel:${business.phone}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 transition-colors">
                 <Phone className="w-4 h-4 flex-shrink-0 text-primary-500" />
                 <span className="break-all">{business.phone}</span>
               </a>
             )}
             {business.email && (
-              <a href={`mailto:${business.email}`} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
+              <a href={`mailto:${business.email}`} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 transition-colors">
                 <Mail className="w-4 h-4 flex-shrink-0 text-primary-500" />
                 <span className="break-all">{business.email}</span>
               </a>
@@ -333,8 +352,8 @@ export default function BusinessProfile() {
         </div>
 
         {/* Services */}
-        <div className="card p-4 sm:p-5">
-          <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg p-4 sm:p-5 shadow-card">
+          <h2 className="font-black text-xl text-slate-950 dark:text-white mb-4 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary-500" />
             Services
           </h2>
@@ -346,7 +365,7 @@ export default function BusinessProfile() {
                 key={s.id}
                 to={`/book/${slug}`}
                 state={{ prefill_service_id: s.id, from: location }}
-                className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-transparent hover:border-primary-200 dark:hover:border-primary-800 transition-all group"
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3 rounded-lg bg-white dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-gray-100 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-800 transition-all group"
               >
                 <div className="min-w-0">
                   <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{s.name}</p>
@@ -361,10 +380,11 @@ export default function BusinessProfile() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-bold text-gray-900 dark:text-white text-sm">
+                  <span className="font-bold text-gray-900 dark:text-white text-sm whitespace-nowrap">
                     {parseFloat(s.price) > 0 ? `£${parseFloat(s.price).toFixed(0)}` : 'Free'}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                  <span className="hidden sm:inline-flex bg-primary-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">Book</span>
+                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors sm:hidden" />
                 </div>
               </Link>
             ))}
@@ -435,7 +455,7 @@ export default function BusinessProfile() {
         )}
 
         {/* Reviews */}
-        <div className="card p-4 sm:p-5 lg:col-span-2">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg p-4 sm:p-5 lg:col-span-2 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -486,7 +506,7 @@ export default function BusinessProfile() {
         </div>
 
         {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
-        <div className="fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]" style={{ bottom: 'var(--consumer-nav-height)' }}>
+        <div className="lg:hidden fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]" style={{ bottom: 'var(--consumer-nav-height)' }}>
           <div className="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 grid grid-cols-2 gap-2">
             <button onClick={handleMessage} className="flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-lg border border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
               <Sparkles className="w-4 h-4" />

@@ -108,36 +108,47 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f5f3ff_0%,#ffffff_55%,#ffffff_100%)] pointer-events-none" />
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-primary-300/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f7f7f5_68%,#ffffff_100%)] pointer-events-none" />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-7 sm:pt-10 pb-10 sm:pb-14 text-center">
-          <div className="inline-flex items-center gap-2 bg-white border border-primary-200 text-primary-700 text-xs font-semibold px-4 py-2 rounded-full mb-5 shadow-sm">
-            <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
-            Welcome to BookAm Business
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-10 sm:pb-16 text-center">
+          <div className="mx-auto mb-7 grid max-w-3xl grid-cols-5 items-end gap-2 sm:gap-3">
+            {[
+              'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=260&q=75',
+              'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=260&q=75',
+              LOGO_BLUE_H,
+              'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=260&q=75',
+              'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=260&q=75',
+            ].map((src, i) => (
+              <div
+                key={src}
+                className={`mx-auto overflow-hidden rounded-full bg-white shadow-card ring-1 ring-gray-200 ${
+                  i === 2 ? 'h-20 w-20 sm:h-28 sm:w-28 p-4 flex items-center justify-center' : 'h-14 w-14 sm:h-20 sm:w-20'
+                } ${i === 0 || i === 4 ? 'mb-6 sm:mb-10' : ''}`}
+              >
+                <img src={src} alt="" className={`${i === 2 ? 'h-auto w-full object-contain' : 'h-full w-full object-cover'}`} loading="eager" />
+              </div>
+            ))}
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 leading-[1.05] tracking-tight max-w-4xl mx-auto">
-            Book services or run your business,
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-400">
-              all in one place
-            </span>
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-950 leading-[1.02] tracking-tight max-w-4xl mx-auto">
+            Book services.
+            <span className="block">Run your business.</span>
           </h1>
 
-          <p className="mt-4 sm:mt-5 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed px-2">
+          <p className="mt-5 text-base sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-2">
             Customers can discover trusted local services and book instantly. Businesses can create a booking page, manage appointments, chat, and grow from one dashboard.
           </p>
 
-          <p className="mt-2 sm:mt-3 text-sm sm:text-base font-bold text-primary-600 tracking-wide">
+          <p className="mt-3 text-sm sm:text-base font-bold text-primary-700 tracking-wide">
             Book. Confirm. Be there.
           </p>
 
-          <div className="mt-6 sm:mt-8 grid gap-3 sm:grid-cols-2 max-w-3xl mx-auto text-left">
-            <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-card">
-              <div className="w-11 h-11 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center mb-4">
+          <div className="mt-8 sm:mt-10 grid gap-3 sm:grid-cols-2 max-w-3xl mx-auto text-left">
+            <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-5 shadow-card">
+              <div className="w-11 h-11 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center mb-4">
                 <Search className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">I want to book</h2>
+              <h2 className="text-lg font-black text-slate-950">I want to book</h2>
               <p className="text-sm text-gray-500 mt-1 mb-4">Find barbers, stylists, tutors, trainers, and more near you.</p>
               <div className="grid grid-cols-2 gap-2">
                 <Link to="/customer/signup" className="btn-primary px-3 py-2.5 text-sm">Customer sign up</Link>
@@ -145,15 +156,15 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-primary-200 bg-primary-50 p-4 sm:p-5 shadow-card ring-1 ring-primary-100">
-              <div className="w-11 h-11 rounded-xl bg-white text-primary-600 flex items-center justify-center mb-4">
+            <div className="rounded-lg border border-primary-900 bg-gradient-to-br from-primary-950 to-slate-950 p-4 sm:p-5 shadow-card text-white">
+              <div className="w-11 h-11 rounded-lg bg-white text-primary-700 flex items-center justify-center mb-4">
                 <CalendarDays className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">I run a business</h2>
-              <p className="text-sm text-gray-600 mt-1 mb-4">Create your booking page and manage customers, services, payments, and chats.</p>
+              <h2 className="text-lg font-black">I run a business</h2>
+              <p className="text-sm text-white/65 mt-1 mb-4">Create your booking page and manage customers, services, payments, and chats.</p>
               <div className="grid grid-cols-2 gap-2">
                 <Link to="/admin/register" className="btn-primary px-3 py-2.5 text-sm">Business sign up</Link>
-                <Link to="/admin/login" className="btn-secondary px-3 py-2.5 text-sm bg-white">Business sign in</Link>
+                <Link to="/admin/login" className="inline-flex items-center justify-center gap-2 px-3 py-2.5 bg-white text-primary-800 rounded-lg font-semibold text-sm hover:bg-gray-100 transition-colors">Business sign in</Link>
               </div>
             </div>
           </div>
@@ -171,11 +182,10 @@ export default function Landing() {
           </div>
 
           {/* Browser mockup — hide on very small screens */}
-          <div className="mt-12 sm:mt-16 max-w-2xl mx-auto hidden sm:block">
+          <div className="mt-12 sm:mt-16 max-w-3xl mx-auto hidden sm:block">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-300/20 to-indigo-300/20 rounded-3xl blur-2xl scale-105 pointer-events-none" />
-              <div className="relative bg-gray-900 rounded-2xl overflow-hidden border border-gray-700/50 shadow-2xl">
-                <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-800">
+              <div className="relative bg-primary-950 rounded-lg overflow-hidden border border-primary-900 shadow-2xl">
+                <div className="flex items-center gap-1.5 px-4 py-3 bg-[#1a1d20]">
                   <div className="w-3 h-3 rounded-full bg-red-500/80" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                   <div className="w-3 h-3 rounded-full bg-green-500/80" />
@@ -185,7 +195,7 @@ export default function Landing() {
                 </div>
                 <div className="bg-white p-5 text-left">
                   <div className="flex items-center gap-3 mb-5">
-                    <div className="w-11 h-11 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold shadow-primary">Y</div>
+                    <div className="w-11 h-11 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold shadow-primary">Y</div>
                     <div>
                       <p className="font-bold text-gray-900 text-sm">Your Business Name</p>
                       <p className="text-xs text-gray-400 flex items-center gap-1">
@@ -193,7 +203,7 @@ export default function Landing() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Choose a service</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Available today</p>
                   <div className="space-y-2">
                     {[
                       { name: 'Your Service 1', time: '30 min', price: '$50', active: true },
