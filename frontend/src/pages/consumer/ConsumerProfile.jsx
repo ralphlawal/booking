@@ -57,7 +57,7 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[80] flex items-end sm:items-center justify-center p-4">
-      <div className="modal-panel w-full max-w-sm p-6 animate-slide-up">
+      <div className="mobile-safe-sheet w-full max-w-sm p-6 animate-slide-up">
         <h2 className="font-bold text-lg text-gray-900 dark:text-white mb-1">Leave a review</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
           Rate your experience at <strong>{booking.business_name}</strong>
@@ -278,7 +278,7 @@ export default function ConsumerProfile() {
   if (authLoading || !consumer) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
+    <div className="app-page animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -343,7 +343,7 @@ export default function ConsumerProfile() {
         </div>
 
         {tab === 'profile' && (
-          <div className="card p-6 max-w-3xl mx-auto">
+          <div className="app-panel p-6 max-w-3xl mx-auto">
             <form onSubmit={saveProfile} className="space-y-4">
               <div>
                 <label className="label flex items-center gap-1.5">
@@ -393,7 +393,7 @@ export default function ConsumerProfile() {
                     onClick={detectLocation}
                     disabled={detectingLoc}
                     title="Detect my location"
-                    className="flex-shrink-0 px-3 rounded-xl border border-gray-200 dark:border-gray-700 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
+                    className="flex-shrink-0 px-3 rounded-lg border border-gray-200 dark:border-gray-700 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
                   >
                     {detectingLoc
                       ? <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
@@ -414,7 +414,7 @@ export default function ConsumerProfile() {
 
         {tab === 'referral' && (
           <div className="space-y-4">
-            <div className="card p-6 max-w-3xl mx-auto">
+            <div className="app-panel p-6 max-w-3xl mx-auto">
               <div className="flex items-center gap-2 mb-1">
                 <Gift className="w-5 h-5 text-primary-600" />
                 <h2 className="font-bold text-gray-900 dark:text-white text-lg">Refer &amp; Earn</h2>
@@ -427,7 +427,7 @@ export default function ConsumerProfile() {
                 <div className="text-center py-4 text-gray-400 text-sm">Loading your referral code…</div>
               ) : (
                 <>
-                  <div className="bg-primary-50 dark:bg-primary-900/20 border-2 border-dashed border-primary-300 dark:border-primary-700 rounded-2xl p-5 text-center mb-4">
+                  <div className="bg-primary-50 dark:bg-primary-900/20 border-2 border-dashed border-primary-300 dark:border-primary-700 rounded-lg p-5 text-center mb-4">
                     <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-1">Your referral code</p>
                     <p className="text-3xl font-black text-primary-700 dark:text-primary-300 tracking-widest font-mono">{referral.referral_code}</p>
                   </div>
@@ -453,7 +453,7 @@ export default function ConsumerProfile() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <Users className="w-5 h-5 text-primary-600 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">{referral.referrals?.length || 0} friend{referral.referrals?.length !== 1 ? 's' : ''} referred</p>
@@ -476,7 +476,7 @@ export default function ConsumerProfile() {
               )}
             </div>
 
-            <div className="card p-4 border-l-4 border-l-amber-400 max-w-3xl mx-auto">
+            <div className="app-panel p-4 border-l-4 border-l-amber-400 max-w-3xl mx-auto">
               <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">How credits work</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Credits are being rolled out gradually. Once live, each credit will give you a discount on a future booking. Credits never expire.
@@ -490,15 +490,15 @@ export default function ConsumerProfile() {
             {loadingBookings ? (
               <div className="text-center py-8 text-gray-400">Loading…</div>
             ) : bookings.length === 0 ? (
-              <div className="card p-8 text-center lg:col-span-2">
+              <div className="app-panel p-8 text-center lg:col-span-2">
                 <Star className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
                 <h3 className="font-bold text-gray-900 dark:text-white mb-1">No completed bookings</h3>
                 <p className="text-sm text-gray-400">Reviews are available after your appointment is completed</p>
                 <Link to="/explore" className="btn-primary text-sm mt-4 inline-flex">Explore services</Link>
               </div>
             ) : bookings.map(b => (
-              <div key={b.id} className="card p-4 flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+              <div key={b.id} className="app-list-row p-4 flex items-center gap-4">
+                <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
                   {b.logo_url
                     ? <img src={b.logo_url} alt={b.business_name} className="w-full h-full object-cover" />
                     : <span className="text-lg font-bold text-primary-600">{b.business_name?.[0]}</span>}
@@ -525,7 +525,7 @@ export default function ConsumerProfile() {
         )}
 
         {tab === 'security' && (
-          <div className="card p-6 animate-slide-up max-w-3xl mx-auto">
+          <div className="app-panel p-6 animate-slide-up max-w-3xl mx-auto">
             {/* Change email */}
             <div className="flex items-center gap-2 mb-4">
               <Mail className="w-4 h-4 text-gray-500" />
@@ -609,7 +609,7 @@ export default function ConsumerProfile() {
                 <button
                   onClick={handleDeleteAccount}
                   disabled={deletingAccount || deleteConfirm !== consumer.email}
-                  className="text-sm px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="text-sm px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {deletingAccount ? 'Deleting…' : 'Delete my account'}
                 </button>
@@ -622,7 +622,7 @@ export default function ConsumerProfile() {
           <div className="max-w-3xl mx-auto space-y-4">
 
             {/* Appearance */}
-            <div className="card p-5">
+            <div className="app-panel p-5">
               <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <span className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                   {theme === 'dark' ? <Moon className="w-4 h-4 text-indigo-500" /> : <Sun className="w-4 h-4 text-amber-500" />}
@@ -633,14 +633,14 @@ export default function ConsumerProfile() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => { if (theme !== 'light') toggleTheme(); }}
-                  className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${theme === 'light' ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
                 >
                   <Sun className={`w-6 h-6 ${theme === 'light' ? 'text-amber-500' : 'text-gray-400'}`} />
                   <span className={`text-sm font-semibold ${theme === 'light' ? 'text-amber-700 dark:text-amber-400' : 'text-gray-500'}`}>Light</span>
                 </button>
                 <button
                   onClick={() => { if (theme !== 'dark') toggleTheme(); }}
-                  className={`flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all ${theme === 'dark' ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
                 >
                   <Moon className={`w-6 h-6 ${theme === 'dark' ? 'text-indigo-500' : 'text-gray-400'}`} />
                   <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-500'}`}>Dark</span>
@@ -649,7 +649,7 @@ export default function ConsumerProfile() {
             </div>
 
             {/* Notifications */}
-            <div className="card p-5">
+            <div className="app-panel p-5">
               <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <span className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                   <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -690,7 +690,7 @@ export default function ConsumerProfile() {
             </div>
 
             {/* Trust & Safety */}
-            <div className="card p-5">
+            <div className="app-panel p-5">
               <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <span className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                   <Shield className="w-4 h-4 text-primary-600 dark:text-primary-400" />
@@ -714,7 +714,7 @@ export default function ConsumerProfile() {
             </div>
 
             {/* Help & Support */}
-            <div className="card p-5">
+            <div className="app-panel p-5">
               <h3 className="font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                 <span className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                   <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -728,7 +728,7 @@ export default function ConsumerProfile() {
                   { label: 'Terms of service', href: '/legal/terms' },
                   { label: 'Cookie policy', href: '/legal/cookies' },
                 ].map(({ label, href }) => (
-                  <a key={label} href={href} className="flex items-center justify-between py-2.5 px-1 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <a key={label} href={href} className="flex items-center justify-between py-2.5 px-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </a>
@@ -737,10 +737,10 @@ export default function ConsumerProfile() {
             </div>
 
             {/* Sign out */}
-            <div className="card p-4">
+            <div className="app-panel p-4">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold text-sm border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold text-sm border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
               >
                 <LogOut className="w-4 h-4" /> Sign out
               </button>

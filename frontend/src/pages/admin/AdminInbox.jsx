@@ -66,7 +66,7 @@ export default function AdminInbox() {
   return (
     <div className="animate-fade-in flex" style={{ height: 'min(calc(100dvh - 8rem), 700px)', minHeight: 300 }}>
       {/* Room list — always visible on md+, hidden on mobile when chat open */}
-      <div className={`${showingChat ? 'hidden md:flex' : 'flex'} w-full md:w-72 flex-shrink-0 flex-col border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-xl md:rounded-none overflow-hidden`}>
+      <div className={`${showingChat ? 'hidden md:flex' : 'flex'} w-full md:w-72 flex-shrink-0 flex-col border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg md:rounded-none overflow-hidden`}>
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-primary-600" />
           <h2 className="font-bold text-gray-900 dark:text-white">Messages</h2>
@@ -74,7 +74,7 @@ export default function AdminInbox() {
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="p-4 space-y-3">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}
+              {[...Array(4)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />)}
             </div>
           ) : rooms.length === 0 ? (
             <div className="p-8 text-center text-gray-400">

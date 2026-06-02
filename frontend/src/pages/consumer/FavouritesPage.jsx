@@ -30,7 +30,7 @@ export default function FavouritesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-consumer-nav">
+    <div className="app-page pb-consumer-nav">
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <BackButton
@@ -43,7 +43,7 @@ export default function FavouritesPage() {
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
-          <h1 className="font-bold text-gray-900 dark:text-white ml-2">Favourites</h1>
+            <h1 className="font-black text-gray-900 dark:text-white ml-2">Favourites</h1>
         </div>
       </nav>
 
@@ -53,9 +53,9 @@ export default function FavouritesPage() {
             <div className="w-8 h-8 border-3 border-primary-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : favourites.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="empty-state py-20 app-panel">
             <Heart className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
-            <p className="font-semibold text-gray-600 dark:text-gray-400 mb-1">No favourites yet</p>
+            <p className="font-black text-gray-700 dark:text-gray-300 mb-1">No favourites yet</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mb-6">Tap the heart on any business profile to save it here</p>
             <Link to="/explore" className="btn-primary text-sm px-6">Browse services</Link>
           </div>
@@ -63,9 +63,9 @@ export default function FavouritesPage() {
           <div className="grid gap-3 lg:grid-cols-2">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 lg:col-span-2">{favourites.length} saved {favourites.length === 1 ? 'business' : 'businesses'}</p>
             {favourites.map(f => (
-              <div key={f.id || f.business_id} className="card p-4 flex items-center gap-4">
+              <div key={f.id || f.business_id} className="app-list-row p-4 flex items-center gap-4">
                 <Link to={`/profile/${f.business_slug || f.slug}`} state={{ from: location }} className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-14 h-14 rounded-2xl overflow-hidden bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 border border-gray-100 dark:border-gray-800">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 border border-gray-100 dark:border-gray-800">
                     {f.logo_url ? (
                       <img src={f.logo_url} alt={f.business_name || f.name} className="w-full h-full object-cover" />
                     ) : (
@@ -95,7 +95,7 @@ export default function FavouritesPage() {
                 </Link>
                 <button
                   onClick={() => remove(f.business_id || f.id)}
-                  className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
+                  className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
                   title="Remove from favourites"
                 >
                   <Trash2 className="w-4 h-4" />

@@ -383,7 +383,7 @@ export default function Settings() {
 
       {/* Tabs — horizontal scroll on mobile */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-max sm:w-fit">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-max sm:w-fit">
           {TAB_LABELS.map((t, i) => (
             <button key={t} onClick={() => setTab(TABS[i])}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === TABS[i] ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
@@ -396,17 +396,17 @@ export default function Settings() {
       {/* Business Info */}
       {tab === 'business' && (
         <>
-        <div className="card p-6 max-w-2xl animate-slide-up">
+        <div className="app-panel p-6 max-w-2xl animate-slide-up">
           {/* Logo upload — Firebase Storage */}
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
             <div className="relative w-20 h-20 flex-shrink-0">
-              <div className="w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-gray-100">
+              <div className="w-20 h-20 bg-primary-50 rounded-lg flex items-center justify-center overflow-hidden border-2 border-gray-100">
                 {business?.logo_url
                   ? <img src={business.logo_url} alt="Logo" className="w-full h-full object-cover" />
                   : <span className="text-3xl font-bold text-primary-600">{business?.name?.[0]}</span>}
               </div>
               {logoUploading && (
-                <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
                   <span className="text-white text-xs font-bold">{logoProgress}%</span>
                 </div>
               )}
@@ -504,14 +504,14 @@ export default function Settings() {
 
       {/* Availability */}
       {tab === 'availability' && (
-        <div className="card p-6 max-w-2xl animate-slide-up">
+        <div className="app-panel p-6 max-w-2xl animate-slide-up">
           <form onSubmit={saveAvailability} className="space-y-5">
             <div>
               <label className="label mb-3">Working Days</label>
               <div className="flex flex-wrap gap-2">
                 {DAYS.map(day => (
                   <button key={day} type="button" onClick={() => toggleDay(day)}
-                    className={`px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all ${
                       avForm.working_days.includes(day)
                         ? 'bg-primary-600 text-white border-primary-600 shadow-primary'
                         : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300'
@@ -553,7 +553,7 @@ export default function Settings() {
       {/* Blocked slots */}
       {tab === 'blocked' && (
         <div className="space-y-4 max-w-2xl animate-slide-up">
-          <div className="card p-5">
+          <div className="app-panel p-5">
             <h3 className="font-semibold mb-4">Block a Date or Time Slot</h3>
             <form onSubmit={addBlock} className="space-y-3">
               <div className="grid sm:grid-cols-2 gap-3">
@@ -611,17 +611,17 @@ export default function Settings() {
 
       {/* QR Code */}
       {tab === 'qr' && (
-        <div className="card p-6 max-w-md animate-slide-up">
+        <div className="app-panel p-6 max-w-md animate-slide-up">
           <h3 className="font-semibold mb-1">Your Booking Link</h3>
           <p className="text-sm text-gray-500 mb-4">Share this link anywhere — Instagram bio, WhatsApp, email.</p>
           {business && (
             <>
-              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-3 mb-4 flex items-center gap-2 border border-primary-100 dark:border-primary-800">
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-3 mb-4 flex items-center gap-2 border border-primary-100 dark:border-primary-800">
                 <code className="text-sm text-primary-700 dark:text-primary-300 flex-1 truncate">{bookingUrl}</code>
                 <button onClick={() => { navigator.clipboard.writeText(bookingUrl); toast.success('Copied!'); }}
                   className="btn-secondary text-xs py-1.5 flex-shrink-0">Copy</button>
               </div>
-              <div className="flex justify-center p-6 bg-white border border-gray-100 rounded-xl mb-4">
+              <div className="flex justify-center p-6 bg-white border border-gray-100 rounded-lg mb-4">
                 <QRCodeSVG value={bookingUrl} size={180} />
               </div>
               <div className="flex gap-2">
@@ -647,11 +647,11 @@ export default function Settings() {
       {tab === 'security' && (
         <div className="max-w-2xl animate-slide-up space-y-5">
           {/* Email verification */}
-          <div className="card p-6">
+          <div className="app-panel p-6">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email Verification</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Verify your email address to keep your account secure.</p>
             {auth.currentUser?.emailVerified ? (
-              <div className="flex items-center gap-2.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg px-4 py-3">
                 <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12"/></svg>
                 <div>
                   <p className="text-sm font-semibold text-green-800 dark:text-green-300">Email verified</p>
@@ -660,7 +660,7 @@ export default function Settings() {
               </div>
             ) : (
               <div>
-                <div className="flex items-center gap-2.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-xl px-4 py-3 mb-3">
+                <div className="flex items-center gap-2.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-lg px-4 py-3 mb-3">
                   <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                   <div>
                     <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">Email not verified</p>
@@ -675,7 +675,7 @@ export default function Settings() {
           </div>
 
           {/* Change password */}
-          <div className="card p-6">
+          <div className="app-panel p-6">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Change Password</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Enter your current password and choose a new one.</p>
             <form onSubmit={handleChangePassword} className="space-y-4">
@@ -698,14 +698,14 @@ export default function Settings() {
           </div>
 
           {/* Danger Zone — Delete Account */}
-          <div className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-900/10 p-6">
+          <div className="rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-900/10 p-6">
             <h3 className="font-semibold text-red-700 dark:text-red-400 mb-1">Danger Zone</h3>
             <p className="text-sm text-red-600/80 dark:text-red-400/70 mb-4">
               Permanently delete your account, business, all services, and all booking data. <strong>This cannot be undone.</strong>
             </p>
             <button
               onClick={() => setDeleteModal(true)}
-              className="text-sm px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium"
+              className="text-sm px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium"
             >
               Delete my account
             </button>
@@ -719,7 +719,7 @@ export default function Settings() {
         {(() => {
           const stripeSupported = STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB');
           return stripeSupported ? null : (
-            <div className="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex items-start gap-3">
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex items-start gap-3">
               <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <div>
                 <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Automatic payouts not available in your country</p>
@@ -732,9 +732,9 @@ export default function Settings() {
         })()}
 
           {/* Stripe Connect card — only shown for supported countries */}
-          {STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB') && <div className="card p-6">
+          {STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB') && <div className="app-panel p-6">
             <div className="flex items-start gap-4 mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
                 {/* Stripe-ish logo placeholder */}
                 <svg viewBox="0 0 24 24" className="w-6 h-6 text-primary-600" fill="currentColor"><path d="M13.479 9.883c-1.626-.604-2.512-1.067-2.512-1.803 0-.622.498-1.034 1.336-1.034 1.65 0 3.3.596 4.45 1.127l.658-3.957C16.25 3.714 14.596 3 12.47 3 9.536 3 7.48 4.718 7.48 7.333c0 2.595 2.092 3.83 3.826 4.5 1.756.683 2.316 1.18 2.316 1.873 0 .708-.598 1.148-1.562 1.148-1.424 0-3.39-.626-4.793-1.48L6.6 17.432c1.3.769 3.28 1.268 5.27 1.268 3.08 0 5.13-1.693 5.13-4.352-.002-2.71-2.063-3.86-3.521-4.465z"/></svg>
               </div>
@@ -753,7 +753,7 @@ export default function Settings() {
               </div>
             ) : connectStatus?.status === 'active' ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800">
                   <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
@@ -774,7 +774,7 @@ export default function Settings() {
               </div>
             ) : connectStatus?.status === 'pending_verification' ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
+                <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800">
                   <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   </div>
@@ -789,7 +789,7 @@ export default function Settings() {
               </div>
             ) : connectStatus?.status === 'pending' ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
                   <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   </div>
@@ -810,7 +810,7 @@ export default function Settings() {
                     { step: '2', label: 'Add bank details on Stripe', sub: 'Secure & encrypted' },
                     { step: '3', label: 'Receive payouts automatically', sub: 'After each confirmation' },
                   ].map(({ step, label, sub }) => (
-                    <div key={step} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+                    <div key={step} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                       <div className="w-7 h-7 bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center text-xs font-bold mx-auto mb-2">{step}</div>
                       <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{label}</p>
                       <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>
@@ -899,7 +899,7 @@ export default function Settings() {
             </div>
           </details>
           ) : (
-          <div className="card p-6">
+          <div className="app-panel p-6">
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">Your Bank Details</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               We'll use these to send your earnings manually after each confirmed booking.
@@ -966,8 +966,8 @@ export default function Settings() {
       {tab === 'verification' && (
         <div className="max-w-2xl animate-slide-up space-y-5">
           {business?.is_verified || business?.verification_status === 'verified' ? (
-            <div className="card p-6 flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+            <div className="app-panel p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div>
@@ -978,8 +978,8 @@ export default function Settings() {
               </div>
             </div>
           ) : business?.verification_status === 'pending' ? (
-            <div className="card p-6 flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+            <div className="app-panel p-6 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
               </div>
               <div>
@@ -990,7 +990,7 @@ export default function Settings() {
               </div>
             </div>
           ) : (
-            <div className="card p-6">
+            <div className="app-panel p-6">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Business Verification</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
                 Verified businesses get a badge and rank higher in search. If your profile is complete and details match, you may be verified automatically.
@@ -1013,14 +1013,14 @@ export default function Settings() {
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Profile requirements</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {checks.map(item => (
-                          <div key={item.label} className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 border ${item.done ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/15'}`}>
+                          <div key={item.label} className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 border ${item.done ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/15'}`}>
                             <span className={`text-base flex-shrink-0 ${item.done ? 'text-green-600' : 'text-red-400'}`}>{item.done ? '✓' : '✗'}</span>
                             <p className={`text-xs font-medium ${item.done ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{item.label}</p>
                           </div>
                         ))}
                       </div>
                       {!allDone && (
-                        <p className="text-xs text-red-600 dark:text-red-400 mt-3 bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-3 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
                           Complete the items above first — go to your <button onClick={() => setTab('business')} className="underline font-semibold">Business</button> and <button onClick={() => setTab('services')} className="underline font-semibold">Services</button> tabs.
                         </p>
                       )}
@@ -1067,7 +1067,7 @@ export default function Settings() {
                         </select>
                       </div>
                       {!allDone && (
-                        <div className="rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3">
+                        <div className="rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3">
                           <p className="text-xs font-semibold text-gray-500 mb-1">Still needed before you can submit:</p>
                           <ul className="space-y-0.5">
                             {missing.map(m => <li key={m} className="text-xs text-red-600 dark:text-red-400">• {m}</li>)}
@@ -1089,9 +1089,9 @@ export default function Settings() {
       {/* Delete Account Modal */}
       {deleteModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 animate-fade-in">
-          <div className="modal-panel w-full max-w-sm animate-slide-up">
+          <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up">
             <div className="p-6">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
               </div>
               <h2 className="font-bold text-lg text-gray-900 dark:text-white mb-1">Delete account?</h2>
@@ -1128,13 +1128,13 @@ export default function Settings() {
       {/* Embed Widget */}
       {tab === 'embed' && (
         <div className="max-w-2xl animate-slide-up space-y-4">
-          <div className="card p-6">
+          <div className="app-panel p-6">
             <h3 className="font-semibold mb-1">Embed on Your Website</h3>
             <p className="text-sm text-gray-500 mb-4">
               Paste this code anywhere on your website — WordPress, Wix, Squarespace, or any HTML page.
               Customers book without leaving your site.
             </p>
-            <div className="bg-gray-900 rounded-xl p-4 relative mb-3">
+            <div className="bg-gray-900 rounded-lg p-4 relative mb-3">
               <pre className="text-green-400 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap">{embedCode}</pre>
               <button
                 onClick={() => { navigator.clipboard.writeText(embedCode); toast.success('Embed code copied!'); }}
@@ -1143,16 +1143,16 @@ export default function Settings() {
                 Copy
               </button>
             </div>
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-3">
+            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
               <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
               <p className="text-xs text-blue-700">The widget automatically adjusts to fit any container width. Minimum recommended width: 400px.</p>
             </div>
           </div>
 
-          <div className="card p-6">
+          <div className="app-panel p-6">
             <h3 className="font-semibold mb-1">Button Embed</h3>
             <p className="text-sm text-gray-500 mb-4">Add a "Book Now" button that opens your booking page in a new tab.</p>
-            <div className="bg-gray-900 rounded-xl p-4 relative mb-3">
+            <div className="bg-gray-900 rounded-lg p-4 relative mb-3">
               <pre className="text-green-400 text-xs leading-relaxed overflow-x-auto">{`<a href="${bookingUrl}" target="_blank"\n   style="display:inline-block;background:#5b3eea;color:white;\n          padding:12px 28px;border-radius:10px;font-weight:600;\n          text-decoration:none;font-family:sans-serif">\n  Book Now\n</a>`}</pre>
               <button
                 onClick={() => {
@@ -1201,7 +1201,7 @@ function VerificationCard({ business }) {
 
   if (business.is_verified) {
     return (
-      <div className="card p-5 max-w-2xl border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+      <div className="app-panel p-5 max-w-2xl border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
         <div className="flex items-center gap-3">
           <svg className="w-8 h-8 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
             <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
@@ -1230,9 +1230,9 @@ function VerificationCard({ business }) {
   };
 
   return (
-    <div className="card p-5 max-w-2xl">
+    <div className="app-panel p-5 max-w-2xl">
       <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
           <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
             <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
           </svg>
@@ -1249,7 +1249,7 @@ function VerificationCard({ business }) {
               type="button"
               onClick={handleRequest}
               disabled={loading}
-              className="text-sm font-semibold px-4 py-2 rounded-xl border border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="text-sm font-semibold px-4 py-2 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {loading ? <span className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /> : null}
               {loading ? 'Submitting…' : 'Request verification'}
@@ -1311,10 +1311,10 @@ export function StaffTab({ staff, setStaff }) {
         <button onClick={() => open(null)} className="btn-primary text-sm flex items-center gap-1.5"><Plus className="w-4 h-4"/>Add Staff</button>
       </div>
       {staff.length === 0 ? (
-        <div className="card p-8 text-center"><Users className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No staff members yet</p></div>
+        <div className="app-panel p-8 text-center"><Users className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No staff members yet</p></div>
       ) : staff.map(s => (
-        <div key={s.id} className="card p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-lg font-bold text-primary-600 dark:text-primary-400">{s.name[0]}</div>
+        <div key={s.id} className="app-panel p-4 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-lg font-bold text-primary-600 dark:text-primary-400">{s.name[0]}</div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900 dark:text-white text-sm">{s.name}</p>
             {s.role && <p className="text-xs text-gray-400">{s.role}</p>}
@@ -1329,7 +1329,7 @@ export function StaffTab({ staff, setStaff }) {
       ))}
       {modal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[80] flex items-end sm:items-center justify-center p-4">
-          <form onSubmit={save} className="modal-panel w-full max-w-md p-6 space-y-4 animate-slide-up">
+          <form onSubmit={save} className="mobile-safe-sheet w-full max-w-md p-6 space-y-4 animate-slide-up">
             <div className="flex items-center justify-between"><h2 className="font-bold text-lg">{modal==='new'?'Add Staff Member':'Edit Staff Member'}</h2><button type="button" onClick={()=>setModal(null)}><X className="w-5 h-5 text-gray-400"/></button></div>
             <div><label className="label">Name *</label><input className="input" value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} required placeholder="e.g. Sarah"/></div>
             <div><label className="label">Role / Title</label><input className="input" value={form.role} onChange={e=>setForm(p=>({...p,role:e.target.value}))} placeholder="e.g. Senior Stylist"/></div>
@@ -1391,22 +1391,22 @@ export function PhotosTab({ photos, setPhotos }) {
         <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleUpload}/>
       </div>
       {photos.length === 0 ? (
-        <div className="card p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary-300 transition-colors" onClick={()=>inputRef.current?.click()}>
+        <div className="app-panel p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary-300 transition-colors" onClick={()=>inputRef.current?.click()}>
           <Image className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/>
           <p className="text-gray-400 text-sm">Click to upload your first photo</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {photos.map(p => (
-            <div key={p.id} className="relative group rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 aspect-square">
+            <div key={p.id} className="relative group rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 aspect-square">
               <img src={p.url} alt={p.caption||''} className="w-full h-full object-cover"/>
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <button onClick={()=>remove(p.id)} className="p-2 bg-red-500 rounded-xl text-white"><Trash2 className="w-4 h-4"/></button>
+                <button onClick={()=>remove(p.id)} className="p-2 bg-red-500 rounded-lg text-white"><Trash2 className="w-4 h-4"/></button>
               </div>
               {p.caption && <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 p-2"><p className="text-white text-xs truncate">{p.caption}</p></div>}
             </div>
           ))}
-          <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-primary-300 transition-colors flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-primary-500">
+          <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="aspect-square rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-primary-300 transition-colors flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-primary-500">
             {uploading?<Spinner/>:<Plus className="w-6 h-6"/>}
             <span className="text-xs font-medium">Add</span>
           </button>
@@ -1441,7 +1441,7 @@ export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setInt
   return (
     <div className="max-w-2xl animate-slide-up space-y-4">
       <div><h3 className="font-bold text-gray-900 dark:text-white">Pre-Booking Intake Form</h3><p className="text-sm text-gray-500">Collect information from customers before their appointment</p></div>
-      <div className="card p-5 space-y-4">
+      <div className="app-panel p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div><label className="label">Form Title</label><input className="input" value={intakeTitle} onChange={e=>setIntakeTitle(e.target.value)} placeholder="Pre-appointment form"/></div>
           <div className="flex items-center gap-2 mt-5">
@@ -1454,7 +1454,7 @@ export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setInt
         <div className="space-y-2">
           {intakeQuestions.length === 0 && <p className="text-sm text-gray-400 py-2">No questions yet — add one below</p>}
           {intakeQuestions.map((q,i) => (
-            <div key={q.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <div key={q.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{i+1}. {q.label}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{q.type}{q.required?' · required':''}</p>
@@ -1473,7 +1473,7 @@ export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setInt
               <option value="select">Multiple choice</option>
               <option value="checkbox">Yes/No checkbox</option>
             </select>
-            <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm cursor-pointer">
+            <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm cursor-pointer">
               <input type="checkbox" checked={newQ.required} onChange={e=>setNewQ(p=>({...p,required:e.target.checked}))} className="rounded"/>
               Required
             </label>
@@ -1520,7 +1520,7 @@ export function PromoTab({ promos, setPromos }) {
   return (
     <div className="max-w-2xl animate-slide-up space-y-4">
       <div><h3 className="font-bold text-gray-900 dark:text-white">Promo Codes</h3><p className="text-sm text-gray-500">Create discount codes for your customers</p></div>
-      <div className="card p-5">
+      <div className="app-panel p-5">
         <form onSubmit={create} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div><label className="label">Code *</label><input className="input uppercase" placeholder="e.g. WELCOME20" value={form.code} onChange={e=>setForm(p=>({...p,code:e.target.value.toUpperCase()}))} required/></div>
@@ -1543,7 +1543,7 @@ export function PromoTab({ promos, setPromos }) {
       {promos.length > 0 && (
         <div className="space-y-2">
           {promos.map(p => (
-            <div key={p.id} className="card p-4 flex items-center gap-4">
+            <div key={p.id} className="app-panel p-4 flex items-center gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-gray-900 dark:text-white">{p.code}</span>
@@ -1583,11 +1583,11 @@ export function WaitlistTab({ waitlist, setWaitlist }) {
     <div className="max-w-2xl animate-slide-up space-y-4">
       <div><h3 className="font-bold text-gray-900 dark:text-white">Waitlist</h3><p className="text-sm text-gray-500">Customers who want to be notified when a slot opens up</p></div>
       {waitlist.length === 0 ? (
-        <div className="card p-8 text-center"><List className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No one on the waitlist yet</p></div>
+        <div className="app-panel p-8 text-center"><List className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No one on the waitlist yet</p></div>
       ) : (
         <div className="space-y-2">
           {waitlist.map(w => (
-            <div key={w.id} className="card p-4">
+            <div key={w.id} className="app-panel p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2"><p className="font-semibold text-sm text-gray-900 dark:text-white">{w.consumer_name}</p><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[w.status]}`}>{w.status}</span></div>

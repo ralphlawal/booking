@@ -33,8 +33,8 @@ export default function CustomerResetPassword() {
   };
 
   if (!token) return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-700 to-primary-900 flex items-center justify-center p-4">
-      <div className="card p-8 text-center max-w-sm w-full">
+    <div className="app-page bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center p-4">
+      <div className="app-panel p-8 text-center max-w-sm w-full">
         <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4"><LinkIcon className="w-6 h-6 text-primary-400" /></div>
         <p className="font-bold text-gray-900 dark:text-white mb-2">Invalid reset link</p>
         <p className="text-sm text-gray-500 mb-5">
@@ -48,17 +48,17 @@ export default function CustomerResetPassword() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-700 to-primary-900 flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-5">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain brightness-0 invert mx-auto" />
           </Link>
-          <h1 className="text-2xl font-bold text-white">Set new password</h1>
+          <h1 className="text-2xl font-black text-white">Set new password</h1>
           <p className="text-primary-200 text-sm mt-1">Choose a strong password for your account</p>
         </div>
 
-        <div className="card p-6">
+        <div className="app-panel p-6">
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="label">New password</label>
@@ -84,7 +84,7 @@ export default function CustomerResetPassword() {
               />
             </div>
             {error && (
-              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
                 {error}
                 {(error.includes('expired') || error.includes('Invalid')) && (
                   <span> <Link to="/customer/forgot-password" className="underline font-semibold">Request a new link</Link></span>

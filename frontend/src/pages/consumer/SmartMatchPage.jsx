@@ -36,10 +36,10 @@ function MatchCard({ match, onBook }) {
   const rating = parseFloat(match.avg_rating) || 0;
 
   return (
-    <div className="card p-5 hover:shadow-md transition-shadow">
+    <div className="app-list-row p-5">
       <div className="flex items-start gap-4">
         {/* Logo / icon */}
-        <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {match.logo_url ? (
             <img src={match.logo_url} alt={match.business_name} className="w-full h-full object-cover" />
           ) : (
@@ -187,7 +187,7 @@ export default function SmartMatchPage() {
   const SUGGESTIONS = ['Haircut', 'Nail treatment', 'Massage', 'Personal training', 'Photography', 'Tutoring'];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
+    <div className="app-page animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -208,10 +208,10 @@ export default function SmartMatchPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8 pb-consumer-nav">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-3">
+          <div className="w-14 h-14 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-3">
             <Zap className="w-7 h-7 text-primary-600 dark:text-primary-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Smart Match</h1>
+          <h1 className="app-title">Smart Match</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             Tell us what you need — we find the best available option instantly
           </p>
@@ -220,7 +220,7 @@ export default function SmartMatchPage() {
         {results === null ? (
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Step 1: What */}
-            <div className="card p-5 lg:col-span-2">
+            <div className="app-panel p-5 lg:col-span-2">
               <h2 className="font-bold text-gray-900 dark:text-white mb-3">1. What do you need?</h2>
               <input
                 className="input"
@@ -246,14 +246,14 @@ export default function SmartMatchPage() {
             </div>
 
             {/* Step 2: When */}
-            <div className="card p-5">
+            <div className="app-panel p-5">
               <h2 className="font-bold text-gray-900 dark:text-white mb-3">2. When?</h2>
               <div className="grid grid-cols-2 gap-2">
                 {DATE_OPTIONS.map((d) => (
                   <button
                     key={d.value}
                     onClick={() => set('date_opt')(d.value)}
-                    className={`p-3 rounded-xl text-sm font-medium border transition-all text-left ${
+                    className={`p-3 rounded-lg text-sm font-medium border transition-all text-left ${
                       form.date_opt === d.value
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                         : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-primary-300'
@@ -275,14 +275,14 @@ export default function SmartMatchPage() {
             </div>
 
             {/* Step 3: Time */}
-            <div className="card p-5">
+            <div className="app-panel p-5">
               <h2 className="font-bold text-gray-900 dark:text-white mb-3">3. What time?</h2>
               <div className="grid grid-cols-2 gap-2">
                 {TIME_PREFS.map((t) => (
                   <button
                     key={t.value}
                     onClick={() => set('time_pref')(t.value)}
-                    className={`p-3 rounded-xl border transition-all text-left ${
+                    className={`p-3 rounded-lg border transition-all text-left ${
                       form.time_pref === t.value
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
                         : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
@@ -297,13 +297,13 @@ export default function SmartMatchPage() {
             </div>
 
             {/* Step 4: Location (optional) */}
-            <div className="card p-5 lg:col-span-2">
+            <div className="app-panel p-5 lg:col-span-2">
               <h2 className="font-bold text-gray-900 dark:text-white mb-1">4. Where? (optional)</h2>
               <p className="text-xs text-gray-400 mb-3">Share your location to prioritise nearby providers</p>
               <button
                 onClick={getLocation}
                 disabled={locating || !!form.coords}
-                className={`w-full py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                className={`w-full py-2.5 rounded-lg text-sm font-semibold border transition-all ${
                   form.coords
                     ? 'border-green-300 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
                     : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-300'
@@ -354,7 +354,7 @@ export default function SmartMatchPage() {
 
             {results.length === 0 ? (
               <div className="card p-8 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3"><Search className="w-7 h-7 text-gray-400" /></div>
+                <div className="w-14 h-14 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3"><Search className="w-7 h-7 text-gray-400" /></div>
                 <h3 className="font-bold text-gray-900 dark:text-white mb-1">No available slots found</h3>
                 <p className="text-sm text-gray-500 mb-4">Try a different date, time, or service type</p>
                 <button onClick={() => setResults(null)} className="btn-primary text-sm">

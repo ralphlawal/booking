@@ -114,7 +114,7 @@ export default function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transform lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col transform lg:static lg:translate-x-0 shadow-2xl lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ transition: 'transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         {/* Logo — top padding clears notch in landscape */}
@@ -251,7 +251,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 lg:pb-6 pb-admin-nav">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 lg:pb-6 pb-admin-nav bg-slate-50 dark:bg-gray-950">
           {emailUnverified && (
             <div className="mb-4 sm:mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
               <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
@@ -272,7 +272,7 @@ export default function AdminLayout() {
 
       {/* Mobile bottom nav */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 flex shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-primary-950/98 text-white backdrop-blur-xl border-t border-white/10 flex shadow-[0_-10px_30px_rgba(30,19,86,0.28)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {BOTTOM_NAV.map(({ to, icon: Icon, label, badge }) => (
@@ -281,14 +281,14 @@ export default function AdminLayout() {
             to={to}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center py-2 min-h-[58px] gap-0.5 text-[10px] sm:text-xs font-semibold transition-colors relative ${
-                isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'
+                isActive ? 'text-white' : 'text-white/45'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-600 dark:bg-primary-400 rounded-full" />}
-                <div className="relative">
+                {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-300 rounded-full" />}
+                <div className={`relative grid place-items-center w-9 h-8 rounded-lg ${isActive ? 'bg-white text-primary-700' : ''}`}>
                   <Icon className="w-5 h-5" />
                   {badge && pendingCount > 0 && !isActive && (
                     <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">

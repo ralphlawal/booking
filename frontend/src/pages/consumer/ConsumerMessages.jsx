@@ -90,7 +90,7 @@ export default function ConsumerMessages() {
   const showingChat = !!activeRoom;
 
   return (
-    <div className="flex flex-col bg-gray-50 dark:bg-gray-950 h-consumer-viewport">
+    <div className="flex flex-col bg-slate-50 dark:bg-gray-950 h-consumer-viewport">
       {/* Nav — padding-top clears notch / Dynamic Island */}
       <nav className="flex-shrink-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
@@ -127,7 +127,7 @@ export default function ConsumerMessages() {
             {loading ? (
               <div className="p-4 space-y-3">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+                <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : rooms.length === 0 ? (
@@ -137,7 +137,7 @@ export default function ConsumerMessages() {
                 <p className="text-xs mt-1">Contact support to get started</p>
                 <button
                   onClick={openSupport}
-                  className="mt-4 inline-flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-xl px-4 py-2.5 transition-colors"
+                  className="mt-4 inline-flex items-center justify-center gap-2 text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-lg px-4 py-2.5 transition-colors"
                 >
                   <Headphones className="w-4 h-4" /> Contact Support
                 </button>
@@ -151,7 +151,7 @@ export default function ConsumerMessages() {
           <div className="p-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
             <button
               onClick={openSupport}
-              className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-xl py-2.5 transition-colors"
+              className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-lg py-2.5 transition-colors"
             >
               <Headphones className="w-4 h-4" /> Contact Support
             </button>

@@ -78,7 +78,7 @@ export default function BookingSuccess() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-primary-50 py-8 px-4">
+    <div className="app-page bg-gradient-to-br from-green-50 via-white to-primary-50 py-8 px-4">
       <div className="w-full max-w-md mx-auto animate-slide-up">
         {/* Success Icon */}
         <div className="text-center mb-6">
@@ -87,12 +87,12 @@ export default function BookingSuccess() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Booking Received!</h1>
+          <h1 className="app-title">Booking Received!</h1>
           <p className="text-gray-500 mt-1">Your appointment has been requested</p>
         </div>
 
         {/* Booking card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+        <div className="app-panel overflow-hidden mb-4">
           {/* Reference */}
           <div className="bg-primary-600 px-5 py-4 text-center">
             <p className="text-primary-200 text-xs font-medium mb-1">Booking Reference</p>
@@ -109,9 +109,9 @@ export default function BookingSuccess() {
               ['Status', <span key="s" className="badge-pending capitalize">{booking.status}</span>],
               ...(booking.payment_status && booking.payment_status !== 'unpaid' ? [['Payment', <span key="p" className={`text-xs font-bold px-2 py-0.5 rounded-full ${booking.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>{booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status}</span>]] : []),
             ].map(([k, v]) => (
-              <div key={k} className="flex justify-between items-center text-sm">
+              <div key={k} className="flex justify-between items-center gap-4 text-sm">
                 <span className="text-gray-500">{k}</span>
-                <span className="font-medium">{v}</span>
+                <span className="font-medium text-right min-w-0 break-words">{v}</span>
               </div>
             ))}
 
@@ -131,7 +131,7 @@ export default function BookingSuccess() {
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
           >
             <WhatsAppIcon />
             Message on WhatsApp
@@ -142,7 +142,7 @@ export default function BookingSuccess() {
               href={buildGCalLink(booking)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-white border border-gray-200 hover:border-primary-300 text-gray-700 rounded-xl font-medium transition-colors text-sm"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-white border border-gray-200 hover:border-primary-300 text-gray-700 rounded-lg font-semibold transition-colors text-sm"
             >
               <CalendarIcon />
               Add to Google Calendar
@@ -167,7 +167,7 @@ export default function BookingSuccess() {
 
         {/* Consumer CTA — only shown when not logged in */}
         {!consumer && (
-          <div className="mt-5 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-2xl text-center">
+          <div className="mt-5 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-lg text-center">
             <p className="text-sm font-semibold text-primary-800 dark:text-primary-200 mb-1">
               Track this booking in your account
             </p>
@@ -202,14 +202,14 @@ export default function BookingSuccess() {
       </div>
 
       {showCancelModal && (
-        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up p-6">
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 animate-fade-in">
+          <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6">
             <h2 className="font-bold text-gray-900 text-lg mb-2">Cancel this booking?</h2>
             <p className="text-sm text-gray-500 mb-1">
               <strong>{booking.service_name}</strong> at {booking.business_name}
             </p>
             <p className="text-sm text-gray-500 mb-4">{booking.booking_date} · {booking.start_time?.slice(0,5)}</p>
-            <p className="text-xs text-amber-600 bg-amber-50 rounded-xl p-3 mb-5">
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-3 mb-5">
               Cancellations must be made at least 2 hours before the appointment.
             </p>
             <div className="flex gap-3">
@@ -217,7 +217,7 @@ export default function BookingSuccess() {
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
               >
                 {cancelling ? 'Cancelling…' : 'Yes, cancel'}
               </button>

@@ -35,7 +35,7 @@ function PostCard({ post }) {
   }, [post.id]);
 
   return (
-    <article className="card overflow-hidden border-gray-200/80 dark:border-gray-800">
+    <article className="app-panel overflow-hidden">
       {/* Business header */}
       <Link
         to={`/profile/${post.business_slug}`}
@@ -185,7 +185,7 @@ export default function FeedPage() {
 
   return (
     <div
-      className="min-h-screen bg-slate-50 dark:bg-gray-950 pb-consumer-nav"
+      className="app-page pb-consumer-nav"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -247,7 +247,7 @@ export default function FeedPage() {
         {loading ? (
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="card overflow-hidden animate-pulse" style={{ animationDelay: `${i * 80}ms` }}>
+              <div key={i} className="app-panel overflow-hidden animate-pulse" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="flex items-center gap-3 p-4">
                   <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
@@ -264,7 +264,7 @@ export default function FeedPage() {
             ))}
           </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="empty-state py-16 app-panel">
             <div className="w-14 h-14 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4">
               {mode === 'following' ? <Users className="w-7 h-7 text-primary-400" /> : <Megaphone className="w-7 h-7 text-primary-400" />}
             </div>

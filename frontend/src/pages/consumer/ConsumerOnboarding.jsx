@@ -138,7 +138,7 @@ export default function ConsumerOnboarding() {
             type="button"
             onClick={detectLocation}
             disabled={detectingLocation}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 font-semibold text-sm hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 border-dashed border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 font-semibold text-sm hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
           >
             {detectingLocation ? (
               <><div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" /> Detecting…</>
@@ -147,7 +147,7 @@ export default function ConsumerOnboarding() {
             )}
           </button>
           {coords && locationText && (
-            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-xl px-4 py-2.5">
+            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-2.5">
               <Check className="w-4 h-4 flex-shrink-0" />
               Location detected: <strong className="ml-1">{locationText}</strong>
             </div>
@@ -157,7 +157,7 @@ export default function ConsumerOnboarding() {
       canContinue: true,
     },
     {
-      icon: <Sparkles className="w-8 h-8 text-indigo-500" />,
+      icon: <Sparkles className="w-8 h-8 text-primary-500" />,
       title: 'What services interest you?',
       subtitle: 'We\'ll personalise your recommendations — select all that apply',
       content: (
@@ -169,7 +169,7 @@ export default function ConsumerOnboarding() {
                 key={cat.id}
                 type="button"
                 onClick={() => toggleCategory(cat.id)}
-                className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all duration-150 text-center ${
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all duration-150 text-center ${
                   isSelected
                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 shadow-md shadow-primary-100'
                     : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300'
@@ -188,7 +188,7 @@ export default function ConsumerOnboarding() {
       canContinue: true,
     },
     {
-      icon: <CalendarCheck className="w-8 h-8 text-emerald-500" />,
+      icon: <CalendarCheck className="w-8 h-8 text-primary-500" />,
       title: 'You\'re all set.',
       subtitle: 'Here\'s what you can do with BookAm right now',
       content: (
@@ -198,7 +198,7 @@ export default function ConsumerOnboarding() {
             { icon: <MessageSquare className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Message businesses directly', desc: 'Chat with businesses before and after your appointment.' },
             { icon: <Shield className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'BookAm Buyer Protection', desc: 'Your payment is held securely. Raise a dispute within 14 days if anything goes wrong.' },
           ].map(item => (
-            <div key={item.title} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <div key={item.title} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               {item.icon}
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</p>
@@ -206,7 +206,7 @@ export default function ConsumerOnboarding() {
               </div>
             </div>
           ))}
-          <div className="mt-1 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-xl">
+          <div className="mt-1 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-lg">
             <p className="text-xs font-semibold text-primary-800 dark:text-primary-200">Early Access</p>
             <p className="text-xs text-primary-600 dark:text-primary-400 mt-0.5">
               BookAm is in active development. We are building new features every week — payments, reviews, loyalty rewards, and more. Thank you for being part of this journey.
@@ -222,7 +222,7 @@ export default function ConsumerOnboarding() {
   const isLast = step === STEPS.length - 1;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-700 to-primary-900 flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-6">
@@ -242,13 +242,13 @@ export default function ConsumerOnboarding() {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6">
+        <div className="app-panel p-6">
           {/* Icon + heading */}
           <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-lg bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-4">
               {current.icon}
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{current.title}</h1>
+            <h1 className="text-xl font-black text-gray-900 dark:text-white">{current.title}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{current.subtitle}</p>
           </div>
 

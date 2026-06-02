@@ -46,13 +46,13 @@ export default function CustomerSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-primary-50 flex items-center justify-center px-3 py-6 sm:p-4">
+    <div className="app-page bg-gradient-to-br from-primary-50 via-white to-slate-50 flex items-center justify-center px-3 py-6 sm:p-4">
       <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px] items-center animate-fade-in">
         <div className="hidden lg:block">
           <Link to="/" className="inline-block mb-8">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
           </Link>
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-4">Customer account</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-primary-600 mb-4">Customer account</p>
           <h1 className="text-4xl xl:text-5xl font-black text-gray-900 leading-tight max-w-xl">Create your personal booking hub.</h1>
           <p className="text-gray-500 mt-5 text-lg max-w-lg">Save favourite businesses, manage appointments, chat with providers, and get support when you need it.</p>
           <div className="grid grid-cols-3 gap-3 mt-8 max-w-xl">
@@ -61,8 +61,8 @@ export default function CustomerSignup() {
               [Heart, 'Save favourites'],
               [ShieldCheck, 'Support built in'],
             ].map(([Icon, label]) => (
-              <div key={label} className="rounded-lg border border-emerald-100 bg-white/80 p-4 shadow-sm">
-                <Icon className="w-5 h-5 text-emerald-600 mb-3" />
+              <div key={label} className="app-panel p-4">
+                <Icon className="w-5 h-5 text-primary-600 mb-3" />
                 <p className="text-sm font-bold text-gray-900">{label}</p>
               </div>
             ))}
@@ -74,7 +74,7 @@ export default function CustomerSignup() {
             <Link to="/" className="inline-block mb-5">
               <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain mx-auto" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Customer sign up</h1>
+            <h1 className="text-2xl font-black text-gray-900">Customer sign up</h1>
             <p className="text-gray-500 text-sm mt-1">Book services and track appointments</p>
           </div>
 
@@ -83,8 +83,8 @@ export default function CustomerSignup() {
             <p className="text-xs text-gray-500 mt-0.5">For people booking services</p>
           </div>
 
-          <div className="card p-4 sm:p-6 space-y-4 shadow-card-hover">
-            <div className="lg:hidden inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 text-xs font-bold">
+          <div className="app-panel p-4 sm:p-6 space-y-4">
+            <div className="lg:hidden inline-flex items-center gap-1.5 rounded-full bg-primary-50 text-primary-700 border border-primary-100 px-3 py-1 text-xs font-bold">
               <CalendarCheck className="w-3.5 h-3.5" /> Customer
             </div>
           {/* Google */}

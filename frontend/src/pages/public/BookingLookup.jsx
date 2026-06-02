@@ -23,20 +23,20 @@ export default function BookingLookup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-br from-primary-50 via-white to-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
 
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-2xl mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-lg mb-4 shadow-card">
             <svg className="w-8 h-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Find your booking</h1>
+          <h1 className="app-title">Find your booking</h1>
           <p className="text-gray-500 text-sm mt-1">Enter your reference ID and email to view your booking</p>
         </div>
 
-        <div className="card p-6">
+        <div className="app-panel p-6">
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="label">Booking Reference</label>
@@ -64,7 +64,7 @@ export default function BookingLookup() {
             </div>
 
             {error && (
-              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
                 {error}
               </div>
             )}

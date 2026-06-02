@@ -24,13 +24,13 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-slide-up">
         <Link to="/" className="flex items-center justify-center mb-8">
           <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
         </Link>
 
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 shadow-2xl">
           {sent ? (
             <div className="text-center py-4">
               <div className="w-14 h-14 bg-green-500/20 border border-green-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -54,7 +54,7 @@ export default function ForgotPassword() {
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-1.5">Email address</label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                     type="email"
                     placeholder="you@business.com"
                     required
@@ -65,7 +65,7 @@ export default function ForgotPassword() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading ? <Spinner /> : 'Send reset link'}
                 </button>

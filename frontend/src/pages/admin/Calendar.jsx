@@ -71,7 +71,7 @@ export default function Calendar() {
                 <button
                   key={day.toISOString()}
                   onClick={() => selectDay(day)}
-                  className={`relative aspect-square flex flex-col items-center justify-start pt-1.5 rounded-xl text-sm transition-all ${
+                  className={`relative aspect-square flex flex-col items-center justify-start pt-1.5 rounded-lg text-sm transition-all ${
                     isSelected ? 'bg-primary-600 text-white' :
                     isToday(day) ? 'bg-primary-50 text-primary-700 font-bold' :
                     isCurrentMonth ? 'hover:bg-gray-100 text-gray-700' : 'text-gray-300'
@@ -102,7 +102,7 @@ export default function Calendar() {
         </div>
 
         {/* Day detail */}
-        <div className="card p-5">
+        <div className="app-panel p-5">
           {selected ? (
             <>
               <h3 className="font-semibold mb-4">{format(selected, 'EEEE, MMMM d')}</h3>
@@ -114,7 +114,7 @@ export default function Calendar() {
               ) : (
                 <div className="space-y-3">
                   {dayBookings.sort((a,b) => a.start_time.localeCompare(b.start_time)).map(b => (
-                    <div key={b.id} className="p-3 bg-gray-50 rounded-xl">
+                    <div key={b.id} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-mono text-gray-500">{b.start_time?.slice(0,5)}</span>
                         <span className={`badge-${b.status}`}>{b.status}</span>

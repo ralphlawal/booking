@@ -25,19 +25,19 @@ export default function CustomerForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-700 to-primary-900 flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-5">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain brightness-0 invert mx-auto" />
           </Link>
-          <h1 className="text-2xl font-bold text-white">Reset password</h1>
+          <h1 className="text-2xl font-black text-white">Reset password</h1>
           <p className="text-primary-200 text-sm mt-1">
             {sent ? 'Check your email for the reset link' : "Enter your email and we'll send a reset link"}
           </p>
         </div>
 
-        <div className="card p-6">
+        <div className="app-panel p-6">
           {sent ? (
             <div className="text-center py-4">
               <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -75,7 +75,7 @@ export default function CustomerForgotPassword() {
                 />
               </div>
               {error && (
-                <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
+                <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
                   {error}
                 </div>
               )}

@@ -13,7 +13,7 @@ const STATUS_COLORS = { pending: '#f59e0b', confirmed: '#10b981', cancelled: '#e
 const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
 
 const StatCard = ({ label, value, color, darkColor, icon }) => (
-  <div className="card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+  <div className="app-panel p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
     <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${color} ${darkColor}`}>
       {icon}
     </div>
@@ -164,7 +164,7 @@ export default function Dashboard() {
         const pct = Math.round(((5 - missing.length) / 5) * 100);
         if (missing.length === 0) return null;
         return (
-          <div className="card p-4 border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-900/10">
+          <div className="app-panel p-4 border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-900/10">
             <div className="flex items-start justify-between gap-3 mb-3">
               <div>
                 <p className="font-semibold text-amber-900 dark:text-amber-200 text-sm">Complete your profile — {pct}% done</p>
@@ -190,7 +190,7 @@ export default function Dashboard() {
 
       {/* Go-live checklist */}
       {checklist && (
-        <div className="card p-5 border-l-4 border-l-primary-500">
+        <div className="app-panel p-5 border-l-4 border-l-primary-500">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <p className="font-semibold text-gray-900 dark:text-white mb-1">Finish setting up your page</p>
@@ -227,7 +227,7 @@ export default function Dashboard() {
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bookings trend */}
-        <div className="card p-5 lg:col-span-2">
+        <div className="app-panel p-5 lg:col-span-2">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Bookings — Last 30 Days</h3>
           {analyticsLoading ? (
             <div className="h-48 bg-gray-50 rounded-lg animate-pulse" />
@@ -253,7 +253,7 @@ export default function Dashboard() {
         </div>
 
         {/* Status breakdown */}
-        <div className="card p-5">
+        <div className="app-panel p-5">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Status Breakdown</h3>
           {analyticsLoading ? (
             <div className="h-48 bg-gray-50 rounded-lg animate-pulse" />
@@ -282,7 +282,7 @@ export default function Dashboard() {
       {/* Revenue & top services row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue chart */}
-        <div className="card p-5 lg:col-span-2">
+        <div className="app-panel p-5 lg:col-span-2">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Revenue — Last 30 Days</h3>
           {analyticsLoading ? (
             <div className="h-48 bg-gray-50 rounded-lg animate-pulse" />
@@ -302,7 +302,7 @@ export default function Dashboard() {
         </div>
 
         {/* Top services */}
-        <div className="card p-5">
+        <div className="app-panel p-5">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Top Services</h3>
           {analyticsLoading ? (
             <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />)}</div>
@@ -416,7 +416,7 @@ const ChecklistItem = ({ done, label, linkTo, linkLabel, external }) => (
 );
 
 const QuickLink = ({ to, label, desc }) => (
-  <Link to={to} className="card p-4 hover:border-primary-200 dark:hover:border-primary-700 hover:shadow-md transition-all group">
+  <Link to={to} className="app-panel p-4 hover:border-primary-200 dark:hover:border-primary-700 hover:shadow-md transition-all group">
     <p className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">{label}</p>
     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{desc}</p>
   </Link>

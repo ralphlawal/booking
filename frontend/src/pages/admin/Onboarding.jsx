@@ -71,7 +71,7 @@ export default function Onboarding() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-lg animate-fade-in">
 
         {/* Logo + tagline */}
@@ -90,7 +90,7 @@ export default function Onboarding() {
             {STEPS.map((s, i) => (
               <React.Fragment key={s.label}>
                 <div className="flex flex-col items-center gap-1">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                     i < step  ? 'bg-primary-600 text-white scale-95'
                     : i === step ? 'bg-primary-600 text-white shadow-primary'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
@@ -115,7 +115,7 @@ export default function Onboarding() {
         </div>
 
         {/* Card */}
-        <div className="card p-6">
+        <div className="app-panel p-6">
           <form onSubmit={submit}>
             {/* Step 0 — Business Info */}
             {step === 0 && (
@@ -180,7 +180,7 @@ export default function Onboarding() {
                 </div>
                 <div>
                   <label className="label">Your Page Name *</label>
-                  <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 bg-white dark:bg-gray-800 transition-all">
+                  <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 bg-white dark:bg-gray-800 transition-all">
                     <span className="px-3 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm border-r border-gray-200 dark:border-gray-700 whitespace-nowrap font-mono">/book/</span>
                     <input
                       className="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400"
@@ -210,7 +210,7 @@ export default function Onboarding() {
                     </p>
                   )}
                   {slugAvailable === true && form.slug && (
-                    <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-xl">
+                    <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-lg">
                       <p className="text-xs text-primary-500 dark:text-primary-400 font-medium mb-0.5">Your booking page will be at:</p>
                       <p className="text-sm font-bold text-primary-800 dark:text-primary-300 font-mono">{window.location.origin}/book/{form.slug}</p>
                     </div>

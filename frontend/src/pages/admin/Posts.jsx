@@ -23,11 +23,11 @@ function PostCard({ post, onDelete }) {
   const Icon = meta.icon;
   const isVideo = post.image_url?.startsWith('data:video');
   return (
-    <div className="card p-4 flex gap-3">
+    <div className="app-panel p-4 flex gap-3">
       {post.image_url && isVideo ? (
-        <video src={post.image_url} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" muted playsInline controls />
+        <video src={post.image_url} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" muted playsInline controls />
       ) : post.image_url ? (
-        <img src={post.image_url} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+        <img src={post.image_url} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
       ) : null}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -169,7 +169,7 @@ export default function Posts() {
       </div>
 
       {showForm && (
-        <div className="card p-5">
+        <div className="app-panel p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Create a post</h2>
           <form onSubmit={submit} className="space-y-4">
             {/* Type selector */}
@@ -180,7 +180,7 @@ export default function Posts() {
                   <button
                     key={key} type="button"
                     onClick={() => setForm(f => ({ ...f, type: key }))}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-bold transition-all ${
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 text-xs font-bold transition-all ${
                       form.type === key
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                         : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
@@ -198,9 +198,9 @@ export default function Posts() {
               {form.preview ? (
                 <div className="relative w-32 h-32">
                   {form.image?.type?.startsWith('video/') ? (
-                    <video src={form.preview} className="w-32 h-32 rounded-xl object-cover" muted playsInline controls />
+                    <video src={form.preview} className="w-32 h-32 rounded-lg object-cover" muted playsInline controls />
                   ) : (
-                    <img src={form.preview} alt="" className="w-32 h-32 rounded-xl object-cover" />
+                    <img src={form.preview} alt="" className="w-32 h-32 rounded-lg object-cover" />
                   )}
                   <button type="button" onClick={() => setForm(f => ({ ...f, image: null, preview: null }))}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
@@ -209,7 +209,7 @@ export default function Posts() {
                 </div>
               ) : (
                 <button type="button" onClick={() => fileRef.current?.click()}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors">
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors">
                   <Image className="w-4 h-4" /> Add media
                 </button>
               )}
@@ -266,8 +266,8 @@ export default function Posts() {
       {loading ? (
         <div className="flex justify-center py-12"><div className="w-7 h-7 border-3 border-primary-600 border-t-transparent rounded-full animate-spin" /></div>
       ) : posts.length === 0 ? (
-        <div className="card p-10 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4">
+        <div className="app-panel p-10 text-center">
+          <div className="w-14 h-14 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4">
             <Megaphone className="w-7 h-7 text-primary-500" />
           </div>
           <h3 className="font-bold text-gray-900 dark:text-white mb-1">No posts yet</h3>

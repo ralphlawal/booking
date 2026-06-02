@@ -79,8 +79,8 @@ export default function Services() {
           {[...Array(3)].map((_, i) => <div key={i} className="card h-32 animate-pulse bg-gray-100" />)}
         </div>
       ) : services.length === 0 ? (
-        <div className="card p-12 text-center">
-          <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3"><Scissors className="w-6 h-6 text-primary-400" /></div>
+        <div className="app-panel p-12 text-center">
+          <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3"><Scissors className="w-6 h-6 text-primary-400" /></div>
           <p className="font-semibold text-gray-700">No services yet</p>
           <p className="text-sm text-gray-500 mt-1 mb-5">Add your first service to start accepting bookings</p>
           <button onClick={openCreate} className="btn-primary">Add Service</button>
@@ -127,7 +127,7 @@ export default function Services() {
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 sm:p-4 bg-black/40 animate-fade-in">
-          <div className="modal-panel w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up">
+          <div className="mobile-safe-sheet w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold text-lg dark:text-white">{modal === 'create' ? 'New Service' : 'Edit Service'}</h2>
               <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400"><XIcon /></button>
@@ -162,7 +162,7 @@ export default function Services() {
                 </label>
               )}
               {/* No-show deposit */}
-              <div className="border border-gray-100 dark:border-gray-700 rounded-xl p-4 space-y-3">
+              <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={form.deposit_required || false} onChange={set('deposit_required')} />
                   <div>

@@ -84,7 +84,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
   const canConfirm = appointmentPassed && !booking.service_confirmed && !booking.has_dispute;
 
   return (
-    <div className="card p-4 h-full transition-all hover:border-primary-200 dark:hover:border-primary-800">
+    <div className="app-list-row p-4 h-full">
       <div className="flex items-start gap-3">
         <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {booking.logo_url ? (
@@ -243,7 +243,7 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Leave a review</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -298,7 +298,7 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Cancel booking?</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -349,7 +349,7 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
 function ConfirmServiceModal({ booking, onConfirm, onClose, confirming }) {
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Confirm service received?</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -410,7 +410,7 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Raise a dispute</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -484,7 +484,7 @@ function RescheduleModal({ booking, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem)] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">Request Reschedule</h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -525,7 +525,7 @@ function RescheduleModal({ booking, onClose }) {
 
 function PreferenceCard({ pref, onRemove, onBook }) {
   return (
-    <div className="card p-4">
+    <div className="app-panel p-4">
       <div className="flex items-start gap-3">
         <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {pref.logo_url ? (
@@ -727,7 +727,7 @@ export default function CustomerDashboard() {
   if (authLoading || !consumer) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 animate-fade-in">
+    <div className="app-page animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -909,7 +909,7 @@ export default function CustomerDashboard() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 mb-5 sm:mb-6">
-          <Link to="/match" className="card p-3 sm:p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
+          <Link to="/match" className="app-list-row p-3 sm:p-4 flex items-center gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
               <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
@@ -918,7 +918,7 @@ export default function CustomerDashboard() {
               <p className="text-xs text-gray-400">Best available</p>
             </div>
           </Link>
-          <Link to="/explore" className="card p-3 sm:p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all">
+          <Link to="/explore" className="app-list-row p-3 sm:p-4 flex items-center gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
               <Search className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
@@ -927,7 +927,7 @@ export default function CustomerDashboard() {
               <p className="text-xs text-gray-400">Browse services</p>
             </div>
           </Link>
-          <Link to="/customer/messages" className="card p-3 sm:p-4 flex items-center gap-3 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all col-span-2 sm:col-span-1">
+          <Link to="/customer/messages" className="app-list-row p-3 sm:p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
               <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>

@@ -90,7 +90,7 @@ export default function Register() {
             </span>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 shadow-2xl">
           <h1 className="text-xl font-bold text-white text-center mb-1">Create Business Account</h1>
           <p className="text-white/50 text-sm text-center mb-6">Free forever · Get your booking page live today</p>
 
@@ -98,7 +98,7 @@ export default function Register() {
             type="button"
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full py-2.5 bg-white hover:bg-gray-50 text-gray-800 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-4"
+            className="w-full py-2.5 bg-white hover:bg-gray-50 text-gray-800 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-4"
           >
             <GoogleIcon /> Continue with Google
           </button>
@@ -119,7 +119,7 @@ export default function Register() {
               <div key={key}>
                 <label className="block text-sm font-medium text-white/80 mb-1.5">{label}</label>
                 <input
-                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                   type={type}
                   placeholder={placeholder}
                   required
@@ -131,7 +131,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? <Spinner /> : 'Create Business Account →'}
             </button>
@@ -149,7 +149,7 @@ export default function Register() {
           <p className="text-white/40 text-xs mb-2">Looking to book an appointment instead?</p>
           <Link
             to="/customer/signup"
-            className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
           >
             <CustomerIcon /> Create Customer Account
           </Link>

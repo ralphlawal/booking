@@ -136,7 +136,7 @@ function LoginScreen({ onLogin }) {
           <h1 className="text-2xl font-bold text-white">Support Panel</h1>
           <p className="text-primary-200 text-sm mt-1">Admin access only</p>
         </div>
-        <div className="card p-6">
+        <div className="app-panel p-6">
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="label">Admin password</label>

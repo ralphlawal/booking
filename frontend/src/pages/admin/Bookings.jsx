@@ -104,7 +104,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
           )}
 
           {/* Customer */}
-          <div className="card p-4 space-y-2">
+          <div className="app-panel p-4 space-y-2">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Customer</p>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center font-bold text-primary-700 dark:text-primary-400">
@@ -127,7 +127,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
           </div>
 
           {/* Service */}
-          <div className="card p-4">
+          <div className="app-panel p-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Service</p>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -139,7 +139,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
           </div>
 
           {/* Date & Time */}
-          <div className="card p-4">
+          <div className="app-panel p-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Appointment</p>
             <div className="flex items-center gap-3">
               <CalIcon />
@@ -154,7 +154,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
 
           {/* Notes */}
           {booking.notes && (
-            <div className="card p-4">
+            <div className="app-panel p-4">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Notes</p>
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{booking.notes}</p>
             </div>
@@ -162,7 +162,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
 
           {/* Cancellation reason */}
           {booking.cancelled_reason && (
-            <div className="card p-4 border border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10">
+            <div className="app-panel p-4 border border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10">
               <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">Cancellation reason</p>
               <p className="text-sm text-red-700 dark:text-red-300">{booking.cancelled_reason}</p>
             </div>
@@ -358,7 +358,7 @@ export default function Bookings() {
       {data.stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[['Total', data.stats.total, 'text-gray-700'], ['Pending', data.stats.pending, 'text-yellow-600'], ['Confirmed', data.stats.confirmed, 'text-green-600'], ['Cancelled', data.stats.cancelled, 'text-red-500']].map(([l, v, c]) => (
-            <div key={l} className="card px-4 py-3 text-center">
+            <div key={l} className="app-panel px-4 py-3 text-center">
               <p className={`text-xl font-bold ${c}`}>{v}</p>
               <p className="text-xs text-gray-500">{l}</p>
             </div>
@@ -371,7 +371,7 @@ export default function Bookings() {
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
             placeholder="Search customer, reference…"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -383,7 +383,7 @@ export default function Bookings() {
           )}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-max">
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-max">
             {STATUSES.map(s => (
               <button
                 key={s}
@@ -407,7 +407,7 @@ export default function Bookings() {
       <div className="card overflow-hidden">
         {loading ? (
           <div className="p-5 space-y-3">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}
+            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-gray-400">
@@ -560,7 +560,7 @@ export default function Bookings() {
       {/* Status modal */}
       {modal === 'status' && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center overflow-y-auto p-3 sm:p-4 bg-black/50 animate-fade-in" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white">Update Status</h2>
               <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon /></button>
@@ -582,7 +582,7 @@ export default function Bookings() {
               </div>
               {statusForm.status === 'cancelled' && (
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none p-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none p-3 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
                     <input
                       type="checkbox"
                       className="w-4 h-4 accent-amber-500"
@@ -619,7 +619,7 @@ export default function Bookings() {
       {/* Reschedule modal */}
       {modal === 'reschedule' && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center overflow-y-auto p-3 sm:p-4 bg-black/50 animate-fade-in" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white">Reschedule Booking</h2>
               <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon /></button>
@@ -658,7 +658,7 @@ export default function Bookings() {
       {/* Walk-in booking modal */}
       {walkinModal && (
         <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/40 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
               <h2 className="font-semibold dark:text-white flex items-center gap-2"><UserPlus className="w-4 h-4 text-primary-500"/>New Walk-in Booking</h2>
               <button onClick={()=>setWalkinModal(false)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon/></button>

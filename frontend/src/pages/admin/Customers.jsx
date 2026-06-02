@@ -78,7 +78,7 @@ function CustomerPanel({ customer, onClose, onNotesUpdated }) {
 
         <div className="p-5 space-y-5">
           {/* Contact info */}
-          <div className="card p-4 space-y-2">
+          <div className="app-panel p-4 space-y-2">
             {customer.phone && (
               <a
                 href={`tel:${customer.phone}`}
@@ -101,17 +101,17 @@ function CustomerPanel({ customer, onClose, onNotesUpdated }) {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="card p-3 text-center">
+            <div className="app-panel p-3 text-center">
               <p className="text-xl font-bold text-gray-900 dark:text-white">{customer.total_bookings}</p>
               <p className="text-xs text-gray-400 mt-0.5">Bookings</p>
             </div>
-            <div className="card p-3 text-center">
+            <div className="app-panel p-3 text-center">
               <p className={`text-xl font-bold ${customer.no_shows > 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
                 {customer.no_shows}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">No-shows</p>
             </div>
-            <div className="card p-3 text-center">
+            <div className="app-panel p-3 text-center">
               <p className="text-xl font-bold text-green-600 dark:text-green-400">£{revenue.toFixed(0)}</p>
               <p className="text-xs text-gray-400 mt-0.5">Revenue</p>
             </div>
@@ -142,18 +142,18 @@ function CustomerPanel({ customer, onClose, onNotesUpdated }) {
             {loading ? (
               <div className="space-y-2">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+                  <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : bookings.length === 0 ? (
-              <div className="card p-6 text-center text-gray-400">
+              <div className="app-panel p-6 text-center text-gray-400">
                 <ClipboardList className="w-8 h-8 mx-auto mb-1 text-gray-300" />
                 <p className="text-sm">No bookings yet</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {bookings.map(b => (
-                  <div key={b.id} className="card p-3.5 flex items-start justify-between gap-3">
+                  <div key={b.id} className="app-panel p-3.5 flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
                         {b.service_name}
@@ -219,7 +219,7 @@ export default function Customers() {
       <div className="card overflow-hidden">
         {loading ? (
           <div className="p-5 space-y-3">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />)}
+            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-gray-400">
