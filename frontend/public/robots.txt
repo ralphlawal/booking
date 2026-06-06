@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Admin and private consumer routes — no indexing
+Disallow: /admin/
+Disallow: /customer/dashboard
+Disallow: /customer/messages
+Disallow: /customer/profile
+Disallow: /booking/attended
+Disallow: /customer/verify-email
+Disallow: /customer/reset-password
+
+Sitemap: https://bookam.business/sitemap.xml
