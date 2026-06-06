@@ -16,6 +16,27 @@ if (import.meta.env.PROD) {
 
 const RETRY_DELAY_MS = 38000; // wait 38s then retry — Render typically wakes in 30-45s
 
+const isNetworkError = (err) => err.message === 'Network Error' || !err.response;
+const isTimeoutError = (err) =>
+  err.code === 'ECONNABORTED'
+  || err.message?.includes('timeout')
+  || err.response?.status === 504;
+
+function userFacingApiMessage(err, fallback = 'Something went wrong') {
+  if (isNetworkError(err)) {
+    return typeof navigator !== 'undefined' && navigator.onLine === false
+      ? 'You appear to be offline. Check your internet connection and try again.'
+      : 'Could not connect to BookAm. Please try again in a moment.';
+  }
+  if (err.response?.status === 503 || err.response?.status === 504) {
+    return 'BookAm is temporarily unavailable. Please try again shortly.';
+  }
+  if (err.response?.status === 429) {
+    return 'Too many requests. Please wait a moment and try again.';
+  }
+  return err.response?.data?.error || err.message || fallback;
+}
+
 const api = axios.create({
   baseURL: BASE,
   timeout: 30000,
@@ -32,10 +53,8 @@ api.interceptors.response.use(
   err => {
     // Auto-retry GET requests once after a delay when the server is cold-starting
     const config = err.config;
-    const isNetwork = err.message === 'Network Error' || !err.response;
-    const isTimeout = err.code === 'ECONNABORTED'
-      || err.message?.includes('timeout')
-      || err.response?.status === 504;
+    const isNetwork = isNetworkError(err);
+    const isTimeout = isTimeoutError(err);
     const isGet = config?.method === 'get';
     if (isGet && (isTimeout || isNetwork) && !config._retried) {
       config._retried = true;
@@ -43,14 +62,7 @@ api.interceptors.response.use(
         setTimeout(() => resolve(api(config)), RETRY_DELAY_MS)
       );
     }
-    let message = err.response?.data?.error || err.message || 'Something went wrong';
-    if (isNetwork) {
-      message = typeof navigator !== 'undefined' && navigator.onLine === false
-        ? 'You appear to be offline. Check your internet connection and try again.'
-        : 'Could not connect to BookAm. Please try again in a moment.';
-    } else if (err.response?.status === 503 || err.response?.status === 504) {
-      message = 'BookAm is temporarily unavailable. Please try again shortly.';
-    }
+    const message = userFacingApiMessage(err);
     const error = new Error(message);
     error.status = err.response?.status;
     error.code = err.response?.data?.code;
@@ -164,15 +176,15 @@ consumerAxios.interceptors.response.use(
   res => res.data,
   err => {
     const config = err.config;
-    const isTimeout = err.code === 'ECONNABORTED'
-      || err.message?.includes('timeout')
-      || err.response?.status === 504;
-    if (config?.method === 'get' && isTimeout && !config._retried) {
+    const isNetwork = isNetworkError(err);
+    const isTimeout = isTimeoutError(err);
+    if (config?.method === 'get' && (isTimeout || isNetwork) && !config._retried) {
       config._retried = true;
       return new Promise(resolve => setTimeout(() => resolve(consumerAxios(config)), RETRY_DELAY_MS));
     }
-    const error = new Error(err.response?.data?.error || err.message || 'Something went wrong');
+    const error = new Error(userFacingApiMessage(err));
     error.status = err.response?.status;
+    error.code = err.response?.data?.code;
     return Promise.reject(error);
   }
 );
@@ -244,14 +256,13 @@ adminAxios.interceptors.response.use(
       window.dispatchEvent(new CustomEvent('admin-auth-expired'));
       return Promise.reject(new Error('Session expired — please log in again'));
     }
-    const isTimeout = err.code === 'ECONNABORTED'
-      || err.message?.includes('timeout')
-      || status === 504;
-    if (config?.method === 'get' && isTimeout && !config._retried) {
+    const isNetwork = isNetworkError(err);
+    const isTimeout = isTimeoutError(err);
+    if (config?.method === 'get' && (isTimeout || isNetwork) && !config._retried) {
       config._retried = true;
       return new Promise(resolve => setTimeout(() => resolve(adminAxios(config)), RETRY_DELAY_MS));
     }
-    return Promise.reject(new Error(err.response?.data?.error || err.message || 'Something went wrong'));
+    return Promise.reject(new Error(userFacingApiMessage(err)));
   }
 );
 

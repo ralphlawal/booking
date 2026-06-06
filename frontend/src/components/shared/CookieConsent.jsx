@@ -56,11 +56,11 @@ export default function CookieConsent() {
           : 'calc(0.75rem + env(safe-area-inset-bottom, 0px))',
       }}
     >
-      <div className="mx-auto max-w-4xl rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl pointer-events-auto overflow-hidden">
+      <div className="mx-auto max-w-4xl rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl pointer-events-auto overflow-hidden max-h-[48dvh] sm:max-h-none overflow-y-auto">
         <div className="p-3 sm:p-5">
           <div className="flex items-start gap-2.5 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-300 flex items-center justify-center flex-shrink-0">
-              <Cookie className="w-5 h-5" />
+            <div className="hidden sm:flex w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/25 text-primary-600 dark:text-primary-300 items-center justify-center flex-shrink-0">
+              <Cookie className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-3">
@@ -95,7 +95,7 @@ export default function CookieConsent() {
                 </div>
               )}
 
-              <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                   <button onClick={() => setShowDetails(v => !v)} className="font-semibold text-primary-600 dark:text-primary-300 hover:underline">
                     {showDetails ? 'Hide details' : 'Manage details'}
@@ -108,10 +108,10 @@ export default function CookieConsent() {
                   </Link>
                 </div>
                 <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
-                  <button onClick={() => saveChoice(false)} className="btn-secondary text-xs px-3 sm:px-4 py-2">
+                  <button onClick={() => saveChoice(false)} className="btn-secondary text-xs px-2.5 sm:px-4 py-2">
                     Essential only
                   </button>
-                  <button onClick={() => saveChoice(true)} className="btn-primary text-xs px-3 sm:px-4 py-2">
+                  <button onClick={() => saveChoice(true)} className="btn-primary text-xs px-2.5 sm:px-4 py-2">
                     Accept all
                   </button>
                 </div>

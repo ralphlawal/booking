@@ -1,18 +1,7 @@
-const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 const Notification = require('../models/Notification');
 const { logAdminAction } = require('../utils/adminAudit');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
-
-function isAdmin(req) {
-  const h = req.headers.authorization;
-  if (!h?.startsWith('Bearer ')) return false;
-  try {
-    const p = jwt.verify(h.split(' ')[1], JWT_SECRET);
-    return p.type === 'admin';
-  } catch { return false; }
-}
+const { isAdmin } = require('../middleware/adminAuth');
 
 exports.getStats = async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });

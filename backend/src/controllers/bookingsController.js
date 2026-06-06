@@ -8,6 +8,7 @@ const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { calculateServerAmount } = require('./paymentsController');
+const { isAdmin } = require('../middleware/adminAuth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -26,15 +27,6 @@ function bookingDateTime(dateValue, timeValue, fallback = '23:59') {
   const time = String(timeValue || fallback).slice(0, 5);
   const dt = new Date(`${key}T${time}`);
   return Number.isNaN(dt.getTime()) ? null : dt;
-}
-
-function authenticateAdmin(req) {
-  const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) return false;
-  try {
-    const payload = jwt.verify(header.split(' ')[1], JWT_SECRET);
-    return payload.type === 'admin';
-  } catch { return false; }
 }
 
 exports.create = async (req, res) => {
@@ -634,7 +626,7 @@ exports.runAutoRelease = () => autoReleaseOverdueBookings().catch(err => console
 
 // POST /bookings/admin/auto-release  (admin-authenticated)
 exports.autoRelease = async (req, res) => {
-  if (!authenticateAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+  if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
   try {
     const released = await autoReleaseOverdueBookings();
     res.json({ released, message: `${released} booking${released === 1 ? '' : 's'} auto-released` });
@@ -716,7 +708,7 @@ exports.raiseDispute = async (req, res) => {
 
 // GET /bookings/admin/disputes  (admin only)
 exports.getDisputes = async (req, res) => {
-  if (!authenticateAdmin(req)) return res.status(401).json({ error: 'Admin access required' });
+  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin access required' });
   try {
     const { rows } = await db.query(
       `SELECT d.*, b.reference_id, b.booking_date, b.stripe_payment_intent_id, b.payment_status,
@@ -744,7 +736,7 @@ exports.getDisputes = async (req, res) => {
 
 // POST /bookings/admin/disputes/:id/resolve  (admin only)
 exports.resolveDispute = async (req, res) => {
-  if (!authenticateAdmin(req)) return res.status(401).json({ error: 'Admin access required' });
+  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin access required' });
   try {
     const { action, admin_notes } = req.body; // action: 'refund' | 'reject'
     if (!['refund', 'reject'].includes(action)) return res.status(400).json({ error: 'action must be refund or reject' });

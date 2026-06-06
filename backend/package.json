@@ -7,7 +7,8 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "migrate": "node migrations/run.js",
-    "seed": "node seeds/demo.js"
+    "seed": "node seeds/demo.js",
+    "smoke": "node scripts/smoke.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

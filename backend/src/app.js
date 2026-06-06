@@ -186,6 +186,8 @@ app.patch('/api/broadcasts/:id/deactivate', bcastCtrl.deactivate);
 
 // Admin management panel
 const adminCtrl = require('./controllers/adminController');
+const { requireAdmin } = require('./middleware/adminAuth');
+app.use('/api/admin', requireAdmin);
 app.get('/api/admin/stats', adminCtrl.getStats);
 app.get('/api/admin/businesses', adminCtrl.getBusinesses);
 app.patch('/api/admin/businesses/:id/verify', adminCtrl.verifyBusiness);
