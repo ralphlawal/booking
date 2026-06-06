@@ -280,7 +280,7 @@ export default function AdminLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2 min-h-[58px] gap-0.5 text-[10px] sm:text-xs font-semibold transition-colors relative ${
+              `flex-1 flex flex-col items-center justify-center py-2 min-h-[70px] gap-0.5 text-[10px] sm:text-xs font-semibold transition-colors relative ${
                 isActive ? 'text-white' : 'text-primary-100/80'
               }`
             }

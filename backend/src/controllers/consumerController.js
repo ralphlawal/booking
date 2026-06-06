@@ -5,6 +5,7 @@ const ConsumerAccount = require('../models/ConsumerAccount');
 const Notification = require('../models/Notification');
 const { sendEmail, sendVerificationEmail } = require('../services/emailService');
 const db = require('../config/database');
+const { saveUploadedMedia } = require('../utils/mediaStorage');
 
 function generateReferralCode(name) {
   const prefix = (name || 'BOOK').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X');
@@ -469,7 +470,7 @@ exports.uploadAvatar = async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const allowed = ['image/jpeg','image/png','image/webp'];
     if (!allowed.includes(req.file.mimetype)) return res.status(400).json({ error: 'Only JPEG/PNG/WebP allowed' });
-    const avatar_url = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const avatar_url = await saveUploadedMedia(req.file, 'consumer-avatars');
     const ConsumerAccount = require('../models/ConsumerAccount');
     const updated = await ConsumerAccount.update(req.consumer.id, { avatar_url });
     res.json({ avatar_url, consumer: updated });

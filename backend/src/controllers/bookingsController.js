@@ -316,6 +316,16 @@ exports.reschedule = async (req, res) => {
       sendBookingRescheduled(fullBooking).catch(() => {});
     }
 
+    if (fullBooking?.consumer_id) {
+      Notification.create({
+        consumer_id: fullBooking.consumer_id,
+        type: 'booking_rescheduled',
+        title: `Booking rescheduled — ${fullBooking.service_name}`,
+        body: `Your appointment at ${fullBooking.business_name} is now ${booking_date} at ${start_time}.`,
+        link: '/customer/dashboard',
+      }).catch(() => {});
+    }
+
     res.json(booking);
   } catch (err) {
     res.status(500).json({ error: 'Reschedule failed' });
@@ -1026,12 +1036,23 @@ exports.rescheduleRequest = async (req, res) => {
     const { preferred_date, preferred_time, message } = req.body;
     if (!preferred_date) return res.status(400).json({ error: 'preferred_date is required' });
 
-    // Store as a note on the booking for now; notify business via notification
+    // Store as a note on the booking for now; the business dashboard surfaces this
+    // as a "Reschedule requested" badge and prefills the requested time.
     const noteText = `[Reschedule Request] Customer prefers: ${preferred_date}${preferred_time ? ' at ' + preferred_time : ''}${message ? '. Message: ' + message : ''}`;
     await db.query(
-      "UPDATE bookings SET notes = COALESCE(notes,'') || $1 WHERE id=$2",
+      "UPDATE bookings SET notes = COALESCE(notes,'') || $1, updated_at = NOW() WHERE id=$2",
       ['\n' + noteText, booking.id]
     );
+
+    if (booking.consumer_id) {
+      Notification.create({
+        consumer_id: booking.consumer_id,
+        type: 'reschedule_request',
+        title: 'Reschedule request sent',
+        body: `We sent your preferred time for ${booking.service_name} to ${booking.business_name}.`,
+        link: '/customer/dashboard',
+      }).catch(() => {});
+    }
 
     // Notify business owner via email
     if (booking.business_email) {

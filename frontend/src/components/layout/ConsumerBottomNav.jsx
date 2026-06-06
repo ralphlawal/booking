@@ -69,7 +69,7 @@ export default function ConsumerBottomNav() {
         className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-primary-950 text-white border-t border-primary-800 shadow-[0_-10px_30px_rgba(30,19,86,0.36)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="max-w-md mx-auto px-2 flex">
+        <div className="max-w-md mx-auto px-2 flex min-h-[72px]">
           {NAV.map(({ to, icon, label }) => (
             <NavItem key={to} to={to} icon={icon} label={label} unreadCount={unreadCount} vertical={false} />
           ))}

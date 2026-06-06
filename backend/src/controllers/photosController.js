@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 const { createImageUpload } = require('../middleware/upload');
+const { saveUploadedMedia } = require('../utils/mediaStorage');
 
 exports.uploadMiddleware = createImageUpload({ fieldName: 'photo', fileSize: 10 * 1024 * 1024, label: 'Photo' });
 
@@ -36,7 +37,7 @@ exports.upload = async (req, res) => {
     const mime = req.file.mimetype;
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(mime)) return res.status(400).json({ error: 'Only JPEG/PNG/WebP allowed' });
-    const url = `data:${mime};base64,${req.file.buffer.toString('base64')}`;
+    const url = await saveUploadedMedia(req.file, 'business-photos');
     const caption = req.body.caption || null;
     const id = crypto.randomUUID();
     const { rows } = await db.query(

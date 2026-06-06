@@ -2,6 +2,7 @@ const https = require('https');
 const Business = require('../models/Business');
 const QRCode = require('qrcode');
 const { checkAutoVerify } = require('../utils/autoVerify');
+const { saveUploadedMedia } = require('../utils/mediaStorage');
 
 function geocodeLocation(locationText) {
   return new Promise((resolve) => {
@@ -79,8 +80,7 @@ exports.updateBusiness = async (req, res) => {
 exports.uploadLogo = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const mime = req.file.mimetype || 'image/jpeg';
-    const logo_url = `data:${mime};base64,${req.file.buffer.toString('base64')}`;
+    const logo_url = await saveUploadedMedia(req.file, 'business-logos');
     const updated = await Business.update(req.business.id, { logo_url });
     res.json({ logo_url, business: updated });
   } catch (err) {

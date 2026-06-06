@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 const { createUpload } = require('../middleware/upload');
+const { saveUploadedMedia } = require('../utils/mediaStorage');
 
 const ALLOWED_TYPES = ['photo', 'offer', 'availability', 'announcement'];
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
@@ -23,7 +24,7 @@ exports.create = async (req, res) => {
     if (req.file) {
       if (!ALLOWED_MIME.includes(req.file.mimetype))
         return res.status(400).json({ error: 'Only JPEG, PNG, WebP, MP4, WebM, or MOV files are allowed' });
-      image_url = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      image_url = await saveUploadedMedia(req.file, 'business-posts');
     }
 
     const { rows } = await db.query(
