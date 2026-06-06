@@ -309,6 +309,8 @@ async function start() {
       await pool.query(sql18);
       const sql19 = fs.readFileSync(path.join(__dirname, '../migrations/019_launch_hardening.sql'), 'utf8');
       await pool.query(sql19);
+      const sql20 = fs.readFileSync(path.join(__dirname, '../migrations/020_family_loyalty.sql'), 'utf8');
+      await pool.query(sql20);
       console.log('PostgreSQL migrations applied.');
 
       console.log('Database ready.');
@@ -444,6 +446,19 @@ async function start() {
           id TEXT PRIMARY KEY, referrer_id TEXT NOT NULL, referred_id TEXT,
           referral_code TEXT NOT NULL, created_at TEXT DEFAULT (datetime('now'))
         )`);
+      } catch {}
+      try {
+        db.exec(`CREATE TABLE IF NOT EXISTS consumer_family_members (
+          id TEXT PRIMARY KEY,
+          consumer_id TEXT NOT NULL,
+          full_name TEXT NOT NULL,
+          relationship TEXT,
+          phone TEXT,
+          notes TEXT,
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        )`);
+        db.exec(`CREATE INDEX IF NOT EXISTS idx_consumer_family_members_consumer ON consumer_family_members(consumer_id, created_at DESC)`);
       } catch {}
       try {
         db.exec(`CREATE TABLE IF NOT EXISTS chat_rooms (

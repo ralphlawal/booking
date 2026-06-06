@@ -113,6 +113,9 @@ export default function ConsumerProfile() {
   const [referral, setReferral] = useState(null);
   const [codeCopied, setCodeCopied] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [familyForm, setFamilyForm] = useState({ full_name: '', relationship: '', phone: '' });
+  const [savingFamily, setSavingFamily] = useState(false);
   const avatarInputRef = useRef(null);
 
   useEffect(() => {
@@ -126,6 +129,13 @@ export default function ConsumerProfile() {
       referralAPI.get().then(setReferral).catch(() => {});
     }
   }, [tab]);
+
+  useEffect(() => {
+    if (!consumer || tab !== 'profile') return;
+    consumerAPI.getFamilyMembers()
+      .then(setFamilyMembers)
+      .catch(() => {});
+  }, [consumer, tab]);
 
   useEffect(() => {
     if (tab === 'reviews') {
@@ -275,6 +285,32 @@ export default function ConsumerProfile() {
     }
   };
 
+  const addFamilyMember = async (e) => {
+    e.preventDefault();
+    if (!familyForm.full_name.trim()) return toast.error('Enter a name');
+    setSavingFamily(true);
+    try {
+      const member = await consumerAPI.addFamilyMember(familyForm);
+      setFamilyMembers(prev => [member, ...prev]);
+      setFamilyForm({ full_name: '', relationship: '', phone: '' });
+      toast.success('Family member added');
+    } catch (err) {
+      toast.error(err.message || 'Could not add member');
+    } finally {
+      setSavingFamily(false);
+    }
+  };
+
+  const removeFamilyMember = async (id) => {
+    try {
+      await consumerAPI.deleteFamilyMember(id);
+      setFamilyMembers(prev => prev.filter(member => member.id !== id));
+      toast.success('Family member removed');
+    } catch (err) {
+      toast.error(err.message || 'Could not remove member');
+    }
+  };
+
   if (authLoading || !consumer) return null;
 
   return (
@@ -351,7 +387,7 @@ export default function ConsumerProfile() {
                   <Users className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                   <p className="font-bold text-sm text-gray-900 dark:text-white">Family & friends</p>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Soon you’ll be able to save profiles and book on behalf of someone else.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Save people you book for often, then reuse their details faster.</p>
               </div>
               <div className="rounded-lg border border-green-100 dark:border-green-800 bg-green-50/70 dark:bg-green-900/20 p-4">
                 <div className="flex items-center gap-2 mb-1">
@@ -426,6 +462,62 @@ export default function ConsumerProfile() {
                 {saving ? 'Saving…' : 'Save changes'}
               </button>
             </form>
+          </div>
+
+          <div className="app-panel p-6">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 className="font-bold text-gray-900 dark:text-white">Family & friends</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Keep details handy for people you book services for.</p>
+              </div>
+              <Users className="w-5 h-5 text-primary-500" />
+            </div>
+
+            <form onSubmit={addFamilyMember} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_9rem_9rem_auto]">
+              <input
+                className="input"
+                placeholder="Name"
+                value={familyForm.full_name}
+                onChange={e => setFamilyForm(p => ({ ...p, full_name: e.target.value }))}
+              />
+              <input
+                className="input"
+                placeholder="Relationship"
+                value={familyForm.relationship}
+                onChange={e => setFamilyForm(p => ({ ...p, relationship: e.target.value }))}
+              />
+              <input
+                className="input"
+                placeholder="Phone"
+                value={familyForm.phone}
+                onChange={e => setFamilyForm(p => ({ ...p, phone: e.target.value }))}
+              />
+              <button className="btn-primary text-sm" disabled={savingFamily}>
+                {savingFamily ? 'Adding...' : 'Add'}
+              </button>
+            </form>
+
+            <div className="mt-4 space-y-2">
+              {familyMembers.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No saved members yet</p>
+              ) : familyMembers.map(member => (
+                <div key={member.id} className="app-list-row p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{member.full_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {[member.relationship, member.phone].filter(Boolean).join(' · ') || 'Saved profile'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFamilyMember(member.id)}
+                    className="text-xs font-semibold text-red-500 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
           </div>
         )}

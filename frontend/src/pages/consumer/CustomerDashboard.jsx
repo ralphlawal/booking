@@ -90,11 +90,13 @@ function getFavouriteBusinesses(bookings) {
   return [...map.values()].sort((a, b) => b.total - a.total).slice(0, 3);
 }
 
-function CustomerMomentum({ bookings, upcoming, prefs, onRebook }) {
+function CustomerMomentum({ bookings, upcoming, prefs, loyalty, onRebook }) {
   const completed = bookings.filter(b => b.status === 'completed' || b.service_confirmed).length;
-  const favourites = getFavouriteBusinesses(bookings);
-  const loyaltyStamps = Math.min(completed, 10);
-  const nextRewardAt = loyaltyStamps >= 10 ? 10 : Math.ceil((loyaltyStamps + 1) / 5) * 5;
+  const favourites = loyalty?.top_businesses?.length ? loyalty.top_businesses : getFavouriteBusinesses(bookings);
+  const loyaltyStamps = loyalty?.stamps ?? Math.min(completed, 10);
+  const completedCount = loyalty?.completed_bookings ?? completed;
+  const nextRewardAt = loyalty?.next_milestone ?? (loyaltyStamps >= 10 ? 10 : Math.ceil((loyaltyStamps + 1) / 5) * 5);
+  const topVisits = favourites[0]?.visits || favourites[0]?.total || 0;
   const nextBooking = upcoming
     .slice()
     .sort((a, b) => `${bookingDateKey(a.booking_date)}${a.start_time || ''}`.localeCompare(`${bookingDateKey(b.booking_date)}${b.start_time || ''}`))[0];
@@ -105,9 +107,9 @@ function CustomerMomentum({ bookings, upcoming, prefs, onRebook }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-wide text-primary-200">Your BookAm streak</p>
-            <h2 className="text-2xl font-black mt-1">{completed} completed</h2>
+            <h2 className="text-2xl font-black mt-1">{completedCount} completed</h2>
             <p className="text-sm text-primary-100 mt-1">
-              {completed === 0
+              {completedCount === 0
                 ? 'Book your first service and start building your loyalty streak.'
                 : loyaltyStamps >= 10
                   ? 'You are becoming a regular. Keep your favourite services close.'
@@ -137,7 +139,7 @@ function CustomerMomentum({ bookings, upcoming, prefs, onRebook }) {
             <p className="text-[11px] text-primary-100">saved</p>
           </div>
           <div className="rounded-lg bg-white/10 p-2">
-            <p className="text-lg font-black">{favourites[0]?.total || 0}</p>
+            <p className="text-lg font-black">{topVisits}</p>
             <p className="text-[11px] text-primary-100">top visits</p>
           </div>
         </div>
@@ -175,7 +177,7 @@ function CustomerMomentum({ bookings, upcoming, prefs, onRebook }) {
               <Flame className="w-5 h-5 text-orange-500 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-bold text-gray-900 dark:text-white truncate">Book again with {item.business_name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.total} booking{item.total === 1 ? '' : 's'} so far</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.visits || item.total} booking{(item.visits || item.total) === 1 ? '' : 's'} so far</p>
               </div>
             </button>
           )) : (
@@ -697,6 +699,7 @@ export default function CustomerDashboard() {
   const [tab, setTab] = useState('upcoming');
   const [bookings, setBookings] = useState([]);
   const [prefs, setPrefs] = useState([]);
+  const [loyalty, setLoyalty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
@@ -716,14 +719,16 @@ export default function CustomerDashboard() {
     Promise.allSettled([
       consumerAPI.myBookings(),
       consumerAPI.getPreferences(),
+      consumerAPI.getLoyalty(),
     ])
-      .then(([bResult, pResult]) => {
+      .then(([bResult, pResult, lResult]) => {
         if (bResult.status === 'fulfilled') {
           setBookings(bResult.value);
         } else {
           setBookingsError(true);
         }
         if (pResult.status === 'fulfilled') setPrefs(pResult.value);
+        if (lResult.status === 'fulfilled') setLoyalty(lResult.value);
       })
       .finally(() => setLoading(false));
   };
@@ -971,6 +976,7 @@ export default function CustomerDashboard() {
             bookings={bookings}
             upcoming={upcoming}
             prefs={prefs}
+            loyalty={loyalty}
             onRebook={handleRebook}
           />
         )}

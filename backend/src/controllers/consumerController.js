@@ -405,6 +405,65 @@ exports.getReferral = async (req, res) => {
   }
 };
 
+exports.getFamilyMembers = async (req, res) => {
+  try {
+    const members = await ConsumerAccount.getFamilyMembers(req.consumer.id);
+    res.json(members);
+  } catch (err) {
+    console.error('[consumer/family/list]', err.message);
+    res.status(500).json({ error: 'Failed to load family members' });
+  }
+};
+
+exports.addFamilyMember = async (req, res) => {
+  try {
+    const { full_name, relationship, phone, notes } = req.body;
+    if (!full_name?.trim()) return res.status(400).json({ error: 'Name is required' });
+    const member = await ConsumerAccount.addFamilyMember(req.consumer.id, {
+      full_name,
+      relationship,
+      phone,
+      notes,
+    });
+    res.status(201).json(member);
+  } catch (err) {
+    console.error('[consumer/family/add]', err.message);
+    res.status(500).json({ error: 'Failed to add family member' });
+  }
+};
+
+exports.updateFamilyMember = async (req, res) => {
+  try {
+    const member = await ConsumerAccount.updateFamilyMember(req.consumer.id, req.params.id, req.body);
+    if (!member) return res.status(404).json({ error: 'Family member not found' });
+    res.json(member);
+  } catch (err) {
+    console.error('[consumer/family/update]', err.message);
+    res.status(500).json({ error: 'Failed to update family member' });
+  }
+};
+
+exports.deleteFamilyMember = async (req, res) => {
+  try {
+    const deleted = await ConsumerAccount.deleteFamilyMember(req.consumer.id, req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Family member not found' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[consumer/family/delete]', err.message);
+    res.status(500).json({ error: 'Failed to delete family member' });
+  }
+};
+
+exports.getLoyalty = async (req, res) => {
+  try {
+    const loyalty = await ConsumerAccount.getLoyaltySummary(req.consumer.id, req.consumer.email);
+    res.json(loyalty);
+  } catch (err) {
+    console.error('[consumer/loyalty]', err.message);
+    res.status(500).json({ error: 'Failed to load loyalty summary' });
+  }
+};
+
 exports.uploadAvatar = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });

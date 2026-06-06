@@ -52,6 +52,11 @@ router.post('/notifications/read', authenticateConsumer, ctrl.markNotificationsR
 router.post('/resend-verification', authenticateConsumer, ctrl.resendVerification);
 router.get('/verify-email', ctrl.verifyEmail);
 router.get('/referral', authenticateConsumer, ctrl.getReferral);
+router.get('/loyalty', authenticateConsumer, requireVerifiedConsumer, ctrl.getLoyalty);
+router.get('/family-members', authenticateConsumer, ctrl.getFamilyMembers);
+router.post('/family-members', authenticateConsumer, ctrl.addFamilyMember);
+router.put('/family-members/:id', authenticateConsumer, ctrl.updateFamilyMember);
+router.delete('/family-members/:id', authenticateConsumer, ctrl.deleteFamilyMember);
 router.post('/me/avatar', authenticateConsumer, avatarUpload, ctrl.uploadAvatar);
 
 module.exports = router;

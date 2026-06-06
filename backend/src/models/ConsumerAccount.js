@@ -108,7 +108,7 @@ const ConsumerAccount = {
     const fullQuery = `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
             b.notes, b.cancelled_reason, b.created_at,
             b.payment_status, b.stripe_payment_intent_id,
-            biz.name AS business_name, biz.slug, biz.logo_url, biz.location, biz.phone AS business_phone,
+            biz.name AS business_name, biz.slug, biz.logo_url, biz.category, biz.location, biz.phone AS business_phone,
             s.name AS service_name, s.price, s.duration_minutes,
             s.id AS service_id, biz.id AS business_id,
             (rv.id IS NOT NULL) AS reviewed,
@@ -128,7 +128,7 @@ const ConsumerAccount = {
     const fallbackQuery = `SELECT b.id, b.reference_id, b.booking_date, b.start_time, b.end_time, b.status,
             b.notes, b.cancelled_reason, b.created_at,
             b.payment_status, b.stripe_payment_intent_id,
-            biz.name AS business_name, biz.slug, biz.logo_url, biz.location, biz.phone AS business_phone,
+            biz.name AS business_name, biz.slug, biz.logo_url, biz.category, biz.location, biz.phone AS business_phone,
             s.name AS service_name, s.price, s.duration_minutes,
             s.id AS service_id, biz.id AS business_id,
             FALSE AS reviewed,
@@ -189,6 +189,109 @@ const ConsumerAccount = {
       'DELETE FROM consumer_preferences WHERE consumer_id = $1 AND business_id = $2',
       [consumer_id, business_id]
     );
+  },
+
+  async getFamilyMembers(consumer_id) {
+    const { rows } = await db.query(
+      `SELECT id, full_name, relationship, phone, notes, created_at, updated_at
+       FROM consumer_family_members
+       WHERE consumer_id = $1
+       ORDER BY created_at DESC`,
+      [consumer_id]
+    );
+    return rows;
+  },
+
+  async addFamilyMember(consumer_id, fields) {
+    const id = crypto.randomUUID();
+    const { full_name, relationship, phone, notes } = fields;
+    const { rows } = await db.query(
+      `INSERT INTO consumer_family_members (id, consumer_id, full_name, relationship, phone, notes)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, full_name, relationship, phone, notes, created_at, updated_at`,
+      [id, consumer_id, full_name.trim(), relationship || null, phone || null, notes || null]
+    );
+    return rows[0];
+  },
+
+  async updateFamilyMember(consumer_id, id, fields) {
+    const { full_name, relationship, phone, notes } = fields;
+    const { rows } = await db.query(
+      `UPDATE consumer_family_members
+       SET full_name = COALESCE($1, full_name),
+           relationship = COALESCE($2, relationship),
+           phone = COALESCE($3, phone),
+           notes = COALESCE($4, notes),
+           updated_at = NOW()
+       WHERE id = $5 AND consumer_id = $6
+       RETURNING id, full_name, relationship, phone, notes, created_at, updated_at`,
+      [
+        full_name === undefined ? null : full_name.trim(),
+        relationship === undefined ? null : relationship,
+        phone === undefined ? null : phone,
+        notes === undefined ? null : notes,
+        id,
+        consumer_id,
+      ]
+    );
+    return rows[0] || null;
+  },
+
+  async deleteFamilyMember(consumer_id, id) {
+    const { rowCount } = await db.query(
+      'DELETE FROM consumer_family_members WHERE id = $1 AND consumer_id = $2',
+      [id, consumer_id]
+    );
+    return rowCount > 0;
+  },
+
+  async getLoyaltySummary(consumer_id, consumer_email) {
+    const bookings = await this.getBookings(consumer_id, consumer_email);
+    const completed = bookings.filter((booking) => booking.status === 'completed' || booking.service_confirmed);
+    const paid = bookings.filter((booking) => booking.payment_status === 'paid');
+    const businessMap = new Map();
+
+    for (const booking of bookings) {
+      if (!booking.business_id) continue;
+      const current = businessMap.get(booking.business_id) || {
+        business_id: booking.business_id,
+        business_name: booking.business_name,
+        slug: booking.slug,
+        logo_url: booking.logo_url,
+        category: booking.category,
+        visits: 0,
+        completed: 0,
+        last_booking_at: null,
+        last_service_name: null,
+        service_id: null,
+      };
+      current.visits += 1;
+      if (booking.status === 'completed' || booking.service_confirmed) current.completed += 1;
+      const key = String(booking.booking_date || booking.created_at || '');
+      if (!current.last_booking_at || key > String(current.last_booking_at)) {
+        current.last_booking_at = booking.booking_date || booking.created_at;
+        current.last_service_name = booking.service_name;
+        current.service_id = booking.service_id;
+      }
+      businessMap.set(booking.business_id, current);
+    }
+
+    const total_spend = paid.reduce((sum, booking) => sum + Number(booking.price || 0), 0);
+    const stamps = Math.min(completed.length, 10);
+    const next_milestone = stamps >= 10 ? 10 : Math.ceil((stamps + 1) / 5) * 5;
+
+    return {
+      total_bookings: bookings.length,
+      completed_bookings: completed.length,
+      paid_bookings: paid.length,
+      total_spend,
+      stamps,
+      next_milestone,
+      credits: 0,
+      top_businesses: [...businessMap.values()]
+        .sort((a, b) => b.visits - a.visits || b.completed - a.completed)
+        .slice(0, 5),
+    };
   },
 
   async setResetToken(email, token, expiresAt) {
@@ -269,6 +372,7 @@ const ConsumerAccount = {
     // Preserve booking records for the business by nullifying consumer link
     await db.query('UPDATE bookings SET consumer_id = NULL WHERE consumer_id = $1', [id]);
     await db.query('DELETE FROM consumer_preferences WHERE consumer_id = $1', [id]);
+    await db.query('DELETE FROM consumer_family_members WHERE consumer_id = $1', [id]).catch(() => {});
     await db.query('DELETE FROM consumer_accounts WHERE id = $1', [id]);
   },
 };
