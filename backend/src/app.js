@@ -231,7 +231,6 @@ app.post('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.rep
 app.delete('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.deleteReply);
 
 // Web push
-const { consumerAuth } = require('./middleware/consumerAuth');
 app.get('/api/notifications/vapid-key', (req, res) => {
   const key = process.env.VAPID_PUBLIC_KEY;
   if (!key) return res.status(503).json({ error: 'Push notifications not configured' });
