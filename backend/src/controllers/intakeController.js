@@ -105,6 +105,14 @@ exports.respond = async (req, res) => {
   try {
     const { intake_form_id, consumer_name, responses } = req.body;
     if (!intake_form_id) return res.status(400).json({ error: 'intake_form_id is required' });
+
+    // Verify the form exists and is active before accepting a response
+    const { rows: formRows } = await db.query(
+      'SELECT id FROM intake_forms WHERE id=$1 AND is_active=TRUE',
+      [intake_form_id]
+    );
+    if (!formRows.length) return res.status(404).json({ error: 'Intake form not found' });
+
     const id = crypto.randomUUID();
     const { rows } = await db.query(
       `INSERT INTO intake_responses (id, intake_form_id, consumer_name, responses)

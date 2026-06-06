@@ -187,8 +187,8 @@
   .pb-consumer-cta { padding-bottom: var(--consumer-cta-padding); }
   .pb-admin-nav { padding-bottom: var(--admin-nav-padding); }
   @media (min-width: 1024px) {
-    .pb-consumer-nav { padding-bottom: 2rem; }
-    .pb-consumer-cta { padding-bottom: 2rem; }
+    .pb-consumer-nav { padding-bottom: 2rem; padding-left: 4rem; } /* 4rem = w-16 sidebar */
+    .pb-consumer-cta { padding-bottom: 2rem; padding-left: 4rem; }
     .pb-admin-nav { padding-bottom: 1.5rem; }
   }
   .h-consumer-viewport { height: calc(100dvh - var(--consumer-nav-height)); }

@@ -622,7 +622,7 @@ async function autoReleaseOverdueBookings() {
 }
 
 // Exported so other controllers can fire it without going through HTTP
-exports.runAutoRelease = () => autoReleaseOverdueBookings().catch(err => console.error('[auto-release]', err.message));
+exports.runAutoRelease = () => autoReleaseOverdueBookings().catch(err => { console.error('[auto-release]', err.message); return 0; });
 
 // POST /bookings/admin/auto-release  (admin-authenticated)
 exports.autoRelease = async (req, res) => {
@@ -848,7 +848,7 @@ async function sendAttendedConfirmationEmails() {
   return sent;
 }
 
-exports.runAttendedEmails = () => sendAttendedConfirmationEmails().catch(err => console.error('[attended-email]', err.message));
+exports.runAttendedEmails = () => sendAttendedConfirmationEmails().catch(err => { console.error('[attended-email]', err.message); return 0; });
 
 // POST /api/bookings/attended-action  — processes email link with signed JWT token.
 // Allows customers to confirm attendance or raise a dispute directly from their email,

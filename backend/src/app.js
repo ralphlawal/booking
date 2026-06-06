@@ -208,6 +208,23 @@ app.post('/api/admin/reconcile-payments', paymentsCtrl.reconcile);
 const businessCtrl = require('./controllers/businessController');
 app.post('/api/admin/geocode-backfill', businessCtrl.geocodeBackfill);
 
+// Public cron trigger — called by external cron service (e.g. cron-job.org) to keep jobs alive
+// on Render free tier where the server sleeps. Secured with CRON_SECRET env var.
+app.get('/api/cron/trigger', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (secret && req.query.secret !== secret) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { runAutoRelease, runAttendedEmails } = require('./controllers/bookingsController');
+    const [released, sent] = await Promise.all([
+      runAutoRelease().then(n => n ?? 0).catch(() => 0),
+      runAttendedEmails().then(n => n ?? 0).catch(() => 0),
+    ]);
+    res.json({ ok: true, released, sent, ts: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Review replies (business authenticated)
 const reviewsCtrl = require('./controllers/reviewsController');
 app.post('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.reply);
@@ -494,16 +511,49 @@ async function start() {
   const server = app.listen(PORT, () => {
     console.log(`BookAm API running on port ${PORT}`);
 
-    // Auto-release: run shortly after startup, then on an interval.
-    // Releases payment for confirmed+paid bookings whose appointment ended >72h ago
-    // with no customer confirmation, so businesses are never left waiting forever.
     const { runAutoRelease, runAttendedEmails } = require('./controllers/bookingsController');
+    const { geocodeBackfill } = require('./controllers/businessController');
+
+    // 30s after startup: release overdue payments + send attended emails
     setTimeout(() => {
       runAutoRelease();
       runAttendedEmails();
       setInterval(runAutoRelease, 6 * 60 * 60 * 1000);
-      setInterval(runAttendedEmails, 30 * 60 * 1000); // every 30 minutes
+      setInterval(runAttendedEmails, 30 * 60 * 1000);
     }, 30 * 1000);
+
+    // 2min after startup: one-pass geocode for businesses missing coordinates (fire-and-forget)
+    setTimeout(() => {
+      const db = require('./config/database');
+      db.query(`SELECT id, location FROM businesses WHERE location IS NOT NULL AND location != '' AND (latitude IS NULL OR longitude IS NULL) LIMIT 20`)
+        .then(({ rows }) => {
+          if (!rows.length) return;
+          const https = require('https');
+          const delay = (ms) => new Promise(r => setTimeout(r, ms));
+          (async () => {
+            for (const biz of rows) {
+              try {
+                const q = encodeURIComponent(biz.location);
+                await new Promise((resolve) => {
+                  https.get({ hostname: 'nominatim.openstreetmap.org', path: `/search?format=json&q=${q}&limit=1`, headers: { 'User-Agent': 'BookAm/1.0 (bookam.business)' } }, (res) => {
+                    let data = '';
+                    res.on('data', c => { data += c; });
+                    res.on('end', () => {
+                      try {
+                        const json = JSON.parse(data);
+                        if (json[0]) db.query('UPDATE businesses SET latitude=$1,longitude=$2 WHERE id=$3', [parseFloat(json[0].lat), parseFloat(json[0].lon), biz.id]).catch(() => {});
+                      } catch {}
+                      resolve();
+                    });
+                  }).on('error', resolve);
+                });
+                await delay(1100); // respect Nominatim 1 req/s limit
+              } catch {}
+            }
+            console.log(`[geocode-backfill] Processed ${rows.length} businesses`);
+          })();
+        }).catch(() => {});
+    }, 2 * 60 * 1000);
   });
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
