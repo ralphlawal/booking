@@ -583,7 +583,7 @@ export default function BookingPage() {
                     </button>
                   )}
                 </div>
-                {promoData && <p className="text-xs text-green-600 font-medium mt-1">✓ {promoData.code} applied — £{parseFloat(promoData.discount_amount).toFixed(2)} off</p>}
+                {promoData && <p className="text-xs text-green-600 font-medium mt-1">✓ {promoData.promo?.code} applied — £{parseFloat(promoData.discount_amount).toFixed(2)} off</p>}
               </div>
             </div>
             <button onClick={handleConfirm} disabled={submitting} className="btn-primary w-full text-base py-3.5">
