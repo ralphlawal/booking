@@ -4,7 +4,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { CalendarDays, CheckCircle2, ClipboardList, ExternalLink, MessageSquare, Sparkles } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ClipboardList, ExternalLink, MessageSquare, Sparkles, Target, TrendingUp, Camera, Share2 } from 'lucide-react';
 import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -37,6 +37,103 @@ const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
     </div>
   );
 };
+
+function GrowthCockpit({ stats, business, checklist }) {
+  const totalBookings = Number(stats?.total || 0);
+  const pending = Number(stats?.pending || 0);
+  const confirmed = Number(stats?.confirmed || 0);
+  const weeklyGoal = Math.max(10, Math.ceil((totalBookings + 4) / 5) * 5);
+  const progress = Math.min(100, Math.round((totalBookings / weeklyGoal) * 100));
+  const profileMissing = [
+    !business?.description,
+    !business?.logo_url,
+    !business?.phone,
+    !business?.location,
+    !business?.category,
+  ].filter(Boolean).length;
+  const profileScore = Math.round(((5 - profileMissing) / 5) * 100);
+
+  const actions = [
+    pending > 0 && { label: 'Confirm pending bookings', desc: `${pending} customer${pending === 1 ? '' : 's'} waiting`, to: '/admin/bookings', Icon: CheckCircle2, tone: 'green' },
+    checklist && { label: 'Finish setup', desc: 'Services and availability unlock bookings', to: '/admin/settings', Icon: Target, tone: 'primary' },
+    { label: 'Post an update', desc: 'Show availability, offers, or fresh work', to: '/admin/posts', Icon: Camera, tone: 'purple' },
+    business && { label: 'Share booking link', desc: 'Use it in WhatsApp, Instagram, and Google', to: '/admin/settings', Icon: Share2, tone: 'blue' },
+  ].filter(Boolean).slice(0, 4);
+
+  const toneClasses = {
+    green: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400',
+    primary: 'bg-primary-50 dark:bg-primary-900/25 text-primary-700 dark:text-primary-300',
+    purple: 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400',
+    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400',
+  };
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <div className="app-panel p-5 bg-gradient-to-br from-primary-950 to-primary-800 text-white border-primary-900">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary-200">Weekly momentum</p>
+            <h2 className="text-2xl font-black mt-1">{totalBookings}/{weeklyGoal} bookings</h2>
+            <p className="text-sm text-primary-100 mt-1">
+              {progress >= 100
+                ? 'Goal hit. Push a post now and keep the week moving.'
+                : `${weeklyGoal - totalBookings} more booking${weeklyGoal - totalBookings === 1 ? '' : 's'} to hit this week’s stretch goal.`}
+            </p>
+          </div>
+          <div className="w-12 h-12 rounded-lg bg-white/15 flex items-center justify-center">
+            <TrendingUp className="w-6 h-6 text-primary-100" />
+          </div>
+        </div>
+        <div className="mt-5">
+          <div className="flex justify-between text-xs text-primary-100 mb-1.5">
+            <span>Progress</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+            <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+          <div className="rounded-lg bg-white/10 p-2">
+            <p className="text-lg font-black">{pending}</p>
+            <p className="text-[11px] text-primary-100">pending</p>
+          </div>
+          <div className="rounded-lg bg-white/10 p-2">
+            <p className="text-lg font-black">{confirmed}</p>
+            <p className="text-[11px] text-primary-100">confirmed</p>
+          </div>
+          <div className="rounded-lg bg-white/10 p-2">
+            <p className="text-lg font-black">{profileScore}%</p>
+            <p className="text-[11px] text-primary-100">profile</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="app-panel p-5">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400">Action queue</p>
+            <h2 className="font-bold text-gray-900 dark:text-white">Do this next</h2>
+          </div>
+          <Sparkles className="w-5 h-5 text-primary-500" />
+        </div>
+        <div className="space-y-2.5">
+          {actions.map(({ label, desc, to, Icon, tone }) => (
+            <Link key={label} to={to} className="app-list-row p-3 flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${toneClasses[tone]}`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { business } = useAuth();
@@ -208,6 +305,10 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+      )}
+
+      {!loading && (
+        <GrowthCockpit stats={stats} business={business} checklist={checklist} />
       )}
 
       {/* Stats */}

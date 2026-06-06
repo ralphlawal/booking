@@ -343,7 +343,24 @@ export default function ConsumerProfile() {
         </div>
 
         {tab === 'profile' && (
-          <div className="app-panel p-6 max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto space-y-4">
+          <div className="app-panel p-6">
+            <div className="grid gap-3 sm:grid-cols-2 mb-5">
+              <div className="rounded-lg border border-primary-100 dark:border-primary-800 bg-primary-50/70 dark:bg-primary-900/20 p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Users className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                  <p className="font-bold text-sm text-gray-900 dark:text-white">Family & friends</p>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Soon you’ll be able to save profiles and book on behalf of someone else.</p>
+              </div>
+              <div className="rounded-lg border border-green-100 dark:border-green-800 bg-green-50/70 dark:bg-green-900/20 p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <p className="font-bold text-sm text-gray-900 dark:text-white">Appointment updates</p>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Keep reminders enabled so you never miss confirmations, changes, or messages.</p>
+              </div>
+            </div>
             <form onSubmit={saveProfile} className="space-y-4">
               <div>
                 <label className="label flex items-center gap-1.5">
@@ -409,6 +426,7 @@ export default function ConsumerProfile() {
                 {saving ? 'Saving…' : 'Save changes'}
               </button>
             </form>
+          </div>
           </div>
         )}
 

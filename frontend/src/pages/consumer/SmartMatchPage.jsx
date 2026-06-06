@@ -21,6 +21,12 @@ const DATE_OPTIONS = [
   { value: 'custom',    label: 'Pick a date' },
 ];
 
+const MATCHING_STEPS = [
+  'Checking available slots',
+  'Ranking nearby businesses',
+  'Balancing price, rating, and speed',
+];
+
 function resolveDate(opt, custom) {
   const today = new Date();
   const fmt = (d) => d.toISOString().split('T')[0];
@@ -219,6 +225,31 @@ export default function SmartMatchPage() {
 
         {results === null ? (
           <div className="grid gap-4 lg:grid-cols-2">
+            {loading && (
+              <div className="lg:col-span-2 app-panel p-5 border-primary-200 dark:border-primary-800 bg-primary-50/70 dark:bg-primary-900/20">
+                <div className="flex items-start gap-3">
+                  <div className="w-11 h-11 rounded-lg bg-primary-600 text-white flex items-center justify-center flex-shrink-0 shadow-primary">
+                    <Zap className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-primary-900 dark:text-primary-100">Matching you now...</p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                      {MATCHING_STEPS.map((item, i) => (
+                        <div key={item} className="rounded-lg bg-white dark:bg-gray-900 border border-primary-100 dark:border-primary-800 p-3">
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 grid place-items-center text-[10px] font-black">
+                              {i + 1}
+                            </span>
+                            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{item}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Step 1: What */}
             <div className="app-panel p-5 lg:col-span-2">
               <h2 className="font-bold text-gray-900 dark:text-white mb-3">1. What do you need?</h2>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle, CalendarClock, Sun, Moon } from 'lucide-react';
+import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calendar, Clock, MapPin, Phone, Heart, Sparkles, PoundSterling, RotateCcw, Star, Mail, MessageSquare, ShieldCheck, AlertTriangle, CalendarClock, Sun, Moon, Trophy, Gift, Flame } from 'lucide-react';
 import { consumerAPI, reviewsAPI } from '../../services/api';
 import { useNotifications } from '../../context/NotificationContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -65,6 +65,131 @@ function CopyRefButton({ refId }) {
       {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
       {refId}
     </button>
+  );
+}
+
+function getBusinessKey(booking) {
+  return booking.business_id || booking.slug || booking.business_name;
+}
+
+function getFavouriteBusinesses(bookings) {
+  const map = new Map();
+  bookings.forEach((booking) => {
+    if (!booking.business_name) return;
+    const key = getBusinessKey(booking);
+    const current = map.get(key) || { ...booking, total: 0 };
+    current.total += 1;
+    if (bookingDateKey(booking.booking_date) > bookingDateKey(current.booking_date)) {
+      current.booking_date = booking.booking_date;
+      current.service_name = booking.service_name;
+      current.service_id = booking.service_id;
+      current.slug = booking.slug;
+    }
+    map.set(key, current);
+  });
+  return [...map.values()].sort((a, b) => b.total - a.total).slice(0, 3);
+}
+
+function CustomerMomentum({ bookings, upcoming, prefs, onRebook }) {
+  const completed = bookings.filter(b => b.status === 'completed' || b.service_confirmed).length;
+  const favourites = getFavouriteBusinesses(bookings);
+  const loyaltyStamps = Math.min(completed, 10);
+  const nextRewardAt = loyaltyStamps >= 10 ? 10 : Math.ceil((loyaltyStamps + 1) / 5) * 5;
+  const nextBooking = upcoming
+    .slice()
+    .sort((a, b) => `${bookingDateKey(a.booking_date)}${a.start_time || ''}`.localeCompare(`${bookingDateKey(b.booking_date)}${b.start_time || ''}`))[0];
+
+  return (
+    <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr] mb-5 sm:mb-6">
+      <div className="app-panel p-4 sm:p-5 bg-gradient-to-br from-primary-950 to-primary-800 text-white border-primary-900">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary-200">Your BookAm streak</p>
+            <h2 className="text-2xl font-black mt-1">{completed} completed</h2>
+            <p className="text-sm text-primary-100 mt-1">
+              {completed === 0
+                ? 'Book your first service and start building your loyalty streak.'
+                : loyaltyStamps >= 10
+                  ? 'You are becoming a regular. Keep your favourite services close.'
+                  : `${Math.max(nextRewardAt - loyaltyStamps, 0)} more completed booking${nextRewardAt - loyaltyStamps === 1 ? '' : 's'} to your next loyalty milestone.`}
+            </p>
+          </div>
+          <div className="w-12 h-12 rounded-lg bg-white/15 flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-primary-100" />
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-10 gap-1.5">
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 rounded-full ${i < loyaltyStamps ? 'bg-white' : 'bg-white/20'}`}
+              title={`${i + 1} loyalty stamp`}
+            />
+          ))}
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-lg bg-white/10 p-2">
+            <p className="text-lg font-black">{upcoming.length}</p>
+            <p className="text-[11px] text-primary-100">upcoming</p>
+          </div>
+          <div className="rounded-lg bg-white/10 p-2">
+            <p className="text-lg font-black">{prefs.length}</p>
+            <p className="text-[11px] text-primary-100">saved</p>
+          </div>
+          <div className="rounded-lg bg-white/10 p-2">
+            <p className="text-lg font-black">{favourites[0]?.total || 0}</p>
+            <p className="text-[11px] text-primary-100">top visits</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="app-panel p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400">For you</p>
+            <h2 className="font-bold text-gray-900 dark:text-white">Quick wins</h2>
+          </div>
+          <Gift className="w-5 h-5 text-primary-500" />
+        </div>
+        <div className="space-y-2.5">
+          {nextBooking ? (
+            <Link to="/customer/messages" className="app-list-row p-3 flex items-center gap-3">
+              <CalendarClock className="w-5 h-5 text-primary-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">Next: {nextBooking.service_name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{fmtDate(nextBooking.booking_date)} at {nextBooking.start_time?.slice(0, 5)}</p>
+              </div>
+            </Link>
+          ) : (
+            <Link to="/explore" className="app-list-row p-3 flex items-center gap-3">
+              <Search className="w-5 h-5 text-primary-500 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">Find something available today</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Browse local services near you</p>
+              </div>
+            </Link>
+          )}
+
+          {favourites.length > 0 ? favourites.map((item) => (
+            <button key={getBusinessKey(item)} onClick={() => onRebook(item)} className="app-list-row p-3 flex items-center gap-3 w-full text-left">
+              <Flame className="w-5 h-5 text-orange-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">Book again with {item.business_name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.total} booking{item.total === 1 ? '' : 's'} so far</p>
+              </div>
+            </button>
+          )) : (
+            <Link to="/match" className="app-list-row p-3 flex items-center gap-3">
+              <Zap className="w-5 h-5 text-primary-500 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">Let Smart Match choose</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Fastest, best-rated, or best price</p>
+              </div>
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -839,6 +964,15 @@ export default function CustomerDashboard() {
               {resending ? 'Sending…' : 'Resend →'}
             </button>
           </div>
+        )}
+
+        {!loading && !bookingsError && (
+          <CustomerMomentum
+            bookings={bookings}
+            upcoming={upcoming}
+            prefs={prefs}
+            onRebook={handleRebook}
+          />
         )}
 
         {/* First-time welcome guidance — shown only when user has no bookings yet */}
