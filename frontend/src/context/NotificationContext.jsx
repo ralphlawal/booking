@@ -3,6 +3,35 @@ import { consumerAPI } from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { LOGO_BLUE_ICON } from '../config/logos';
 
+const API = import.meta.env.VITE_API_URL || 'https://bookly-api.onrender.com/api';
+
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) return; // already subscribed
+
+    const res = await fetch(`${API}/notifications/vapid-key`);
+    if (!res.ok) return;
+    const { vapidPublicKey } = await res.json();
+    if (!vapidPublicKey) return;
+
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: vapidPublicKey,
+    });
+
+    const token = localStorage.getItem('customerToken');
+    if (!token) return;
+    await fetch(`${API}/notifications/push-subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(sub.toJSON()),
+    });
+  } catch {}
+}
+
 const NotificationContext = createContext({
   notifications: [],
   unreadCount: 0,
@@ -66,6 +95,10 @@ export function NotificationProvider({ children }) {
     }
     fetch();
     intervalRef.current = setInterval(fetch, 5000);
+    // If push permission already granted, silently subscribe (idempotent)
+    if (typeof window !== 'undefined' && window.Notification?.permission === 'granted') {
+      subscribeToPush().catch(() => {});
+    }
     return () => clearInterval(intervalRef.current);
   }, [consumer, fetch]);
 
@@ -76,6 +109,7 @@ export function NotificationProvider({ children }) {
     }
     const permission = await window.Notification.requestPermission();
     setBrowserPermission(permission);
+    if (permission === 'granted') subscribeToPush().catch(() => {});
     return permission;
   }, []);
 

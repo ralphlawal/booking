@@ -140,6 +140,28 @@ exports.deleteReply = async (req, res) => {
   }
 };
 
+// GET /api/reviews/eligible/:slug  — returns the most recent reviewable booking for this consumer at this business
+exports.getEligible = async (req, res) => {
+  try {
+    const { rows: bizRows } = await db.query('SELECT id FROM businesses WHERE slug=$1', [req.params.slug]);
+    if (!bizRows.length) return res.json({ booking_id: null });
+
+    const { rows } = await db.query(
+      `SELECT b.id FROM bookings b
+       WHERE b.business_id = $1
+         AND b.consumer_id = $2
+         AND b.status = 'completed'
+         AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.booking_id = b.id)
+       ORDER BY b.booking_date DESC
+       LIMIT 1`,
+      [bizRows[0].id, req.consumer.id]
+    );
+    res.json({ booking_id: rows[0]?.id || null });
+  } catch (err) {
+    res.json({ booking_id: null });
+  }
+};
+
 // GET /api/reviews/check/:bookingId  — can this consumer review this booking?
 exports.checkReviewable = async (req, res) => {
   try {

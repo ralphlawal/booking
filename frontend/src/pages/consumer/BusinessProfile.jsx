@@ -116,6 +116,11 @@ export default function BusinessProfile() {
   const [following, setFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followLoading, setFollowLoading] = useState(false);
+  const [eligibleBookingId, setEligibleBookingId] = useState(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewDone, setReviewDone] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -127,8 +132,9 @@ export default function BusinessProfile() {
       postsAPI.getPublic(slug).catch(() => []),
       consumer ? followsAPI.check(slug).catch(() => ({ following: false, follower_count: 0 }))
                : followsAPI.count(slug).catch(() => ({ follower_count: 0 })),
+      consumer ? reviewsAPI.getEligible(slug).catch(() => ({ booking_id: null })) : Promise.resolve({ booking_id: null }),
     ])
-      .then(([biz, svcs, rev, avail, pics, pts, followData]) => {
+      .then(([biz, svcs, rev, avail, pics, pts, followData, eligibleData]) => {
         setBusiness(biz);
         setServices((svcs.filter ? svcs.filter(s => s.is_active) : svcs));
         setReviewData(rev);
@@ -137,10 +143,29 @@ export default function BusinessProfile() {
         setPosts(Array.isArray(pts) ? pts : []);
         setFollowing(followData?.following ?? false);
         setFollowerCount(followData?.follower_count ?? 0);
+        setEligibleBookingId(eligibleData?.booking_id || null);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewRating || !eligibleBookingId) return;
+    setReviewSubmitting(true);
+    try {
+      await reviewsAPI.create({ booking_id: eligibleBookingId, rating: reviewRating, comment: reviewComment });
+      setReviewDone(true);
+      setEligibleBookingId(null);
+      const updated = await reviewsAPI.getForBusiness(slug).catch(() => reviewData);
+      setReviewData(updated);
+      toast.success('Review submitted — thank you!');
+    } catch (err) {
+      toast.error(err?.response?.data?.error || 'Failed to submit review');
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   const handleShare = async () => {
     const url = window.location.origin + `/book/${slug}`;
@@ -489,6 +514,32 @@ export default function BusinessProfile() {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Review submission form — shown when consumer has a completed unreviewed booking */}
+          {eligibleBookingId && !reviewDone && (
+            <form onSubmit={handleReviewSubmit} className="mb-5 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700 rounded-xl">
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-3">You visited — leave a review</p>
+              <div className="flex gap-1 mb-3">
+                {[1,2,3,4,5].map(s => (
+                  <button key={s} type="button" onClick={() => setReviewRating(s)}
+                    className={`text-2xl leading-none transition-transform ${s <= reviewRating ? 'scale-110' : ''}`}>
+                    <Star className={`w-7 h-7 ${s <= reviewRating ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600'}`} />
+                  </button>
+                ))}
+              </div>
+              <textarea
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 mb-3"
+                rows={3}
+                placeholder="Share your experience (optional)"
+                value={reviewComment}
+                onChange={e => setReviewComment(e.target.value)}
+              />
+              <button type="submit" disabled={!reviewRating || reviewSubmitting}
+                className="btn-primary text-sm py-2 disabled:opacity-50">
+                {reviewSubmitting ? 'Submitting…' : 'Submit review'}
+              </button>
+            </form>
           )}
 
           {reviewData.reviews.length === 0 ? (

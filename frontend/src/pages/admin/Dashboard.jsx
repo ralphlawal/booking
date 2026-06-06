@@ -267,8 +267,8 @@ export default function Dashboard() {
                 <p className="font-semibold text-amber-900 dark:text-amber-200 text-sm">Complete your profile — {pct}% done</p>
                 <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">A complete profile gets up to 3× more bookings</p>
               </div>
-              <a href="/admin/settings" className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-3 py-1.5 rounded-lg hover:bg-amber-200 transition-colors whitespace-nowrap">
-                Complete →
+              <a href={pct < 40 ? '/admin/onboarding' : '/admin/settings'} className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-3 py-1.5 rounded-lg hover:bg-amber-200 transition-colors whitespace-nowrap">
+                {pct < 40 ? 'Start setup →' : 'Complete →'}
               </a>
             </div>
             <div className="h-1.5 bg-amber-200 dark:bg-amber-800 rounded-full mb-3">

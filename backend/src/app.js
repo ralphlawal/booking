@@ -230,6 +230,40 @@ const reviewsCtrl = require('./controllers/reviewsController');
 app.post('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.reply);
 app.delete('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.deleteReply);
 
+// Web push
+const { consumerAuth } = require('./middleware/consumerAuth');
+app.get('/api/notifications/vapid-key', (req, res) => {
+  const key = process.env.VAPID_PUBLIC_KEY;
+  if (!key) return res.status(503).json({ error: 'Push notifications not configured' });
+  res.json({ vapidPublicKey: key });
+});
+app.post('/api/notifications/push-subscribe', consumerAuth, async (req, res) => {
+  try {
+    const { endpoint, keys } = req.body;
+    if (!endpoint || !keys?.p256dh || !keys?.auth) return res.status(400).json({ error: 'Invalid subscription' });
+    const db = require('./config/database');
+    await db.query(
+      `INSERT INTO push_subscriptions (id, consumer_id, endpoint, p256dh, auth)
+       VALUES ($1,$2,$3,$4,$5)
+       ON CONFLICT (endpoint) DO UPDATE SET consumer_id=$2, p256dh=$4, auth=$5, updated_at=NOW()`,
+      [require('crypto').randomUUID(), req.consumer.id, endpoint, keys.p256dh, keys.auth]
+    ).catch(() => {}); // table may not exist yet — migration creates it
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save subscription' });
+  }
+});
+app.delete('/api/notifications/push-subscribe', consumerAuth, async (req, res) => {
+  try {
+    const { endpoint } = req.body;
+    if (endpoint) {
+      const db = require('./config/database');
+      await db.query('DELETE FROM push_subscriptions WHERE endpoint=$1 AND consumer_id=$2', [endpoint, req.consumer.id]).catch(() => {});
+    }
+    res.json({ ok: true });
+  } catch { res.json({ ok: true }); }
+});
+
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
@@ -312,6 +346,17 @@ async function start() {
       const sql20 = fs.readFileSync(path.join(__dirname, '../migrations/020_family_loyalty.sql'), 'utf8');
       await pool.query(sql20);
       console.log('PostgreSQL migrations applied.');
+
+      await pool.query(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id TEXT PRIMARY KEY,
+        consumer_id TEXT NOT NULL,
+        endpoint TEXT NOT NULL UNIQUE,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`).catch(() => {});
+      await pool.query(`ALTER TABLE consumer_accounts ADD COLUMN IF NOT EXISTS marketing_opt_out BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
 
       console.log('Database ready.');
     } else {

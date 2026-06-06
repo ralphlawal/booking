@@ -241,6 +241,7 @@ export const reviewsAPI = {
   getForBusiness: (slug) => api.get(`/reviews/${slug}`),
   create: (data) => consumerAxios.post('/reviews', data),
   checkReviewable: (bookingId) => consumerAxios.get(`/reviews/check/${bookingId}`),
+  getEligible: (slug) => consumerAxios.get(`/reviews/eligible/${slug}`),
 };
 
 const ADMIN_TOKEN_KEY = 'adminSupportToken';
