@@ -304,58 +304,34 @@ async function start() {
   try {
     if (process.env.DATABASE_URL) {
       const { pool } = require('./config/database.pg');
-      const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_initial_schema.sql'), 'utf8');
-      await pool.query(sql);
-      const sql2 = fs.readFileSync(path.join(__dirname, '../migrations/002_consumer_discovery.sql'), 'utf8');
-      await pool.query(sql2);
-      const sql3 = fs.readFileSync(path.join(__dirname, '../migrations/003_consumer_auth_extras.sql'), 'utf8');
-      await pool.query(sql3);
-      const sql4 = fs.readFileSync(path.join(__dirname, '../migrations/004_verification.sql'), 'utf8');
-      await pool.query(sql4);
-      const sql5 = fs.readFileSync(path.join(__dirname, '../migrations/005_notifications.sql'), 'utf8');
-      await pool.query(sql5);
-      const sql6 = fs.readFileSync(path.join(__dirname, '../migrations/006_email_verification.sql'), 'utf8');
-      await pool.query(sql6);
-      const sql7 = fs.readFileSync(path.join(__dirname, '../migrations/007_customer_notes.sql'), 'utf8');
-      await pool.query(sql7);
-      const sql8 = fs.readFileSync(path.join(__dirname, '../migrations/008_chat.sql'), 'utf8');
-      await pool.query(sql8);
-      const sql9 = fs.readFileSync(path.join(__dirname, '../migrations/009_stripe_payments.sql'), 'utf8');
-      await pool.query(sql9);
-      const sql10 = fs.readFileSync(path.join(__dirname, '../migrations/010_bank_verification.sql'), 'utf8');
-      await pool.query(sql10);
-      const sql11 = fs.readFileSync(path.join(__dirname, '../migrations/011_trust_system.sql'), 'utf8');
-      await pool.query(sql11);
-      const sql12 = fs.readFileSync(path.join(__dirname, '../migrations/012_consumer_location.sql'), 'utf8');
-      await pool.query(sql12);
-      const sql13 = fs.readFileSync(path.join(__dirname, '../migrations/013_broadcasts_referrals.sql'), 'utf8');
-      await pool.query(sql13);
-      const sql14 = fs.readFileSync(path.join(__dirname, '../migrations/014_new_features.sql'), 'utf8');
-      await pool.query(sql14);
-      const sql15 = fs.readFileSync(path.join(__dirname, '../migrations/015_flexible_bank_details.sql'), 'utf8');
-      await pool.query(sql15);
-      const sql16 = fs.readFileSync(path.join(__dirname, '../migrations/016_business_posts.sql'), 'utf8');
-      await pool.query(sql16);
-      const sql17 = fs.readFileSync(path.join(__dirname, '../migrations/017_consumer_follows.sql'), 'utf8');
-      await pool.query(sql17);
-      const sql18 = fs.readFileSync(path.join(__dirname, '../migrations/018_attended_fraud_guards.sql'), 'utf8');
-      await pool.query(sql18);
-      const sql19 = fs.readFileSync(path.join(__dirname, '../migrations/019_launch_hardening.sql'), 'utf8');
-      await pool.query(sql19);
-      const sql20 = fs.readFileSync(path.join(__dirname, '../migrations/020_family_loyalty.sql'), 'utf8');
-      await pool.query(sql20);
+      // Batch all migrations into one round-trip to avoid slow startup on Render free tier
+      const migrationFiles = [
+        '001_initial_schema.sql', '002_consumer_discovery.sql', '003_consumer_auth_extras.sql',
+        '004_verification.sql', '005_notifications.sql', '006_email_verification.sql',
+        '007_customer_notes.sql', '008_chat.sql', '009_stripe_payments.sql',
+        '010_bank_verification.sql', '011_trust_system.sql', '012_consumer_location.sql',
+        '013_broadcasts_referrals.sql', '014_new_features.sql', '015_flexible_bank_details.sql',
+        '016_business_posts.sql', '017_consumer_follows.sql', '018_attended_fraud_guards.sql',
+        '019_launch_hardening.sql', '020_family_loyalty.sql',
+      ];
+      const allMigrationSql = migrationFiles
+        .map(f => fs.readFileSync(path.join(__dirname, '../migrations', f), 'utf8'))
+        .join('\n');
+      await pool.query(allMigrationSql);
       console.log('PostgreSQL migrations applied.');
 
-      await pool.query(`CREATE TABLE IF NOT EXISTS push_subscriptions (
-        id TEXT PRIMARY KEY,
-        consumer_id TEXT NOT NULL,
-        endpoint TEXT NOT NULL UNIQUE,
-        p256dh TEXT NOT NULL,
-        auth TEXT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )`).catch(() => {});
-      await pool.query(`ALTER TABLE consumer_accounts ADD COLUMN IF NOT EXISTS marketing_opt_out BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+          id TEXT PRIMARY KEY,
+          consumer_id TEXT NOT NULL,
+          endpoint TEXT NOT NULL UNIQUE,
+          p256dh TEXT NOT NULL,
+          auth TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+        ALTER TABLE consumer_accounts ADD COLUMN IF NOT EXISTS marketing_opt_out BOOLEAN NOT NULL DEFAULT FALSE;
+      `).catch(() => {});
 
       console.log('Database ready.');
     } else {

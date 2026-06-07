@@ -2,7 +2,6 @@ const https = require('https');
 const Business = require('../models/Business');
 const QRCode = require('qrcode');
 const { checkAutoVerify } = require('../utils/autoVerify');
-const { saveUploadedMedia } = require('../utils/mediaStorage');
 
 function geocodeLocation(locationText) {
   return new Promise((resolve) => {
@@ -39,7 +38,7 @@ exports.getMyBusiness = async (req, res) => {
   }
 };
 
-exports.createBusiness = async (req, res) => {
+exports.createBusiness = async (req, res) => { 
   try {
     const existing = await Business.findByUserId(req.user.id);
     if (existing) return res.status(409).json({ error: 'Business already exists' });
@@ -73,14 +72,15 @@ exports.updateBusiness = async (req, res) => {
     checkAutoVerify(req.business.id).catch(() => {});
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update business' });
+    res.status(500).json({ error: 'Failed to update business' }); 
   }
 };
 
 exports.uploadLogo = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const logo_url = await saveUploadedMedia(req.file, 'business-logos');
+    const mime = req.file.mimetype || 'image/jpeg';
+    const logo_url = `data:${mime};base64,${req.file.buffer.toString('base64')}`;
     const updated = await Business.update(req.business.id, { logo_url });
     res.json({ logo_url, business: updated });
   } catch (err) {
@@ -117,7 +117,7 @@ exports.getQRCode = async (req, res) => {
   }
 };
 
-exports.requestVerification = async (req, res) => {
+exports.requestVerification = async (req, res) => { 
   try {
     const biz = req.business;
     if (biz.is_verified || biz.verification_status === 'verified') return res.status(400).json({ error: 'Already verified' });
@@ -157,7 +157,7 @@ exports.requestVerification = async (req, res) => {
 // Saves detailed verification info and auto-verifies if criteria met
 exports.submitVerificationDetails = async (req, res) => {
   try {
-    const biz = req.business;
+    const biz = req.business; 
     if (biz.is_verified || biz.verification_status === 'verified')
       return res.status(400).json({ error: 'Already verified' });
 
