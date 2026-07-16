@@ -28,7 +28,7 @@ const BOTTOM_NAV = [
 ];
 
 export default function AdminLayout() {
-  const { user, business, logout, resendVerificationEmail } = useAuth();
+  const { user, business, loading, logout, resendVerificationEmail } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,10 +39,10 @@ export default function AdminLayout() {
   const [resendingVerif, setResendingVerif] = useState(false);
 
   useEffect(() => {
-    if (!business) {
+    if (!loading && !business) {
       navigate('/admin/onboarding', { replace: true });
     }
-  }, [business, navigate]);
+  }, [business, loading, navigate]);
 
   useEffect(() => {
     if (auth.currentUser) {

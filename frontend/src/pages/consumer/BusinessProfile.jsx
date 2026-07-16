@@ -161,7 +161,7 @@ export default function BusinessProfile() {
       setReviewData(updated);
       toast.success('Review submitted — thank you!');
     } catch (err) {
-      toast.error(err?.response?.data?.error || 'Failed to submit review');
+      toast.error(err?.message || 'Failed to submit review');
     } finally {
       setReviewSubmitting(false);
     }

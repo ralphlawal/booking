@@ -195,6 +195,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
 export default function Bookings() {
   const [data, setData] = useState({ bookings: [], stats: null, total: 0 });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -215,8 +216,8 @@ export default function Bookings() {
   const load = useCallback((silent = false) => {
     if (!silent) setLoading(true);
     bookingsAPI.list({ status: filter === 'all' ? undefined : filter, page, limit: PAGE_SIZE })
-      .then(d => { setData(d); setLastUpdated(new Date()); })
-      .catch(() => {})
+      .then(d => { setData(d); setLastUpdated(new Date()); setLoadError(false); })
+      .catch(() => { if (!silent) setLoadError(true); })
       .finally(() => { if (!silent) setLoading(false); });
   }, [filter, page]);
 
@@ -408,6 +409,12 @@ export default function Bookings() {
         {loading ? (
           <div className="p-5 space-y-3">
             {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />)}
+          </div>
+        ) : loadError ? (
+          <div className="p-12 text-center text-gray-400">
+            <ClipboardList className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+            <p className="font-medium text-gray-500 dark:text-gray-400">Couldn't load bookings</p>
+            <button onClick={() => load()} className="mt-2 text-sm text-primary-600 hover:underline">Try again</button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-gray-400">

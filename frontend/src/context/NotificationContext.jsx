@@ -3,7 +3,9 @@ import { consumerAPI } from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { LOGO_BLUE_ICON } from '../config/logos';
 
-const API = import.meta.env.VITE_API_URL || 'https://bookly-api.onrender.com/api';
+const API = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
+  : '/api';
 
 async function subscribeToPush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;

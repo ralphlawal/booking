@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         setBusiness(data.business || null);
         saveAuthCache(data.user, data.business || null);
       } catch (err) {
-        const isNetworkError = !err.response || err.response?.status === 504 || err.code === 'ECONNABORTED';
+        const isNetworkError = !err.status || err.status === 504 || err.code === 'ECONNABORTED';
         if (isNetworkError && cached) {
           // Server is cold — keep cached session rather than logging the user out
           console.warn('[Auth] Backend unavailable on load, using cached session');

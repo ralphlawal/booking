@@ -147,7 +147,7 @@ export default function Dashboard() {
   const loadBookings = useCallback(() => {
     bookingsAPI.list({ limit: 5 })
       .then(d => setData(d))
-      .catch(() => toast.error('Could not load bookings — check your connection'))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

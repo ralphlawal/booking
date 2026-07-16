@@ -111,7 +111,7 @@ exports.register = async (req, res) => {
     }).catch(() => {});
 
     res.status(201).json({ consumer, token });
-  } catch (err) {
+  } catch (err) { 
     console.error('[consumer/register]', err.message);
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -265,7 +265,7 @@ exports.forgotPassword = async (req, res) => {
       });
     }
     // Always return success to avoid email enumeration
-    res.json({ message: 'If an account exists, a reset link has been sent' });
+    res.json({ message: 'If an account exists, a reset link has been sent' }); 
   } catch (err) {
     console.error('[consumer/forgotPassword]', err.message);
     res.status(500).json({ error: 'Failed to process request' });

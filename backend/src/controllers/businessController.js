@@ -89,7 +89,7 @@ exports.uploadLogo = async (req, res) => {
   }
 };
 
-exports.getPublicBusiness = async (req, res) => {
+exports.getPublicBusiness = async (req, res) => {  
   try {
     const business = await Business.findBySlug(req.params.slug);
     if (!business) return res.status(404).json({ error: 'Business not found' });
