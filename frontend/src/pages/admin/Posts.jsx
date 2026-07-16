@@ -111,8 +111,8 @@ export default function Posts() {
       toast.error('Use a JPEG, PNG, WebP, MP4, WebM, or MOV file');
       return;
     }
-    if (file.size > 35 * 1024 * 1024) {
-      toast.error('Media must be 35MB or less');
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Media must be 5MB or less. Compress images or trim videos before uploading.');
       return;
     }
     setForm(f => ({ ...f, image: file, preview: URL.createObjectURL(file) }));
@@ -215,7 +215,7 @@ export default function Posts() {
                 </button>
               )}
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleImage} />
-              <p className="text-xs text-gray-400 mt-1">Supports images and short reels up to 35MB.</p>
+              <p className="text-xs text-gray-400 mt-1">Supports images and short clips. Max 5MB — compress or trim before uploading.</p>
             </div>
 
             <div>

@@ -372,10 +372,10 @@ export const promoAPI = {
 };
 
 export const postsAPI = {
-  create: (formData) => api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  list: () => api.get('/posts'),
+  create: (formData) => api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 }),
+  list: () => api.get('/posts', { timeout: 60000 }),
   getPublic: (slug) => api.get(`/posts/public/${slug}`),
-  getFeed: (params) => api.get('/posts/feed', { params }),
+  getFeed: (params) => api.get('/posts/feed', { params, timeout: 60000 }),
   remove: (id) => api.delete(`/posts/${id}`),
   recordView: (id) => api.post(`/posts/${id}/view`),
   recordBookClick: (id) => api.post(`/posts/${id}/book-click`),

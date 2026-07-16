@@ -7,7 +7,7 @@ const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'vid
 
 exports.uploadMiddleware = createUpload({
   fieldName: 'image',
-  fileSize: 35 * 1024 * 1024,
+  fileSize: 5 * 1024 * 1024,
   label: 'Post media',
   mimeTypes: ALLOWED_MIME,
 });
