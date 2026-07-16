@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -145,9 +146,9 @@ export default function AdminLayout() {
               to={to}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-primary-600 text-white shadow-primary'
+                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-primary'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                 }`
               }
@@ -266,13 +267,25 @@ export default function AdminLayout() {
               </button>
             </div>
           )}
-          {emailUnverified ? <VerifyRequired type="business" /> : <Outlet />}
+          {emailUnverified ? <VerifyRequired type="business" /> : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          )}
         </main>
       </div>
 
       {/* Mobile bottom nav */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-primary-950 text-white border-t border-primary-800 flex shadow-[0_-10px_30px_rgba(30,19,86,0.36)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-100 dark:border-gray-800/80 flex shadow-nav"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {BOTTOM_NAV.map(({ to, icon: Icon, label, badge }) => (
@@ -280,18 +293,22 @@ export default function AdminLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2 min-h-[70px] gap-0.5 text-[10px] sm:text-xs font-semibold transition-colors relative ${
-                isActive ? 'text-white' : 'text-primary-100/80'
+              `flex-1 flex flex-col items-center justify-center py-2 min-h-[70px] gap-0.5 text-[10px] sm:text-xs font-bold transition-colors relative tap-highlight-none ${
+                isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-300 rounded-full" />}
-                <div className={`relative grid place-items-center w-9 h-8 rounded-lg ${isActive ? 'bg-white text-primary-700' : ''}`}>
-                  <Icon className="w-5 h-5" />
+                {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-primary-500 rounded-full" />}
+                <div
+                  className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    isActive ? 'bg-gradient-to-br from-primary-500 to-primary-700 scale-110 shadow-md' : ''
+                  }`}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
                   {badge && pendingCount > 0 && !isActive && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
+                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none border-2 border-white dark:border-gray-950">
                       {pendingCount > 9 ? '9+' : pendingCount}
                     </span>
                   )}

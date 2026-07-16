@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -12,14 +13,25 @@ import toast from 'react-hot-toast';
 const STATUS_COLORS = { pending: '#f59e0b', confirmed: '#10b981', cancelled: '#ef4444', completed: '#6366f1' };
 const PIE_PALETTE = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'];
 
-const StatCard = ({ label, value, color, darkColor, icon }) => (
-  <div className="app-panel p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
-    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${color} ${darkColor}`}>
-      {icon}
-    </div>
-    <div className="min-w-0">
-      <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{value ?? '—'}</p>
-      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{label}</p>
+const STAT_GRADIENTS = {
+  violet:  'from-violet-500 to-primary-600',
+  amber:   'from-amber-400 to-orange-500',
+  emerald: 'from-emerald-400 to-teal-500',
+  blue:    'from-blue-500 to-cyan-500',
+};
+
+const StatCard = ({ label, value, gradient = 'violet', icon }) => (
+  <div className={`relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${STAT_GRADIENTS[gradient]} shadow-lg`}>
+    <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
+    <div className="absolute right-6 bottom-0 w-10 h-10 rounded-full bg-white/5 translate-y-4 pointer-events-none" />
+    <div className="relative flex items-center gap-3 sm:gap-4">
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-white/25 flex-shrink-0 text-white">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-xl sm:text-2xl font-black text-white truncate">{value ?? '—'}</p>
+        <p className="text-xs sm:text-sm text-white/80 truncate">{label}</p>
+      </div>
     </div>
   </div>
 );
@@ -314,14 +326,25 @@ export default function Dashboard() {
       {/* Stats */}
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => <div key={i} className="card h-24 animate-pulse bg-gray-100 dark:bg-gray-800" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="rounded-2xl h-24 animate-pulse bg-gray-200 dark:bg-gray-800" />)}
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Bookings" value={stats?.total} color="bg-primary-50" darkColor="dark:bg-primary-900/30" icon={<CalIcon />} />
-          <StatCard label="Pending" value={stats?.pending} color="bg-yellow-50" darkColor="dark:bg-yellow-900/30" icon={<ClockIcon />} />
-          <StatCard label="Confirmed" value={stats?.confirmed} color="bg-green-50" darkColor="dark:bg-green-900/30" icon={<CheckIcon />} />
-          <StatCard label="Revenue" value={stats?.revenue ? `£${parseFloat(stats.revenue).toFixed(0)}` : '£0'} color="bg-blue-50" darkColor="dark:bg-blue-900/30" icon={<DollarIcon />} />
+          {[
+            { label: 'Total Bookings', value: stats?.total, gradient: 'violet', icon: <CalIcon /> },
+            { label: 'Pending', value: stats?.pending, gradient: 'amber', icon: <ClockIcon /> },
+            { label: 'Confirmed', value: stats?.confirmed, gradient: 'emerald', icon: <CheckIcon /> },
+            { label: 'Revenue', value: stats?.revenue ? `£${parseFloat(stats.revenue).toFixed(0)}` : '£0', gradient: 'blue', icon: <DollarIcon /> },
+          ].map((card, i) => (
+            <motion.div
+              key={card.label}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: i * 0.07, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <StatCard {...card} />
+            </motion.div>
+          ))}
         </div>
       )}
 

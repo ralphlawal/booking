@@ -59,8 +59,9 @@
     @apply text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-lg font-semibold text-sm
-    hover:bg-primary-700 active:bg-primary-800 active:scale-[0.98] transition-all duration-150 shadow-primary hover:shadow-lg hover:-translate-y-px active:translate-y-0
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl font-semibold text-sm
+    bg-gradient-to-r from-primary-600 to-primary-700
+    hover:from-primary-500 hover:to-primary-600 active:scale-[0.98] transition-all duration-150 shadow-primary hover:shadow-lg hover:-translate-y-px active:translate-y-0
     disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 disabled:active:scale-100;
   }
   .btn-secondary {
@@ -102,11 +103,11 @@
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
   }
   .card {
-    @apply bg-white dark:bg-gray-900 rounded-lg border border-gray-200/80 dark:border-gray-800 shadow-card;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 24px rgb(15 23 42 / 0.04);
+    @apply bg-white dark:bg-gray-900 rounded-xl border border-gray-200/70 dark:border-gray-800 shadow-card;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 20px rgb(15 23 42 / 0.05);
   }
   .card-hover {
-    @apply card hover:shadow-card-hover hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-0.5 transition-all duration-200;
+    @apply card hover:shadow-card-hover hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer;
   }
   .modal-panel {
     @apply bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-2xl;
@@ -157,12 +158,26 @@
 
   /* Badges */
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0;
   }
-  .badge-pending   { @apply badge bg-amber-50   dark:bg-amber-900/30  text-amber-700   dark:text-amber-400   ring-1 ring-amber-200   dark:ring-amber-700; }
-  .badge-confirmed { @apply badge bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-200 dark:ring-emerald-700; }
-  .badge-cancelled { @apply badge bg-red-50     dark:bg-red-900/30    text-red-700     dark:text-red-400     ring-1 ring-red-200     dark:ring-red-700; }
-  .badge-completed { @apply badge bg-blue-50    dark:bg-blue-900/30   text-blue-700    dark:text-blue-400    ring-1 ring-blue-200    dark:ring-blue-700; }
+  .badge-pending   { @apply badge bg-amber-100   dark:bg-amber-900/40  text-amber-800   dark:text-amber-300   ring-1 ring-amber-300/60   dark:ring-amber-700/60; }
+  .badge-confirmed { @apply badge bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-300/60 dark:ring-emerald-700/60; }
+  .badge-cancelled { @apply badge bg-red-100     dark:bg-red-900/40    text-red-800     dark:text-red-300     ring-1 ring-red-300/60     dark:ring-red-700/60; }
+  .badge-completed { @apply badge bg-blue-100    dark:bg-blue-900/40   text-blue-800    dark:text-blue-300    ring-1 ring-blue-300/60    dark:ring-blue-700/60; }
+
+  /* Gradient stat cards */
+  .stat-gradient-violet  { @apply bg-gradient-to-br from-violet-500 to-primary-600 text-white shadow-lg rounded-2xl; }
+  .stat-gradient-amber   { @apply bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg rounded-2xl; }
+  .stat-gradient-emerald { @apply bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg rounded-2xl; }
+  .stat-gradient-blue    { @apply bg-gradient-to-br from-blue-500 to-cyan-500 text-white shadow-lg rounded-2xl; }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/40;
+  }
+  .glass-dark {
+    @apply bg-gray-950/80 backdrop-blur-xl border border-white/10;
+  }
 
   .stat-card   { @apply card p-5 flex items-center gap-4; }
   .section-title { @apply text-lg font-bold text-gray-900 dark:text-white; }

@@ -499,12 +499,22 @@ function BusinessesPanel({ onStartChat }) {
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {filters.map(f => (
-          <button key={f.id} onClick={() => setFilter(f.id)}
-            className={`text-xs px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
-            {f.label}
-          </button>
-        ))}
+        {filters.map(f => {
+          const pendingVerifCount = f.id === 'pending'
+            ? businesses.filter(b => b.verification_status === 'pending').length
+            : null;
+          return (
+            <button key={f.id} onClick={() => setFilter(f.id)}
+              className={`text-xs px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1.5 ${filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+              {f.label}
+              {pendingVerifCount > 0 && (
+                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none ${filter === f.id ? 'bg-white/30 text-white' : 'bg-amber-500 text-white'}`}>
+                  {pendingVerifCount}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {loading ? (
@@ -514,13 +524,13 @@ function BusinessesPanel({ onStartChat }) {
       ) : (
         <div className="space-y-3">
           {filtered.map(b => (
-            <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-lg border p-4 shadow-sm ${!b.is_active ? 'opacity-50 border-gray-100 dark:border-gray-800' : b.verification_status === 'pending' ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800'}`}>
+            <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-xl border p-4 shadow-sm transition-all ${!b.is_active ? 'opacity-50 border-gray-100 dark:border-gray-800' : b.verification_status === 'pending' ? 'border-amber-300 dark:border-amber-700 shadow-amber-100/60 dark:shadow-none shadow-md' : 'border-gray-100 dark:border-gray-800'}`}>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                     <p className="font-bold text-sm text-gray-900 dark:text-white">{b.name}</p>
                     {verifyBadge(b)}
-                    {!b.is_active && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-red-100 text-red-600">Suspended</span>}
+                    {!b.is_active && <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase bg-red-100 text-red-600">Suspended</span>}
                   </div>
                   <p className="text-xs text-gray-500">@{b.slug} · {b.category || 'Uncategorised'}</p>
                   {b.location && <p className="text-xs text-gray-400 mt-0.5">{b.location}</p>}
@@ -530,8 +540,10 @@ function BusinessesPanel({ onStartChat }) {
               </div>
 
               {b.verification_status === 'pending' && b.verification_details && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 mb-3 text-xs space-y-0.5">
-                  <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">Verification request</p>
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-3 text-xs space-y-0.5 border border-amber-200 dark:border-amber-800">
+                  <p className="font-bold text-amber-800 dark:text-amber-300 mb-1.5 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Verification request
+                  </p>
                   {b.verification_details.legal_name && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Legal name:</span> {b.verification_details.legal_name}</p>}
                   {b.verification_details.company_reg_number && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Reg no:</span> {b.verification_details.company_reg_number}</p>}
                   {b.verification_details.sole_trader && <p className="text-amber-700 dark:text-amber-400">Sole trader declaration</p>}
@@ -545,14 +557,14 @@ function BusinessesPanel({ onStartChat }) {
                     <button
                       onClick={() => verify(b.id, b.name)}
                       disabled={!!acting}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition-all shadow-sm hover:shadow-md disabled:opacity-50"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" /> {acting === b.id + 'verify' ? 'Verifying…' : 'Approve'}
                     </button>
                     <button
                       onClick={() => reject(b.id, b.name)}
                       disabled={!!acting}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
                     >
                       <ShieldX className="w-3.5 h-3.5" /> {acting === b.id + 'reject' ? 'Rejecting…' : 'Reject'}
                     </button>
@@ -562,7 +574,7 @@ function BusinessesPanel({ onStartChat }) {
                   <button
                     onClick={() => verify(b.id, b.name)}
                     disabled={!!acting}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-xs font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-semibold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" /> Force verify
                   </button>
@@ -570,20 +582,20 @@ function BusinessesPanel({ onStartChat }) {
                 <button
                   onClick={() => toggleSuspend(b)}
                   disabled={!!acting}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors disabled:opacity-50 ${b.is_active ? 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors disabled:opacity-50 ${b.is_active ? 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                 >
                   {b.is_active ? <Ban className="w-3.5 h-3.5" /> : <ToggleRight className="w-3.5 h-3.5" />}
                   {acting === b.id + 'suspend' ? 'Updating…' : b.is_active ? 'Suspend' : 'Reactivate'}
                 </button>
                 <button
                   onClick={() => setEditTarget(b)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <Edit2 className="w-3.5 h-3.5" /> Edit
                 </button>
                 <button
                   onClick={() => onStartChat?.({ type: 'admin_business', business_id: b.id, subject: 'Business Support' })}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <MessageSquare className="w-3.5 h-3.5" /> Message
                 </button>
