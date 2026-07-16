@@ -136,6 +136,7 @@ app.put('/api/photos/reorder', authenticate, attachBusiness, photosCtrl.reorder)
 // Business posts
 app.get('/api/posts/feed', postsCtrl.getFeed);
 app.get('/api/posts/public/:slug', postsCtrl.getPublic);
+app.get('/api/posts/:id/media', postsCtrl.serveMedia);
 app.post('/api/posts/:id/view', postsCtrl.recordView);
 app.post('/api/posts/:id/book-click', postsCtrl.recordBookClick);
 app.get('/api/posts', authenticate, attachBusiness, postsCtrl.list);

@@ -14,9 +14,14 @@ if (import.meta.env.PROD) {
   fetch(`${BASE}/health`).catch(() => {});
 }
 
-// Resolve media URLs that may be relative /uploads/ paths from old backend storage.
-// New uploads are stored as base64 data: URIs, but legacy entries may still have
-// a relative path that needs to point at the Render backend, not the Vercel frontend.
+// Build a URL to the binary media endpoint for a post.
+// Goes through the same Vercel proxy (or directly to Render if VITE_API_URL is set).
+export const API_BASE = BASE;
+export function postMediaUrl(postId) {
+  return `${BASE}/posts/${postId}/media`;
+}
+
+// Legacy helper — kept for any old /uploads/ paths that may still exist in the DB.
 const BACKEND_ORIGIN = import.meta.env.VITE_API_URL || '';
 export function resolveMediaUrl(url) {
   if (!url) return url;

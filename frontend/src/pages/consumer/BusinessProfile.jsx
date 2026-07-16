@@ -5,7 +5,7 @@ import {
   Calendar, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
   BadgeCheck, Megaphone, UserPlus, UserCheck, Users,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI, followsAPI, resolveMediaUrl } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI, followsAPI, resolveMediaUrl, postMediaUrl } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -229,7 +229,7 @@ export default function BusinessProfile() {
   const verified = !!business.is_verified || business.verification_status === 'verified';
   const heroPhotos = [
     ...photos.map(p => resolveMediaUrl(p.url)),
-    ...posts.filter(p => p.image_url && !p.image_url.startsWith('data:video') && !/\.(mp4|webm|mov)$/i.test(p.image_url)).map(p => resolveMediaUrl(p.image_url)),
+    ...posts.filter(p => p.has_media && p.media_type !== 'video').map(p => postMediaUrl(p.id)),
   ].slice(0, 5);
 
   return (
@@ -427,11 +427,11 @@ export default function BusinessProfile() {
               const postMeta = { photo: 'Portfolio', offer: 'Offer', availability: 'Slots open', announcement: 'Update' };
               return (
                 <div key={post.id} className="card p-3 sm:p-4">
-                  {post.image_url && (
-                    (post.image_url.startsWith('data:video') || /\.(mp4|webm|mov)$/i.test(post.image_url)) ? (
-                      <video src={resolveMediaUrl(post.image_url)} className="w-full rounded-lg object-cover max-h-[34rem] mb-3 bg-gray-900" controls playsInline />
+                  {post.has_media && (
+                    post.media_type === 'video' ? (
+                      <video src={postMediaUrl(post.id)} className="w-full rounded-lg object-cover max-h-[34rem] mb-3 bg-gray-900" controls playsInline />
                     ) : (
-                      <img src={resolveMediaUrl(post.image_url)} alt="" className="w-full rounded-lg object-cover max-h-[34rem] mb-3" loading="lazy" />
+                      <img src={postMediaUrl(post.id)} alt="" className="w-full rounded-lg object-cover max-h-[34rem] mb-3" loading="lazy" />
                     )
                   )}
                   {post.offer_text && (
