@@ -10,7 +10,7 @@ const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'vid
 const POST_COLS = `
   p.id, p.business_id, p.type, p.caption, p.cta_label, p.cta_service_id,
   p.offer_text, p.offer_expires_at, p.views, p.booking_clicks,
-  p.is_active, p.created_at, p.updated_at,
+  p.is_active, p.created_at,
   (p.image_url IS NOT NULL AND p.image_url LIKE 'data:%') AS has_media,
   CASE WHEN p.image_url LIKE 'data:video/%' THEN 'video'
        WHEN p.image_url LIKE 'data:image/%' THEN 'image'
