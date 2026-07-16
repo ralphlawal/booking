@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { postsAPI, servicesAPI } from '../../services/api';
+import { postsAPI, servicesAPI, resolveMediaUrl } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
   Plus, Trash2, Image, Tag, Calendar, Megaphone, Film,
@@ -21,13 +21,14 @@ const EMPTY = {
 function PostCard({ post, onDelete }) {
   const meta = TYPE_META[post.type] || TYPE_META.photo;
   const Icon = meta.icon;
-  const isVideo = post.image_url?.startsWith('data:video');
+  const isVideo = post.image_url?.startsWith('data:video') || /\.(mp4|webm|mov)$/i.test(post.image_url || '');
+  const mediaSrc = resolveMediaUrl(post.image_url);
   return (
     <div className="app-panel p-4 flex gap-3">
       {post.image_url && isVideo ? (
-        <video src={post.image_url} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" muted playsInline controls />
+        <video src={mediaSrc} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" muted playsInline />
       ) : post.image_url ? (
-        <img src={post.image_url} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+        <img src={mediaSrc} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
       ) : null}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">

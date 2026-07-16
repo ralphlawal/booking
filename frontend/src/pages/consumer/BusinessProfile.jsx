@@ -5,7 +5,7 @@ import {
   Calendar, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
   BadgeCheck, Megaphone, UserPlus, UserCheck, Users,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI, followsAPI } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI, followsAPI, resolveMediaUrl } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -228,8 +228,8 @@ export default function BusinessProfile() {
   const totalReviews = parseInt(reviewData.stats?.total || 0);
   const verified = !!business.is_verified || business.verification_status === 'verified';
   const heroPhotos = [
-    ...photos.map(p => p.url),
-    ...posts.filter(p => p.image_url && !p.image_url.startsWith('data:video')).map(p => p.image_url),
+    ...photos.map(p => resolveMediaUrl(p.url)),
+    ...posts.filter(p => p.image_url && !p.image_url.startsWith('data:video') && !/\.(mp4|webm|mov)$/i.test(p.image_url)).map(p => resolveMediaUrl(p.image_url)),
   ].slice(0, 5);
 
   return (
@@ -428,10 +428,10 @@ export default function BusinessProfile() {
               return (
                 <div key={post.id} className="card p-3 sm:p-4">
                   {post.image_url && (
-                    post.image_url.startsWith('data:video') ? (
-                      <video src={post.image_url} className="w-full rounded-lg object-cover max-h-[34rem] mb-3 bg-gray-900" controls playsInline />
+                    (post.image_url.startsWith('data:video') || /\.(mp4|webm|mov)$/i.test(post.image_url)) ? (
+                      <video src={resolveMediaUrl(post.image_url)} className="w-full rounded-lg object-cover max-h-[34rem] mb-3 bg-gray-900" controls playsInline />
                     ) : (
-                      <img src={post.image_url} alt="" className="w-full rounded-lg object-cover max-h-[34rem] mb-3" loading="lazy" />
+                      <img src={resolveMediaUrl(post.image_url)} alt="" className="w-full rounded-lg object-cover max-h-[34rem] mb-3" loading="lazy" />
                     )
                   )}
                   {post.offer_text && (
@@ -472,7 +472,7 @@ export default function BusinessProfile() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
               {photos.map(p => (
                 <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                  <img src={p.url} alt={p.caption || ''} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={resolveMediaUrl(p.url)} alt={p.caption || ''} className="w-full h-full object-cover" loading="lazy" />
                 </div>
               ))}
             </div>

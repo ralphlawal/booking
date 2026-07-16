@@ -14,6 +14,17 @@ if (import.meta.env.PROD) {
   fetch(`${BASE}/health`).catch(() => {});
 }
 
+// Resolve media URLs that may be relative /uploads/ paths from old backend storage.
+// New uploads are stored as base64 data: URIs, but legacy entries may still have
+// a relative path that needs to point at the Render backend, not the Vercel frontend.
+const BACKEND_ORIGIN = import.meta.env.VITE_API_URL || '';
+export function resolveMediaUrl(url) {
+  if (!url) return url;
+  if (url.startsWith('data:') || url.startsWith('http')) return url;
+  if (url.startsWith('/uploads/')) return `${BACKEND_ORIGIN}${url}`;
+  return url;
+}
+
 const RETRY_DELAY_MS = 38000; // wait 38s then retry — Render typically wakes in 30-45s
 
 const isNetworkError = (err) => err.message === 'Network Error' || !err.response;
