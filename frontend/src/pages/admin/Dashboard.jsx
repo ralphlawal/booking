@@ -5,7 +5,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { CalendarDays, CheckCircle2, ClipboardList, ExternalLink, MessageSquare, Sparkles, Target, TrendingUp, Camera, Share2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ClipboardList, ExternalLink, MessageSquare, Sparkles, Target, TrendingUp, Camera, Share2, Sun, Clock } from 'lucide-react';
 import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -155,6 +155,8 @@ export default function Dashboard() {
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [checklist, setChecklist] = useState(null);
   const [confirming, setConfirming] = useState(null);
+  const [todayBookings, setTodayBookings] = useState([]);
+  const [todayLoading, setTodayLoading] = useState(true);
 
   const loadBookings = useCallback(() => {
     bookingsAPI.list({ limit: 5 })
@@ -169,6 +171,11 @@ export default function Dashboard() {
       .then(setAnalytics)
       .catch(() => {})
       .finally(() => setAnalyticsLoading(false));
+    const today = new Date().toISOString().split('T')[0];
+    bookingsAPI.list({ date: today, limit: 50 })
+      .then(d => setTodayBookings((d?.bookings || d || []).sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))))
+      .catch(() => {})
+      .finally(() => setTodayLoading(false));
   }, []);
 
   const quickConfirm = async (bookingId) => {
@@ -334,7 +341,7 @@ export default function Dashboard() {
             { label: 'Total Bookings', value: stats?.total, gradient: 'violet', icon: <CalIcon /> },
             { label: 'Pending', value: stats?.pending, gradient: 'amber', icon: <ClockIcon /> },
             { label: 'Confirmed', value: stats?.confirmed, gradient: 'emerald', icon: <CheckIcon /> },
-            { label: 'Revenue', value: stats?.revenue ? `£${parseFloat(stats.revenue).toFixed(0)}` : '£0', gradient: 'blue', icon: <DollarIcon /> },
+            { label: 'This month', value: analytics?.monthRevenue != null ? `£${parseFloat(analytics.monthRevenue).toFixed(0)}` : (stats?.revenue ? `£${parseFloat(stats.revenue).toFixed(0)}` : '£0'), gradient: 'blue', icon: <DollarIcon /> },
           ].map((card, i) => (
             <motion.div
               key={card.label}
@@ -347,6 +354,70 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      {/* My Day timeline */}
+      <div className="app-panel p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+              <Sun className="w-4 h-4 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="font-bold text-gray-900 dark:text-white text-sm">My Day</h2>
+              <p className="text-xs text-gray-400">
+                {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </p>
+            </div>
+          </div>
+          <Link to="/admin/calendar" className="text-xs font-bold text-primary-600 hover:text-primary-700">
+            Full calendar →
+          </Link>
+        </div>
+        {todayLoading ? (
+          <div className="space-y-2.5">
+            {[...Array(3)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}
+          </div>
+        ) : todayBookings.length === 0 ? (
+          <div className="text-center py-8">
+            <CalendarDays className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
+            <p className="text-sm text-gray-400 dark:text-gray-500">No appointments today</p>
+            <Link to="/admin/bookings" className="text-xs text-primary-600 font-semibold mt-1 inline-block">View all bookings →</Link>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="absolute left-[26px] top-3 bottom-3 w-px bg-gray-100 dark:bg-gray-800 pointer-events-none" />
+            <div className="space-y-1">
+              {todayBookings.map(b => {
+                const statusDot = { pending: 'bg-amber-400', confirmed: 'bg-emerald-500', cancelled: 'bg-gray-300', completed: 'bg-primary-500' };
+                return (
+                  <div key={b.id} className="flex items-center gap-3 pl-1 pr-3 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-12 text-right">
+                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{b.start_time?.slice(0,5)}</span>
+                    </div>
+                    <div className={`w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-gray-900 ${statusDot[b.status] || 'bg-gray-300'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{b.customer_name}</p>
+                      <p className="text-xs text-gray-400 truncate">{b.service_name}{b.duration_minutes ? ` · ${b.duration_minutes} min` : ''}</p>
+                    </div>
+                    {b.status === 'pending' && (
+                      <button onClick={() => quickConfirm(b.id)} disabled={confirming === b.id}
+                        className="text-xs px-2.5 py-1 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-semibold border border-green-200 dark:border-green-800 hover:bg-green-100 transition-colors disabled:opacity-50 flex-shrink-0">
+                        {confirming === b.id ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" /> : 'Confirm'}
+                      </button>
+                    )}
+                    {b.status !== 'pending' && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0 capitalize ${
+                        b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700' :
+                        b.status === 'completed' ? 'bg-primary-50 text-primary-700' :
+                        'bg-gray-100 text-gray-500'}`}>{b.status}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

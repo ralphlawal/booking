@@ -210,88 +210,109 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
   const canDispute = appointmentPassed && !booking.has_dispute && !booking.service_confirmed && hoursSinceEnd <= 48;
   const canConfirm = appointmentPassed && !booking.service_confirmed && !booking.has_dispute;
 
+  // Compute a short date label for the ticket header
+  const bookingDateObj = parseBookingDate(booking.booking_date);
+  const dayLabel = bookingDateObj ? bookingDateObj.toLocaleDateString('en-GB', { weekday: 'short' }) : '';
+  const dateNum = bookingDateObj ? bookingDateObj.getDate() : '';
+  const monthLabel = bookingDateObj ? bookingDateObj.toLocaleDateString('en-GB', { month: 'short' }) : '';
+
+  const ticketBorder = {
+    confirmed: 'border-l-emerald-500',
+    pending: 'border-l-amber-400',
+    cancelled: 'border-l-gray-300',
+    completed: 'border-l-primary-500',
+  }[booking.status] || 'border-l-gray-200';
+
   return (
-    <div className="app-list-row p-4 h-full">
-      <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-          {booking.logo_url ? (
-            <img src={booking.logo_url} alt={booking.business_name} className="w-full h-full object-cover" />
-          ) : (
-            <Building2 className="w-5 h-5 text-primary-400" />
+    <div className={`bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 border-l-4 ${ticketBorder} shadow-sm overflow-hidden h-full`}>
+      {/* Ticket header */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 dark:border-gray-800">
+        {/* Date chip */}
+        <div className="flex-shrink-0 w-12 text-center bg-gray-50 dark:bg-gray-800 rounded-xl py-1.5">
+          <p className="text-[11px] font-bold text-gray-400 uppercase">{dayLabel}</p>
+          <p className="text-xl font-black text-gray-900 dark:text-white leading-none">{dateNum}</p>
+          <p className="text-[11px] font-bold text-primary-600">{monthLabel}</p>
+        </div>
+        {/* Business info */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate">{booking.business_name}</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{booking.service_name}</p>
+          {booking.start_time && (
+            <p className="text-xs font-bold text-primary-600 dark:text-primary-400 mt-0.5 flex items-center gap-1">
+              <Clock className="w-3 h-3" />{booking.start_time.slice(0, 5)}{booking.end_time ? ` – ${booking.end_time.slice(0, 5)}` : ''}
+            </p>
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm">{booking.business_name}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{booking.service_name}</p>
-            </div>
-            <span className={`badge ${STATUS_STYLES[booking.status] || 'badge-pending'} max-w-[9.5rem] justify-center text-center`}>
-              {STATUS_LABELS[booking.status] || booking.status}
-            </span>
-          </div>
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
-            <p className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 flex-shrink-0" />{fmtDate(booking.booking_date)}</p>
-            <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 flex-shrink-0" />{booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}</p>
-            {booking.price > 0 && (
-              <p className="flex items-center gap-1.5">
-                <PoundSterling className="w-3.5 h-3.5 flex-shrink-0" />
-                £{parseFloat(booking.price).toFixed(2)}
-                {isPaid && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Paid</span>}
-                {booking.payment_status === 'refunded' && <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Refunded</span>}
-                {booking.payment_status === 'partial_refund' && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">50% Refunded</span>}
-              </p>
-            )}
-            {booking.location && <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{booking.location}</p>}
-            {!past && booking.business_phone && (
-              <a href={`tel:${booking.business_phone}`} className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:underline">
-                <Phone className="w-3.5 h-3.5 flex-shrink-0" />{booking.business_phone}
-              </a>
+        {/* Logo + status */}
+        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl overflow-hidden bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+            {booking.logo_url ? (
+              <img src={booking.logo_url} alt={booking.business_name} className="w-full h-full object-cover" />
+            ) : (
+              <Building2 className="w-5 h-5 text-primary-400" />
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-1"><CopyRefButton refId={booking.reference_id} /></p>
-
-          {/* Trust status indicators */}
-          {booking.service_confirmed && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5" /> Service confirmed
-            </div>
-          )}
-          {booking.has_dispute && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              Dispute {booking.dispute_status === 'open' ? 'under review' : booking.dispute_status === 'resolved_refunded' ? '— refund issued' : '— resolved'}
-            </div>
-          )}
+          <span className={`badge ${STATUS_STYLES[booking.status] || 'badge-pending'} text-[10px] px-1.5 py-0.5`}>
+            {STATUS_LABELS[booking.status] || booking.status}
+          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:flex gap-2 mt-4">
-        {/* Confirm received & Dispute — shown whenever appointment has ended, regardless of tab */}
+      {/* Body */}
+      <div className="px-4 py-3">
+        <div className="text-xs text-gray-400 dark:text-gray-500 space-y-0.5">
+          {booking.price > 0 && (
+            <p className="flex items-center gap-1.5">
+              <PoundSterling className="w-3.5 h-3.5 flex-shrink-0" />
+              £{parseFloat(booking.price).toFixed(2)}
+              {isPaid && <span className="text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded-full">Paid</span>}
+              {booking.payment_status === 'refunded' && <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Refunded</span>}
+              {booking.payment_status === 'partial_refund' && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">50% Refunded</span>}
+            </p>
+          )}
+          {booking.location && <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{booking.location}</p>}
+          {!past && booking.business_phone && (
+            <a href={`tel:${booking.business_phone}`} className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:underline">
+              <Phone className="w-3.5 h-3.5 flex-shrink-0" />{booking.business_phone}
+            </a>
+          )}
+        </div>
+        <p className="text-xs text-gray-300 dark:text-gray-600 mt-1"><CopyRefButton refId={booking.reference_id} /></p>
+        {booking.service_confirmed && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+            <ShieldCheck className="w-3.5 h-3.5" /> Service confirmed
+          </div>
+        )}
+        {booking.has_dispute && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Dispute {booking.dispute_status === 'open' ? 'under review' : booking.dispute_status === 'resolved_refunded' ? '— refund issued' : '— resolved'}
+          </div>
+        )}
+      </div>
+
+      <div className="px-4 pb-4 flex flex-wrap gap-2">
         {canConfirm && (
-          <button
-            onClick={() => onConfirmService(booking)}
-            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
-          >
+          <button onClick={() => onConfirmService(booking)}
+            className="flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 transition-colors">
             <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
           </button>
         )}
         {canDispute && (
-          <button
-            onClick={() => onDispute(booking)}
-            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-          >
+          <button onClick={() => onDispute(booking)}
+            className="flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 transition-colors">
             <AlertTriangle className="w-3.5 h-3.5" /> Report issue
           </button>
         )}
-
         {past ? (
           <>
-            <button onClick={() => onRebook(booking)} className="btn-secondary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
-              <RotateCcw className="w-3.5 h-3.5" /> Rebook
+            <button onClick={() => onRebook(booking)}
+              className="flex-1 btn-primary text-sm py-2 flex items-center justify-center gap-1.5 min-w-[100px]">
+              <RotateCcw className="w-3.5 h-3.5" /> Book again
             </button>
             {booking.status === 'completed' && !booking.reviewed && (
-              <button onClick={() => onReview(booking)} className="btn-primary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
+              <button onClick={() => onReview(booking)}
+                className="btn-secondary text-sm py-2 flex items-center justify-center gap-1.5 px-3">
                 <Star className="w-3.5 h-3.5" /> Review
               </button>
             )}
@@ -299,15 +320,13 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         ) : (
           <>
             {!appointmentPassed && (
-              <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary text-sm py-2 text-center">
-                View business
+              <Link to={`/profile/${booking.slug}`} state={{ from }} className="btn-secondary text-sm py-2 flex-1 text-center min-w-[90px]">
+                View
               </Link>
             )}
             {(booking.status === 'pending' || booking.status === 'confirmed') && !appointmentPassed && (
-              <Link
-                to={`/customer/booking/${booking.reference_id}`}
-                className="col-span-2 sm:col-span-1 text-sm px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1"
-              >
+              <Link to={`/customer/booking/${booking.reference_id}`}
+                className="flex-1 text-sm px-3 py-2 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-500 transition-colors flex items-center justify-center gap-1 min-w-[90px]">
                 <CalendarClock className="w-3.5 h-3.5" /> Manage
               </Link>
             )}
@@ -644,38 +663,41 @@ function RescheduleModal({ booking, onClose }) {
 
 function PreferenceCard({ pref, onRemove, onBook }) {
   return (
-    <div className="app-panel p-4">
-      <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+      <div className="flex items-center gap-3 p-4">
+        <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
           {pref.logo_url ? (
             <img src={pref.logo_url} alt={pref.business_name} className="w-full h-full object-cover" />
           ) : (
-            <Heart className="w-5 h-5 text-rose-400" />
+            <span className="text-2xl font-black text-primary-300">{(pref.business_name || '?')[0]}</span>
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm">{pref.business_name}</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate">{pref.business_name}</h3>
           {pref.service_name && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Usual: {pref.service_name}
-              {pref.price > 0 && ` · £${parseFloat(pref.price).toFixed(0)}`}
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {pref.service_name}{pref.price > 0 ? ` · £${parseFloat(pref.price).toFixed(0)}` : ''}
             </p>
           )}
-          {pref.location && <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3 flex-shrink-0" />{pref.location}</p>}
-          <p className="text-xs text-gray-400 mt-0.5">
-            Booked {pref.total_bookings}× · Last {pref.last_booked_at ? fmtDate(pref.last_booked_at.split('T')[0]) : 'N/A'}
-          </p>
+          {pref.location && <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5 truncate"><MapPin className="w-3 h-3 flex-shrink-0" />{pref.location}</p>}
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[11px] font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded-full">
+              {pref.total_bookings}× booked
+            </span>
+            {pref.last_booked_at && (
+              <span className="text-[11px] text-gray-400">Last {fmtDate(pref.last_booked_at.split('T')[0])}</span>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="flex gap-2 mt-3">
-        <button onClick={() => onBook(pref)} className="btn-primary flex-1 text-sm py-2">
-          Book again →
-        </button>
-        <button
-          onClick={() => onRemove(pref.business_id)}
-          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-500 transition-colors"
-        >
+        <button onClick={() => onRemove(pref.business_id)}
+          className="p-2 rounded-xl text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0">
           <X className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="px-4 pb-4">
+        <button onClick={() => onBook(pref)}
+          className="w-full btn-primary text-sm py-2.5 flex items-center justify-center gap-2">
+          <RotateCcw className="w-4 h-4" /> Book again
         </button>
       </div>
     </div>
