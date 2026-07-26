@@ -1,7 +1,7 @@
 -- Business can have multiple service locations (studio, home, mobile radius, etc.)
 CREATE TABLE IF NOT EXISTS business_addresses (
   id               SERIAL PRIMARY KEY,
-  business_id      INTEGER NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  business_id      UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
   nickname         VARCHAR(120) NOT NULL DEFAULT 'Main location',
   address_line     TEXT NOT NULL,
   city             VARCHAR(100),
