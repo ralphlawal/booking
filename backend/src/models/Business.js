@@ -35,7 +35,7 @@ const Business = {
   },
 
   async update(id, fields) {
-    const allowed = ['name','description','phone','email','location','category','logo_url','timezone','settings','is_active','latitude','longitude'];
+    const allowed = ['name','description','phone','email','location','category','logo_url','timezone','settings','is_active','latitude','longitude','travel_radius_km','travel_charge','booking_lead_minutes'];
     const updates = [];
     const values = [];
     let idx = 1;

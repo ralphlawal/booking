@@ -304,20 +304,12 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
               </Link>
             )}
             {(booking.status === 'pending' || booking.status === 'confirmed') && !appointmentPassed && (
-              <>
-                <button
-                  onClick={() => onReschedule(booking)}
-                  className="text-sm px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1"
-                >
-                  <CalendarClock className="w-3.5 h-3.5" /> Reschedule
-                </button>
-                <button
-                  onClick={() => onCancel(booking)}
-                  className="text-sm px-3 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  Cancel
-                </button>
-              </>
+              <Link
+                to={`/customer/booking/${booking.reference_id}`}
+                className="col-span-2 sm:col-span-1 text-sm px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1"
+              >
+                <CalendarClock className="w-3.5 h-3.5" /> Manage
+              </Link>
             )}
           </>
         )}

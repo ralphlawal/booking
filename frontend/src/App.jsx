@@ -36,6 +36,7 @@ import ConsumerProfile from './pages/consumer/ConsumerProfile';
 import ConsumerMessages from './pages/consumer/ConsumerMessages';
 import ConsumerOnboarding from './pages/consumer/ConsumerOnboarding';
 import FavouritesPage from './pages/consumer/FavouritesPage';
+import ManageBookingPage from './pages/consumer/ManageBookingPage';
 
 // Support
 import AdminSupport from './pages/support/AdminSupport';
@@ -184,6 +185,7 @@ export default function App() {
             <Route path="/customer/messages" element={<ConsumerVerifiedRoute><ConsumerMessages /></ConsumerVerifiedRoute>} />
             <Route path="/customer/profile" element={<ConsumerProtectedRoute><ConsumerProfile /></ConsumerProtectedRoute>} />
             <Route path="/customer/favourites" element={<ConsumerVerifiedRoute><FavouritesPage /></ConsumerVerifiedRoute>} />
+            <Route path="/customer/booking/:ref" element={<ConsumerVerifiedRoute><ManageBookingPage /></ConsumerVerifiedRoute>} />
             <Route path="/admin-support" element={<AdminSupport />} />
 
             {/* Account type chooser */}

@@ -2,12 +2,12 @@ const db = require('../config/database');
 const crypto = require('crypto');
 
 const Service = {
-  async create({ business_id, name, description, price, duration_minutes, deposit_required, deposit_amount }) {
+  async create({ business_id, name, description, price, duration_minutes, deposit_required, deposit_amount, mobile_price, buffer_minutes, category }) {
     const id = crypto.randomUUID();
     const { rows } = await db.query(
-      `INSERT INTO services (id, business_id, name, description, price, duration_minutes, deposit_required, deposit_amount)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [id, business_id, name, description, price || 0, duration_minutes, deposit_required || false, deposit_amount || 0]
+      `INSERT INTO services (id, business_id, name, description, price, duration_minutes, deposit_required, deposit_amount, mobile_price, buffer_minutes, category)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      [id, business_id, name, description, price || 0, duration_minutes, deposit_required || false, deposit_amount || null, mobile_price || null, buffer_minutes || 0, category || null]
     );
     return rows[0];
   },
@@ -26,7 +26,7 @@ const Service = {
   },
 
   async update(id, business_id, fields) {
-    const allowed = ['name','description','price','duration_minutes','is_active','deposit_required','deposit_amount'];
+    const allowed = ['name','description','price','duration_minutes','is_active','deposit_required','deposit_amount','mobile_price','buffer_minutes','category'];
     const updates = [];
     const values = [];
     let idx = 1;

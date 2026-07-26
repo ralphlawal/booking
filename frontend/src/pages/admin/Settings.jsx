@@ -49,6 +49,8 @@ export default function Settings() {
   const [tab, setTab] = useState(searchParams.get('tab') || 'business');
   const [bizForm, setBizForm] = useState({});
   const [avForm, setAvForm] = useState({ working_days: [], opening_time: '09:00', closing_time: '18:00', slot_interval_minutes: 30, buffer_minutes: 0 });
+  const [travelForm, setTravelForm] = useState({ travel_radius_km: '', travel_charge: '', booking_lead_minutes: 0 });
+  const [travelSaving, setTravelSaving] = useState(false);
   const [blocked, setBlocked] = useState([]);
   const [newBlock, setNewBlock] = useState({ blocked_date: '', start_time: '', end_time: '', reason: '', is_full_day: false });
   const [saving, setSaving] = useState(false);
@@ -106,6 +108,7 @@ export default function Settings() {
   useEffect(() => {
     if (business) {
       setBizForm({ name: business.name, description: business.description || '', phone: business.phone || '', email: business.email || '', location: business.location || '', category: business.category || '', latitude: business.latitude || '', longitude: business.longitude || '' });
+      setTravelForm({ travel_radius_km: business.travel_radius_km ?? '', travel_charge: business.travel_charge ?? '', booking_lead_minutes: business.booking_lead_minutes ?? 0 });
       setBankForm({
         ...emptyBankForm,
         holder_name: business.bank_holder_name || '',
@@ -172,6 +175,22 @@ export default function Settings() {
       toast.success('Availability saved');
     } catch (err) { toast.error(err.message); }
     finally { setSaving(false); }
+  };
+
+  const saveTravelSettings = async (e) => {
+    e.preventDefault();
+    setTravelSaving(true);
+    try {
+      const payload = {
+        travel_radius_km: travelForm.travel_radius_km === '' ? null : parseInt(travelForm.travel_radius_km, 10),
+        travel_charge: travelForm.travel_charge === '' ? null : parseFloat(travelForm.travel_charge),
+        booking_lead_minutes: parseInt(travelForm.booking_lead_minutes, 10) || 0,
+      };
+      const updated = await businessAPI.update(payload);
+      updateBusiness(updated);
+      toast.success('Booking settings saved');
+    } catch (err) { toast.error(err.message); }
+    finally { setTravelSaving(false); }
   };
 
   const toggleDay = (day) =>
@@ -504,6 +523,7 @@ export default function Settings() {
 
       {/* Availability */}
       {tab === 'availability' && (
+        <div className="space-y-5">
         <div className="app-panel p-6 max-w-2xl animate-slide-up">
           <form onSubmit={saveAvailability} className="space-y-5">
             <div>
@@ -547,6 +567,48 @@ export default function Settings() {
               {saving ? <Spinner /> : 'Save Availability'}
             </button>
           </form>
+        </div>
+
+        {/* Travel & booking settings */}
+        <div className="app-panel p-6 max-w-2xl animate-slide-up">
+          <h3 className="font-bold text-gray-900 dark:text-white mb-1">Travel &amp; Booking Settings</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">Configure mobile service travel limits and how far in advance customers must book.</p>
+          <form onSubmit={saveTravelSettings} className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="label">Travel Radius (km)</label>
+                <input className="input" type="number" min="0" step="1" placeholder="e.g. 15 — leave blank for no limit"
+                  value={travelForm.travel_radius_km}
+                  onChange={e => setTravelForm(p => ({ ...p, travel_radius_km: e.target.value }))} />
+                <p className="text-xs text-gray-400 mt-1">Shown on your booking page. Blank = unlimited.</p>
+              </div>
+              <div>
+                <label className="label">Travel Charge (£ flat fee)</label>
+                <input className="input" type="number" min="0" step="0.50" placeholder="e.g. 5.00 — leave blank if free"
+                  value={travelForm.travel_charge}
+                  onChange={e => setTravelForm(p => ({ ...p, travel_charge: e.target.value }))} />
+                <p className="text-xs text-gray-400 mt-1">Added to mobile bookings at checkout.</p>
+              </div>
+            </div>
+            <div className="max-w-xs">
+              <label className="label">Booking Lead Time (minutes)</label>
+              <select className="input" value={travelForm.booking_lead_minutes}
+                onChange={e => setTravelForm(p => ({ ...p, booking_lead_minutes: e.target.value }))}>
+                <option value="0">No minimum (book anytime)</option>
+                <option value="60">1 hour advance notice</option>
+                <option value="120">2 hours advance notice</option>
+                <option value="240">4 hours advance notice</option>
+                <option value="480">8 hours advance notice</option>
+                <option value="1440">24 hours advance notice</option>
+                <option value="2880">48 hours advance notice</option>
+              </select>
+              <p className="text-xs text-gray-400 mt-1">Slots closer than this won't be offered to customers.</p>
+            </div>
+            <button type="submit" disabled={travelSaving} className="btn-primary">
+              {travelSaving ? <Spinner /> : 'Save Settings'}
+            </button>
+          </form>
+        </div>
         </div>
       )}
 
