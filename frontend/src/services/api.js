@@ -115,6 +115,14 @@ export const businessAPI = {
   saveBankDetails: (data) => api.put('/business/me/bank-details', data),
 };
 
+export const addressesAPI = {
+  list: () => api.get('/business/me/addresses'),
+  create: (data) => api.post('/business/me/addresses', data),
+  update: (id, data) => api.put(`/business/me/addresses/${id}`, data),
+  remove: (id) => api.delete(`/business/me/addresses/${id}`),
+  listPublic: (slug) => api.get(`/business/${slug}/addresses`),
+};
+
 export const stripeConnectAPI = {
   onboard: () => api.post('/business/me/stripe-connect/onboard'),
   status: () => api.get('/business/me/stripe-connect/status'),

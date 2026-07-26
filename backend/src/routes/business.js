@@ -4,6 +4,7 @@ const validate = require('../middleware/validate');
 const { authenticate, attachBusiness } = require('../middleware/auth');
 const ctrl = require('../controllers/businessController');
 const connectCtrl = require('../controllers/stripeConnectController');
+const addrCtrl = require('../controllers/addressesController');
 const { createImageUpload } = require('../middleware/upload');
 
 const logoUpload = createImageUpload({ fieldName: 'logo', fileSize: 6 * 1024 * 1024, label: 'Logo' });
@@ -23,7 +24,14 @@ router.post('/me/stripe-connect/onboard', authenticate, attachBusiness, connectC
 router.get('/me/stripe-connect/status', authenticate, attachBusiness, connectCtrl.status);
 router.post('/me/stripe-connect/dashboard', authenticate, attachBusiness, connectCtrl.dashboard);
 
+// Addresses (protected)
+router.get('/me/addresses', authenticate, attachBusiness, addrCtrl.list);
+router.post('/me/addresses', authenticate, attachBusiness, addrCtrl.create);
+router.put('/me/addresses/:id', authenticate, attachBusiness, addrCtrl.update);
+router.delete('/me/addresses/:id', authenticate, attachBusiness, addrCtrl.remove);
+
 // Public
+router.get('/:slug/addresses', addrCtrl.listPublic);
 router.get('/:slug', ctrl.getPublicBusiness);
 router.get('/:slug/check', ctrl.checkSlug);
 router.get('/:slug/services', async (req, res) => {
