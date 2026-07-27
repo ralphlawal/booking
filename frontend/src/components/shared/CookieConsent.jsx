@@ -68,7 +68,7 @@ export default function CookieConsent() {
                   <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">Cookies and app storage</h2>
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     <span className="sm:hidden">Essential storage keeps sign-in, bookings, chat, and preferences working.</span>
-                    <span className="hidden sm:inline">BookAm uses essential cookies and local storage to keep you signed in, protect accounts, remember preferences, and make bookings work. Optional analytics helps us improve the product.</span>
+                    <span className="hidden sm:inline">Glam Genie uses essential cookies and local storage to keep you signed in, protect accounts, remember preferences, and make bookings work. Optional analytics helps us improve the product.</span>
                   </p>
                 </div>
                 <button

@@ -25,7 +25,7 @@ export default function VerifyEmail({ type = 'business' }) {
   return (
     <div className="app-page bg-gradient-to-br from-gray-50 to-primary-50/30 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm app-panel p-8 text-center animate-fade-in">
-        <img src={LOGO_BLUE_ICON} alt="BookAm Business" className="w-10 h-10 object-contain mx-auto mb-6" />
+        <img src={LOGO_BLUE_ICON} alt="Glam Genie" className="w-10 h-10 object-contain mx-auto mb-6" />
 
         {status === 'loading' && (
           <>

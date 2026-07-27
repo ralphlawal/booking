@@ -132,7 +132,7 @@ function LoginScreen({ onLogin }) {
     <div className="min-h-screen bg-gradient-to-b from-primary-700 to-primary-900 flex items-center justify-center p-4">
       <div className="w-full max-w-xs animate-fade-in">
         <div className="text-center mb-8">
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 mx-auto mb-5 brightness-0 invert" />
+          <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-9 mx-auto mb-5 brightness-0 invert" />
           <h1 className="text-2xl font-bold text-white">Support Panel</h1>
           <p className="text-primary-200 text-sm mt-1">Admin access only</p>
         </div>
@@ -322,7 +322,7 @@ function BroadcastsPanel() {
           <textarea
             className="input resize-none"
             rows={3}
-            placeholder="Message — e.g. BookAm will be briefly unavailable on Sunday 25 May between 2–3am GMT for scheduled maintenance."
+            placeholder="Message — e.g. Glam Genie will be briefly unavailable on Sunday 25 May between 2–3am GMT for scheduled maintenance."
             value={form.message}
             onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
           />
@@ -1186,7 +1186,7 @@ function UsersPanel({ onStartChat }) {
 
 function NotifyConsumerModal({ consumer, onClose }) {
   const [form, setForm] = useState({
-    title: 'Message from BookAm',
+    title: 'Message from Glam Genie',
     body: '',
     link: '/customer/messages',
   });
@@ -1537,7 +1537,7 @@ export default function AdminSupport() {
             <Headphones className="w-5 h-5 text-primary-600 dark:text-primary-400" />
           )}
 
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
+          <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
 
           {showingChat ? (
             <div className="flex-1 min-w-0">

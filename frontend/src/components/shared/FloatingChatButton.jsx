@@ -29,8 +29,8 @@ export default function FloatingChatButton() {
 
   return (
     <a
-      href="mailto:hello@bookam.business"
-      title="Contact BookAm Support — hello@bookam.business"
+      href="mailto:hello@glamgenie.com"
+      title="Contact Glam Genie Support — hello@glamgenie.com"
       className="fixed bottom-6 right-5 z-40 flex items-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-2xl shadow-xl shadow-primary-600/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl text-sm font-semibold"
     >
       <MessageSquare className="w-5 h-5 flex-shrink-0" />

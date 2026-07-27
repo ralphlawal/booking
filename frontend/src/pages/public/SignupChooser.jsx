@@ -6,12 +6,12 @@ export default function SignupChooser() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-700 via-primary-900 to-slate-950 flex flex-col items-center justify-center p-4">
       <Link to="/" className="mb-10">
-        <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 w-auto brightness-0 invert" />
+        <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-9 w-auto brightness-0 invert" />
       </Link>
 
       <div className="w-full max-w-2xl animate-slide-up text-center">
-        <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-3">Join BookAm</h1>
-        <p className="text-primary-200 text-sm mb-8">Choose how you want to use BookAm</p>
+        <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-3">Join Glam Genie</h1>
+        <p className="text-primary-200 text-sm mb-8">Choose how you want to use Glam Genie</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Business Owner */}

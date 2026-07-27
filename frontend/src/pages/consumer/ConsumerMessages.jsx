@@ -20,7 +20,7 @@ function fmtTime(ts) {
 
 function RoomRow({ room, active, onClick }) {
   const isSupport = room.type === 'admin_consumer';
-  const label = isSupport ? 'BookAm Support' : (room.business_name || 'Business');
+  const label = isSupport ? 'Glam Genie Support' : (room.business_name || 'Business');
   return (
     <button
       onClick={onClick}
@@ -82,7 +82,7 @@ export default function ConsumerMessages() {
   };
 
   const activeRoomData = rooms.find(r => r.id === activeRoom);
-  const chatTitle = activeRoomData?.type === 'admin_consumer' ? 'BookAm Support' : (activeRoomData?.business_name || 'Business');
+  const chatTitle = activeRoomData?.type === 'admin_consumer' ? 'Glam Genie Support' : (activeRoomData?.business_name || 'Business');
 
   if (authLoading || !consumer) return null;
 
@@ -111,7 +111,7 @@ export default function ConsumerMessages() {
               {null}
             </BackButton>
           )}
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
+          <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           <span className="font-bold text-gray-900 dark:text-white">
             {showingChat ? chatTitle : 'Messages'}
           </span>
@@ -167,7 +167,7 @@ export default function ConsumerMessages() {
               fetchMessages={consumerChatAPI.getMessages}
               sendMessage={consumerChatAPI.sendMessage}
               title={chatTitle}
-              subtitle={activeRoomData?.type === 'admin_consumer' ? 'BookAm platform support' : undefined}
+              subtitle={activeRoomData?.type === 'admin_consumer' ? 'Glam Genie platform support' : undefined}
             />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-gray-400 bg-gray-50 dark:bg-gray-950">

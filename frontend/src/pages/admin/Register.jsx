@@ -62,7 +62,7 @@ export default function Register() {
       <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px] items-center animate-fade-in">
         <section className="hidden lg:block text-white">
           <Link to="/" className="inline-flex items-center mb-10">
-            <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-11 w-auto object-contain" />
+            <img src={LOGO_WHITE_H} alt="Glam Genie" className="h-11 w-auto object-contain" />
           </Link>
           <span className="inline-flex items-center gap-1.5 bg-primary-500/20 border border-primary-500/30 text-primary-200 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
             <BusinessIcon /> Business Owner Account
@@ -81,7 +81,7 @@ export default function Register() {
 
         <div className="w-full max-w-sm mx-auto lg:max-w-none">
           <Link to="/" className="flex items-center justify-center mb-8 lg:hidden">
-            <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
+            <img src={LOGO_WHITE_H} alt="Glam Genie" className="h-10 w-auto object-contain" />
           </Link>
 
           <div className="flex items-center justify-center gap-2 mb-4 lg:hidden">

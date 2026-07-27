@@ -120,7 +120,7 @@ export default function AdminLayout() {
       >
         {/* Logo — top padding clears notch in landscape */}
         <div className="flex items-center px-5 border-b border-gray-100 dark:border-gray-800" style={{ height: 'calc(4rem + env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-          <img src={logoSrc} alt="BookAm Business" className="h-9 w-auto object-contain" />
+          <img src={logoSrc} alt="Glam Genie" className="h-9 w-auto object-contain" />
         </div>
 
         {/* Business badge + copy link */}
@@ -211,7 +211,7 @@ export default function AdminLayout() {
 
           {/* Mobile: centered logo */}
           <div className="lg:hidden absolute left-1/2 -translate-x-1/2 max-w-[42vw]">
-            <img src={logoSrc} alt="BookAm Business" className="h-7 sm:h-8 w-auto object-contain" />
+            <img src={logoSrc} alt="Glam Genie" className="h-7 sm:h-8 w-auto object-contain" />
           </div>
 
           {/* Right actions */}

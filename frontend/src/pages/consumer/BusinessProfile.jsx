@@ -238,7 +238,7 @@ export default function BusinessProfile() {
         <div className="max-w-5xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2">
           <BackButton fallback="/explore" />
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain" />
+            <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-6 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-1.5">
             <button onClick={handleFollow} disabled={followLoading}

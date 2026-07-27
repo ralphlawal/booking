@@ -58,7 +58,7 @@ export function NotificationProvider({ children }) {
     if (window.Notification.permission !== 'granted') return;
     if (document.visibilityState === 'visible' && !/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) return;
     try {
-      const n = new window.Notification(notification.title || 'BookAm Business', {
+      const n = new window.Notification(notification.title || 'Glam Genie', {
         body: notification.body || 'You have a new notification.',
         icon: LOGO_BLUE_ICON,
         badge: LOGO_BLUE_ICON,

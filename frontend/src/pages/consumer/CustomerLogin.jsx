@@ -54,11 +54,11 @@ export default function CustomerLogin() {
       <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] items-center animate-fade-in">
         <div className="hidden lg:block">
           <Link to="/" className="inline-block mb-8">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
+            <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-10 w-auto object-contain" />
           </Link>
           <p className="text-xs font-bold uppercase tracking-widest text-primary-600 mb-4">Customer account</p>
           <h1 className="text-4xl xl:text-5xl font-black text-gray-900 leading-tight max-w-xl">Welcome back to your bookings.</h1>
-          <p className="text-gray-500 mt-5 text-lg max-w-lg">Sign in to view appointments, rebook favourites, chat with businesses, and contact BookAm support.</p>
+          <p className="text-gray-500 mt-5 text-lg max-w-lg">Sign in to view appointments, rebook favourites, chat with businesses, and contact Glam Genie support.</p>
           <div className="grid grid-cols-3 gap-3 mt-8 max-w-xl">
             {[
               [CalendarCheck, 'Track bookings'],
@@ -76,7 +76,7 @@ export default function CustomerLogin() {
         <div className="w-full max-w-sm mx-auto lg:max-w-none">
           <div className="text-center mb-6 lg:hidden">
             <Link to="/" className="inline-block mb-5">
-              <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain mx-auto" />
+              <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-9 w-auto object-contain mx-auto" />
             </Link>
             <h1 className="text-2xl font-black text-gray-900">Customer sign in</h1>
             <p className="text-gray-500 text-sm mt-1">Manage bookings and messages</p>
@@ -151,7 +151,7 @@ export default function CustomerLogin() {
           </form>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            New to BookAm?{' '}
+            New to Glam Genie?{' '}
             <Link to="/customer/signup" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
               Create account
             </Link>

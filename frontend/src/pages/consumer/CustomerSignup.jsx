@@ -21,7 +21,7 @@ export default function CustomerSignup() {
     setLoading(true);
     try {
       await register(form);
-      toast.success('Account created! Welcome to BookAm.');
+      toast.success('Account created! Welcome to Glam Genie.');
       navigate('/customer/onboarding');
     } catch (err) {
       toast.error(err.message);
@@ -50,7 +50,7 @@ export default function CustomerSignup() {
       <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px] items-center animate-fade-in">
         <div className="hidden lg:block">
           <Link to="/" className="inline-block mb-8">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
+            <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-10 w-auto object-contain" />
           </Link>
           <p className="text-xs font-bold uppercase tracking-widest text-primary-600 mb-4">Customer account</p>
           <h1 className="text-4xl xl:text-5xl font-black text-gray-900 leading-tight max-w-xl">Create your personal booking hub.</h1>
@@ -72,7 +72,7 @@ export default function CustomerSignup() {
         <div className="w-full max-w-sm mx-auto lg:max-w-none">
           <div className="text-center mb-6 lg:hidden">
             <Link to="/" className="inline-block mb-5">
-              <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain mx-auto" />
+              <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-9 w-auto object-contain mx-auto" />
             </Link>
             <h1 className="text-2xl font-black text-gray-900">Customer sign up</h1>
             <p className="text-gray-500 text-sm mt-1">Book services and track appointments</p>

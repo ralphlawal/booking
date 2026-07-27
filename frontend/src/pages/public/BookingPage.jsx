@@ -225,7 +225,7 @@ export default function BookingPage() {
       if (stripe_payment_intent_id) {
         // Payment already taken — give user a clear recovery message
         toast.error(
-          `Your payment was processed but the booking could not be saved. Please email hello@bookam.business with payment reference: ${stripe_payment_intent_id}`,
+          `Your payment was processed but the booking could not be saved. Please email hello@glamgenie.com with payment reference: ${stripe_payment_intent_id}`,
           { duration: 10000 }
         );
       } else {
@@ -704,7 +704,7 @@ function PaymentForm({ onSuccess, submitting, setSubmitting, amount, returnUrl }
         <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-lg p-3 flex items-start gap-2.5">
           <Shield className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-indigo-800 dark:text-indigo-300">BookAm Buyer Protection</p>
+            <p className="text-xs font-semibold text-indigo-800 dark:text-indigo-300">Glam Genie Buyer Protection</p>
             <p className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">Your payment is held securely until you confirm the service was received. You have 14 days to dispute if anything goes wrong.</p>
           </div>
         </div>

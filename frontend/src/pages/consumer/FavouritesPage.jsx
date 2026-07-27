@@ -41,7 +41,7 @@ export default function FavouritesPage() {
             {null}
           </BackButton>
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
             <h1 className="font-black text-gray-900 dark:text-white ml-2">Favourites</h1>
         </div>

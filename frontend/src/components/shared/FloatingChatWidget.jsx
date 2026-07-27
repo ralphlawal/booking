@@ -144,7 +144,7 @@ export default function FloatingChatWidget() {
               <Headphones className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm">BookAm Support</p>
+              <p className="text-white font-bold text-sm">Glam Genie Support</p>
               <p className="text-primary-200 text-xs">We reply within a few hours</p>
             </div>
             <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0">
@@ -169,8 +169,8 @@ export default function FloatingChatWidget() {
                 <Link to="/admin/login" state={{ from: { pathname, search: '', hash: '' } }} className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 transition-colors">
                   <span>Business sign in</span><ChevronRight className="w-4 h-4" />
                 </Link>
-                <a href="mailto:hello@bookam.business" className="block text-center text-xs text-gray-400 hover:text-gray-600 mt-2">
-                  Or email hello@bookam.business
+                <a href="mailto:hello@glamgenie.com" className="block text-center text-xs text-gray-400 hover:text-gray-600 mt-2">
+                  Or email hello@glamgenie.com
                 </a>
               </div>
             </div>
@@ -240,7 +240,7 @@ export default function FloatingChatWidget() {
       {/* Trigger button */}
       <button
         onClick={openChat}
-        title="Chat with BookAm Support"
+        title="Chat with Glam Genie Support"
         className={`fixed ${hasBottomNav ? 'bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))]' : 'bottom-5'} right-4 sm:right-5 z-40 flex items-center gap-2.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-2xl shadow-xl shadow-primary-600/30 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 text-sm font-semibold`}
       >
         <div className="relative">

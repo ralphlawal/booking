@@ -14,7 +14,7 @@ function fmtTime(ts) {
 }
 
 function RoomRow({ room, active, onClick }) {
-  const label = room.type === 'admin_business' ? 'BookAm Support' : (room.consumer_name || 'Customer');
+  const label = room.type === 'admin_business' ? 'Glam Genie Support' : (room.consumer_name || 'Customer');
   const sub = room.type === 'admin_business' ? 'Platform support' : (room.consumer_email || '');
   return (
     <button
@@ -57,7 +57,7 @@ export default function AdminInbox() {
   const activeRoomData = rooms.find(r => r.id === activeRoom);
   const chatTitle = activeRoomData
     ? activeRoomData.type === 'admin_business'
-      ? 'BookAm Support'
+      ? 'Glam Genie Support'
       : (activeRoomData.consumer_name || 'Customer')
     : '';
 
