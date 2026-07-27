@@ -267,14 +267,14 @@ export default function ExplorePage() {
       {/* Hero search */}
       <div className="bg-gradient-to-br from-primary-950 via-primary-900 to-slate-950 px-3 sm:px-6 py-8 sm:py-12">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-2xl sm:text-4xl font-black text-white mb-1.5 tracking-tight">Find services near you</h1>
-          <p className="text-white/60 text-sm sm:text-base mb-6">Book barbers, stylists, trainers and more instantly</p>
+          <h1 className="text-2xl sm:text-4xl font-black text-white mb-1.5 tracking-tight">Find beauty treatments near you</h1>
+          <p className="text-white/60 text-sm sm:text-base mb-6">Book nails, lashes, makeup, facials and more instantly</p>
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 bg-white/10 backdrop-blur-sm p-2 rounded-2xl border border-white/20">
             <div className="flex-1 flex items-center gap-2 bg-white rounded-xl px-4 py-3">
               <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
               <input
                 className="flex-1 bg-transparent text-gray-900 placeholder:text-gray-400 text-sm font-medium outline-none"
-                placeholder="What are you looking for?"
+                placeholder="Search for treatments..."
                 value={q}
                 onChange={e => setSearchParams(p => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
               />
