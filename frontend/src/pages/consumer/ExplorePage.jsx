@@ -11,7 +11,7 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
 
-const POPULAR_SERVICES = ['Haircut', 'Beard trim', 'Shave', 'Nails', 'Lashes', 'Massage', 'Tutoring', 'Cleaning'];
+const POPULAR_SERVICES = ['Nails', 'Lash Extensions', 'Makeup', 'Hair Styling', 'Eyebrows', 'Waxing', 'Facials', 'Spray Tan'];
 
 const CATEGORY_VISUALS = {
   hair: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=240&q=70',

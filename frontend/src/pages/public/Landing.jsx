@@ -237,7 +237,7 @@ export default function Landing() {
                 {CATEGORIES.map(cat => (
                   <button
                     key={cat.label}
-                    onClick={() => navigate(cat.q ? `/explore?q=${encodeURIComponent(cat.q)}` : '/explore')}
+                    onClick={() => navigate(cat.q ? `/explore?q=${encodeURIComponent(cat.q)}&category=${encodeURIComponent(cat.label)}` : '/explore')}
                     className="flex flex-col items-center gap-2 group"
                   >
                     <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full flex items-center justify-center text-2xl

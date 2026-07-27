@@ -459,7 +459,7 @@ export default function Settings() {
   };
 
   const TABS = ['business','availability','addresses','blocked','staff','photos','intake','promo','waitlist','qr','embed','payouts','verification','security'];
-  const TAB_LABELS = ['Business Info','Availability','Blocked Days','Staff','Gallery','Intake Forms','Promo Codes','Waitlist','QR & Link','Embed Widget','Payouts','Verification','Security'];
+  const TAB_LABELS = ['Business Info','Availability','Locations','Blocked Days','Staff','Gallery','Intake Forms','Promo Codes','Waitlist','QR & Link','Embed Widget','Payouts','Verification','Security'];
 
   return (
     <div className="space-y-5 animate-fade-in">
