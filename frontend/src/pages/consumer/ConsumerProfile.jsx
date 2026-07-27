@@ -320,7 +320,7 @@ export default function ConsumerProfile() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <BackButton fallback="/customer/dashboard">Back</BackButton>
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors px-1">
             <LogOut className="w-4 h-4" />
@@ -555,7 +555,7 @@ export default function ConsumerProfile() {
                     </button>
                     {navigator.share && (
                       <button
-                        onClick={() => navigator.share({ title: 'Join Glam Genie', text: `Use my code ${referral.referral_code} to sign up on Glam Genie and get started booking local services instantly.`, url: window.location.origin + '/customer/signup' })}
+                        onClick={() => navigator.share({ title: 'Join BookAm', text: `Use my code ${referral.referral_code} to sign up on BookAm and get started booking local services instantly.`, url: window.location.origin + '/customer/signup' })}
                         className="btn-primary flex-1 flex items-center justify-center gap-2"
                       >
                         Share link
@@ -739,7 +739,7 @@ export default function ConsumerProfile() {
                 </span>
                 Appearance
               </h3>
-              <p className="text-xs text-gray-400 mb-3">Choose how Glam Genie looks on this device.</p>
+              <p className="text-xs text-gray-400 mb-3">Choose how BookAm looks on this device.</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => { if (theme !== 'light') toggleTheme(); }}
@@ -833,7 +833,7 @@ export default function ConsumerProfile() {
               </h3>
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
                 {[
-                  { label: 'Contact support', href: 'mailto:hello@glamgenie.com' },
+                  { label: 'Contact support', href: 'mailto:hello@bookam.business' },
                   { label: 'Privacy policy', href: '/legal/privacy' },
                   { label: 'Terms of service', href: '/legal/terms' },
                   { label: 'Cookie policy', href: '/legal/cookies' },

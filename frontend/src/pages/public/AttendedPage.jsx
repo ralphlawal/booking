@@ -91,7 +91,7 @@ export default function AttendedPage() {
     return (
       <div className="app-page bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
-          <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-8 mx-auto mb-8" />
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-8" />
           <div className="app-panel p-8 border-red-100">
             <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <XCircle className="w-7 h-7 text-red-600" />
@@ -99,7 +99,7 @@ export default function AttendedPage() {
             <h1 className="text-xl font-black text-gray-900 mb-2">Something went wrong</h1>
             <p className="text-gray-500 text-sm mb-6">{errorMsg}</p>
             <a
-              href="mailto:hello@glamgenie.com"
+              href="mailto:hello@bookam.business"
               className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-colors"
             >
               Contact support →
@@ -115,7 +115,7 @@ export default function AttendedPage() {
     return (
       <div className={`app-page bg-gradient-to-b ${isDispute ? 'from-amber-50' : 'from-green-50'} to-white flex items-center justify-center p-4`}>
         <div className="w-full max-w-sm text-center">
-          <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-8 mx-auto mb-8" />
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-8" />
           <div className="app-panel p-8">
             <div className={`w-14 h-14 ${isDispute ? 'bg-amber-100' : 'bg-green-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
               {isDispute
@@ -137,7 +137,7 @@ export default function AttendedPage() {
               to="/"
               className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-colors"
             >
-              Back to Glam Genie
+              Back to BookAm
             </Link>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function AttendedPage() {
     <div className="app-page bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-8 mx-auto mb-4" />
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-4" />
           <h1 className="text-2xl font-black text-gray-900">Report an issue</h1>
           <p className="text-gray-500 text-sm mt-1">
             Please describe what happened. Our team will investigate within 48 hours and payment is held until resolved.

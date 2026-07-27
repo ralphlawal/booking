@@ -93,7 +93,7 @@ export default function Onboarding() {
 
         <div className="relative flex flex-col flex-1 px-10 py-10">
           <Link to="/">
-            <img src={LOGO_WHITE_H} alt="Glam Genie"
+            <img src={LOGO_WHITE_H} alt="BookAm Business"
               className="h-9 w-auto object-contain mb-10 brightness-0 invert"
               onError={e => { e.currentTarget.src = LOGO_BLUE_H; e.currentTarget.className = 'h-9 w-auto object-contain mb-10'; }} />
           </Link>
@@ -125,7 +125,7 @@ export default function Onboarding() {
           </div>
 
           <div className="mt-8 border-t border-white/10 pt-6">
-            <p className="text-white/40 text-xs">© {new Date().getFullYear()} Glam Genie</p>
+            <p className="text-white/40 text-xs">© {new Date().getFullYear()} BookAm Business</p>
             <p className="text-white/30 text-xs mt-0.5">A Ralph Lawal Group product · Free to start</p>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function Onboarding() {
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
         {/* Mobile logo */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 lg:hidden">
-          <Link to="/"><img src={LOGO_BLUE_H} alt="Glam Genie" className="h-8 w-auto object-contain" /></Link>
+          <Link to="/"><img src={LOGO_BLUE_H} alt="BookAm" className="h-8 w-auto object-contain" /></Link>
           <Link to="/admin/login" className="text-sm font-semibold text-gray-500 hover:text-gray-700">Sign in</Link>
         </div>
 

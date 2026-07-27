@@ -106,7 +106,7 @@ function CustomerMomentum({ bookings, upcoming, prefs, loyalty, onRebook }) {
       <div className="app-panel p-4 sm:p-5 bg-gradient-to-br from-primary-950 to-primary-800 text-white border-primary-900">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-primary-200">Your Glam Genie streak</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary-200">Your BookAm streak</p>
             <h2 className="text-2xl font-black mt-1">{completedCount} completed</h2>
             <p className="text-sm text-primary-100 mt-1">
               {completedCount === 0
@@ -876,7 +876,7 @@ export default function CustomerDashboard() {
       <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="Glam Genie" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
           <div className="flex items-center gap-1">
 
@@ -1003,7 +1003,7 @@ export default function CustomerDashboard() {
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-bold text-base">Welcome to Glam Genie!</p>
+                <p className="font-bold text-base">Welcome to BookAm!</p>
                 <p className="text-sm text-primary-100 mt-0.5">Find and book services near you in seconds.</p>
                 <div className="mt-3 flex flex-col gap-2 text-sm text-primary-100">
                   <span className="flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">1</span> Browse services below or use Smart Match</span>

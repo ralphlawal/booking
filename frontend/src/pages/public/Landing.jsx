@@ -35,7 +35,7 @@ const HOW_STEPS_BUSINESS = [
 ];
 
 const FAQS = [
-  { q: 'Is Glam Genie free for beauty professionals?', a: 'Yes — the core plan is completely free. Create your booking page, list your treatments and hours, and accept unlimited bookings at no cost.' },
+  { q: 'Is BookAm free for beauty professionals?', a: 'Yes — the core plan is completely free. Create your booking page, list your treatments and hours, and accept unlimited bookings at no cost.' },
   { q: 'Do clients need an account to book?', a: 'No. Clients can book without signing up — they just enter their name, phone, and optionally an email for their confirmation.' },
   { q: 'Can clients cancel or reschedule?', a: 'Yes. Clients can cancel using the link in their confirmation email, or from their dashboard if they have an account.' },
   { q: 'How do I get notified about new bookings?', a: 'You receive an email for every new booking, cancellation, and reminder. Push notifications are available in the app too.' },
@@ -138,10 +138,10 @@ export default function Landing() {
     <div className="min-h-screen bg-white text-gray-900">
 
       {/* ── Navbar ──────────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-fuchsia-50/95 backdrop-blur-md border-b border-fuchsia-100 shadow-sm">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link to="/" className="text-xl font-black text-fuchsia-900 tracking-tight">
-            Glam Genie
+          <Link to="/">
+            <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 sm:h-9 w-auto object-contain" />
           </Link>
           <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-gray-600">
             <Link to="/explore" className="hover:text-primary-600 transition-colors">Find services</Link>
@@ -160,21 +160,21 @@ export default function Landing() {
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="relative bg-gradient-to-br from-fuchsia-50 via-pink-50 to-purple-50 overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-fuchsia-200/40 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-20 w-60 h-60 bg-purple-200/30 rounded-full blur-3xl pointer-events-none" />
+      <section className="relative bg-gradient-to-br from-rose-50 via-pink-50 to-rose-100 overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-rose-200/40 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-20 w-60 h-60 bg-pink-200/30 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center pt-10 pb-12 lg:min-h-[480px]">
 
             {/* Left: text + search */}
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-primary-100 rounded-full px-4 py-1.5 text-xs font-bold text-primary-600 tracking-wide mb-5">
+              <div className="inline-flex items-center gap-2 bg-rose-100 rounded-full px-4 py-1.5 text-xs font-bold text-rose-600 tracking-wide mb-5">
                 <Zap className="w-3.5 h-3.5" /> Book beauty treatments instantly
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight">
                 Find & book local
-                <span className="block text-primary-600">beauty professionals</span>
+                <span className="block text-rose-500">beauty professionals</span>
                 near you
               </h1>
               <p className="mt-4 text-base sm:text-lg text-gray-600 max-w-lg leading-relaxed">
@@ -184,8 +184,8 @@ export default function Landing() {
 
               {/* Search form */}
               <form onSubmit={handleSearch}
-                className="mt-6 sm:mt-8 flex flex-col sm:flex-row bg-white shadow-xl shadow-primary-100 rounded-2xl border border-primary-100 overflow-hidden max-w-xl">
-                <div className="flex-1 flex items-center gap-2 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-primary-100">
+                className="mt-6 sm:mt-8 flex flex-col sm:flex-row bg-white shadow-xl shadow-rose-100 rounded-2xl border border-rose-100 overflow-hidden max-w-xl">
+                <div className="flex-1 flex items-center gap-2 px-4 py-3.5 border-b sm:border-b-0 sm:border-r border-rose-100">
                   <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   <input
                     className="flex-1 bg-transparent text-gray-900 placeholder:text-gray-400 text-sm font-medium outline-none"
@@ -203,12 +203,12 @@ export default function Landing() {
                     onChange={e => setLocation(e.target.value)}
                   />
                   <button type="button" onClick={detectLocation} disabled={locating}
-                    className="p-1.5 rounded-lg hover:bg-primary-50 transition-colors" title="Use my location">
-                    <Navigation className={`w-4 h-4 ${locating ? 'text-primary-500 animate-pulse' : 'text-gray-400'}`} />
+                    className="p-1.5 rounded-lg hover:bg-rose-50 transition-colors" title="Use my location">
+                    <Navigation className={`w-4 h-4 ${locating ? 'text-rose-500 animate-pulse' : 'text-gray-400'}`} />
                   </button>
                 </div>
                 <button type="submit"
-                  className="bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-3.5 text-sm transition-colors whitespace-nowrap">
+                  className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-6 py-3.5 text-sm transition-colors whitespace-nowrap">
                   Search
                 </button>
               </form>
@@ -217,7 +217,7 @@ export default function Landing() {
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 {['Nails', 'Lash Extensions', 'Hair Styling', 'Makeup', 'Eyebrows', 'Waxing', 'Facials'].map(tag => (
                   <button key={tag} onClick={() => navigate(`/explore?q=${encodeURIComponent(tag)}`)}
-                    className="text-xs bg-white/80 hover:bg-white text-primary-600 hover:text-primary-700 px-3 py-1.5 rounded-full font-medium transition-colors border border-primary-100 hover:border-primary-300">
+                    className="text-xs bg-white/80 hover:bg-white text-rose-600 hover:text-rose-700 px-3 py-1.5 rounded-full font-medium transition-colors border border-rose-100 hover:border-rose-300">
                     {tag}
                   </button>
                 ))}
@@ -227,9 +227,9 @@ export default function Landing() {
             {/* Right: model photo */}
             <div className="hidden lg:flex items-end justify-center relative h-[480px]">
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-72 h-72 bg-fuchsia-200/50 rounded-full blur-2xl" />
+                <div className="w-72 h-72 bg-rose-200/50 rounded-full blur-2xl" />
               </div>
-              <div className="relative w-full h-full overflow-hidden rounded-t-[100px] rounded-b-3xl shadow-2xl shadow-fuchsia-200 border-4 border-white/70">
+              <div className="relative w-full h-full overflow-hidden rounded-t-[100px] rounded-b-3xl shadow-2xl shadow-rose-200 border-4 border-white/70">
                 <img
                   src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=700&q=80&auto=format&fit=crop"
                   alt="Beauty professional"
@@ -260,10 +260,10 @@ export default function Landing() {
                     className="flex flex-col items-center gap-2 group"
                   >
                     <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full flex items-center justify-center text-2xl
-                      bg-primary-50 border-2 border-primary-100 hover:border-primary-400 hover:bg-primary-100 transition-all group-hover:scale-105">
+                      bg-rose-50 border-2 border-rose-100 hover:border-rose-400 hover:bg-rose-100 transition-all group-hover:scale-105">
                       {cat.emoji}
                     </div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-gray-700 group-hover:text-primary-600 transition-colors text-center leading-tight max-w-[72px]">{cat.label}</span>
+                    <span className="text-[10px] sm:text-xs font-semibold text-gray-700 group-hover:text-rose-600 transition-colors text-center leading-tight max-w-[72px]">{cat.label}</span>
                   </button>
                 ))}
               </div>
@@ -276,7 +276,7 @@ export default function Landing() {
       <section className="py-6 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="rounded-2xl bg-gradient-to-br from-primary-600 to-primary-900 p-8 flex flex-col justify-between min-h-[180px] relative overflow-hidden">
+            <div className="rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 p-8 flex flex-col justify-between min-h-[180px] relative overflow-hidden">
               <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full" />
               <div className="absolute -right-2 -bottom-6 w-24 h-24 bg-white/10 rounded-full" />
               <div className="relative">
@@ -286,20 +286,20 @@ export default function Landing() {
                 <p className="text-white/90 font-bold tracking-wide mt-1 text-sm uppercase">Your first booking</p>
               </div>
               <button onClick={() => navigate('/explore')}
-                className="self-start mt-6 bg-white text-primary-600 font-bold px-6 py-2.5 rounded-full text-sm hover:bg-primary-50 transition-colors shadow-lg">
+                className="self-start mt-6 bg-white text-rose-600 font-bold px-6 py-2.5 rounded-full text-sm hover:bg-rose-50 transition-colors shadow-lg">
                 Claim Offer
               </button>
             </div>
-            <div className="rounded-2xl bg-red-600 p-8 flex flex-col justify-between min-h-[180px] relative overflow-hidden">
-              <div className="absolute -right-4 -top-4 w-28 h-28 bg-white/10 rounded-full" />
+            <div className="rounded-2xl bg-gray-900 p-8 flex flex-col justify-between min-h-[180px] relative overflow-hidden">
+              <div className="absolute -right-4 -top-4 w-28 h-28 bg-white/5 rounded-full" />
               <div>
-                <p className="text-red-200 text-xs font-bold uppercase tracking-widest">Latest News</p>
-                <p className="text-2xl sm:text-3xl font-black text-white mt-2 leading-tight">TRENDING<br />BEAUTY LOOKS</p>
-                <p className="text-red-100 text-sm mt-2">Explore trending styles and book the look you love!</p>
+                <p className="text-rose-400 text-xs font-bold uppercase tracking-widest">Trending looks</p>
+                <p className="text-2xl sm:text-3xl font-black text-white mt-2 leading-tight">SEE A STYLE<br />YOU LOVE?</p>
+                <p className="text-gray-400 text-sm mt-2">Explore trending styles and book the look you love!</p>
               </div>
-              <Link to="/feed"
-                className="self-start mt-4 bg-white text-red-600 hover:bg-red-50 font-bold px-6 py-2.5 rounded-full text-sm transition-colors shadow-lg">
-                See Feed
+              <Link to="/explore"
+                className="self-start mt-4 bg-rose-500 hover:bg-rose-600 text-white font-bold px-6 py-2.5 rounded-full text-sm transition-colors shadow-lg shadow-rose-500/30">
+                Book Now
               </Link>
             </div>
           </div>
@@ -332,13 +332,13 @@ export default function Landing() {
       <section className="py-14 sm:py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold text-primary-500 uppercase tracking-widest mb-2">How It Works</p>
+            <p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-2">How It Works</p>
             <h2 className="text-2xl sm:text-4xl font-bold text-gray-900">Book your beauty treatment in 3 easy steps</h2>
           </div>
           <div className="grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
             {HOW_STEPS_CUSTOMER.map(s => (
               <div key={s.n} className="text-center">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white text-2xl font-black flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-200">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-600 text-white text-2xl font-black flex items-center justify-center mx-auto mb-4 shadow-lg shadow-rose-200">
                   {s.n}
                 </div>
                 <h3 className="font-bold text-gray-900 mb-1">{s.title}</h3>
@@ -383,7 +383,7 @@ export default function Landing() {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: beauty professional image */}
           <div className="hidden lg:block relative">
-            <div className="absolute -inset-2 bg-primary-500/10 rounded-3xl blur-xl" />
+            <div className="absolute -inset-2 bg-rose-500/10 rounded-3xl blur-xl" />
             <div className="relative rounded-3xl overflow-hidden h-[500px] border-2 border-white/10 shadow-2xl">
               <img
                 src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=700&q=80&auto=format&fit=crop"
@@ -394,16 +394,16 @@ export default function Landing() {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
                 <p className="text-white font-bold text-lg">Sign up today!</p>
-                <p className="text-white/70 text-sm mt-1">Join thousands of beauty professionals growing their business with Glam Genie.</p>
+                <p className="text-white/70 text-sm mt-1">Join thousands of beauty professionals growing their business with BookAm.</p>
               </div>
             </div>
           </div>
 
           {/* Right: text + features + steps + CTA */}
           <div>
-            <p className="text-primary-300 text-xs font-bold uppercase tracking-widest mb-4">For beauty professionals</p>
+            <p className="text-rose-400 text-xs font-bold uppercase tracking-widest mb-4">For beauty professionals</p>
             <h2 className="text-3xl sm:text-5xl font-bold text-white leading-tight">
-              Set up your services on Glam Genie
+              Set up your beauty business on BookAm
             </h2>
             <p className="text-gray-300 mt-4 text-base leading-relaxed">
               Get your own booking page, manage appointments, and get paid — all from one free dashboard.
@@ -417,7 +417,7 @@ export default function Landing() {
               ].map(({ icon: Icon, label, desc }) => (
                 <div key={label} className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-primary-300" />
+                    <Icon className="w-4 h-4 text-rose-300" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white">{label}</p>
@@ -429,7 +429,7 @@ export default function Landing() {
             <div className="mt-5 space-y-2">
               {HOW_STEPS_BUSINESS.map(s => (
                 <div key={s.n} className="flex items-start gap-4 bg-white/5 border border-white/10 rounded-2xl p-4">
-                  <div className="w-9 h-9 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-700 text-white rounded-xl flex items-center justify-center font-bold text-sm">
+                  <div className="w-9 h-9 flex-shrink-0 bg-gradient-to-br from-rose-500 to-pink-600 text-white rounded-xl flex items-center justify-center font-bold text-sm">
                     {s.n}
                   </div>
                   <div>
@@ -441,8 +441,8 @@ export default function Landing() {
             </div>
             <div className="flex gap-3 pt-5">
               <Link to="/admin/register"
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold px-5 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-primary-600/30">
-                Get started <ArrowRight className="w-4 h-4" />
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-rose-500/30">
+                Become a Pro <ArrowRight className="w-4 h-4" />
               </Link>
               <Link to="/admin/login"
                 className="inline-flex items-center justify-center gap-2 border border-white/20 text-white font-semibold px-5 py-3.5 rounded-xl text-sm hover:bg-white/10 transition-all">
@@ -470,11 +470,11 @@ export default function Landing() {
             ].map((item, i) => (
               <Link key={i} to="/feed"
                 className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-44 bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
+                <div className="h-44 bg-gradient-to-br from-rose-100 to-pink-200 flex items-center justify-center">
                   <span className="text-5xl">{['💅', '👁️', '🧖'][i]}</span>
                 </div>
                 <div className="p-4">
-                  <span className="text-xs font-bold text-red-600 uppercase tracking-widest">{item.cat}</span>
+                  <span className="text-xs font-bold text-rose-500 uppercase tracking-widest">{item.cat}</span>
                   <h3 className="font-bold text-gray-900 mt-1 text-sm leading-snug group-hover:text-primary-600 transition-colors">{item.title}</h3>
                   <p className="text-xs text-gray-400 mt-2">{item.date}</p>
                   <button className="mt-3 text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-full transition-colors">
@@ -499,66 +499,66 @@ export default function Landing() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="bg-fuchsia-100 text-fuchsia-900">
+      <footer className="bg-rose-500 text-rose-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 mb-10">
             <div className="sm:col-span-2 lg:col-span-1">
-              <p className="text-2xl font-black text-fuchsia-900 tracking-tight mb-3">Glam Genie</p>
-              <p className="text-sm text-fuchsia-700 leading-relaxed mb-4">
+              <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 w-auto object-contain brightness-0 invert mb-4" />
+              <p className="text-sm text-rose-100 leading-relaxed mb-4">
                 The easiest way to discover and book local beauty services — or manage your business bookings. Free to start.
               </p>
-              <p className="text-xs font-bold text-fuchsia-800 tracking-widest uppercase">Your beauty, booked.</p>
+              <p className="text-xs font-bold text-white tracking-widest uppercase">Book. Confirm. Be there.</p>
               <div className="flex items-center gap-3 mt-5">
-                <a href="https://facebook.com/glamgenie" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-fuchsia-200 hover:bg-fuchsia-300 rounded-xl flex items-center justify-center transition-colors text-fuchsia-800">
+                <a href="https://facebook.com/bookambusiness" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 </a>
-                <a href="https://tiktok.com/@glamgenie" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-fuchsia-200 hover:bg-fuchsia-300 rounded-xl flex items-center justify-center transition-colors text-fuchsia-800">
+                <a href="https://tiktok.com/@bookambusiness" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.95a8.16 8.16 0 004.77 1.52V7.02a4.85 4.85 0 01-1-.33z"/></svg>
                 </a>
-                <a href="https://instagram.com/glamgenie" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-fuchsia-200 hover:bg-fuchsia-300 rounded-xl flex items-center justify-center transition-colors text-fuchsia-800">
+                <a href="https://instagram.com/bookambusiness" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
                 </a>
-                <a href="https://linkedin.com/company/glamgenie" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-fuchsia-200 hover:bg-fuchsia-300 rounded-xl flex items-center justify-center transition-colors text-fuchsia-800">
+                <a href="https://linkedin.com/company/bookambusiness" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                 </a>
               </div>
             </div>
             <div>
-              <h4 className="text-fuchsia-800 font-semibold text-sm mb-4 uppercase tracking-wider">Discover</h4>
-              <ul className="space-y-2.5 text-sm text-fuchsia-700">
-                <li><Link to="/explore?q=Nails" className="hover:text-fuchsia-900 transition-colors">Nail treatments</Link></li>
-                <li><Link to="/explore?q=Hair+Styling" className="hover:text-fuchsia-900 transition-colors">Hair styling</Link></li>
-                <li><Link to="/explore?q=Lash+Extensions" className="hover:text-fuchsia-900 transition-colors">Lash extensions</Link></li>
-                <li><Link to="/explore?q=Makeup" className="hover:text-fuchsia-900 transition-colors">Makeup</Link></li>
-                <li><Link to="/explore?q=Facials" className="hover:text-fuchsia-900 transition-colors">Facials</Link></li>
-                <li><Link to="/explore" className="hover:text-fuchsia-900 transition-colors">All treatments</Link></li>
+              <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Discover</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li><Link to="/explore?q=Nails" className="hover:text-white transition-colors">Nail treatments</Link></li>
+                <li><Link to="/explore?q=Hair+Styling" className="hover:text-white transition-colors">Hair styling</Link></li>
+                <li><Link to="/explore?q=Lash+Extensions" className="hover:text-white transition-colors">Lash extensions</Link></li>
+                <li><Link to="/explore?q=Makeup" className="hover:text-white transition-colors">Makeup</Link></li>
+                <li><Link to="/explore?q=Facials" className="hover:text-white transition-colors">Facials</Link></li>
+                <li><Link to="/explore" className="hover:text-white transition-colors">All treatments</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-fuchsia-800 font-semibold text-sm mb-4 uppercase tracking-wider">For Artists</h4>
-              <ul className="space-y-2.5 text-sm text-fuchsia-700">
-                <li><Link to="/admin/register" className="hover:text-fuchsia-900 transition-colors">Become a Pro</Link></li>
-                <li><Link to="/admin/login" className="hover:text-fuchsia-900 transition-colors">Artist sign in</Link></li>
-                <li><Link to="/customer/signup" className="hover:text-fuchsia-900 transition-colors">Client sign up</Link></li>
-                <li><Link to="/customer/login" className="hover:text-fuchsia-900 transition-colors">Client sign in</Link></li>
-                <li><Link to="/booking/lookup" className="hover:text-fuchsia-900 transition-colors">Find my booking</Link></li>
-                <li><Link to="/admin-support" className="hover:text-fuchsia-900 transition-colors">Pro support</Link></li>
+              <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">For Artists</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li><Link to="/admin/register" className="hover:text-white transition-colors">Become a Pro</Link></li>
+                <li><Link to="/admin/login" className="hover:text-white transition-colors">Artist sign in</Link></li>
+                <li><Link to="/customer/signup" className="hover:text-white transition-colors">Client sign up</Link></li>
+                <li><Link to="/customer/login" className="hover:text-white transition-colors">Client sign in</Link></li>
+                <li><Link to="/booking/lookup" className="hover:text-white transition-colors">Find my booking</Link></li>
+                <li><Link to="/admin-support" className="hover:text-white transition-colors">Pro support</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-fuchsia-800 font-semibold text-sm mb-4 uppercase tracking-wider">Company</h4>
-              <ul className="space-y-2.5 text-sm text-fuchsia-700">
-                <li><a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-fuchsia-900 transition-colors">Ralph Lawal Group</a></li>
-                <li><a href="mailto:hello@glamgenie.com" className="hover:text-fuchsia-900 transition-colors flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 flex-shrink-0" /> hello@glamgenie.com</a></li>
-                <li><Link to="/legal/terms" className="hover:text-fuchsia-900 transition-colors">Terms of service</Link></li>
-                <li><Link to="/legal/privacy" className="hover:text-fuchsia-900 transition-colors">Privacy policy</Link></li>
-                <li><Link to="/legal/refunds" className="hover:text-fuchsia-900 transition-colors">Refunds & disputes</Link></li>
+              <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Company</h4>
+              <ul className="space-y-2.5 text-sm">
+                <li><a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Ralph Lawal Group</a></li>
+                <li><a href="mailto:hello@bookam.business" className="hover:text-white transition-colors flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 flex-shrink-0" /> hello@bookam.business</a></li>
+                <li><Link to="/legal/terms" className="hover:text-white transition-colors">Terms of service</Link></li>
+                <li><Link to="/legal/privacy" className="hover:text-white transition-colors">Privacy policy</Link></li>
+                <li><Link to="/legal/refunds" className="hover:text-white transition-colors">Refunds & disputes</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-fuchsia-300 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fuchsia-700">
-            <p>© {new Date().getFullYear()} Glam Genie. All rights reserved.</p>
-            <p>A <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="text-fuchsia-900 hover:text-fuchsia-700 transition-colors font-medium">Ralph Lawal Group</a> product</p>
+          <div className="border-t border-white/20 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-rose-100">
+            <p>© {new Date().getFullYear()} BookAm Business. All rights reserved.</p>
+            <p>A <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-rose-200 transition-colors font-medium">Ralph Lawal Group</a> product</p>
           </div>
         </div>
       </footer>

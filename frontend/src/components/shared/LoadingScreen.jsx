@@ -2,7 +2,7 @@ import React from 'react';
 import { CalendarCheck, CheckCircle2, Clock3 } from 'lucide-react';
 import { LOGO_BLUE_H } from '../../config/logos';
 
-export default function LoadingScreen({ message = 'Preparing your Glam Genie experience' }) {
+export default function LoadingScreen({ message = 'Preparing your BookAm experience' }) {
   return (
     <main
       className="bookam-loader min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white flex items-center justify-center px-6"
@@ -15,11 +15,11 @@ export default function LoadingScreen({ message = 'Preparing your Glam Genie exp
           <div className="absolute inset-0 rounded-[2rem] border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 shadow-card" />
           <div className="bookam-loader-ring absolute inset-2 rounded-[1.65rem]" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <img src={LOGO_BLUE_H} alt="Glam Genie" className="w-16 h-16 object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="w-16 h-16 object-contain dark:brightness-0 dark:invert" />
           </div>
         </div>
 
-        <h1 className="text-xl font-black tracking-tight">Glam Genie</h1>
+        <h1 className="text-xl font-black tracking-tight">BookAm Business</h1>
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{message}</p>
 
         <div className="mt-7 grid grid-cols-3 gap-2" aria-hidden="true">

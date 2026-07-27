@@ -17,7 +17,7 @@ export default function BrowserNotificationPrompt() {
         id: consumer.id,
         title: 'Customer notifications',
         body: 'Get booking updates, chat replies, payment alerts, and support messages.',
-        sampleTitle: 'Glam Genie customer alerts are on',
+        sampleTitle: 'BookAm customer alerts are on',
         sampleBody: 'We will notify you about bookings, messages, payments, and support.',
       }
     : user
@@ -26,7 +26,7 @@ export default function BrowserNotificationPrompt() {
         id: user.id,
         title: 'Business notifications',
         body: 'Get alerts for new bookings, customer messages, disputes, and admin updates.',
-        sampleTitle: 'Glam Genie business alerts are on',
+        sampleTitle: 'BookAm business alerts are on',
         sampleBody: business?.name
           ? `We will notify you about ${business.name} bookings and messages.`
           : 'We will notify you about bookings, messages, and account updates.',

@@ -42,10 +42,10 @@ function userFacingApiMessage(err, fallback = 'Something went wrong') {
   if (isNetworkError(err)) {
     return typeof navigator !== 'undefined' && navigator.onLine === false
       ? 'You appear to be offline. Check your internet connection and try again.'
-      : 'Could not connect to Glam Genie. Please try again in a moment.';
+      : 'Could not connect to BookAm. Please try again in a moment.';
   }
   if (err.response?.status === 503 || err.response?.status === 504) {
-    return 'Glam Genie is temporarily unavailable. Please try again shortly.';
+    return 'BookAm is temporarily unavailable. Please try again shortly.';
   }
   if (err.response?.status === 429) {
     return 'Too many requests. Please wait a moment and try again.';

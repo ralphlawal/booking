@@ -244,7 +244,7 @@ export default function ExplorePage() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2 sm:gap-4">
           <Link to="/">
-            <span className="text-lg font-black text-white tracking-tight">Glam Genie</span>
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/feed" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-primary-600 transition-colors">
