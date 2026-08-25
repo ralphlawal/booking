@@ -4,6 +4,8 @@ const User = require('../models/User');
 const Business = require('../models/Business');
 const { sendEmail, sendWelcomeEmail, sendVerificationEmail } = require('../services/emailService');
 const { verifyFirebaseToken } = require('../middleware/auth');
+const { sendSms } = require('../services/smsService');
+const db = require('../config/database');
 
 const signToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
@@ -226,6 +228,94 @@ exports.deleteAccount = async (req, res) => {
   } catch (err) {
     console.error('Delete account error:', err);
     res.status(500).json({ error: 'Failed to delete account' });
+  }
+};
+
+exports.sendPhoneOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Phone number required' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+    let user = await User.findByPhone(phone);
+    if (!user) {
+      user = await User.createFromPhone({ phone });
+    }
+
+    await User.savePhoneOtp(user.id, otp, expires);
+    await sendSms(phone, `Your BookAm verification code is: ${otp}. Valid for 10 minutes.`);
+
+    res.json({ message: 'OTP sent' });
+  } catch (err) {
+    console.error('Send OTP error:', err);
+    res.status(500).json({ error: 'Failed to send OTP' });
+  }
+};
+
+exports.verifyPhoneOtp = async (req, res) => {
+  try {
+    const { phone, otp, full_name } = req.body;
+    if (!phone || !otp) return res.status(400).json({ error: 'Phone and OTP required' });
+
+    const user = await User.findByPhone(phone);
+    if (!user || user.phone_otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
+    if (new Date(user.phone_otp_expires) < new Date()) {
+      return res.status(400).json({ error: 'OTP expired — request a new one' });
+    }
+
+    if (full_name && (user.full_name === 'User' || !user.full_name)) {
+      await User.updateFullName(user.id, full_name);
+      user.full_name = full_name;
+    }
+
+    await User.clearPhoneOtp(user.id);
+
+    if (user.full_name === 'User' && !full_name) {
+      const business = await Business.findByUserId(user.id);
+      const token = signToken(user.id);
+      return res.json({
+        token,
+        user: { id: user.id, phone: user.phone, full_name: user.full_name },
+        business: business || null,
+        onboardingComplete: !!business,
+        needsName: true,
+      });
+    }
+
+    const business = await Business.findByUserId(user.id);
+    const token = signToken(user.id);
+
+    if (!user.full_name || user.full_name === 'User') {
+      sendWelcomeEmail({ email: null, full_name: 'new user' }).catch(() => {});
+    } else if (!business) {
+      sendWelcomeEmail(user).catch(() => {});
+    }
+
+    res.json({
+      token,
+      user: { id: user.id, phone: user.phone, full_name: user.full_name },
+      business: business || null,
+      onboardingComplete: !!business,
+    });
+  } catch (err) {
+    console.error('Verify OTP error:', err);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+    await User.changePassword(req.user.id, currentPassword, newPassword);
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    if (err.code === 'WRONG_PASSWORD') return res.status(401).json({ error: 'Current password is incorrect' });
+    res.status(500).json({ error: 'Failed to update password' });
   }
 };
 

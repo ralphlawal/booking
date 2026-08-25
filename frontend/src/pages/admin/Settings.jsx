@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI, stripeConnectAPI, aiAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { auth } from '../../config/firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { compressImage } from '../../utils/compressImage';
@@ -43,7 +42,7 @@ const emptyBankForm = {
 };
 
 export default function Settings() {
-  const { business, updateBusiness, changePassword, resendVerificationEmail, deleteAccount } = useAuth();
+  const { user, business, updateBusiness, changePassword, resendVerificationEmail, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState(searchParams.get('tab') || 'business');
@@ -277,12 +276,7 @@ export default function Settings() {
       toast.success('Password updated successfully');
       setPwForm({ current: '', next: '', confirm: '' });
     } catch (err) {
-      const msg = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
-        ? 'Current password is incorrect'
-        : err.code === 'auth/requires-recent-login'
-        ? 'Please sign out and sign back in, then try again'
-        : err.message;
-      toast.error(msg);
+      toast.error(err.message || 'Failed to update password');
     } finally {
       setPwLoading(false);
     }
@@ -308,12 +302,7 @@ export default function Settings() {
       toast.success('Account deleted. Goodbye!');
       navigate('/');
     } catch (err) {
-      const msg = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
-        ? 'Password is incorrect'
-        : err.code === 'auth/requires-recent-login'
-        ? 'Please sign out and sign back in first'
-        : err.message;
-      toast.error(msg);
+      toast.error(err.message || 'Failed to delete account');
     } finally {
       setDeleteLoading(false);
     }
@@ -705,27 +694,29 @@ export default function Settings() {
           <div className="app-panel p-6">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email Verification</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Verify your email address to keep your account secure.</p>
-            {auth.currentUser?.emailVerified ? (
+            {user?.email_verified ? (
               <div className="flex items-center gap-2.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg px-4 py-3">
                 <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12"/></svg>
                 <div>
                   <p className="text-sm font-semibold text-green-800 dark:text-green-300">Email verified</p>
-                  <p className="text-xs text-green-600 dark:text-green-400">{auth.currentUser.email}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">{user.email}</p>
                 </div>
               </div>
-            ) : (
+            ) : user?.email ? (
               <div>
                 <div className="flex items-center gap-2.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-lg px-4 py-3 mb-3">
                   <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                   <div>
                     <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">Email not verified</p>
-                    <p className="text-xs text-yellow-700 dark:text-yellow-400">{auth.currentUser?.email}</p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-400">{user.email}</p>
                   </div>
                 </div>
                 <button onClick={handleResendVerification} disabled={verifyLoading} className="btn-secondary text-sm disabled:opacity-50">
                   {verifyLoading ? <><Spinner />&nbsp;Sending…</> : 'Send Verification Email'}
                 </button>
               </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Signed in with phone number — no email verification needed.</p>
             )}
           </div>
 

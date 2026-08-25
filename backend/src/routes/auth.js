@@ -47,6 +47,28 @@ router.post(
   ctrl.resetPassword
 );
 
+router.post(
+  '/send-phone-otp',
+  [body('phone').notEmpty().trim().withMessage('Phone number required')],
+  validate,
+  ctrl.sendPhoneOtp
+);
+
+router.post(
+  '/verify-phone-otp',
+  [body('phone').notEmpty(), body('otp').isLength({ min: 6, max: 6 })],
+  validate,
+  ctrl.verifyPhoneOtp
+);
+
+router.post(
+  '/change-password',
+  authenticate,
+  [body('newPassword').isLength({ min: 6 })],
+  validate,
+  ctrl.changePassword
+);
+
 router.delete('/account', authenticate, ctrl.deleteAccount);
 router.get('/verify-email', ctrl.verifyEmail);
 router.post('/resend-verification', authenticate, ctrl.resendVerification);

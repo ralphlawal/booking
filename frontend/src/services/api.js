@@ -71,10 +71,19 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  firebaseSync: (idToken, displayName) => api.post('/auth/firebase-sync', { idToken, displayName }),
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (email, password, full_name) => api.post('/auth/register', { email, password, full_name }),
   me: () => api.get('/auth/me'),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
+  changePassword: (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword }),
+  sendPhoneOtp: (phone) => api.post('/auth/send-phone-otp', { phone }),
+  verifyPhoneOtp: (phone, otp, full_name) => api.post('/auth/verify-phone-otp', { phone, otp, full_name }),
   deleteAccount: () => api.delete('/auth/account'),
   verifyEmail: (token) => api.get('/auth/verify-email', { params: { token } }),
+  resendVerification: () => api.post('/auth/resend-verification'),
+  // legacy — kept for existing sessions during migration
+  firebaseSync: (idToken, displayName) => api.post('/auth/firebase-sync', { idToken, displayName }),
 };
 
 export const businessAPI = {

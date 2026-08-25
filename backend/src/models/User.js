@@ -101,6 +101,51 @@ const User = {
       [id]
     );
   },
+
+  async findByPhone(phone) {
+    const { rows } = await db.query('SELECT * FROM users WHERE phone = $1', [phone]);
+    return rows[0] || null;
+  },
+
+  async createFromPhone({ phone, full_name }) {
+    const id = crypto.randomUUID();
+    const { rows } = await db.query(
+      `INSERT INTO users (id, phone, password_hash, full_name, phone_verified)
+       VALUES ($1, $2, 'phone_auth', $3, TRUE)
+       RETURNING id, phone, full_name, created_at`,
+      [id, phone, full_name || 'User']
+    );
+    return rows[0];
+  },
+
+  async savePhoneOtp(id, otp, expiresAt) {
+    await db.query(
+      'UPDATE users SET phone_otp = $1, phone_otp_expires = $2 WHERE id = $3',
+      [otp, expiresAt.toISOString(), id]
+    );
+  },
+
+  async clearPhoneOtp(id) {
+    await db.query(
+      'UPDATE users SET phone_otp = NULL, phone_otp_expires = NULL, phone_verified = TRUE WHERE id = $1',
+      [id]
+    );
+  },
+
+  async updateFullName(id, full_name) {
+    await db.query('UPDATE users SET full_name = $1 WHERE id = $2', [full_name, id]);
+  },
+
+  async changePassword(id, currentPassword, newPassword) {
+    const { rows } = await db.query('SELECT password_hash FROM users WHERE id = $1', [id]);
+    if (!rows.length) throw new Error('User not found');
+    if (rows[0].password_hash !== 'phone_auth' && rows[0].password_hash !== 'firebase_auth') {
+      const valid = await bcrypt.compare(currentPassword, rows[0].password_hash);
+      if (!valid) throw Object.assign(new Error('Current password is incorrect'), { code: 'WRONG_PASSWORD' });
+    }
+    const hash = await bcrypt.hash(newPassword, 12);
+    await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, id]);
+  },
 };
 
 module.exports = User;

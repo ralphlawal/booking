@@ -5,7 +5,7 @@ import { LOGO_WHITE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
 export default function Register() {
-  const { register, googleLogin } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ full_name: '', email: '', password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
@@ -22,36 +22,7 @@ export default function Register() {
       toast.success('Account created! Check your email to verify.');
       navigate('/admin/onboarding');
     } catch (err) {
-      const msg = err.code === 'auth/email-already-in-use'
-        ? 'An account with this email already exists'
-        : err.code === 'auth/weak-password'
-        ? 'Password is too weak (min 6 characters)'
-        : err.code === 'auth/unauthorized-domain'
-        ? 'Sign-up is not enabled for this domain. Contact support.'
-        : err.code === 'auth/network-request-failed'
-        ? 'Network error — check your connection and try again'
-        : err.message;
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    setLoading(true);
-    try {
-      const data = await googleLogin();
-      toast.success(data.onboardingComplete ? 'Welcome back!' : 'Account created — finish your business setup');
-      navigate(data.onboardingComplete ? '/admin/dashboard' : '/admin/onboarding', { replace: true });
-    } catch (err) {
-      const msg = err.code === 'auth/popup-closed-by-user'
-        ? 'Google sign-up was cancelled'
-        : err.code === 'auth/unauthorized-domain'
-        ? 'Google sign-up is not enabled for this domain. Contact support.'
-        : err.code === 'auth/network-request-failed'
-        ? 'Network error — check your connection and try again'
-        : err.message || 'Google sign-up failed';
-      toast.error(msg);
+      toast.error(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -93,21 +64,6 @@ export default function Register() {
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 shadow-2xl">
           <h1 className="text-xl font-bold text-white text-center mb-1">Create Business Account</h1>
           <p className="text-white/50 text-sm text-center mb-6">Free forever · Get your booking page live today</p>
-
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={loading}
-            className="w-full py-2.5 bg-white hover:bg-gray-50 text-gray-800 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 mb-4"
-          >
-            <GoogleIcon /> Continue with Google
-          </button>
-
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px flex-1 bg-white/15" />
-            <span className="text-xs text-white/35">or with email</span>
-            <div className="h-px flex-1 bg-white/15" />
-          </div>
 
           <form onSubmit={submit} className="space-y-4">
             {[

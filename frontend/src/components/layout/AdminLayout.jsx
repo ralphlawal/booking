@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { bookingsAPI } from '../../services/api';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
-import { auth } from '../../config/firebase';
 import toast from 'react-hot-toast';
 import VerifyRequired from '../shared/VerifyRequired';
 
@@ -47,9 +46,7 @@ export default function AdminLayout() {
   }, [business, loading, navigate]);
 
   useEffect(() => {
-    if (auth.currentUser) {
-      setEmailUnverified(!auth.currentUser.emailVerified);
-    }
+    setEmailUnverified(!!user && user.email && !user.email_verified);
   }, [user]);
 
   const refreshPendingCount = useCallback(() => {
