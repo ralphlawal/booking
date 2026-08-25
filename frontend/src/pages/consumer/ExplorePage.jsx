@@ -1,6 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle, List, Map, BadgeCheck, Rss } from 'lucide-react';
+import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle, List, Map, BadgeCheck, Rss, X } from 'lucide-react';
+import MapGL, { Marker, Popup, NavigationControl } from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 import { discoverAPI, aiAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -101,7 +105,9 @@ function BusinessCard({ biz, from }) {
 }
 
 function MapView({ results, coords, onSwitchList, from }) {
+  const [popup, setPopup] = useState(null);
   const withCoords = results.filter(b => b.latitude && b.longitude);
+
   if (!withCoords.length) {
     return (
       <div className="text-center py-14 text-gray-400">
@@ -112,30 +118,72 @@ function MapView({ results, coords, onSwitchList, from }) {
     );
   }
 
-  const centerLat = coords?.lat ?? withCoords[0].latitude;
-  const centerLng = coords?.lng ?? withCoords[0].longitude;
-  const delta = 0.06;
-  const bbox = `${centerLng - delta},${centerLat - delta},${centerLng + delta},${centerLat + delta}`;
-  const markers = withCoords.map(b => `${b.latitude},${b.longitude}`).join('|');
-  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`;
+  const centerLat = coords?.lat ?? parseFloat(withCoords[0].latitude);
+  const centerLng = coords?.lng ?? parseFloat(withCoords[0].longitude);
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg overflow-hidden border border-gray-100 dark:border-gray-800" style={{ height: 'min(55vh, 520px)', minHeight: 300 }}>
-        <iframe
-          title="Business map"
-          src={src}
-          style={{ width: '100%', height: '100%', border: 0 }}
-          loading="lazy"
-          allowFullScreen
-        />
-      </div>
-      <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {withCoords.map(biz => <BusinessCard key={biz.id} biz={biz} from={from} />)}
+      <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm" style={{ height: 'min(58vh, 520px)', minHeight: 300 }}>
+        <MapGL
+          initialViewState={{ longitude: centerLng, latitude: centerLat, zoom: 12 }}
+          style={{ width: '100%', height: '100%' }}
+          mapStyle="mapbox://styles/mapbox/streets-v12"
+          mapboxAccessToken={MAPBOX_TOKEN}
+          onClick={() => setPopup(null)}
+        >
+          <NavigationControl position="top-right" />
+          {withCoords.map(biz => (
+            <Marker
+              key={biz.id}
+              longitude={parseFloat(biz.longitude)}
+              latitude={parseFloat(biz.latitude)}
+              anchor="bottom"
+              onClick={e => { e.originalEvent.stopPropagation(); setPopup(biz); }}
+            >
+              <div className="w-9 h-9 bg-primary-600 rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                <MapPin className="w-4 h-4 text-white" />
+              </div>
+            </Marker>
+          ))}
+          {popup && (
+            <Popup
+              longitude={parseFloat(popup.longitude)}
+              latitude={parseFloat(popup.latitude)}
+              anchor="top"
+              onClose={() => setPopup(null)}
+              closeButton={false}
+              closeOnClick={false}
+              offset={12}
+            >
+              <div className="p-1 min-w-[170px] max-w-[200px]">
+                <div className="flex items-start justify-between gap-1 mb-0.5">
+                  <p className="font-bold text-sm text-gray-900 leading-tight">{popup.name}</p>
+                  <button onClick={() => setPopup(null)} className="text-gray-400 hover:text-gray-600 flex-shrink-0 mt-0.5">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {popup.category && <p className="text-xs text-gray-500 capitalize mb-0.5">{popup.category}</p>}
+                {parseFloat(popup.avg_rating) > 0 && (
+                  <p className="text-xs text-amber-500 font-medium mb-1">★ {parseFloat(popup.avg_rating).toFixed(1)}</p>
+                )}
+                {popup.min_price != null && (
+                  <p className="text-xs text-gray-600 mb-1">From £{parseFloat(popup.min_price).toFixed(0)}</p>
+                )}
+                <Link
+                  to={`/profile/${popup.slug}`}
+                  state={{ from }}
+                  className="block text-center text-xs font-semibold bg-primary-600 text-white px-3 py-1.5 rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                  View & Book
+                </Link>
+              </div>
+            </Popup>
+          )}
+        </MapGL>
       </div>
       {results.length > withCoords.length && (
         <p className="text-xs text-gray-400 text-center">
-          {results.length - withCoords.length} result{results.length - withCoords.length !== 1 ? 's' : ''} without location data shown only in list view
+          {results.length - withCoords.length} result{results.length - withCoords.length !== 1 ? 's' : ''} without location data — switch to list to see all
         </p>
       )}
     </div>

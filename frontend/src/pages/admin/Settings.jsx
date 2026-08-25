@@ -63,6 +63,8 @@ export default function Settings() {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const geocodeTimer = useRef(null);
 
   // Bank details
   const [bankForm, setBankForm] = useState(emptyBankForm);
@@ -133,18 +135,46 @@ export default function Settings() {
     }).catch(() => {});
   }, [business]);
 
+  const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+  const onAddressInput = (val) => {
+    setBizForm(p => ({ ...p, location: val }));
+    clearTimeout(geocodeTimer.current);
+    if (val.trim().length < 3) { setAddressSuggestions([]); return; }
+    geocodeTimer.current = setTimeout(async () => {
+      try {
+        const r = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(val)}.json?access_token=${MAPBOX_TOKEN}&limit=5&types=address,place`
+        );
+        const data = await r.json();
+        setAddressSuggestions(data.features || []);
+      } catch { setAddressSuggestions([]); }
+    }, 350);
+  };
+
+  const selectAddressSuggestion = (feature) => {
+    const [lng, lat] = feature.center;
+    setBizForm(p => ({
+      ...p,
+      location: feature.place_name,
+      latitude: lat.toFixed(6),
+      longitude: lng.toFixed(6),
+    }));
+    setAddressSuggestions([]);
+  };
+
   const geocodeAddress = async () => {
     const address = bizForm.location?.trim();
     if (!address) return toast.error('Enter an address first');
     setGeocoding(true);
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`,
-        { headers: { 'Accept-Language': 'en' } }
+      const r = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&limit=1`
       );
-      const data = await res.json();
-      if (!data.length) return toast.error('Address not found — try a more specific address');
-      setBizForm(p => ({ ...p, latitude: parseFloat(data[0].lat).toFixed(6), longitude: parseFloat(data[0].lon).toFixed(6) }));
+      const data = await r.json();
+      if (!data.features?.length) return toast.error('Address not found — try a more specific address');
+      const [lng, lat] = data.features[0].center;
+      setBizForm(p => ({ ...p, latitude: lat.toFixed(6), longitude: lng.toFixed(6) }));
       toast.success('Coordinates found! Save to apply.');
     } catch {
       toast.error('Could not look up coordinates. Enter them manually.');
@@ -465,9 +495,31 @@ export default function Settings() {
                 <input className="input" type="email" value={bizForm.email || ''} onChange={e => setBizForm(p => ({ ...p, email: e.target.value }))} />
               </div>
             </div>
-            <div>
+            <div className="relative">
               <label className="label">Location / Address</label>
-              <input className="input" placeholder="123 Main St, London" value={bizForm.location || ''} onChange={e => setBizForm(p => ({ ...p, location: e.target.value }))} />
+              <input
+                className="input"
+                placeholder="Start typing your address…"
+                value={bizForm.location || ''}
+                onChange={e => onAddressInput(e.target.value)}
+                onBlur={() => setTimeout(() => setAddressSuggestions([]), 200)}
+                autoComplete="off"
+              />
+              {addressSuggestions.length > 0 && (
+                <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                  {addressSuggestions.map((f) => (
+                    <li key={f.id}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200"
+                        onMouseDown={() => selectAddressSuggestion(f)}
+                      >
+                        {f.place_name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div>
               <label className="label flex items-center gap-1.5">

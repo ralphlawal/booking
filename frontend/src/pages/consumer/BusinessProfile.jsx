@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   MapPin, Phone, Mail, Star, Clock, ChevronRight,
@@ -332,6 +334,23 @@ export default function BusinessProfile() {
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 leading-relaxed">
               {business.description}
             </p>
+          )}
+
+          {/* Map preview */}
+          {business.latitude && business.longitude && MAPBOX_TOKEN && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location || `${business.latitude},${business.longitude}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-4 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-90 transition-opacity"
+            >
+              <img
+                src={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+3B82F6(${business.longitude},${business.latitude})/${business.longitude},${business.latitude},14,0/680x180@2x?access_token=${MAPBOX_TOKEN}`}
+                alt={`Map showing ${business.name}`}
+                className="w-full object-cover"
+                loading="lazy"
+              />
+            </a>
           )}
 
           {/* Contact info */}
