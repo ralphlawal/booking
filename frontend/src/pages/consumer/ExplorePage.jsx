@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { MapPin, Star, Search, Navigation, Zap, User, ChevronRight, Building2, AlertTriangle, List, Map, BadgeCheck, Rss } from 'lucide-react';
-import { discoverAPI } from '../../services/api';
+import { discoverAPI, aiAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -152,6 +152,7 @@ export default function ExplorePage() {
   const [locating, setLocating] = useState(false);
   const [coords, setCoords] = useState(null);
   const [viewMode, setViewMode] = useState('list');
+  const [aiMatching, setAiMatching] = useState(false);
   const { consumer } = useCustomerAuth();
 
   const q = searchParams.get('q') || '';
@@ -161,9 +162,24 @@ export default function ExplorePage() {
     setLoading(true);
     setSearchError(false);
     try {
+      let effectiveQ = overrides.q ?? q;
+      let effectiveCategory = overrides.category ?? category;
+
+      // AI intent matching: if the query looks like natural language (> 2 words),
+      // use Claude to extract the best keyword + category before searching.
+      if (effectiveQ && effectiveQ.trim().split(' ').length > 2) {
+        try {
+          setAiMatching(true);
+          const matched = await aiAPI.matchService(effectiveQ);
+          if (matched?.q) effectiveQ = matched.q;
+          if (matched?.category && effectiveCategory === 'all') effectiveCategory = matched.category;
+        } catch {}
+        setAiMatching(false);
+      }
+
       const params = {
-        q: overrides.q ?? q,
-        category: overrides.category ?? category,
+        q: effectiveQ,
+        category: effectiveCategory,
         lat: coords?.lat,
         lng: coords?.lng,
       };
@@ -175,6 +191,7 @@ export default function ExplorePage() {
       setResults([]);
     } finally {
       setLoading(false);
+      setAiMatching(false);
     }
   }, [q, category, coords]);
 
@@ -270,13 +287,18 @@ export default function ExplorePage() {
               <Navigation className="w-4 h-4" />
               <span className="hidden sm:inline">{locating ? 'Locating…' : 'Near me'}</span>
             </button>
-            <button type="submit" className="bg-primary-600 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-primary-700 transition-colors flex items-center gap-1.5">
+            <button type="submit" disabled={aiMatching} className="bg-primary-600 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-primary-700 transition-colors flex items-center gap-1.5 disabled:opacity-70">
               <Search className="w-4 h-4" />
-              <span className="hidden sm:inline">Search</span>
+              <span className="hidden sm:inline">{aiMatching ? 'Thinking…' : 'Search'}</span>
             </button>
           </form>
-          {coords && (
+          {coords && !aiMatching && (
             <p className="text-emerald-600 text-xs mt-2 font-medium">Location found — results sorted by distance</p>
+          )}
+          {aiMatching && (
+            <p className="text-violet-600 text-xs mt-2 font-medium flex items-center gap-1">
+              <Zap className="w-3 h-3" /> AI is matching your request…
+            </p>
           )}
         </div>
       </div>

@@ -230,6 +230,13 @@ const reviewsCtrl = require('./controllers/reviewsController');
 app.post('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.reply);
 app.delete('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.deleteReply);
 
+// AI features
+const aiCtrl = require('./controllers/aiController');
+app.get('/api/ai/review-summary/:slug', aiCtrl.reviewSummary);
+app.get('/api/ai/noshow-risk/:bookingId', authenticate, attachBusiness, aiCtrl.noshowRisk);
+app.get('/api/ai/rebook-timing/:consumerId/:slug', authenticate, attachBusiness, aiCtrl.rebookTiming);
+app.post('/api/ai/match-service', aiCtrl.matchService);
+
 // Web push
 app.get('/api/notifications/vapid-key', (req, res) => {
   const key = process.env.VAPID_PUBLIC_KEY;

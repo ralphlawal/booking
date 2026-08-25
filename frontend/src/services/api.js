@@ -400,4 +400,11 @@ export const adminChatAPI = {
   getUsers: () => adminAxios.get('/chat/admin/users'),
 };
 
+export const aiAPI = {
+  reviewSummary: (slug) => api.get(`/ai/review-summary/${slug}`),
+  noshowRisk: (bookingId) => api.get(`/ai/noshow-risk/${bookingId}`),
+  rebookTiming: (consumerId, slug) => api.get(`/ai/rebook-timing/${consumerId}/${slug}`),
+  matchService: (q) => api.post('/ai/match-service', { q }),
+};
+
 export default api;

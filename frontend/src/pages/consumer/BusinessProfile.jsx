@@ -5,7 +5,7 @@ import {
   Calendar, Share2, Heart, CheckCircle, Sparkles, Image, MessageSquare,
   BadgeCheck, Megaphone, UserPlus, UserCheck, Users,
 } from 'lucide-react';
-import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI, followsAPI } from '../../services/api';
+import { businessAPI, servicesAPI, reviewsAPI, consumerAPI, availabilityAPI, consumerChatAPI, photosAPI, postsAPI, followsAPI, aiAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -121,6 +121,8 @@ export default function BusinessProfile() {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewDone, setReviewDone] = useState(false);
+  const [aiSummary, setAiSummary] = useState(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -490,6 +492,34 @@ export default function BusinessProfile() {
               <span className="text-sm text-gray-400">{totalReviews} total</span>
             )}
           </div>
+
+          {/* AI Review Summary */}
+          {totalReviews >= 3 && (
+            <div className="mb-4">
+              {aiSummary ? (
+                <div className="flex gap-2.5 p-3.5 bg-violet-50 dark:bg-violet-900/15 border border-violet-100 dark:border-violet-800 rounded-lg">
+                  <Sparkles className="w-4 h-4 text-violet-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-violet-900 dark:text-violet-200 leading-relaxed">{aiSummary}</p>
+                </div>
+              ) : (
+                <button
+                  onClick={async () => {
+                    setAiSummaryLoading(true);
+                    try {
+                      const data = await aiAPI.reviewSummary(slug);
+                      if (data?.summary) setAiSummary(data.summary);
+                    } catch {}
+                    setAiSummaryLoading(false);
+                  }}
+                  disabled={aiSummaryLoading}
+                  className="flex items-center gap-2 text-xs text-violet-600 dark:text-violet-400 font-semibold hover:text-violet-700 transition-colors disabled:opacity-50"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {aiSummaryLoading ? 'Generating summary…' : 'AI summary of reviews'}
+                </button>
+              )}
+            </div>
+          )}
 
           {totalReviews > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)] gap-4 mb-5 pb-5 border-b border-gray-100 dark:border-gray-800">
