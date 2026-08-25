@@ -59,6 +59,7 @@ import Customers from './pages/admin/Customers';
 import Settings from './pages/admin/Settings';
 import Posts from './pages/admin/Posts';
 import Onboarding from './pages/admin/Onboarding';
+import StaffReport from './pages/admin/StaffReport';
 import FeedPage from './pages/consumer/FeedPage';
 
 class ErrorBoundary extends Component {
@@ -164,6 +165,7 @@ export default function App() {
               <Route path="messages" element={<AdminInbox />} />
               <Route path="posts" element={<Posts />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="staff-report" element={<StaffReport />} />
             </Route>
 
             {/* Email verification */}

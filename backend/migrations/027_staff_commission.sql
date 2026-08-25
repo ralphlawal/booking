@@ -1,0 +1,2 @@
+ALTER TABLE staff_members ADD COLUMN IF NOT EXISTS commission_type TEXT NOT NULL DEFAULT 'none';
+ALTER TABLE staff_members ADD COLUMN IF NOT EXISTS commission_value NUMERIC(10,2) NOT NULL DEFAULT 0;

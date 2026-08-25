@@ -10,14 +10,15 @@ import toast from 'react-hot-toast';
 import VerifyRequired from '../shared/VerifyRequired';
 
 const NAV = [
-  { to: '/admin/dashboard', icon: GridIcon,         label: 'Dashboard' },
-  { to: '/admin/bookings',  icon: CalendarCheckIcon, label: 'Bookings', badge: true },
-  { to: '/admin/calendar',  icon: CalendarIcon,      label: 'Calendar' },
-  { to: '/admin/services',  icon: TagIcon,            label: 'Services' },
-  { to: '/admin/posts',     icon: PostsIcon,          label: 'Posts' },
-  { to: '/admin/customers', icon: UsersIcon,          label: 'Customers' },
-  { to: '/admin/messages',  icon: MessageIcon,        label: 'Messages' },
-  { to: '/admin/settings',  icon: SettingsIcon,       label: 'Settings' },
+  { to: '/admin/dashboard',   icon: GridIcon,         label: 'Dashboard' },
+  { to: '/admin/bookings',    icon: CalendarCheckIcon, label: 'Bookings', badge: true },
+  { to: '/admin/calendar',    icon: CalendarIcon,      label: 'Calendar' },
+  { to: '/admin/services',    icon: TagIcon,           label: 'Services' },
+  { to: '/admin/posts',       icon: PostsIcon,         label: 'Posts' },
+  { to: '/admin/customers',   icon: UsersIcon,         label: 'Customers' },
+  { to: '/admin/messages',    icon: MessageIcon,       label: 'Messages' },
+  { to: '/admin/staff-report', icon: ChartIcon,        label: 'Staff Report' },
+  { to: '/admin/settings',    icon: SettingsIcon,      label: 'Settings' },
 ];
 
 const BOTTOM_NAV = [
@@ -341,3 +342,4 @@ function SunIcon({ className }) { return <svg className={className} fill="none" 
 function PostsIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>; }
 function MessageIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>; }
 function HeadphonesIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>; }
+function ChartIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>; }

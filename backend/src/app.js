@@ -121,6 +121,7 @@ const intakeCtrl = require('./controllers/intakeController');
 
 // Staff
 app.get('/api/staff', authenticate, attachBusiness, staffCtrl.list);
+app.get('/api/staff/report', authenticate, attachBusiness, staffCtrl.report);
 app.post('/api/staff', authenticate, attachBusiness, staffCtrl.create);
 app.put('/api/staff/:id', authenticate, attachBusiness, staffCtrl.update);
 app.delete('/api/staff/:id', authenticate, attachBusiness, staffCtrl.remove);

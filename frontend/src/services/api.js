@@ -329,6 +329,7 @@ export const staffAPI = {
   create: (data) => api.post('/staff', data),
   update: (id, data) => api.put(`/staff/${id}`, data),
   remove: (id) => api.delete(`/staff/${id}`),
+  report: (params) => api.get('/staff/report', { params }),
 };
 
 export const photosAPI = {

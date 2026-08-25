@@ -1271,7 +1271,7 @@ export function StaffTab({ staff, setStaff }) {
   const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
   const toggle = (d) => setForm(p => ({ ...p, working_days: p.working_days.includes(d) ? p.working_days.filter(x=>x!==d) : [...p.working_days, d] }));
 
-  const open = (s) => { setForm(s ? { name:s.name||'', role:s.role||'', bio:s.bio||'', phone:s.phone||'', email:s.email||'', working_days:s.working_days||[], opening_time:s.opening_time?.slice(0,5)||'09:00', closing_time:s.closing_time?.slice(0,5)||'18:00' } : { name:'', role:'', bio:'', phone:'', email:'', working_days:[], opening_time:'09:00', closing_time:'18:00' }); setModal(s||'new'); };
+  const open = (s) => { setForm(s ? { name:s.name||'', role:s.role||'', bio:s.bio||'', phone:s.phone||'', email:s.email||'', working_days:s.working_days||[], opening_time:s.opening_time?.slice(0,5)||'09:00', closing_time:s.closing_time?.slice(0,5)||'18:00', commission_type:s.commission_type||'none', commission_value:s.commission_value||0 } : { name:'', role:'', bio:'', phone:'', email:'', working_days:[], opening_time:'09:00', closing_time:'18:00', commission_type:'none', commission_value:0 }); setModal(s||'new'); };
 
   const save = async (e) => {
     e.preventDefault();
@@ -1347,6 +1347,23 @@ export function StaffTab({ staff, setStaff }) {
             <div className="grid grid-cols-2 gap-3">
               <div><label className="label">From</label><input className="input" type="time" value={form.opening_time} onChange={e=>setForm(p=>({...p,opening_time:e.target.value}))}/></div>
               <div><label className="label">To</label><input className="input" type="time" value={form.closing_time} onChange={e=>setForm(p=>({...p,closing_time:e.target.value}))}/></div>
+            </div>
+            <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 space-y-3">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Commission</p>
+              <div>
+                <label className="label">Type</label>
+                <select className="input text-sm" value={form.commission_type||'none'} onChange={e=>setForm(p=>({...p,commission_type:e.target.value}))}>
+                  <option value="none">None</option>
+                  <option value="percent">% of booking revenue</option>
+                  <option value="flat">Flat fee per booking</option>
+                </select>
+              </div>
+              {form.commission_type !== 'none' && (
+                <div>
+                  <label className="label">{form.commission_type === 'percent' ? 'Percentage (%)' : 'Amount per booking (£)'}</label>
+                  <input className="input" type="number" min="0" step="0.01" value={form.commission_value||0} onChange={e=>setForm(p=>({...p,commission_value:e.target.value}))} />
+                </div>
+              )}
             </div>
             <div className="flex gap-3"><button type="button" onClick={()=>setModal(null)} className="btn-secondary flex-1">Cancel</button><button type="submit" disabled={saving} className="btn-primary flex-1">{saving?<Spinner/>:modal==='new'?'Add':'Save'}</button></div>
           </form>
