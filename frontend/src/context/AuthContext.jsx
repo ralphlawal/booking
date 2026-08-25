@@ -75,6 +75,17 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const sendLoginOtp = (email) => authAPI.sendLoginOtp(email);
+
+  const verifyEmailOtp = async (email, otp) => {
+    const data = await authAPI.verifyEmailOtp(email, otp);
+    localStorage.setItem(TOKEN_KEY, data.token);
+    setUser(data.user);
+    setBusiness(data.business || null);
+    saveAuthCache(data.user, data.business || null);
+    return data;
+  };
+
   const sendPhoneOtp = (phone) => authAPI.sendPhoneOtp(phone);
 
   const verifyPhoneOtp = async (phone, otp, full_name) => {
@@ -117,6 +128,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user, business, loading,
       login, register, logout,
+      sendLoginOtp, verifyEmailOtp,
       sendPhoneOtp, verifyPhoneOtp,
       forgotPassword, changePassword,
       resendVerificationEmail, deleteAccount,

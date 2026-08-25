@@ -5,10 +5,13 @@ import { LOGO_WHITE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, verifyEmailOtp } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ full_name: '', email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ full_name: '', email: '', password: '', confirm: '', phone: '' });
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState('form'); // 'form' | 'verify'
+  const [otp, setOtp] = useState('');
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
@@ -18,11 +21,27 @@ export default function Register() {
     if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
     setLoading(true);
     try {
-      await register(form.email, form.password, form.full_name);
-      toast.success('Account created! Check your email to verify.');
-      navigate('/admin/onboarding');
+      await register(form.email, form.password, form.full_name, form.phone);
+      setRegisteredEmail(form.email);
+      setStep('verify');
+      toast.success(`Verification code sent to ${form.email}`);
     } catch (err) {
       toast.error(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitOtp = async (e) => {
+    e.preventDefault();
+    if (otp.length !== 6) return toast.error('Enter the 6-digit code from your email');
+    setLoading(true);
+    try {
+      await verifyEmailOtp(registeredEmail, otp);
+      toast.success('Email verified! Setting up your account…');
+      navigate('/admin/onboarding');
+    } catch (err) {
+      toast.error(err.message || 'Invalid or expired code');
     } finally {
       setLoading(false);
     }
@@ -65,33 +84,71 @@ export default function Register() {
           <h1 className="text-xl font-bold text-white text-center mb-1">Create Business Account</h1>
           <p className="text-white/50 text-sm text-center mb-6">Free forever · Get your booking page live today</p>
 
-          <form onSubmit={submit} className="space-y-4">
-            {[
-              { key: 'full_name', label: 'Your Full Name', type: 'text', placeholder: 'Jane Smith' },
-              { key: 'email', label: 'Business Email', type: 'email', placeholder: 'you@yourbusiness.com' },
-              { key: 'password', label: 'Password', type: 'password', placeholder: 'Min. 6 characters' },
-              { key: 'confirm', label: 'Confirm Password', type: 'password', placeholder: 'Repeat password' },
-            ].map(({ key, label, type, placeholder }) => (
-              <div key={key}>
-                <label className="block text-sm font-medium text-white/80 mb-1.5">{label}</label>
-                <input
-                  className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
-                  type={type}
-                  placeholder={placeholder}
-                  required
-                  value={form[key]}
-                  onChange={set(key)}
-                />
+          {step === 'form' ? (
+            <form onSubmit={submit} className="space-y-4">
+              {[
+                { key: 'full_name', label: 'Your Full Name', type: 'text', placeholder: 'Jane Smith', required: true },
+                { key: 'email', label: 'Business Email', type: 'email', placeholder: 'you@yourbusiness.com', required: true },
+                { key: 'phone', label: 'Phone Number (optional)', type: 'tel', placeholder: '+44 7700 900000', required: false },
+                { key: 'password', label: 'Password', type: 'password', placeholder: 'Min. 6 characters', required: true },
+                { key: 'confirm', label: 'Confirm Password', type: 'password', placeholder: 'Repeat password', required: true },
+              ].map(({ key, label, type, placeholder, required }) => (
+                <div key={key}>
+                  <label className="block text-sm font-medium text-white/80 mb-1.5">{label}</label>
+                  <input
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                    type={type}
+                    placeholder={placeholder}
+                    required={required}
+                    value={form[key]}
+                    onChange={set(key)}
+                  />
+                </div>
+              ))}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? <Spinner /> : 'Create Business Account →'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={submitOtp} className="space-y-4">
+              <div className="text-center mb-2">
+                <div className="w-14 h-14 bg-primary-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">📧</span>
+                </div>
+                <p className="text-white/80 text-sm">We sent a 6-digit code to</p>
+                <p className="text-white font-semibold text-sm mt-0.5">{registeredEmail}</p>
               </div>
-            ))}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loading ? <Spinner /> : 'Create Business Account →'}
-            </button>
-          </form>
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-1.5">Verification code</label>
+                <input
+                  className="w-full px-3.5 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-xl font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-primary-400"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="000000"
+                  autoFocus
+                  required
+                  value={otp}
+                  onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
+                />
+                <p className="text-white/40 text-xs mt-1.5 text-center">Check your inbox and spam folder · expires in 10 minutes</p>
+              </div>
+              <button
+                type="submit"
+                disabled={loading || otp.length !== 6}
+                className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? <Spinner /> : 'Verify & Get Started →'}
+              </button>
+              <button type="button" onClick={() => { setStep('form'); setOtp(''); }} className="w-full text-xs text-white/40 hover:text-white/70 transition-colors">
+                ← Use a different email
+              </button>
+            </form>
+          )}
 
           <p className="text-center text-sm text-white/50 mt-5">
             Already have a business account?{' '}

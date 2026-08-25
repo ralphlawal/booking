@@ -363,4 +363,37 @@ const sendWaitlistNotification = ({ consumer_name, consumer_email, business_name
   });
 };
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail, sendBusinessPaymentReleasedEmail, sendWaitlistNotification };
+const sendEmailOtpCode = (user, otp, purpose = 'verify') => {
+  const isLogin = purpose === 'login';
+  const subject = isLogin
+    ? `Your BookAm sign-in code: ${otp}`
+    : `Your BookAm verification code: ${otp}`;
+  const heading = isLogin ? 'Your sign-in code' : 'Verify your email';
+  const subtext = isLogin
+    ? `Hi${user.full_name ? ` ${user.full_name}` : ''}, use this code to sign in to your BookAm Business account.`
+    : `Hi${user.full_name ? ` ${user.full_name}` : ''}, enter this code to verify your email and activate your account.`;
+
+  return sendEmail({
+    to: user.email,
+    subject,
+    type: isLogin ? 'login_otp' : 'email_otp',
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#4f46e5,#6d28d9);border-radius:50%;margin:0 auto 16px;line-height:56px;font-size:26px">
+          🔐
+        </div>
+        <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b">${heading}</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">${subtext}</p>
+      </div>
+      <div style="text-align:center;margin:28px 0">
+        <div style="display:inline-block;background:#f8fafc;border:2px dashed #e2e8f0;border-radius:16px;padding:20px 40px">
+          <p style="margin:0 0 4px;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:2px;font-weight:600">Your code</p>
+          <p style="margin:0;font-size:42px;font-weight:800;letter-spacing:10px;color:#4f46e5;font-family:monospace">${otp}</p>
+        </div>
+      </div>
+      <p style="color:#94a3b8;font-size:13px;text-align:center;margin:0">This code expires in <strong>10 minutes</strong>. If you didn't request this, you can safely ignore this email.</p>
+    `),
+  });
+};
+
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail, sendEmailOtpCode, sendBusinessPaymentReleasedEmail, sendWaitlistNotification };

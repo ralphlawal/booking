@@ -5,13 +5,14 @@ import { LOGO_WHITE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { login, sendPhoneOtp, verifyPhoneOtp } = useAuth();
+  const { login, sendLoginOtp, verifyEmailOtp, sendPhoneOtp, verifyPhoneOtp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from;
 
-  const [tab, setTab] = useState('email'); // 'email' | 'phone'
+  const [tab, setTab] = useState('email'); // 'email' | 'code' | 'phone'
   const [form, setForm] = useState({ email: '', password: '' });
+  const [codeEmail, setCodeEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -31,6 +32,36 @@ export default function Login() {
       navigate(destination(data), { replace: true });
     } catch (err) {
       toast.error(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitSendEmailCode = async (e) => {
+    e.preventDefault();
+    if (!codeEmail.trim()) return toast.error('Enter your email');
+    setLoading(true);
+    try {
+      await sendLoginOtp(codeEmail.trim());
+      setOtpSent(true);
+      toast.success('Code sent — check your inbox');
+    } catch (err) {
+      toast.error(err.message || 'Could not send code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitVerifyEmailCode = async (e) => {
+    e.preventDefault();
+    if (otp.length !== 6) return toast.error('Enter the 6-digit code');
+    setLoading(true);
+    try {
+      const data = await verifyEmailOtp(codeEmail.trim(), otp.trim());
+      toast.success('Welcome back!');
+      navigate(destination(data), { replace: true });
+    } catch (err) {
+      toast.error(err.message || 'Invalid or expired code');
     } finally {
       setLoading(false);
     }
@@ -102,20 +133,16 @@ export default function Login() {
 
             {/* Tab switcher */}
             <div className="flex rounded-lg bg-white/10 p-1 mb-5">
-              <button
-                type="button"
-                onClick={() => { setTab('email'); setOtpSent(false); }}
-                className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-all ${tab === 'email' ? 'bg-white text-gray-900 shadow' : 'text-white/60 hover:text-white'}`}
-              >
-                Email
-              </button>
-              <button
-                type="button"
-                onClick={() => { setTab('phone'); setOtpSent(false); }}
-                className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-all ${tab === 'phone' ? 'bg-white text-gray-900 shadow' : 'text-white/60 hover:text-white'}`}
-              >
-                Phone
-              </button>
+              {[['email', 'Password'], ['code', 'Email code'], ['phone', 'Phone']].map(([t, label]) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => { setTab(t); setOtpSent(false); setOtp(''); }}
+                  className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-all ${tab === t ? 'bg-white text-gray-900 shadow' : 'text-white/60 hover:text-white'}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* Email form */}
@@ -154,6 +181,63 @@ export default function Login() {
                   className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading ? <Spinner /> : 'Sign In to Dashboard'}
+                </button>
+              </form>
+            )}
+
+            {/* Email code form */}
+            {tab === 'code' && !otpSent && (
+              <form onSubmit={submitSendEmailCode} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-1.5">Email address</label>
+                  <input
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+                    type="email"
+                    placeholder="you@business.com"
+                    required
+                    value={codeEmail}
+                    onChange={e => setCodeEmail(e.target.value)}
+                  />
+                  <p className="text-xs text-white/40 mt-1.5">We'll email you a 6-digit sign-in code</p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loading ? <Spinner /> : 'Send code'}
+                </button>
+              </form>
+            )}
+
+            {tab === 'code' && otpSent && (
+              <form onSubmit={submitVerifyEmailCode} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-1.5">
+                    6-digit code sent to {codeEmail}
+                  </label>
+                  <input
+                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-xl font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-primary-400"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="000000"
+                    required
+                    autoFocus
+                    value={otp}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
+                  />
+                  <p className="text-white/40 text-xs mt-1.5 text-center">Check your inbox and spam folder</p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading || otp.length !== 6}
+                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loading ? <Spinner /> : 'Sign In'}
+                </button>
+                <button type="button" onClick={() => { setOtpSent(false); setOtp(''); }} className="w-full text-xs text-white/40 hover:text-white/70 transition-colors">
+                  ← Use a different email
                 </button>
               </form>
             )}

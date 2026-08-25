@@ -48,6 +48,20 @@ router.post(
 );
 
 router.post(
+  '/verify-email-otp',
+  [body('email').isEmail().normalizeEmail(), body('otp').isLength({ min: 6, max: 6 })],
+  validate,
+  ctrl.verifyEmailOtp
+);
+
+router.post(
+  '/send-login-otp',
+  [body('email').isEmail().normalizeEmail()],
+  validate,
+  ctrl.sendLoginOtp
+);
+
+router.post(
   '/send-phone-otp',
   [body('phone').notEmpty().trim().withMessage('Phone number required')],
   validate,

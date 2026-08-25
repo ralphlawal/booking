@@ -136,6 +136,20 @@ const User = {
     await db.query('UPDATE users SET full_name = $1 WHERE id = $2', [full_name, id]);
   },
 
+  async saveEmailOtp(id, otp, expiresAt) {
+    await db.query(
+      'UPDATE users SET email_otp = $1, email_otp_expires = $2 WHERE id = $3',
+      [otp, expiresAt.toISOString(), id]
+    );
+  },
+
+  async clearEmailOtp(id) {
+    await db.query(
+      'UPDATE users SET email_otp = NULL, email_otp_expires = NULL, email_verified = TRUE WHERE id = $1',
+      [id]
+    );
+  },
+
   async changePassword(id, currentPassword, newPassword) {
     const { rows } = await db.query('SELECT password_hash FROM users WHERE id = $1', [id]);
     if (!rows.length) throw new Error('User not found');

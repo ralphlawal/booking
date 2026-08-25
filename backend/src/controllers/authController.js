@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Business = require('../models/Business');
-const { sendEmail, sendWelcomeEmail, sendVerificationEmail } = require('../services/emailService');
+const { sendEmail, sendWelcomeEmail, sendVerificationEmail, sendEmailOtpCode } = require('../services/emailService');
 const { verifyFirebaseToken } = require('../middleware/auth');
 const { sendSms } = require('../services/smsService');
 const db = require('../config/database');
@@ -12,25 +12,49 @@ const signToken = (userId) =>
 
 exports.register = async (req, res) => {
   try {
-    const { email, password, full_name } = req.body;
+    const { email, password, full_name, phone } = req.body;
 
     const existing = await User.findByEmail(email);
     if (existing) {
-      return res.status(409).json({ error: 'Email already registered' });
+      return res.status(409).json({ error: 'An account with this email already exists' });
     }
 
     const user = await User.create({ email, password, full_name });
+
+    // Store phone if provided
+    if (phone) {
+      await db.query('UPDATE users SET phone = $1 WHERE id = $2', [phone, user.id]);
+    }
+
+    // Generate 6-digit email OTP for verification
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
+    await User.saveEmailOtp(user.id, otp, expires);
+    sendEmailOtpCode({ email: user.email, full_name: user.full_name }, otp, 'verify').catch(() => {});
+
+    // Send welcome email after they verify (fire-and-forget)
+    sendWelcomeEmail(user).catch(() => {});
+
+    // Notify admin of new signup
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
+    sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `New business signup: ${full_name}`,
+      type: 'admin_notification',
+      html: `<div style="font-family:sans-serif;max-width:480px;padding:24px">
+        <h3 style="margin:0 0 8px;color:#1e293b">New business owner registered</h3>
+        <p style="color:#64748b;margin:0 0 4px"><strong>Name:</strong> ${full_name}</p>
+        <p style="color:#64748b;margin:0 0 4px"><strong>Email:</strong> ${email}</p>
+        ${phone ? `<p style="color:#64748b;margin:0 0 4px"><strong>Phone:</strong> ${phone}</p>` : ''}
+        <p style="color:#64748b;margin:0"><strong>Time:</strong> ${new Date().toUTCString()}</p>
+      </div>`,
+    }).catch(() => {});
+
     const token = signToken(user.id);
-
-    // Send email verification (fire-and-forget — don't block registration)
-    const verifyToken = crypto.randomBytes(32).toString('hex');
-    await User.saveVerifyToken(user.id, verifyToken).catch(() => {});
-    const frontendUrl = process.env.FRONTEND_URL || 'https://bookam.business';
-    sendVerificationEmail(user, `${frontendUrl}/verify-email?token=${verifyToken}`).catch(() => {});
-
     res.status(201).json({
       token,
       user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: false },
+      requiresEmailVerification: true,
     });
   } catch (err) {
     console.error('Register error:', err);
@@ -228,6 +252,56 @@ exports.deleteAccount = async (req, res) => {
   } catch (err) {
     console.error('Delete account error:', err);
     res.status(500).json({ error: 'Failed to delete account' });
+  }
+};
+
+exports.verifyEmailOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email and code required' });
+
+    const user = await User.findByEmail(email);
+    if (!user) return res.status(400).json({ error: 'Invalid code' });
+    if (user.email_otp !== otp) return res.status(400).json({ error: 'Incorrect code — check your email and try again' });
+    if (new Date(user.email_otp_expires) < new Date()) {
+      return res.status(400).json({ error: 'Code expired — request a new one' });
+    }
+
+    await User.clearEmailOtp(user.id);
+
+    const business = await Business.findByUserId(user.id);
+    const token = signToken(user.id);
+
+    res.json({
+      token,
+      user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: true },
+      business: business || null,
+      onboardingComplete: !!business,
+    });
+  } catch (err) {
+    console.error('Verify email OTP error:', err);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
+exports.sendLoginOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const user = await User.findByEmail(email);
+    // Always return success to prevent email enumeration
+    if (!user) return res.json({ message: 'If that email is registered, a code has been sent.' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
+    await User.saveEmailOtp(user.id, otp, expires);
+    sendEmailOtpCode(user, otp, 'login').catch(() => {});
+
+    res.json({ message: 'If that email is registered, a code has been sent.' });
+  } catch (err) {
+    console.error('Send login OTP error:', err);
+    res.status(500).json({ error: 'Failed to send code' });
   }
 };
 
