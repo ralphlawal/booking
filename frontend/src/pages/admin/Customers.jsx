@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ClipboardList, Users, AlertTriangle, RefreshCw, Mail } from 'lucide-react';
-import { customersAPI } from '../../services/api';
+import { ClipboardList, Users, AlertTriangle, RefreshCw, Mail, Sparkles, Loader2, Copy, Check } from 'lucide-react';
+import { customersAPI, aiAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const STATUS_COLORS = {
@@ -185,6 +185,29 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+  const [aiMessages, setAiMessages] = useState({}); // customerId → { text, loading, copied }
+
+  const generateAiMessage = async (c) => {
+    setAiMessages(prev => ({ ...prev, [c.id]: { text: null, loading: true, copied: false } }));
+    try {
+      const msg = await aiAPI.personaliseMessage({
+        customer_name: c.full_name,
+        last_service_name: c.last_service_name,
+        days_since: daysSince(c.last_booking_date),
+      });
+      setAiMessages(prev => ({ ...prev, [c.id]: { text: msg, loading: false, copied: false } }));
+    } catch {
+      toast.error('Could not generate message');
+      setAiMessages(prev => ({ ...prev, [c.id]: { text: null, loading: false, copied: false } }));
+    }
+  };
+
+  const copyAiMessage = (id, text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setAiMessages(prev => ({ ...prev, [id]: { ...prev[id], copied: true } }));
+      setTimeout(() => setAiMessages(prev => ({ ...prev, [id]: { ...prev[id], copied: false } })), 2000);
+    });
+  };
 
   useEffect(() => {
     customersAPI.list().then(setCustomers).catch(() => {}).finally(() => setLoading(false));
@@ -234,33 +257,60 @@ export default function Customers() {
             <span className="text-xs text-gray-400">· last visited 45+ days ago</span>
           </div>
           <div className="grid sm:grid-cols-2 gap-2">
-            {lapsed.slice(0, 6).map(c => (
-              <div key={c.id} className="flex items-center justify-between gap-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800 rounded-lg">
-                <div className="min-w-0">
-                  <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{c.full_name}</p>
-                  <p className="text-xs text-gray-500">
-                    Last: {c.last_service_name || 'booking'} · {daysSince(c.last_booking_date)}d ago
-                  </p>
-                </div>
-                <div className="flex gap-1.5 flex-shrink-0">
-                  {c.email && (
-                    <a
-                      href={`mailto:${c.email}?subject=We miss you at ${encodeURIComponent('your business')}!&body=Hi ${encodeURIComponent(c.full_name)},%0A%0AIt's been a while — we'd love to see you again. Book your next appointment at [your booking link].`}
-                      className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                      title="Send re-engagement email"
-                    >
-                      <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
-                    </a>
+            {lapsed.slice(0, 6).map(c => {
+              const ai = aiMessages[c.id];
+              return (
+                <div key={c.id} className="p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{c.full_name}</p>
+                      <p className="text-xs text-gray-500">
+                        Last: {c.last_service_name || 'booking'} · {daysSince(c.last_booking_date)}d ago
+                      </p>
+                    </div>
+                    <div className="flex gap-1.5 flex-shrink-0">
+                      <button
+                        onClick={() => generateAiMessage(c)}
+                        disabled={ai?.loading}
+                        className="p-1.5 bg-white dark:bg-gray-800 border border-violet-200 dark:border-violet-700 rounded-lg hover:bg-violet-50 transition-colors"
+                        title="AI personalise message"
+                      >
+                        {ai?.loading
+                          ? <Loader2 className="w-3.5 h-3.5 text-violet-500 animate-spin" />
+                          : <Sparkles className="w-3.5 h-3.5 text-violet-500" />}
+                      </button>
+                      {c.email && (
+                        <a
+                          href={`mailto:${c.email}?subject=We miss you!&body=${encodeURIComponent(ai?.text || `Hi ${c.full_name},\n\nIt's been a while — we'd love to see you again. Book your next appointment at [your booking link].`)}`}
+                          className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                          title="Send re-engagement email"
+                        >
+                          <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
+                        </a>
+                      )}
+                      <button
+                        onClick={() => setSelected(c)}
+                        className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs text-gray-600 dark:text-gray-300 font-medium px-2"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                  {ai?.text && (
+                    <div className="bg-white dark:bg-gray-800 border border-violet-100 dark:border-violet-800 rounded-lg p-2.5">
+                      <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{ai.text}</p>
+                      <button
+                        onClick={() => copyAiMessage(c.id, ai.text)}
+                        className="mt-1.5 flex items-center gap-1 text-xs text-violet-600 dark:text-violet-400 hover:text-violet-800 transition-colors"
+                      >
+                        {ai.copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        {ai.copied ? 'Copied!' : 'Copy message'}
+                      </button>
+                    </div>
                   )}
-                  <button
-                    onClick={() => setSelected(c)}
-                    className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs text-gray-600 dark:text-gray-300 font-medium px-2"
-                  >
-                    View
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           {lapsed.length > 6 && (
             <p className="text-xs text-gray-400 mt-2 text-center">+ {lapsed.length - 6} more — search to find them</p>

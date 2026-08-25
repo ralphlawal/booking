@@ -5,8 +5,8 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { CalendarDays, CheckCircle2, ClipboardList, ExternalLink, MessageSquare, Sparkles, Target, TrendingUp, Camera, Share2 } from 'lucide-react';
-import { bookingsAPI, servicesAPI, availabilityAPI } from '../../services/api';
+import { CalendarDays, CheckCircle2, ClipboardList, ExternalLink, MessageSquare, Sparkles, Target, TrendingUp, Camera, Share2, Zap } from 'lucide-react';
+import { bookingsAPI, servicesAPI, availabilityAPI, aiAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -155,6 +155,9 @@ export default function Dashboard() {
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [checklist, setChecklist] = useState(null);
   const [confirming, setConfirming] = useState(null);
+  const [gapSuggestion, setGapSuggestion] = useState(null);
+  const [gapLoading, setGapLoading] = useState(false);
+  const [gapDismissed, setGapDismissed] = useState(false);
 
   const loadBookings = useCallback(() => {
     bookingsAPI.list({ limit: 5 })
@@ -191,6 +194,19 @@ export default function Dashboard() {
       const hasAvailability = !!avail?.working_days?.length;
       if (!hasServices || !hasAvailability) setChecklist({ hasServices, hasAvailability });
     }).catch(() => {});
+  }, [business]);
+
+  const loadGapSuggestion = async () => {
+    setGapLoading(true);
+    try {
+      const result = await aiAPI.gapSuggestions();
+      if (result.suggestion) setGapSuggestion(result);
+    } catch {}
+    finally { setGapLoading(false); }
+  };
+
+  useEffect(() => {
+    if (business) loadGapSuggestion();
   }, [business]);
 
   const stats = data?.stats;
@@ -260,6 +276,30 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* AI gap-filling suggestions */}
+      {!gapDismissed && gapSuggestion?.suggestion && (
+        <div className="app-panel p-4 border border-violet-200 dark:border-violet-800 bg-violet-50/60 dark:bg-violet-900/10">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Zap className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-violet-900 dark:text-violet-200">
+                {gapSuggestion.gaps?.length} open slot day{gapSuggestion.gaps?.length !== 1 ? 's' : ''} this week — AI tips to fill them
+              </p>
+              <p className="text-sm text-violet-800 dark:text-violet-300 mt-1 leading-relaxed">{gapSuggestion.suggestion}</p>
+              <div className="flex gap-2 mt-3">
+                <a href="/admin/services" className="text-xs font-semibold text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 px-3 py-1.5 rounded-lg hover:bg-violet-200 dark:hover:bg-violet-800/40 transition-colors">Manage promos →</a>
+                <a href="/admin/customers" className="text-xs font-semibold text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 px-3 py-1.5 rounded-lg hover:bg-violet-200 dark:hover:bg-violet-800/40 transition-colors">Re-engage customers →</a>
+              </div>
+            </div>
+            <button onClick={() => setGapDismissed(true)} className="text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 transition-colors flex-shrink-0 p-1">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Profile completeness banner */}
       {business && (() => {

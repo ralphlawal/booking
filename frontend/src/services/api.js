@@ -135,6 +135,7 @@ export const bookingsAPI = {
   reschedule: (id, data) => api.put(`/bookings/${id}/reschedule`, data),
   getAnalytics: () => api.get('/bookings/analytics'),
   createWalkin: (data) => api.post('/bookings/walkin', data),
+  reassignStaff: (id, staff_member_id) => api.patch(`/bookings/${id}/staff`, { staff_member_id }),
 };
 
 export const customersAPI = {
@@ -407,6 +408,10 @@ export const aiAPI = {
   rebookTiming: (consumerId, slug) => api.get(`/ai/rebook-timing/${consumerId}/${slug}`),
   matchService: (q) => api.post('/ai/match-service', { q }),
   chatBooking: (slug, messages, bookingState) => api.post(`/ai/chat-booking/${slug}`, { messages, bookingState }),
+  generateDescription: () => api.post('/ai/generate-description'),
+  gapSuggestions: () => api.get('/ai/gap-suggestions'),
+  reassignSuggestion: (bookingId) => api.get(`/ai/reassign-suggestion/${bookingId}`),
+  personaliseMessage: (data) => api.post('/ai/personalise-message', data),
 };
 
 export default api;

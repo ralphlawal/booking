@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI, stripeConnectAPI } from '../../services/api';
+import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI, stripeConnectAPI, aiAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../config/firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { compressImage } from '../../utils/compressImage';
-import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check } from 'lucide-react';
+import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check, Sparkles, Loader2 } from 'lucide-react';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const INTERVALS = [15,30,45,60];
@@ -449,8 +449,11 @@ export default function Settings() {
               </div>
             </div>
             <div>
-              <label className="label">Description</label>
-              <textarea className="input resize-none" rows={3} value={bizForm.description || ''} onChange={e => setBizForm(p => ({ ...p, description: e.target.value }))} />
+              <div className="flex items-center justify-between mb-1">
+                <label className="label mb-0">Description</label>
+                <AiDescriptionButton onGenerated={(desc) => setBizForm(p => ({ ...p, description: desc }))} />
+              </div>
+              <textarea className="input resize-none" rows={3} value={bizForm.description || ''} onChange={e => setBizForm(p => ({ ...p, description: e.target.value }))} placeholder="Describe your business…" />
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
@@ -1262,6 +1265,27 @@ function VerificationCard({ business }) {
 }
 
 function Spinner() { return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />; }
+
+function AiDescriptionButton({ onGenerated }) {
+  const [loading, setLoading] = useState(false);
+  const generate = async () => {
+    setLoading(true);
+    try {
+      const { description } = await aiAPI.generateDescription();
+      onGenerated(description);
+      toast.success('AI description generated — edit it to make it yours');
+    } catch {
+      toast.error('Could not generate description');
+    } finally { setLoading(false); }
+  };
+  return (
+    <button type="button" onClick={generate} disabled={loading}
+      className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 disabled:opacity-50 transition-colors">
+      {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+      {loading ? 'Writing…' : 'AI write'}
+    </button>
+  );
+}
 
 // ── Staff Tab ──────────────────────────────────────────────────────────────
 export function StaffTab({ staff, setStaff }) {

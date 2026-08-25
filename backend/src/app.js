@@ -238,6 +238,10 @@ app.get('/api/ai/noshow-risk/:bookingId', authenticate, attachBusiness, aiCtrl.n
 app.get('/api/ai/rebook-timing/:consumerId/:slug', authenticate, attachBusiness, aiCtrl.rebookTiming);
 app.post('/api/ai/match-service', aiCtrl.matchService);
 app.post('/api/ai/chat-booking/:slug', aiCtrl.chatBooking);
+app.post('/api/ai/generate-description', authenticate, attachBusiness, aiCtrl.generateDescription);
+app.get('/api/ai/gap-suggestions', authenticate, attachBusiness, aiCtrl.gapSuggestions);
+app.get('/api/ai/reassign-suggestion/:bookingId', authenticate, attachBusiness, aiCtrl.reassignSuggestion);
+app.post('/api/ai/personalise-message', authenticate, attachBusiness, aiCtrl.personaliseMessage);
 
 // Web push
 app.get('/api/notifications/vapid-key', (req, res) => {

@@ -57,5 +57,6 @@ router.get('/', authenticate, attachBusiness, ctrl.list);
 router.get('/:id', authenticate, attachBusiness, ctrl.getById);
 router.put('/:id/status', authenticate, attachBusiness, ctrl.updateStatus);
 router.put('/:id/reschedule', authenticate, attachBusiness, ctrl.reschedule);
+router.patch('/:id/staff', authenticate, attachBusiness, ctrl.reassignStaff);
 
 module.exports = router;

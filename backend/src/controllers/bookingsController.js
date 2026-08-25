@@ -1115,3 +1115,25 @@ exports.rescheduleRequest = async (req, res) => {
     res.status(500).json({ error: 'Failed to send reschedule request' });
   }
 };
+
+// PATCH /bookings/:id/staff — reassign a booking to a different staff member
+exports.reassignStaff = async (req, res) => {
+  try {
+    const { staff_member_id } = req.body;
+    if (!staff_member_id) return res.status(400).json({ error: 'staff_member_id is required' });
+    const { rows: staffRows } = await db.query(
+      'SELECT id FROM staff_members WHERE id=$1 AND business_id=$2 AND is_active=TRUE',
+      [staff_member_id, req.business.id]
+    );
+    if (!staffRows.length) return res.status(404).json({ error: 'Staff member not found' });
+    const { rows } = await db.query(
+      'UPDATE bookings SET staff_member_id=$1 WHERE id=$2 AND business_id=$3 RETURNING id',
+      [staff_member_id, req.params.id, req.business.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Booking not found' });
+    res.json({ message: 'Staff reassigned' });
+  } catch (err) {
+    console.error('[reassign-staff]', err.message);
+    res.status(500).json({ error: 'Failed to reassign staff' });
+  }
+};

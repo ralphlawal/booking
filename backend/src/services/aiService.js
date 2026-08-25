@@ -134,6 +134,78 @@ async function matchServiceQuery(rawQuery) {
 }
 
 /**
+ * Generate a business description from name, category, and service list.
+ */
+async function generateBusinessDescription({ businessName, category, services }) {
+  const client = getClient();
+  if (!client) return null;
+
+  const serviceList = services.slice(0, 8).map(s => s.name).join(', ');
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 200,
+    messages: [{
+      role: 'user',
+      content: `Write a compelling 2–3 sentence description for a ${category || 'service'} business called "${businessName}"${serviceList ? ` that offers: ${serviceList}` : ''}. Sound warm, professional, and specific — not generic. Do not start with the business name. Under 60 words.`,
+    }],
+  });
+  return msg.content[0]?.text?.trim() || null;
+}
+
+/**
+ * Analyse booking gaps for a business and suggest actions.
+ * gaps = array of { date, day_name, booked_slots, total_slots, gap_count }
+ */
+async function suggestGapFilling({ businessName, category, gaps, avgBookingsPerDay }) {
+  const client = getClient();
+  if (!client || !gaps.length) return null;
+
+  const gapSummary = gaps.slice(0, 7).map(g =>
+    `${g.day_name} ${g.date}: ${g.gap_count} open slot${g.gap_count !== 1 ? 's' : ''} (${g.booked_slots}/${g.total_slots} filled)`
+  ).join('\n');
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 250,
+    messages: [{
+      role: 'user',
+      content: `You are a revenue advisor for ${businessName} (${category || 'service business'}). Their average is ${avgBookingsPerDay} bookings/day. Here are their upcoming booking gaps:\n${gapSummary}\n\nGive 2–3 specific, actionable suggestions to fill these gaps (e.g. run a flash promo, target lapsed customers, create a last-minute discount). Be direct and practical. Under 80 words total.`,
+    }],
+  });
+  return msg.content[0]?.text?.trim() || null;
+}
+
+/**
+ * Suggest best staff reassignment when a booking's staff member is unavailable.
+ * availableStaff = [{ id, name, role, bookings_today }]
+ */
+async function suggestStaffReassignment({ serviceName, originalStaffName, availableStaff, bookingDate, bookingTime }) {
+  if (!availableStaff.length) return null;
+  // Score by fewest bookings today — no Claude call needed for simple case
+  const sorted = [...availableStaff].sort((a, b) => (a.bookings_today || 0) - (b.bookings_today || 0));
+  return sorted[0]; // return best candidate directly
+}
+
+/**
+ * Personalise a re-engagement message for a lapsed customer.
+ */
+async function personaliseReEngagement({ businessName, category, customerName, lastServiceName, daysSince, servicesAvailable }) {
+  const client = getClient();
+  if (!client) return null;
+
+  const serviceHint = servicesAvailable?.slice(0, 3).map(s => s.name).join(', ') || '';
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 120,
+    messages: [{
+      role: 'user',
+      content: `Write a short, friendly re-engagement message (2 sentences max) from ${businessName} to ${customerName || 'a valued customer'} who last visited ${daysSince} days ago for ${lastServiceName || 'a service'}. ${serviceHint ? `Mention one of these: ${serviceHint}.` : ''} Be personal, warm, not salesy. No emojis. No subject line.`,
+    }],
+  });
+  return msg.content[0]?.text?.trim() || null;
+}
+
+/**
  * AI chat booking: multi-turn conversational booking assistant.
  * Returns { reply, bookingState } — reply is clean text, bookingState has extracted fields.
  */
@@ -219,4 +291,4 @@ Only include fields you are confident about. Omit fields you don't know yet. Use
   return { reply, bookingState: updatedState, readyToBook };
 }
 
-module.exports = { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery, chatBooking };
+module.exports = { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery, chatBooking, generateBusinessDescription, suggestGapFilling, suggestStaffReassignment, personaliseReEngagement };

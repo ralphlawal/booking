@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { ClipboardList, UserPlus, AlertTriangle } from 'lucide-react';
-import { bookingsAPI, exportBookingsCsv, servicesAPI } from '../../services/api';
+import { ClipboardList, UserPlus, AlertTriangle, RefreshCw, Sparkles } from 'lucide-react';
+import { bookingsAPI, exportBookingsCsv, servicesAPI, staffAPI, aiAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const POLL_INTERVAL = 60_000;
@@ -37,6 +37,8 @@ function getRescheduleRequest(booking) {
 // ── Detail drawer ────────────────────────────────────────────────────────────
 function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
   const ref = useRef(null);
+  const [reassignSuggestion, setReassignSuggestion] = useState(null);
+  const [reassigning, setReassigning] = useState(false);
 
   useEffect(() => {
     const handler = (e) => {
@@ -45,6 +47,28 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
+
+  useEffect(() => {
+    setReassignSuggestion(null);
+  }, [booking.id]);
+
+  const loadReassign = async () => {
+    setReassigning(true);
+    try {
+      const result = await aiAPI.reassignSuggestion(booking.id);
+      setReassignSuggestion(result);
+    } catch { toast.error('Could not load reassignment options'); }
+    finally { setReassigning(false); }
+  };
+
+  const applyReassign = async (staffId) => {
+    try {
+      await bookingsAPI.reassignStaff(booking.id, staffId);
+      toast.success('Staff reassigned');
+      setReassignSuggestion(null);
+      onClose();
+    } catch { toast.error('Reassignment failed'); }
+  };
 
   const price = parseFloat(booking.service_price || 0);
   const rescheduleRequest = getRescheduleRequest(booking);
@@ -173,6 +197,49 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
             <div className="app-panel p-4">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Notes</p>
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{booking.notes}</p>
+            </div>
+          )}
+
+          {/* AI staff reassignment */}
+          {['pending','confirmed'].includes(booking.status) && (
+            <div className="app-panel p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Staff reassignment</p>
+                <button
+                  onClick={loadReassign}
+                  disabled={reassigning}
+                  className="flex items-center gap-1 text-xs font-semibold text-violet-600 hover:text-violet-700 disabled:opacity-50 transition-colors"
+                >
+                  {reassigning
+                    ? <><RefreshCw className="w-3 h-3 animate-spin" /> Checking…</>
+                    : <><Sparkles className="w-3 h-3" /> Suggest reassignment</>}
+                </button>
+              </div>
+              {booking.staff_name && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Currently: <span className="font-semibold text-gray-900 dark:text-white">{booking.staff_name}</span></p>
+              )}
+              {reassignSuggestion && (
+                reassignSuggestion.suggestion ? (
+                  <div className="mt-2 p-3 bg-violet-50 dark:bg-violet-900/20 rounded-lg space-y-2">
+                    <p className="text-xs font-semibold text-violet-800 dark:text-violet-300">Best available staff</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">{reassignSuggestion.suggestion.name}</p>
+                        {reassignSuggestion.suggestion.role && <p className="text-xs text-gray-500">{reassignSuggestion.suggestion.role}</p>}
+                        <p className="text-xs text-violet-600 dark:text-violet-400 mt-0.5">{reassignSuggestion.suggestion.bookings_today} booking{reassignSuggestion.suggestion.bookings_today !== 1 ? 's' : ''} today</p>
+                      </div>
+                      <button onClick={() => applyReassign(reassignSuggestion.suggestion.id)} className="btn-primary text-xs py-1.5 px-3">
+                        Reassign
+                      </button>
+                    </div>
+                    {reassignSuggestion.available?.length > 1 && (
+                      <p className="text-xs text-gray-400">{reassignSuggestion.available.length - 1} other staff also available</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-2">No other staff available at this time slot.</p>
+                )
+              )}
             </div>
           )}
 
