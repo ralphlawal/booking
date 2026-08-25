@@ -23,12 +23,17 @@ const Customer = {
   async findByBusinessId(business_id) {
     const { rows } = await db.query(
       `SELECT c.*,
-        COUNT(CASE WHEN b.status != 'cancelled' THEN 1 END) AS active_bookings
+        COUNT(CASE WHEN b.status != 'cancelled' THEN 1 END) AS active_bookings,
+        MAX(b.booking_date) AS last_booking_date,
+        (SELECT s2.name FROM bookings b2
+           LEFT JOIN services s2 ON s2.id = b2.service_id
+           WHERE b2.customer_id = c.id AND b2.status != 'cancelled'
+           ORDER BY b2.booking_date DESC LIMIT 1) AS last_service_name
        FROM customers c
        LEFT JOIN bookings b ON b.customer_id = c.id
        WHERE c.business_id = $1
        GROUP BY c.id
-       ORDER BY c.created_at DESC`,
+       ORDER BY last_booking_date DESC NULLS LAST, c.created_at DESC`,
       [business_id]
     );
     return rows;

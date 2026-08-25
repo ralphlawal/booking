@@ -82,8 +82,11 @@ const TIME_WINDOWS = {
 // GET /api/discover?q=&category=&lat=&lng=&page=&limit=
 exports.search = async (req, res) => {
   try {
-    const { q, category, lat, lng, page = 1, limit = 20 } = req.query;
+    const { q, category, lat, lng, page = 1, limit = 20, available_today } = req.query;
     const offset = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
+
+    // Today's day name in lowercase (matches working_days JSON values)
+    const TODAY = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];
 
     let query = `
       SELECT b.id, b.name, b.slug, b.description, b.category, b.location,
@@ -92,10 +95,12 @@ exports.search = async (req, res) => {
              MIN(s.price)::FLOAT        AS min_price,
              MAX(s.price)::FLOAT        AS max_price,
              COALESCE(AVG(r.rating), 0)::FLOAT AS avg_rating,
-             COUNT(DISTINCT r.id)       AS review_count
+             COUNT(DISTINCT r.id)       AS review_count,
+             av.opening_time, av.closing_time
       FROM businesses b
       LEFT JOIN services s ON s.business_id = b.id AND s.is_active = TRUE
       LEFT JOIN reviews  r ON r.business_id = b.id
+      LEFT JOIN availability_settings av ON av.business_id = b.id
       WHERE b.is_active = TRUE
     `;
     const params = [];
@@ -111,8 +116,13 @@ exports.search = async (req, res) => {
       params.push(`%${category}%`);
       idx++;
     }
+    if (available_today === 'true') {
+      query += ` AND av.working_days ? $${idx}`;
+      params.push(TODAY);
+      idx++;
+    }
 
-    query += ` GROUP BY b.id ORDER BY avg_rating DESC, b.created_at DESC LIMIT $${idx} OFFSET $${idx + 1}`;
+    query += ` GROUP BY b.id, av.opening_time, av.closing_time ORDER BY avg_rating DESC, b.created_at DESC LIMIT $${idx} OFFSET $${idx + 1}`;
     params.push(parseInt(limit), offset);
 
     const { rows } = await db.query(query, params);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ClipboardList, Users, AlertTriangle } from 'lucide-react';
+import { ClipboardList, Users, AlertTriangle, RefreshCw, Mail } from 'lucide-react';
 import { customersAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -201,6 +201,13 @@ export default function Customers() {
     setSelected(prev => prev?.id === id ? { ...prev, notes } : prev);
   };
 
+  // Lapsed: last booking 45+ days ago, at least 2 bookings (repeat customers)
+  const daysSince = (dateStr) => {
+    if (!dateStr) return Infinity;
+    return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+  };
+  const lapsed = customers.filter(c => c.total_bookings >= 2 && daysSince(c.last_booking_date) >= 45);
+
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -215,6 +222,51 @@ export default function Customers() {
           onChange={e => setSearch(e.target.value)}
         />
       </div>
+
+      {/* Re-engage panel — lapsed repeat customers */}
+      {!loading && lapsed.length > 0 && (
+        <div className="card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <RefreshCw className="w-4 h-4 text-amber-500" />
+            <h2 className="font-bold text-sm text-gray-900 dark:text-white">
+              {lapsed.length} customer{lapsed.length !== 1 ? 's' : ''} due for a rebook
+            </h2>
+            <span className="text-xs text-gray-400">· last visited 45+ days ago</span>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {lapsed.slice(0, 6).map(c => (
+              <div key={c.id} className="flex items-center justify-between gap-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800 rounded-lg">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{c.full_name}</p>
+                  <p className="text-xs text-gray-500">
+                    Last: {c.last_service_name || 'booking'} · {daysSince(c.last_booking_date)}d ago
+                  </p>
+                </div>
+                <div className="flex gap-1.5 flex-shrink-0">
+                  {c.email && (
+                    <a
+                      href={`mailto:${c.email}?subject=We miss you at ${encodeURIComponent('your business')}!&body=Hi ${encodeURIComponent(c.full_name)},%0A%0AIt's been a while — we'd love to see you again. Book your next appointment at [your booking link].`}
+                      className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      title="Send re-engagement email"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setSelected(c)}
+                    className="p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs text-gray-600 dark:text-gray-300 font-medium px-2"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {lapsed.length > 6 && (
+            <p className="text-xs text-gray-400 mt-2 text-center">+ {lapsed.length - 6} more — search to find them</p>
+          )}
+        </div>
+      )}
 
       <div className="card overflow-hidden">
         {loading ? (

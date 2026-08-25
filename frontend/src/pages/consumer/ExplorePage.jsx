@@ -153,6 +153,7 @@ export default function ExplorePage() {
   const [coords, setCoords] = useState(null);
   const [viewMode, setViewMode] = useState('list');
   const [aiMatching, setAiMatching] = useState(false);
+  const [availableToday, setAvailableToday] = useState(false);
   const { consumer } = useCustomerAuth();
 
   const q = searchParams.get('q') || '';
@@ -182,8 +183,10 @@ export default function ExplorePage() {
         category: effectiveCategory,
         lat: coords?.lat,
         lng: coords?.lng,
+        available_today: availableToday ? 'true' : undefined,
       };
       if (params.category === 'all') delete params.category;
+      if (!params.available_today) delete params.available_today;
       const data = await discoverAPI.search(params);
       setResults(data);
     } catch {
@@ -193,7 +196,7 @@ export default function ExplorePage() {
       setLoading(false);
       setAiMatching(false);
     }
-  }, [q, category, coords]);
+  }, [q, category, coords, availableToday]);
 
   useEffect(() => {
     discoverAPI.categories().then(setCategories).catch(() => {});
@@ -292,14 +295,28 @@ export default function ExplorePage() {
               <span className="hidden sm:inline">{aiMatching ? 'Thinking…' : 'Search'}</span>
             </button>
           </form>
-          {coords && !aiMatching && (
-            <p className="text-emerald-600 text-xs mt-2 font-medium">Location found — results sorted by distance</p>
-          )}
-          {aiMatching && (
-            <p className="text-violet-600 text-xs mt-2 font-medium flex items-center gap-1">
-              <Zap className="w-3 h-3" /> AI is matching your request…
-            </p>
-          )}
+          <div className="flex items-center gap-3 mt-3">
+            <button
+              type="button"
+              onClick={() => setAvailableToday(v => !v)}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                availableToday
+                  ? 'bg-emerald-600 text-white border-emerald-600'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${availableToday ? 'bg-white' : 'bg-emerald-400'}`} />
+              Available today
+            </button>
+            {coords && !aiMatching && (
+              <p className="text-emerald-600 text-xs font-medium">Sorted by distance</p>
+            )}
+            {aiMatching && (
+              <p className="text-violet-600 text-xs font-medium flex items-center gap-1">
+                <Zap className="w-3 h-3" /> AI matching…
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
