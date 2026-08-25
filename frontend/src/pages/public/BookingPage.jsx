@@ -33,6 +33,7 @@ export default function BookingPage() {
     email: consumer?.email || '',
     notes: '',
   });
+  const [participants, setParticipants] = useState(1);
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -121,7 +122,7 @@ export default function BookingPage() {
     return bookingAttemptKeyRef.current;
   };
 
-  const servicePrice = booking.service ? parseFloat(booking.service.price || 0) : 0;
+  const servicePrice = booking.service ? parseFloat(booking.service.price || 0) * participants : 0;
   const discount = promoData ? parseFloat(promoData.discount_amount || 0) : 0;
   const finalPrice = Math.max(0, servicePrice - discount);
   const requiresPayment = finalPrice > 0;
@@ -163,6 +164,7 @@ export default function BookingPage() {
           service_id: booking.service.id,
           promo_code: promoData ? promoCode : undefined,
           idempotency_key: idempotencyKey,
+          participant_count: participants,
         });
         setClientSecret(client_secret);
         setPaymentIntentId(payment_intent_id);
@@ -181,6 +183,7 @@ export default function BookingPage() {
           promo_code: promoData ? promoCode : undefined,
           discount_amount: discount > 0 ? discount : undefined,
           idempotency_key: idempotencyKey,
+          participant_count: participants,
         }));
         setStep(5);
       } catch (err) {
@@ -216,6 +219,7 @@ export default function BookingPage() {
         promo_code: promoData ? promoCode : undefined,
         discount_amount: discount > 0 ? discount : undefined,
         idempotency_key: getBookingAttemptKey(),
+        participant_count: participants,
       });
       if (consumer && business) {
         consumerAPI.savePreference({ business_id: business.id, service_id: booking.service.id }).catch(() => {});
@@ -316,31 +320,71 @@ export default function BookingPage() {
                 <Wrench className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">No services available yet</p>
               </div>
-            ) : services.map(svc => (
-              <button
-                key={svc.id}
-                onClick={() => { set('service')(svc); goNext(); }}
-                className="w-full text-left p-4 sm:p-5 rounded-lg border border-gray-200 bg-white hover:border-primary-400 hover:shadow-md transition-all duration-150 group"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 group-hover:text-primary-700 transition-colors">{svc.name}</h3>
-                    {svc.description && <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{svc.description}</p>}
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-xs text-gray-400 font-medium">{svc.duration_minutes} min</span>
-                      {parseFloat(svc.price) === 0 && <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Free</span>}
+            ) : services.map(svc => {
+              const maxGroup = parseInt(svc.max_group_size) || 1;
+              const isSelected = booking.service?.id === svc.id;
+              return (
+                <div key={svc.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                  <button
+                    onClick={() => {
+                      set('service')(svc);
+                      setParticipants(1);
+                      if (maxGroup <= 1) goNext();
+                    }}
+                    className={`w-full text-left p-4 sm:p-5 hover:border-primary-400 hover:shadow-md transition-all duration-150 group ${isSelected && maxGroup > 1 ? 'border-b border-gray-100' : ''}`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 group-hover:text-primary-700 transition-colors">{svc.name}</h3>
+                        {svc.description && <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{svc.description}</p>}
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="text-xs text-gray-400 font-medium">{svc.duration_minutes} min</span>
+                          {parseFloat(svc.price) === 0 && <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Free</span>}
+                          {maxGroup > 1 && <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Up to {maxGroup} people</span>}
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        {parseFloat(svc.price) > 0
+                          ? <p className="text-xl font-bold text-primary-700">£{parseFloat(svc.price).toFixed(2)}</p>
+                          : <p className="text-xl font-bold text-emerald-600">Free</p>
+                        }
+                        <p className="text-xs text-primary-500 font-semibold mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Select →</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    {parseFloat(svc.price) > 0
-                      ? <p className="text-xl font-bold text-primary-700">£{parseFloat(svc.price).toFixed(2)}</p>
-                      : <p className="text-xl font-bold text-emerald-600">Free</p>
-                    }
-                    <p className="text-xs text-primary-500 font-semibold mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Book →</p>
-                  </div>
+                  </button>
+                  {/* Participant picker — only shown when this service is selected and allows groups */}
+                  {isSelected && maxGroup > 1 && (
+                    <div className="px-4 pb-4 pt-3 bg-blue-50 space-y-3">
+                      <p className="text-sm font-semibold text-blue-800">How many people?</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {Array.from({ length: maxGroup }, (_, i) => i + 1).map(n => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setParticipants(n)}
+                            className={`w-10 h-10 rounded-lg text-sm font-bold border transition-all ${
+                              participants === n
+                                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                      {parseFloat(svc.price) > 0 && participants > 1 && (
+                        <p className="text-xs text-blue-700 font-medium">
+                          {participants} × £{parseFloat(svc.price).toFixed(2)} = £{(participants * parseFloat(svc.price)).toFixed(2)} total
+                        </p>
+                      )}
+                      <button onClick={goNext} className="btn-primary w-full">
+                        Continue with {participants} {participants === 1 ? 'person' : 'people'} →
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -543,7 +587,10 @@ export default function BookingPage() {
               <div className="space-y-3">
                 {[
                   ['Service', booking.service?.name],
-                  ['Price', `£${parseFloat(booking.service?.price || 0).toFixed(2)}`],
+                  ['Price', participants > 1
+                    ? `${participants} × £${parseFloat(booking.service?.price || 0).toFixed(2)} = £${servicePrice.toFixed(2)}`
+                    : `£${parseFloat(booking.service?.price || 0).toFixed(2)}`],
+                  ...(participants > 1 ? [['Participants', `${participants} people`]] : []),
                   ['Duration', `${booking.service?.duration_minutes} min`],
                   ['Date', booking.date ? format(booking.date, 'EEEE, MMMM d, yyyy') : ''],
                   ['Time', booking.time ? `${booking.time.start} – ${booking.time.end}` : ''],

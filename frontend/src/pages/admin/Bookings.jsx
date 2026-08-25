@@ -141,7 +141,14 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white">{booking.service_name}</p>
-                <p className="text-xs text-gray-400 mt-1">{booking.duration_minutes ?? '—'} min</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {booking.duration_minutes ?? '—'} min
+                  {parseInt(booking.participant_count) > 1 && (
+                    <span className="ml-2 inline-flex items-center gap-1 bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[11px] font-semibold">
+                      Group · {booking.participant_count} people
+                    </span>
+                  )}
+                </p>
               </div>
               <p className="text-lg font-bold text-gray-900 dark:text-white">£{price.toFixed(2)}</p>
             </div>

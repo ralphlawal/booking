@@ -3,7 +3,7 @@ import { Scissors, Lock } from 'lucide-react';
 import { servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const EMPTY = { name: '', description: '', price: '', duration_minutes: 60, is_active: true, deposit_required: false, deposit_amount: '', category: '' };
+const EMPTY = { name: '', description: '', price: '', duration_minutes: 60, is_active: true, deposit_required: false, deposit_amount: '', category: '', max_group_size: 1 };
 
 export default function Services() {
   const [services, setServices] = useState([]);
@@ -16,7 +16,7 @@ export default function Services() {
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setForm(EMPTY); setModal('create'); };
-  const openEdit = (svc) => { setForm({ ...svc, price: svc.price, deposit_amount: svc.deposit_amount || '', deposit_required: svc.deposit_required || false }); setModal(svc); };
+  const openEdit = (svc) => { setForm({ ...svc, price: svc.price, deposit_amount: svc.deposit_amount || '', deposit_required: svc.deposit_required || false, max_group_size: svc.max_group_size || 1 }); setModal(svc); };
   const closeModal = () => setModal(null);
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
@@ -108,6 +108,11 @@ export default function Services() {
                         <Lock className="w-3 h-3" /> £{parseFloat(svc.deposit_amount).toFixed(0)} deposit
                       </span>
                     )}
+                    {Number(svc.max_group_size) > 1 && (
+                      <span className="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
+                        Up to {svc.max_group_size} people
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 ml-3">
@@ -161,6 +166,12 @@ export default function Services() {
                   <span className="text-sm text-gray-700 dark:text-gray-300">Active (visible to customers)</span>
                 </label>
               )}
+              {/* Group booking */}
+              <div>
+                <label className="label">Max group size</label>
+                <input className="input" type="number" min="1" max="50" step="1" value={form.max_group_size || 1} onChange={set('max_group_size')} />
+                <p className="text-xs text-gray-400 mt-1">Set to 1 for solo bookings only. Higher values let customers choose a participant count.</p>
+              </div>
               {/* No-show deposit */}
               <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">

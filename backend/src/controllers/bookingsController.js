@@ -35,7 +35,8 @@ exports.create = async (req, res) => {
   if (req.body.website) return res.status(201).json({ reference_id: 'BOT-BLOCKED', honeypot: true });
   try {
     const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id, idempotency_key,
-            consumer_id, staff_member_id, promo_code } = req.body;
+            consumer_id, staff_member_id, promo_code, participant_count } = req.body;
+    const participants = Math.max(1, parseInt(participant_count) || 1);
 
     const service = await Service.findById(service_id);
     if (!service || service.business_id !== req.business.id || !service.is_active) {
@@ -44,12 +45,13 @@ exports.create = async (req, res) => {
 
     let verifiedPromoCode = null;
     let verifiedDiscount = 0;
-    let expectedAmountPence = Math.max(0, Math.round(parseFloat(service.price || 0) * 100));
+    let expectedAmountPence = Math.max(0, Math.round(parseFloat(service.price || 0) * participants * 100));
     if (promo_code || stripe_payment_intent_id) {
       const amount = await calculateServerAmount({
         service_id,
         business_slug: req.business.slug,
         promo_code,
+        participant_count: participants,
       });
       verifiedPromoCode = amount.promoCode;
       verifiedDiscount = amount.discount;
@@ -108,15 +110,16 @@ exports.create = async (req, res) => {
       idempotency_key: idempotency_key || null,
     });
 
-    // Save optional new-feature fields (requires migration 014 columns to exist)
-    if (staff_member_id || verifiedPromoCode || verifiedDiscount) {
+    // Save optional new-feature fields (requires migration 014+ columns to exist)
+    if (staff_member_id || verifiedPromoCode || verifiedDiscount || participants > 1) {
       db.query(
         `UPDATE bookings SET
            staff_member_id = COALESCE($1, staff_member_id),
            promo_code = COALESCE($2, promo_code),
-           discount_amount = COALESCE($3, discount_amount)
+           discount_amount = COALESCE($3, discount_amount),
+           participant_count = $5
          WHERE id = $4`,
-        [staff_member_id || null, verifiedPromoCode || null, verifiedDiscount || null, booking.id]
+        [staff_member_id || null, verifiedPromoCode || null, verifiedDiscount || null, booking.id, participants]
       ).catch(() => {});
     }
     // Increment promo uses_count

@@ -10,7 +10,7 @@ const getStripe = () => {
   return require('stripe')(process.env.STRIPE_SECRET_KEY);
 };
 
-async function calculateServerAmount({ service_id, business_slug, promo_code }) {
+async function calculateServerAmount({ service_id, business_slug, promo_code, participant_count = 1 }) {
   if (!service_id || !business_slug) {
     const err = new Error('service_id and business_slug are required');
     err.status = 400;
@@ -31,7 +31,8 @@ async function calculateServerAmount({ service_id, business_slug, promo_code }) 
     throw err;
   }
 
-  const price = Math.max(0, parseFloat(item.price || 0));
+  const qty = Math.max(1, parseInt(participant_count) || 1);
+  const price = Math.max(0, parseFloat(item.price || 0)) * qty;
   let discount = 0;
   let promoCode = null;
 
@@ -76,13 +77,13 @@ async function calculateServerAmount({ service_id, business_slug, promo_code }) 
 // Called before booking is submitted — creates a PaymentIntent for the server-verified service price.
 exports.createIntent = async (req, res) => {
   try {
-    const { currency = 'gbp', idempotency_key, service_id, business_slug, promo_code } = req.body;
+    const { currency = 'gbp', idempotency_key, service_id, business_slug, promo_code, participant_count = 1 } = req.body;
     const normalizedCurrency = String(currency || 'gbp').toLowerCase();
     if (!['gbp', 'eur', 'usd'].includes(normalizedCurrency)) {
       return res.status(400).json({ error: 'Unsupported payment currency' });
     }
 
-    const amount = await calculateServerAmount({ service_id, business_slug, promo_code });
+    const amount = await calculateServerAmount({ service_id, business_slug, promo_code, participant_count });
     if (amount.amount_pence < 50) {
       return res.status(400).json({ error: 'Online payment amount must be at least 50p' });
     }
