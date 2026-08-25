@@ -133,4 +133,90 @@ async function matchServiceQuery(rawQuery) {
   }
 }
 
-module.exports = { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery };
+/**
+ * AI chat booking: multi-turn conversational booking assistant.
+ * Returns { reply, bookingState } — reply is clean text, bookingState has extracted fields.
+ */
+async function chatBooking({ businessName, services, availableSlots, messages, bookingState, today }) {
+  const client = getClient();
+  if (!client) return { reply: "I'm sorry, the AI assistant isn't available right now. Please use the booking form instead.", bookingState };
+
+  const serviceList = services.map(s =>
+    `- "${s.name}" (ID: ${s.id}) — £${parseFloat(s.price || 0).toFixed(2)}, ${s.duration_minutes} min${s.description ? ': ' + s.description : ''}`
+  ).join('\n');
+
+  const slotInfo = availableSlots?.length
+    ? `Available slots on ${bookingState.date}: ${availableSlots.map(s => s.start.slice(0,5)).join(', ')}`
+    : bookingState.date && bookingState.service_id
+      ? `No slots available on ${bookingState.date} for this service. Ask the customer to choose a different date.`
+      : '';
+
+  const stateInfo = Object.entries(bookingState)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(', ');
+
+  const system = `You are a friendly booking assistant for ${businessName}. Today is ${today}.
+
+Services available:
+${serviceList}
+
+${slotInfo ? slotInfo + '\n' : ''}Current booking state: ${stateInfo || 'nothing collected yet'}
+
+Your job: have a natural conversation to collect all these fields:
+- service_id (match to a service above by name — use the exact ID)
+- service_name
+- date (YYYY-MM-DD format — interpret relative dates like "Saturday" or "tomorrow" relative to today)
+- time (HH:MM:SS from available slots)
+- customer_name
+- customer_phone
+
+Rules:
+- Ask for one or two things at a time, don't dump a form on the user
+- When suggesting dates, offer 2–3 specific upcoming dates by name (e.g. "Saturday 30 August")
+- If a date is chosen and you don't yet have slots info, acknowledge the date and say you're checking availability
+- Once all 5 required fields (service_id, date, time, customer_name, customer_phone) are set, summarise the booking clearly and say you're ready to confirm
+- customer_email is optional — don't block on it
+- Be warm, concise, and helpful — no corporate speak
+- Keep replies short (2–4 sentences max)
+
+After your conversational reply, on a NEW LINE output a JSON block with any newly extracted or confirmed fields to update:
+<<<STATE_UPDATE>>>
+{"service_id":"...", "service_name":"...", "date":"YYYY-MM-DD", "time":"HH:MM:SS", "customer_name":"...", "customer_phone":"...", "customer_email":"..."}
+<<<END_STATE>>>
+Only include fields you are confident about. Omit fields you don't know yet. Use null to clear a wrong field.`;
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 400,
+    system,
+    messages,
+  });
+
+  const raw = msg.content[0]?.text?.trim() || '';
+
+  // Extract state update JSON block
+  const stateMatch = raw.match(/<<<STATE_UPDATE>>>([\s\S]*?)<<<END_STATE>>>/);
+  let updatedState = { ...bookingState };
+  if (stateMatch) {
+    try {
+      const patch = JSON.parse(stateMatch[1].trim());
+      for (const [k, v] of Object.entries(patch)) {
+        if (v !== null && v !== undefined && v !== '') {
+          updatedState[k] = v;
+        } else if (v === null) {
+          delete updatedState[k];
+        }
+      }
+    } catch {}
+  }
+
+  // Strip the state block from the reply shown to the user
+  const reply = raw.replace(/<<<STATE_UPDATE>>>[\s\S]*?<<<END_STATE>>>/g, '').trim();
+
+  const readyToBook = !!(updatedState.service_id && updatedState.date && updatedState.time && updatedState.customer_name && updatedState.customer_phone);
+
+  return { reply, bookingState: updatedState, readyToBook };
+}
+
+module.exports = { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery, chatBooking };

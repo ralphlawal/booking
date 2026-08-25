@@ -406,6 +406,7 @@ export const aiAPI = {
   noshowRisk: (bookingId) => api.get(`/ai/noshow-risk/${bookingId}`),
   rebookTiming: (consumerId, slug) => api.get(`/ai/rebook-timing/${consumerId}/${slug}`),
   matchService: (q) => api.post('/ai/match-service', { q }),
+  chatBooking: (slug, messages, bookingState) => api.post(`/ai/chat-booking/${slug}`, { messages, bookingState }),
 };
 
 export default api;

@@ -10,6 +10,7 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import BackButton from '../../components/shared/BackButton';
+import AIChatBooking from '../../components/shared/AIChatBooking';
 import toast from 'react-hot-toast';
 
 const DAY_SHORT = { Monday:'Mon', Tuesday:'Tue', Wednesday:'Wed', Thursday:'Thu', Friday:'Fri', Saturday:'Sat', Sunday:'Sun' };
@@ -380,10 +381,13 @@ export default function BusinessProfile() {
 
         {/* Services */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg p-4 sm:p-5 shadow-card">
-          <h2 className="font-black text-xl text-slate-950 dark:text-white mb-4 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-primary-500" />
-            Services
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-black text-xl text-slate-950 dark:text-white flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary-500" />
+              Services
+            </h2>
+            <AIChatBooking slug={slug} businessName={business.name} />
+          </div>
           <div className="space-y-2">
             {services.length === 0 ? (
               <p className="text-sm text-gray-400">No services listed yet</p>
@@ -588,14 +592,14 @@ export default function BusinessProfile() {
 
         {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
         <div className="lg:hidden fixed left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-40 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]" style={{ bottom: 'var(--consumer-nav-height)' }}>
-          <div className="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 grid grid-cols-2 gap-2">
-            <button onClick={handleMessage} className="flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-lg border border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all">
-              <Sparkles className="w-4 h-4" />
-              Message
+          <div className="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex gap-2">
+            <button onClick={handleMessage} className="flex items-center justify-center gap-2 py-3 px-3 text-sm font-semibold rounded-lg border border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all flex-shrink-0">
+              <MessageSquare className="w-4 h-4" />
             </button>
-            <Link to={`/book/${slug}`} state={{ from: location }} className="btn-primary flex items-center justify-center gap-2 py-3 text-sm">
+            <AIChatBooking slug={slug} businessName={business.name} />
+            <Link to={`/book/${slug}`} state={{ from: location }} className="btn-primary flex items-center justify-center gap-2 py-3 text-sm flex-1">
               <CheckCircle className="w-4 h-4" />
-              Book now
+              Book
             </Link>
           </div>
         </div>

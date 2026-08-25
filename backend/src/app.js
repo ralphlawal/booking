@@ -237,6 +237,7 @@ app.get('/api/ai/review-summary/:slug', aiCtrl.reviewSummary);
 app.get('/api/ai/noshow-risk/:bookingId', authenticate, attachBusiness, aiCtrl.noshowRisk);
 app.get('/api/ai/rebook-timing/:consumerId/:slug', authenticate, attachBusiness, aiCtrl.rebookTiming);
 app.post('/api/ai/match-service', aiCtrl.matchService);
+app.post('/api/ai/chat-booking/:slug', aiCtrl.chatBooking);
 
 // Web push
 app.get('/api/notifications/vapid-key', (req, res) => {
