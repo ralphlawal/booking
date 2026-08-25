@@ -6,32 +6,28 @@ async function runMigrations() {
   if (process.env.DATABASE_URL) {
     // PostgreSQL
     const { pool } = require('../src/config/database.pg');
-    console.log('Running PostgreSQL migrations…');
-    const files = fs.readdirSync(__dirname)
-      .filter((file) => /^\d+_.*\.sql$/.test(file) && !file.includes('sqlite'))
-      .sort();
+    const client = await pool.connect();
+    try {
+      console.log('Running PostgreSQL migrations…');
+      const files = fs.readdirSync(__dirname)
+        .filter((file) => /^\d+_.*\.sql$/.test(file) && !file.includes('sqlite'))
+        .sort();
 
-    let passed = 0, failed = 0;
-    for (const file of files) {
-      const client = await pool.connect();
-      try {
+      await client.query('BEGIN');
+      for (const file of files) {
         console.log(`Applying ${file}…`);
         const sql = fs.readFileSync(path.join(__dirname, file), 'utf8');
-        await client.query('BEGIN');
         await client.query(sql);
-        await client.query('COMMIT');
-        passed++;
-      } catch (err) {
-        await client.query('ROLLBACK').catch(() => {});
-        console.error(`  ✗ ${file}: ${err.message}`);
-        failed++;
-      } finally {
-        client.release();
       }
+      await client.query('COMMIT');
+      console.log('PostgreSQL migrations completed.');
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw err;
+    } finally {
+      client.release();
+      await pool.end();
     }
-    await pool.end();
-    console.log(`PostgreSQL migrations completed: ${passed} passed, ${failed} failed.`);
-    if (failed > 0) process.exit(1);
   } else {
     // SQLite
     const { db } = require('../src/config/database.sqlite');

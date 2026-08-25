@@ -14,22 +14,6 @@ if (import.meta.env.PROD) {
   fetch(`${BASE}/health`).catch(() => {});
 }
 
-// Build a URL to the binary media endpoint for a post.
-// Goes through the same Vercel proxy (or directly to Render if VITE_API_URL is set).
-export const API_BASE = BASE;
-export function postMediaUrl(postId) {
-  return `${BASE}/posts/${postId}/media`;
-}
-
-// Legacy helper — kept for any old /uploads/ paths that may still exist in the DB.
-const BACKEND_ORIGIN = import.meta.env.VITE_API_URL || '';
-export function resolveMediaUrl(url) {
-  if (!url) return url;
-  if (url.startsWith('data:') || url.startsWith('http')) return url;
-  if (url.startsWith('/uploads/')) return `${BACKEND_ORIGIN}${url}`;
-  return url;
-}
-
 const RETRY_DELAY_MS = 38000; // wait 38s then retry — Render typically wakes in 30-45s
 
 const isNetworkError = (err) => err.message === 'Network Error' || !err.response;
@@ -113,14 +97,6 @@ export const businessAPI = {
   requestVerification: () => api.post('/business/me/request-verification'),
   submitVerificationDetails: (data) => api.post('/business/me/verification-details', data),
   saveBankDetails: (data) => api.put('/business/me/bank-details', data),
-};
-
-export const addressesAPI = {
-  list: () => api.get('/business/me/addresses'),
-  create: (data) => api.post('/business/me/addresses', data),
-  update: (id, data) => api.put(`/business/me/addresses/${id}`, data),
-  remove: (id) => api.delete(`/business/me/addresses/${id}`),
-  listPublic: (slug) => api.get(`/business/${slug}/addresses`),
 };
 
 export const stripeConnectAPI = {
@@ -385,10 +361,10 @@ export const promoAPI = {
 };
 
 export const postsAPI = {
-  create: (formData) => api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 }),
-  list: () => api.get('/posts', { timeout: 60000 }),
+  create: (formData) => api.post('/posts', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  list: () => api.get('/posts'),
   getPublic: (slug) => api.get(`/posts/public/${slug}`),
-  getFeed: (params) => api.get('/posts/feed', { params, timeout: 60000 }),
+  getFeed: (params) => api.get('/posts/feed', { params }),
   remove: (id) => api.delete(`/posts/${id}`),
   recordView: (id) => api.post(`/posts/${id}/view`),
   recordBookClick: (id) => api.post(`/posts/${id}/book-click`),

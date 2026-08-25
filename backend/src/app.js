@@ -136,7 +136,6 @@ app.put('/api/photos/reorder', authenticate, attachBusiness, photosCtrl.reorder)
 // Business posts
 app.get('/api/posts/feed', postsCtrl.getFeed);
 app.get('/api/posts/public/:slug', postsCtrl.getPublic);
-app.get('/api/posts/:id/media', postsCtrl.serveMedia);
 app.post('/api/posts/:id/view', postsCtrl.recordView);
 app.post('/api/posts/:id/book-click', postsCtrl.recordBookClick);
 app.get('/api/posts', authenticate, attachBusiness, postsCtrl.list);
@@ -311,7 +310,6 @@ async function runPostgresMigrations() {
     '013_broadcasts_referrals.sql', '014_new_features.sql', '015_flexible_bank_details.sql',
     '016_business_posts.sql', '017_consumer_follows.sql', '018_attended_fraud_guards.sql',
     '019_launch_hardening.sql', '020_family_loyalty.sql', '021_booking_stripe_columns.sql',
-    '022_service_mobile_travel.sql', '023_business_addresses.sql',
   ];
   // Run each migration individually so one failure doesn't block the rest
   for (const f of migrationFiles) {

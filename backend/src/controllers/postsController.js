@@ -1,24 +1,14 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 const { createUpload } = require('../middleware/upload');
+const { saveUploadedMedia } = require('../utils/mediaStorage');
 
 const ALLOWED_TYPES = ['photo', 'offer', 'availability', 'announcement'];
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
 
-// Columns returned for all list/feed/create queries — excludes image_url (can be MBs of base64).
-// Images are served as binary via GET /api/posts/:id/media instead.
-const POST_COLS = `
-  p.id, p.business_id, p.type, p.caption, p.cta_label, p.cta_service_id,
-  p.offer_text, p.offer_expires_at, p.views, p.booking_clicks,
-  p.is_active, p.created_at,
-  (p.image_url IS NOT NULL AND p.image_url LIKE 'data:%') AS has_media,
-  CASE WHEN p.image_url LIKE 'data:video/%' THEN 'video'
-       WHEN p.image_url LIKE 'data:image/%' THEN 'image'
-       ELSE NULL END AS media_type`;
-
 exports.uploadMiddleware = createUpload({
   fieldName: 'image',
-  fileSize: 5 * 1024 * 1024,
+  fileSize: 35 * 1024 * 1024,
   label: 'Post media',
   mimeTypes: ALLOWED_MIME,
 });
@@ -34,16 +24,15 @@ exports.create = async (req, res) => {
     if (req.file) {
       if (!ALLOWED_MIME.includes(req.file.mimetype))
         return res.status(400).json({ error: 'Only JPEG, PNG, WebP, MP4, WebM, or MOV files are allowed' });
-      image_url = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      image_url = await saveUploadedMedia(req.file, 'business-posts');
     }
 
-    const newId = crypto.randomUUID();
-    await db.query(
+    const { rows } = await db.query(
       `INSERT INTO business_posts
          (id, business_id, type, caption, image_url, cta_label, cta_service_id, offer_text, offer_expires_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
       [
-        newId,
+        crypto.randomUUID(),
         req.business.id,
         type,
         caption?.trim() || null,
@@ -53,12 +42,6 @@ exports.create = async (req, res) => {
         offer_text?.trim() || null,
         offer_expires_at || null,
       ]
-    );
-    const { rows } = await db.query(
-      `SELECT ${POST_COLS},
-              FALSE AS is_expired, NULL AS service_name
-       FROM business_posts p WHERE p.id = $1`,
-      [newId]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -71,7 +54,7 @@ exports.create = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT ${POST_COLS},
+      `SELECT p.*,
               CASE WHEN p.offer_expires_at IS NOT NULL AND p.offer_expires_at < NOW()
                    THEN TRUE ELSE FALSE END AS is_expired,
               s.name AS service_name
@@ -94,7 +77,7 @@ exports.getPublic = async (req, res) => {
     const { rows: biz } = await db.query('SELECT id FROM businesses WHERE slug = $1', [req.params.slug]);
     if (!biz.length) return res.status(404).json({ error: 'Not found' });
     const { rows } = await db.query(
-      `SELECT ${POST_COLS},
+      `SELECT p.*,
               CASE WHEN p.offer_expires_at IS NOT NULL AND p.offer_expires_at < NOW()
                    THEN TRUE ELSE FALSE END AS is_expired,
               s.name AS service_name, s.price AS service_price
@@ -125,7 +108,7 @@ exports.getFeed = async (req, res) => {
     params.push(Math.max(parseInt(offset, 10) || 0, 0));
 
     const { rows } = await db.query(
-      `SELECT ${POST_COLS},
+      `SELECT p.*,
               CASE WHEN p.offer_expires_at IS NOT NULL AND p.offer_expires_at < NOW()
                    THEN TRUE ELSE FALSE END AS is_expired,
               b.name AS business_name, b.slug AS business_slug,
@@ -151,27 +134,6 @@ exports.getFeed = async (req, res) => {
   } catch (err) {
     console.error('[posts/feed]', err.message);
     res.status(500).json({ error: 'Failed to load feed' });
-  }
-};
-
-// GET /api/posts/:id/media  — serves stored image/video binary directly
-exports.serveMedia = async (req, res) => {
-  try {
-    const { rows } = await db.query('SELECT image_url FROM business_posts WHERE id = $1', [req.params.id]);
-    if (!rows.length || !rows[0].image_url || !rows[0].image_url.startsWith('data:')) {
-      return res.status(404).end();
-    }
-    const dataUrl = rows[0].image_url;
-    const commaIdx = dataUrl.indexOf(',');
-    const mimeType = dataUrl.slice(5, dataUrl.indexOf(';'));
-    const buffer = Buffer.from(dataUrl.slice(commaIdx + 1), 'base64');
-    res.set('Content-Type', mimeType);
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
-    res.set('Content-Length', buffer.length);
-    res.end(buffer);
-  } catch (err) {
-    console.error('[posts/media]', err.message);
-    res.status(500).end();
   }
 };
 

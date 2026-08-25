@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { postsAPI, followsAPI, postMediaUrl } from '../../services/api';
+import { postsAPI, followsAPI } from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
@@ -70,12 +70,12 @@ function PostCard({ post }) {
       </Link>
 
       {/* Media */}
-      {post.has_media && (
+      {post.image_url && (
         <div className="px-3 sm:px-4">
-          {post.media_type === 'video' ? (
-            <video src={postMediaUrl(post.id)} className="w-full rounded-lg object-cover aspect-[4/5] max-h-[34rem] bg-gray-900" controls playsInline preload="metadata" />
+          {post.image_url.startsWith('data:video') ? (
+            <video src={post.image_url} className="w-full rounded-lg object-cover aspect-[4/5] max-h-[34rem] bg-gray-900" controls playsInline preload="metadata" />
           ) : (
-            <img src={postMediaUrl(post.id)} alt="" className="w-full rounded-lg object-cover max-h-[34rem]" loading="lazy" />
+            <img src={post.image_url} alt="" className="w-full rounded-lg object-cover max-h-[34rem]" />
           )}
         </div>
       )}

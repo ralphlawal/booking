@@ -21,18 +21,13 @@ exports.listPublic = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { name, description, price, duration_minutes, deposit_required, deposit_amount, mobile_price, buffer_minutes, category } = req.body;
+    const { name, description, price, duration_minutes } = req.body;
     const service = await Service.create({
       business_id: req.business.id,
       name,
       description,
       price,
       duration_minutes,
-      deposit_required,
-      deposit_amount,
-      mobile_price,
-      buffer_minutes,
-      category,
     });
     checkAutoVerify(req.business.id).catch(() => {});
     res.status(201).json(service);

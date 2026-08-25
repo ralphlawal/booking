@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI, stripeConnectAPI, addressesAPI } from '../../services/api';
+import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI, stripeConnectAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../config/firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { compressImage } from '../../utils/compressImage';
-import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check, MapPin, Car, Star } from 'lucide-react';
+import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check } from 'lucide-react';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const INTERVALS = [15,30,45,60];
@@ -49,13 +49,6 @@ export default function Settings() {
   const [tab, setTab] = useState(searchParams.get('tab') || 'business');
   const [bizForm, setBizForm] = useState({});
   const [avForm, setAvForm] = useState({ working_days: [], opening_time: '09:00', closing_time: '18:00', slot_interval_minutes: 30, buffer_minutes: 0 });
-  const [travelForm, setTravelForm] = useState({ travel_radius_km: '', travel_charge: '', booking_lead_minutes: 0 });
-  const [travelSaving, setTravelSaving] = useState(false);
-  const [addresses, setAddresses] = useState([]);
-  const [addrLoading, setAddrLoading] = useState(false);
-  const [addrForm, setAddrForm] = useState({ nickname: '', address_line: '', city: '', postcode: '', travel_radius_km: '', travel_charge: '', is_primary: false });
-  const [addrSaving, setAddrSaving] = useState(false);
-  const [editingAddr, setEditingAddr] = useState(null); // id of address being edited, or null for new
   const [blocked, setBlocked] = useState([]);
   const [newBlock, setNewBlock] = useState({ blocked_date: '', start_time: '', end_time: '', reason: '', is_full_day: false });
   const [saving, setSaving] = useState(false);
@@ -113,7 +106,6 @@ export default function Settings() {
   useEffect(() => {
     if (business) {
       setBizForm({ name: business.name, description: business.description || '', phone: business.phone || '', email: business.email || '', location: business.location || '', category: business.category || '', latitude: business.latitude || '', longitude: business.longitude || '' });
-      setTravelForm({ travel_radius_km: business.travel_radius_km ?? '', travel_charge: business.travel_charge ?? '', booking_lead_minutes: business.booking_lead_minutes ?? 0 });
       setBankForm({
         ...emptyBankForm,
         holder_name: business.bank_holder_name || '',
@@ -180,22 +172,6 @@ export default function Settings() {
       toast.success('Availability saved');
     } catch (err) { toast.error(err.message); }
     finally { setSaving(false); }
-  };
-
-  const saveTravelSettings = async (e) => {
-    e.preventDefault();
-    setTravelSaving(true);
-    try {
-      const payload = {
-        travel_radius_km: travelForm.travel_radius_km === '' ? null : parseInt(travelForm.travel_radius_km, 10),
-        travel_charge: travelForm.travel_charge === '' ? null : parseFloat(travelForm.travel_charge),
-        booking_lead_minutes: parseInt(travelForm.booking_lead_minutes, 10) || 0,
-      };
-      const updated = await businessAPI.update(payload);
-      updateBusiness(updated);
-      toast.success('Booking settings saved');
-    } catch (err) { toast.error(err.message); }
-    finally { setTravelSaving(false); }
   };
 
   const toggleDay = (day) =>
@@ -343,69 +319,6 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    if (tab === 'addresses') {
-      setAddrLoading(true);
-      addressesAPI.list().then(setAddresses).catch(() => {}).finally(() => setAddrLoading(false));
-    }
-  }, [tab]);
-
-  const saveAddress = async (e) => {
-    e.preventDefault();
-    setAddrSaving(true);
-    try {
-      const payload = {
-        nickname: addrForm.nickname || 'Location',
-        address_line: addrForm.address_line,
-        city: addrForm.city || undefined,
-        postcode: addrForm.postcode || undefined,
-        travel_radius_km: addrForm.travel_radius_km !== '' ? parseInt(addrForm.travel_radius_km, 10) : null,
-        travel_charge: addrForm.travel_charge !== '' ? parseFloat(addrForm.travel_charge) : null,
-        is_primary: addrForm.is_primary,
-      };
-      if (editingAddr) {
-        const updated = await addressesAPI.update(editingAddr, payload);
-        setAddresses(prev => prev.map(a => a.id === editingAddr ? updated : (payload.is_primary ? { ...a, is_primary: false } : a)));
-        toast.success('Address updated');
-      } else {
-        const created = await addressesAPI.create(payload);
-        setAddresses(prev => [
-          ...(payload.is_primary ? prev.map(a => ({ ...a, is_primary: false })) : prev),
-          created,
-        ]);
-        toast.success('Address added');
-      }
-      setAddrForm({ nickname: '', address_line: '', city: '', postcode: '', travel_radius_km: '', travel_charge: '', is_primary: false });
-      setEditingAddr(null);
-    } catch (err) {
-      toast.error(err.message || 'Failed to save address');
-    } finally {
-      setAddrSaving(false);
-    }
-  };
-
-  const deleteAddress = async (id) => {
-    if (!window.confirm('Remove this address?')) return;
-    try {
-      await addressesAPI.remove(id);
-      setAddresses(prev => prev.filter(a => a.id !== id));
-      toast.success('Address removed');
-    } catch { toast.error('Could not remove address'); }
-  };
-
-  const startEditAddr = (addr) => {
-    setEditingAddr(addr.id);
-    setAddrForm({
-      nickname: addr.nickname || '',
-      address_line: addr.address_line || '',
-      city: addr.city || '',
-      postcode: addr.postcode || '',
-      travel_radius_km: addr.travel_radius_km ?? '',
-      travel_charge: addr.travel_charge ?? '',
-      is_primary: addr.is_primary || false,
-    });
-  };
-
-  useEffect(() => {
     if (tab === 'payouts') {
       loadConnectStatus();
       // If Stripe redirected back with ?stripe=success, clear the param
@@ -458,8 +371,8 @@ export default function Settings() {
     finally { setVerSaving(false); }
   };
 
-  const TABS = ['business','availability','addresses','blocked','staff','photos','intake','promo','waitlist','qr','embed','payouts','verification','security'];
-  const TAB_LABELS = ['Business Info','Availability','Locations','Blocked Days','Staff','Gallery','Intake Forms','Promo Codes','Waitlist','QR & Link','Embed Widget','Payouts','Verification','Security'];
+  const TABS = ['business','availability','blocked','staff','photos','intake','promo','waitlist','qr','embed','payouts','verification','security'];
+  const TAB_LABELS = ['Business Info','Availability','Blocked Days','Staff','Gallery','Intake Forms','Promo Codes','Waitlist','QR & Link','Embed Widget','Payouts','Verification','Security'];
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -591,7 +504,6 @@ export default function Settings() {
 
       {/* Availability */}
       {tab === 'availability' && (
-        <div className="space-y-5">
         <div className="app-panel p-6 max-w-2xl animate-slide-up">
           <form onSubmit={saveAvailability} className="space-y-5">
             <div>
@@ -635,190 +547,6 @@ export default function Settings() {
               {saving ? <Spinner /> : 'Save Availability'}
             </button>
           </form>
-        </div>
-
-        {/* Travel & booking settings */}
-        <div className="app-panel p-6 max-w-2xl animate-slide-up">
-          <h3 className="font-bold text-gray-900 dark:text-white mb-1">Travel &amp; Booking Settings</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">Configure mobile service travel limits and how far in advance customers must book.</p>
-          <form onSubmit={saveTravelSettings} className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="label">Travel Radius (km)</label>
-                <input className="input" type="number" min="0" step="1" placeholder="e.g. 15 — leave blank for no limit"
-                  value={travelForm.travel_radius_km}
-                  onChange={e => setTravelForm(p => ({ ...p, travel_radius_km: e.target.value }))} />
-                <p className="text-xs text-gray-400 mt-1">Shown on your booking page. Blank = unlimited.</p>
-              </div>
-              <div>
-                <label className="label">Travel Charge (£ flat fee)</label>
-                <input className="input" type="number" min="0" step="0.50" placeholder="e.g. 5.00 — leave blank if free"
-                  value={travelForm.travel_charge}
-                  onChange={e => setTravelForm(p => ({ ...p, travel_charge: e.target.value }))} />
-                <p className="text-xs text-gray-400 mt-1">Added to mobile bookings at checkout.</p>
-              </div>
-            </div>
-            <div className="max-w-xs">
-              <label className="label">Booking Lead Time (minutes)</label>
-              <select className="input" value={travelForm.booking_lead_minutes}
-                onChange={e => setTravelForm(p => ({ ...p, booking_lead_minutes: e.target.value }))}>
-                <option value="0">No minimum (book anytime)</option>
-                <option value="60">1 hour advance notice</option>
-                <option value="120">2 hours advance notice</option>
-                <option value="240">4 hours advance notice</option>
-                <option value="480">8 hours advance notice</option>
-                <option value="1440">24 hours advance notice</option>
-                <option value="2880">48 hours advance notice</option>
-              </select>
-              <p className="text-xs text-gray-400 mt-1">Slots closer than this won't be offered to customers.</p>
-            </div>
-            <button type="submit" disabled={travelSaving} className="btn-primary">
-              {travelSaving ? <Spinner /> : 'Save Settings'}
-            </button>
-          </form>
-        </div>
-        </div>
-      )}
-
-      {/* Addresses */}
-      {tab === 'addresses' && (
-        <div className="space-y-5 max-w-2xl animate-slide-up">
-
-          {/* Existing addresses */}
-          <div className="app-panel p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Your locations</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Customers see these on your booking page and profile.</p>
-              </div>
-              <button onClick={() => { setEditingAddr(null); setAddrForm({ nickname: '', address_line: '', city: '', postcode: '', travel_radius_km: '', travel_charge: '', is_primary: false }); }}
-                className="btn-primary text-xs py-1.5 flex items-center gap-1.5">
-                <Plus className="w-3.5 h-3.5" /> Add location
-              </button>
-            </div>
-            {addrLoading ? (
-              <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}</div>
-            ) : addresses.length === 0 ? (
-              <div className="text-center py-8">
-                <MapPin className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
-                <p className="text-sm text-gray-400">No locations added yet</p>
-                <p className="text-xs text-gray-400 mt-1">Add your studio, home address, or service areas</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {addresses.map(addr => (
-                  <div key={addr.id} className={`flex items-start gap-3 p-4 rounded-xl border transition-all ${
-                    editingAddr === addr.id
-                      ? 'border-primary-300 dark:border-primary-700 bg-primary-50/50 dark:bg-primary-900/10'
-                      : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900'}`}>
-                    <div className="w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <MapPin className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{addr.nickname}</p>
-                        {addr.is_primary && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center gap-0.5">
-                            <Star className="w-2.5 h-2.5" /> Primary
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                        {addr.address_line}{addr.city ? `, ${addr.city}` : ''}{addr.postcode ? ` ${addr.postcode}` : ''}
-                      </p>
-                      {(addr.travel_radius_km || addr.travel_charge) && (
-                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
-                          <Car className="w-3 h-3" />
-                          {addr.travel_radius_km ? `${addr.travel_radius_km} km radius` : 'Mobile'}
-                          {addr.travel_charge ? ` · £${parseFloat(addr.travel_charge).toFixed(2)} travel fee` : ' · free travel'}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={() => startEditAddr(addr)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-primary-600 transition-colors">
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => deleteAddress(addr.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Add / edit form */}
-          <div className="app-panel p-5">
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">
-              {editingAddr ? 'Edit location' : 'Add a location'}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              {editingAddr ? 'Update the details for this address.' : 'Add a studio, home address, or mobile service area.'}
-            </p>
-            <form onSubmit={saveAddress} className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Nickname</label>
-                  <input className="input" placeholder="e.g. Main Studio, Home visits" value={addrForm.nickname}
-                    onChange={e => setAddrForm(p => ({ ...p, nickname: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="label">Address *</label>
-                  <input className="input" required placeholder="123 High Street" value={addrForm.address_line}
-                    onChange={e => setAddrForm(p => ({ ...p, address_line: e.target.value }))} />
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="label">City</label>
-                  <input className="input" placeholder="London" value={addrForm.city}
-                    onChange={e => setAddrForm(p => ({ ...p, city: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="label">Postcode</label>
-                  <input className="input" placeholder="SW1A 1AA" value={addrForm.postcode}
-                    onChange={e => setAddrForm(p => ({ ...p, postcode: e.target.value }))} />
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Travel radius (km)</label>
-                  <input className="input" type="number" min="0" step="1" placeholder="e.g. 15 — blank for none"
-                    value={addrForm.travel_radius_km}
-                    onChange={e => setAddrForm(p => ({ ...p, travel_radius_km: e.target.value }))} />
-                  <p className="text-xs text-gray-400 mt-1">How far you'll travel from this location for mobile jobs.</p>
-                </div>
-                <div>
-                  <label className="label">Travel charge (£)</label>
-                  <input className="input" type="number" min="0" step="0.50" placeholder="e.g. 5.00 — blank if free"
-                    value={addrForm.travel_charge}
-                    onChange={e => setAddrForm(p => ({ ...p, travel_charge: e.target.value }))} />
-                  <p className="text-xs text-gray-400 mt-1">Flat fee added to mobile bookings from this location.</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <button type="button"
-                  onClick={() => setAddrForm(p => ({ ...p, is_primary: !p.is_primary }))}
-                  className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${addrForm.is_primary ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${addrForm.is_primary ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                </button>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none"
-                  onClick={() => setAddrForm(p => ({ ...p, is_primary: !p.is_primary }))}>
-                  Set as primary location
-                </label>
-              </div>
-              <div className="flex gap-3">
-                {editingAddr && (
-                  <button type="button" onClick={() => { setEditingAddr(null); setAddrForm({ nickname: '', address_line: '', city: '', postcode: '', travel_radius_km: '', travel_charge: '', is_primary: false }); }}
-                    className="btn-secondary">Cancel</button>
-                )}
-                <button type="submit" disabled={addrSaving || !addrForm.address_line} className="btn-primary disabled:opacity-50">
-                  {addrSaving ? <Spinner /> : editingAddr ? 'Update location' : 'Add location'}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
 

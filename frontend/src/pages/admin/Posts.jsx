@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { postsAPI, servicesAPI, postMediaUrl } from '../../services/api';
+import { postsAPI, servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
   Plus, Trash2, Image, Tag, Calendar, Megaphone, Film,
@@ -21,17 +21,18 @@ const EMPTY = {
 function PostCard({ post, onDelete }) {
   const meta = TYPE_META[post.type] || TYPE_META.photo;
   const Icon = meta.icon;
+  const isVideo = post.image_url?.startsWith('data:video');
   return (
     <div className="app-panel p-4 flex gap-3">
-      {post.has_media && post.media_type === 'video' ? (
-        <video src={postMediaUrl(post.id)} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" muted playsInline />
-      ) : post.has_media ? (
-        <img src={postMediaUrl(post.id)} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+      {post.image_url && isVideo ? (
+        <video src={post.image_url} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" muted playsInline controls />
+      ) : post.image_url ? (
+        <img src={post.image_url} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
       ) : null}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${meta.color}`}>
-            {post.media_type === 'video' ? <Film className="w-3 h-3" /> : <Icon className="w-3 h-3" />}{post.media_type === 'video' ? 'Reel / Video' : meta.label}
+            {isVideo ? <Film className="w-3 h-3" /> : <Icon className="w-3 h-3" />}{isVideo ? 'Reel / Video' : meta.label}
           </span>
           <button onClick={() => onDelete(post.id)} className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
             <Trash2 className="w-4 h-4" />
@@ -109,8 +110,8 @@ export default function Posts() {
       toast.error('Use a JPEG, PNG, WebP, MP4, WebM, or MOV file');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Media must be 5MB or less. Compress images or trim videos before uploading.');
+    if (file.size > 35 * 1024 * 1024) {
+      toast.error('Media must be 35MB or less');
       return;
     }
     setForm(f => ({ ...f, image: file, preview: URL.createObjectURL(file) }));
@@ -213,7 +214,7 @@ export default function Posts() {
                 </button>
               )}
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleImage} />
-              <p className="text-xs text-gray-400 mt-1">Supports images and short clips. Max 5MB — compress or trim before uploading.</p>
+              <p className="text-xs text-gray-400 mt-1">Supports images and short reels up to 35MB.</p>
             </div>
 
             <div>
