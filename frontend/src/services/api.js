@@ -43,7 +43,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('fbToken');
+  const token = localStorage.getItem('bam_token') || localStorage.getItem('fbToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -72,7 +72,7 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (email, password, full_name) => api.post('/auth/register', { email, password, full_name }),
+  register: (email, password, full_name, phone) => api.post('/auth/register', { email, password, full_name, phone }),
   me: () => api.get('/auth/me'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
@@ -156,7 +156,7 @@ export const customersAPI = {
 };
 
 export const exportBookingsCsv = () => {
-  const token = localStorage.getItem('fbToken');
+  const token = localStorage.getItem('bam_token') || localStorage.getItem('fbToken');
   const base = BASE;
   const url = `${base}/bookings/export/csv`;
   const a = document.createElement('a');

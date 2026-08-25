@@ -66,12 +66,10 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const register = async (email, password, full_name) => {
-    const data = await authAPI.register(email, password, full_name);
-    localStorage.setItem(TOKEN_KEY, data.token);
-    setUser(data.user);
-    setBusiness(data.business || null);
-    saveAuthCache(data.user, data.business || null);
+  const register = async (email, password, full_name, phone) => {
+    const data = await authAPI.register(email, password, full_name, phone);
+    // Register no longer auto-logs in — user must verify email OTP first.
+    // Token is returned but should only be used after verifyEmailOtp.
     return data;
   };
 

@@ -81,7 +81,7 @@ exports.login = async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, email: user.email, full_name: user.full_name },
+      user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: !!user.email_verified },
       business: business || null,
       onboardingComplete: !!business,
     });
