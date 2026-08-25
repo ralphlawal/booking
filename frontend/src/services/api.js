@@ -65,7 +65,7 @@ api.interceptors.response.use(
     const message = userFacingApiMessage(err);
     const error = new Error(message);
     error.status = err.response?.status;
-    error.code = err.response?.data?.code;
+    error.code = err.response?.data?.code || err.response?.data?.hint;
     return Promise.reject(error);
   }
 );

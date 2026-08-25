@@ -315,18 +315,14 @@ async function startReminderJob() {
 // Auto-migrate then start
 async function runPostgresMigrations() {
   const { pool } = require('./config/database.pg');
-  const migrationFiles = [
-    '001_initial_schema.sql', '002_consumer_discovery.sql', '003_consumer_auth_extras.sql',
-    '004_verification.sql', '005_notifications.sql', '006_email_verification.sql',
-    '007_customer_notes.sql', '008_chat.sql', '009_stripe_payments.sql',
-    '010_bank_verification.sql', '011_trust_system.sql', '012_consumer_location.sql',
-    '013_broadcasts_referrals.sql', '014_new_features.sql', '015_flexible_bank_details.sql',
-    '016_business_posts.sql', '017_consumer_follows.sql', '018_attended_fraud_guards.sql',
-    '019_launch_hardening.sql', '020_family_loyalty.sql', '021_booking_stripe_columns.sql',
-  ];
+  // Auto-discover all numbered SQL migrations so new ones are always applied on startup
+  const migrationsDir = path.join(__dirname, '../migrations');
+  const migrationFiles = fs.readdirSync(migrationsDir)
+    .filter(f => /^\d+_.*\.sql$/.test(f) && !f.includes('sqlite'))
+    .sort();
   // Run each migration individually so one failure doesn't block the rest
   for (const f of migrationFiles) {
-    const sql = fs.readFileSync(path.join(__dirname, '../migrations', f), 'utf8');
+    const sql = fs.readFileSync(path.join(migrationsDir, f), 'utf8');
     await pool.query(sql).catch(err => console.error(`[migration ${f}]`, err.message));
   }
   await pool.query(`

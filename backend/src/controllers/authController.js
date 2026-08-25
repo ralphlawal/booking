@@ -71,6 +71,13 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    if (user.password_hash === 'firebase_auth' || user.password_hash === 'phone_auth') {
+      return res.status(401).json({
+        error: 'This account has no password set. Use the "Email code" tab to sign in instead.',
+        hint: 'use_otp',
+      });
+    }
+
     const valid = await User.comparePassword(password, user.password_hash);
     if (!valid) {
       return res.status(401).json({ error: 'Invalid email or password' });

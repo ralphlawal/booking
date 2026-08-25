@@ -31,7 +31,13 @@ export default function Login() {
       toast.success('Welcome back!');
       navigate(destination(data), { replace: true });
     } catch (err) {
-      toast.error(err.message || 'Invalid email or password');
+      if (err.code === 'use_otp' || err.message?.includes('Email code')) {
+        setCodeEmail(form.email);
+        setTab('code');
+        toast.error('No password on this account — use "Email code" to sign in');
+      } else {
+        toast.error(err.message || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
