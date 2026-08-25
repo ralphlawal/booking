@@ -248,60 +248,36 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="bg-gradient-to-br from-primary-950 via-primary-900 to-slate-950 px-3 sm:px-6 py-7 sm:py-10 text-center">
-        <h1 className="text-2xl sm:text-4xl font-black text-white mb-2 tracking-tight">Find services near you</h1>
-        <p className="text-white/65 text-sm sm:text-base mb-6">Book barbers, stylists, trainers and more instantly</p>
-        <form onSubmit={handleSearch} className="max-w-3xl mx-auto grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              className="w-full pl-11 pr-4 py-4 rounded-lg text-base outline-none border-0 shadow-sm bg-white text-gray-950"
-              placeholder="Search services or businesses"
-              value={q}
-              onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={getLocation}
-            disabled={locating}
-            className="bg-white/10 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-white/15 transition-colors flex items-center justify-center gap-2"
-          >
-            <Navigation className="w-4 h-4" />
-            {locating ? 'Locating' : 'Near me'}
-          </button>
-          <button type="submit" className="bg-primary-600 text-white font-bold px-5 py-3 rounded-lg text-sm hover:bg-primary-500 transition-colors flex items-center justify-center gap-1 shadow-primary">
-            <Search className="w-4 h-4" />
-            <span className="hidden sm:inline">Search</span>
-          </button>
-        </form>
-        {coords && (
-          <p className="text-primary-200 text-xs mt-3">Location found — results sorted by distance</p>
-        )}
-        <div className="max-w-6xl mx-auto mt-6 overflow-x-auto scrollbar-hide">
-          <div className="flex items-start gap-4 min-w-max px-1 justify-center">
-            {topCategories.slice(0, 7).map((c) => {
-              const image = categoryImage(c.label);
-              return (
-                <button
-                  key={c.value}
-                  onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('category', c.value); return n; })}
-                  className="group w-20 sm:w-24 flex-shrink-0 text-center"
-                >
-                  <span className={`mx-auto mb-2 grid h-16 w-16 sm:h-20 sm:w-20 place-items-center overflow-hidden rounded-full border-2 transition-all ${
-                    category === c.value ? 'border-primary-400 scale-105' : 'border-white/10 group-hover:border-white/35'
-                  }`}>
-                    {image ? (
-                      <img src={image} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    ) : (
-                      <span className="h-full w-full bg-white/10 flex items-center justify-center text-white font-black">{c.label[0]}</span>
-                    )}
-                  </span>
-                  <span className={`block truncate text-xs font-bold ${category === c.value ? 'text-white' : 'text-white/70'}`}>{c.label}</span>
-                </button>
-              );
-            })}
-          </div>
+      <div className="bg-white border-b border-gray-100 px-3 sm:px-6 py-6 sm:py-8">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-950 mb-4 tracking-tight">Find services near you</h1>
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                className="w-full pl-10 pr-4 py-3 rounded-lg text-sm outline-none border border-gray-200 focus:border-primary-400 transition-colors bg-white text-gray-950 placeholder:text-gray-400"
+                placeholder="Search services or businesses"
+                value={q}
+                onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={getLocation}
+              disabled={locating}
+              className="border border-gray-200 text-gray-600 font-semibold px-3.5 py-3 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+            >
+              <Navigation className="w-4 h-4" />
+              <span className="hidden sm:inline">{locating ? 'Locating…' : 'Near me'}</span>
+            </button>
+            <button type="submit" className="bg-primary-600 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-primary-700 transition-colors flex items-center gap-1.5">
+              <Search className="w-4 h-4" />
+              <span className="hidden sm:inline">Search</span>
+            </button>
+          </form>
+          {coords && (
+            <p className="text-emerald-600 text-xs mt-2 font-medium">Location found — results sorted by distance</p>
+          )}
         </div>
       </div>
 

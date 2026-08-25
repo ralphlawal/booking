@@ -375,6 +375,13 @@ const ConsumerAccount = {
     await db.query('DELETE FROM consumer_family_members WHERE consumer_id = $1', [id]).catch(() => {});
     await db.query('DELETE FROM consumer_accounts WHERE id = $1', [id]);
   },
+
+  async incrementNoShows(consumer_id) {
+    await db.query(
+      'UPDATE consumer_accounts SET no_show_count = no_show_count + 1 WHERE id = $1',
+      [consumer_id]
+    );
+  },
 };
 
 module.exports = ConsumerAccount;

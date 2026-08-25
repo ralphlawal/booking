@@ -343,4 +343,24 @@ const sendBusinessPaymentReleasedEmail = (booking) =>
     `),
   });
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail, sendBusinessPaymentReleasedEmail };
+const sendWaitlistNotification = ({ consumer_name, consumer_email, business_name, service_name, business_slug }) => {
+  const bookUrl = `${process.env.FRONTEND_URL || 'https://bookam.business'}/book/${business_slug}`;
+  return sendEmail({
+    to: consumer_email,
+    subject: `A slot just opened at ${business_name}`,
+    type: 'waitlist_notified',
+    html: baseTemplate(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#ede9fe;border-radius:50%;font-size:24px;margin-bottom:12px">🔔</div>
+        <h2 style="margin:0 0 6px;font-size:22px;color:#1e293b">A slot is open!</h2>
+        <p style="margin:0;color:#64748b;font-size:15px">Hi ${consumer_name}, a spot has just opened up at <strong>${business_name}</strong>${service_name ? ` for ${service_name}` : ''}.</p>
+      </div>
+      <div style="text-align:center;margin:24px 0">
+        <a href="${bookUrl}" style="display:inline-block;background:#4f46e5;color:#fff;font-size:15px;font-weight:600;padding:14px 28px;border-radius:10px;text-decoration:none">Book now →</a>
+      </div>
+      <p style="margin:0;color:#94a3b8;font-size:13px;text-align:center">Slots fill up fast — book before it's gone. This notification was sent because you joined the waitlist for ${business_name}.</p>
+    `),
+  });
+};
+
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail, sendBusinessPaymentReleasedEmail, sendWaitlistNotification };

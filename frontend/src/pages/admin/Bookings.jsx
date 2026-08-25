@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { ClipboardList, UserPlus } from 'lucide-react';
+import { ClipboardList, UserPlus, AlertTriangle } from 'lucide-react';
 import { bookingsAPI, exportBookingsCsv, servicesAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -110,7 +110,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
               <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center font-bold text-primary-700 dark:text-primary-400">
                 {booking.customer_name?.[0]?.toUpperCase()}
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 dark:text-white">{booking.customer_name}</p>
                 {booking.customer_phone && (
                   <a href={`tel:${booking.customer_phone}`} className="text-xs text-primary-600 dark:text-primary-400 hover:underline">
@@ -118,6 +118,15 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
                   </a>
                 )}
               </div>
+              {booking.consumer_no_show_count > 0 && (
+                <span
+                  title={`${booking.consumer_no_show_count} no-show${booking.consumer_no_show_count !== 1 ? 's' : ''} recorded on this account`}
+                  className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-md ${booking.consumer_no_show_count >= 3 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  {booking.consumer_no_show_count} no-show{booking.consumer_no_show_count !== 1 ? 's' : ''}
+                </span>
+              )}
             </div>
             {booking.customer_email && (
               <a href={`mailto:${booking.customer_email}`} className="text-xs text-gray-500 hover:text-primary-600 transition-colors block">

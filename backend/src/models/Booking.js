@@ -81,10 +81,12 @@ const Booking = {
     const sql = `
       SELECT b.*,
         s.name AS service_name, s.price AS service_price, s.duration_minutes,
-        c.full_name AS customer_name, c.phone AS customer_phone, c.email AS customer_email
+        c.full_name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
+        ca.no_show_count AS consumer_no_show_count
       FROM bookings b
       JOIN services s ON s.id = b.service_id
       JOIN customers c ON c.id = b.customer_id
+      LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
       WHERE ${where}
       ORDER BY b.booking_date DESC, b.start_time DESC
       LIMIT $${idx} OFFSET $${idx + 1}`;
@@ -98,11 +100,13 @@ const Booking = {
       `SELECT b.*,
         s.name AS service_name, s.price AS service_price, s.duration_minutes,
         c.full_name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
-        bus.name AS business_name, bus.phone AS business_phone, bus.email AS business_email
+        bus.name AS business_name, bus.phone AS business_phone, bus.email AS business_email,
+        ca.no_show_count AS consumer_no_show_count
        FROM bookings b
        JOIN services s ON s.id = b.service_id
        JOIN customers c ON c.id = b.customer_id
        JOIN businesses bus ON bus.id = b.business_id
+       LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
        WHERE b.id = $1`,
       [id]
     );

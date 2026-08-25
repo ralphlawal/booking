@@ -1,9 +1,10 @@
 const Booking = require('../models/Booking');
 const Customer = require('../models/Customer');
+const ConsumerAccount = require('../models/ConsumerAccount');
 const Service = require('../models/Service');
 const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
-const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendBusinessPaymentReleasedEmail } = require('../services/emailService');
+const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendBusinessPaymentReleasedEmail, sendWaitlistNotification } = require('../services/emailService');
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -282,6 +283,35 @@ exports.updateStatus = async (req, res) => {
 
     if (no_show && fullBooking.customer_id) {
       await Customer.incrementNoShows(fullBooking.customer_id).catch(() => {});
+    }
+    if (no_show && fullBooking.consumer_id) {
+      await ConsumerAccount.incrementNoShows(fullBooking.consumer_id).catch(() => {});
+    }
+
+    // Auto-notify waitlist: when a booking is cancelled, ping the first waiting person
+    if (status === 'cancelled') {
+      db.query(
+        `SELECT w.id, w.consumer_name, w.consumer_email, w.service_id
+         FROM waitlist w
+         WHERE w.business_id = $1 AND w.status = 'waiting'
+         ORDER BY
+           CASE WHEN w.service_id = $2 THEN 0 ELSE 1 END,
+           w.created_at ASC
+         LIMIT 1`,
+        [fullBooking.business_id, fullBooking.service_id]
+      ).then(async ({ rows }) => {
+        const entry = rows[0];
+        if (!entry) return;
+        const { rows: bizRows } = await db.query('SELECT slug FROM businesses WHERE id = $1', [fullBooking.business_id]);
+        await db.query("UPDATE waitlist SET status = 'notified' WHERE id = $1", [entry.id]);
+        await sendWaitlistNotification({
+          consumer_name: entry.consumer_name,
+          consumer_email: entry.consumer_email,
+          business_name: fullBooking.business_name,
+          service_name: fullBooking.service_name,
+          business_slug: bizRows[0]?.slug,
+        });
+      }).catch(() => {});
     }
 
     res.json(booking);
