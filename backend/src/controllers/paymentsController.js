@@ -88,16 +88,40 @@ exports.createIntent = async (req, res) => {
       return res.status(400).json({ error: 'Online payment amount must be at least 50p' });
     }
 
+    // Look up the business's connected Stripe account
+    const { rows: bizRows } = await db.query(
+      'SELECT stripe_account_id, stripe_onboarding_complete FROM businesses WHERE id = $1',
+      [amount.business_id]
+    );
+    const biz = bizRows[0];
+    if (!biz?.stripe_account_id || !biz?.stripe_onboarding_complete) {
+      return res.status(503).json({
+        error: 'This business has not enabled online payments yet. Please pay in person.',
+        code: 'BUSINESS_STRIPE_NOT_CONNECTED',
+      });
+    }
+
+    // Platform fee: configurable via PLATFORM_FEE_PERCENT env var (default 10%)
+    const feePercent = Math.max(0, Math.min(50, parseFloat(process.env.PLATFORM_FEE_PERCENT || '10')));
+    const applicationFee = Math.round(amount.amount_pence * feePercent / 100);
+
     const stripe = getStripe();
     const createParams = {
       amount: amount.amount_pence,
       currency: normalizedCurrency,
       description: `${amount.service_name || 'Service'} at ${amount.business_name || 'BookAm Business'}`,
       automatic_payment_methods: { enabled: true },
+      // Route payment to the business's connected Stripe Express account
+      on_behalf_of: biz.stripe_account_id,
+      transfer_data: { destination: biz.stripe_account_id },
+      application_fee_amount: applicationFee,
       metadata: {
         service_id,
         business_id: amount.business_id,
         business_slug,
+        stripe_account_id: biz.stripe_account_id,
+        platform_fee_pence: String(applicationFee),
+        platform_fee_percent: String(feePercent),
         server_amount_pence: String(amount.amount_pence),
         ...(amount.promoCode ? { promo_code: amount.promoCode, discount_amount: amount.discount.toFixed(2) } : {}),
         ...(idempotency_key ? { booking_idempotency_key: idempotency_key } : {}),
@@ -111,6 +135,8 @@ exports.createIntent = async (req, res) => {
       payment_intent_id: intent.id,
       amount_pence: amount.amount_pence,
       discount_amount: amount.discount,
+      platform_fee_pence: applicationFee,
+      platform_fee_percent: feePercent,
     });
   } catch (err) {
     console.error('[payments/create-intent]', err.message);

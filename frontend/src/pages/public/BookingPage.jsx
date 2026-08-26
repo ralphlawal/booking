@@ -187,8 +187,11 @@ export default function BookingPage() {
         }));
         setStep(5);
       } catch (err) {
-        if (err.code === 'STRIPE_NOT_CONFIGURED' || err.status === 503) {
+        if (err.code === 'STRIPE_NOT_CONFIGURED') {
           toast('Online payment is not configured yet. Your booking will be saved as unpaid.');
+          await submit(null);
+        } else if (err.code === 'BUSINESS_STRIPE_NOT_CONNECTED' || err.status === 503) {
+          toast('This business accepts payment in person only. Your booking will be confirmed without online payment.');
           await submit(null);
         } else {
           toast.error(err.message || 'Failed to set up payment');

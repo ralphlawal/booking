@@ -820,7 +820,7 @@ export default function Settings() {
                     Update bank details
                   </button>
                 </div>
-                <p className="text-xs text-gray-400">Platform fee: {import.meta.env.VITE_PLATFORM_FEE_PERCENT || '5'}% per transaction. You receive the rest automatically.</p>
+                <p className="text-xs text-gray-400">Platform fee: {import.meta.env.VITE_PLATFORM_FEE_PERCENT || '10'}% per transaction. You receive the rest automatically.</p>
               </div>
             ) : connectStatus?.status === 'pending_verification' ? (
               <div className="space-y-4">
