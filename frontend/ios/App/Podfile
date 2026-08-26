@@ -21,13 +21,24 @@ target 'App' do
 end
 
 post_install do |installer|
-  # Touch Capacitor Swift sources after every pod install.
-  # Xcode Cloud caches compiled framework binaries between builds; when
-  # CapacitorApp is recompiled fresh but Capacitor.framework is reused from
-  # cache it produces a "Symbol not found: ApplicationDelegateProxy.shared"
-  # dyld crash at launch. Touching the source files makes Xcode treat them
-  # as modified, forcing a clean recompile every build.
-  ['Capacitor', 'CapacitorApp'].each do |pod_name|
+  installer.pods_project.targets.each do |target|
+    next unless ['Capacitor', 'CapacitorApp', 'CapacitorCordova'].include?(target.name)
+    target.build_configurations.each do |config|
+      # Disable ALL incremental compilation for Capacitor pods.
+      # Xcode Cloud caches DerivedData between builds. When Capacitor.framework
+      # is restored from cache but CapacitorApp is compiled fresh the symbol
+      # "ApplicationDelegateProxy.shared" is missing → dyld crash on launch.
+      # wholemodule mode compiles everything in one pass with no per-file cache,
+      # so a stale DerivedData entry can never satisfy the build.
+      config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
+      config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+      config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
+      config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'NO'
+    end
+  end
+
+  # Also touch all Swift sources so timestamp-based caches are invalidated too.
+  ['Capacitor', 'CapacitorApp', 'CapacitorCordova'].each do |pod_name|
     pod_dir = installer.sandbox.pod_dir(pod_name)
     Dir.glob("#{pod_dir}/**/*.swift").each { |f| FileUtils.touch(f) }
   end
