@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205903495303",
+    "project_id": "bookam-business",
+    "storage_bucket": "bookam-business.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205903495303:android:872651cc43c09500b97822",
+        "android_client_info": {
+          "package_name": "business.bookam.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBALlYJqSCMs5XIVDmZgreR6L8b-k791Xo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
