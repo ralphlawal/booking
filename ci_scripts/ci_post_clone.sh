@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
+# Clear Xcode DerivedData cache so all frameworks are compiled fresh from current sources.
+# Without this, Xcode Cloud reuses cached binaries that may be from a different Capacitor version,
+# causing "Symbol not found" dyld crashes at launch.
+rm -rf ~/Library/Developer/Xcode/DerivedData
+
 # Install Node.js (Xcode Cloud has Homebrew but not Node by default)
 brew install node
 
