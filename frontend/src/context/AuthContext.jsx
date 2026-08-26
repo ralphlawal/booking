@@ -16,12 +16,12 @@ function clearAuthCache() {
   try {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(CACHE_KEY);
-    localStorage.removeItem('fbToken'); // clear legacy Firebase token
+    localStorage.removeItem('fbToken'); // clear any old Firebase token on logout
   } catch {}
 }
 
 function getStoredToken() {
-  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem('fbToken');
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 export const AuthProvider = ({ children }) => {

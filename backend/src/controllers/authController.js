@@ -3,7 +3,6 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const Business = require('../models/Business');
 const { sendEmail, sendWelcomeEmail, sendVerificationEmail, sendEmailOtpCode } = require('../services/emailService');
-const { verifyFirebaseToken } = require('../middleware/auth');
 const { sendSms } = require('../services/smsService');
 const db = require('../config/database');
 
@@ -135,56 +134,6 @@ exports.resendVerification = async (req, res) => {
   }
 };
 
-exports.firebaseSync = async (req, res) => {
-  try {
-    const { idToken, displayName } = req.body;
-    if (!idToken) return res.status(400).json({ error: 'idToken required' });
-
-    const firebaseUser = await verifyFirebaseToken(idToken);
-
-    // Find by firebase_uid first, then fall back to email
-    let user = await User.findByFirebaseUid(firebaseUser.uid);
-    if (!user) user = await User.findByEmail(firebaseUser.email);
-
-    if (!user) {
-      user = await User.createFromFirebase({
-        firebase_uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        full_name: displayName || firebaseUser.email.split('@')[0],
-      });
-      sendWelcomeEmail(user).catch(() => {});
-      const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
-      sendEmail({
-        to: ADMIN_EMAIL,
-        subject: `New business signup: ${user.full_name}`,
-        type: 'admin_notification',
-        html: `<div style="font-family:sans-serif;max-width:480px;padding:24px">
-          <h3 style="margin:0 0 8px;color:#1e293b">New business owner registered</h3>
-          <p style="color:#64748b;margin:0 0 4px"><strong>Name:</strong> ${user.full_name}</p>
-          <p style="color:#64748b;margin:0 0 4px"><strong>Email:</strong> ${user.email}</p>
-          <p style="color:#64748b;margin:0"><strong>Time:</strong> ${new Date().toUTCString()}</p>
-        </div>`,
-      }).catch(() => {});
-    } else if (!user.firebase_uid) {
-      await User.linkFirebaseUid(user.id, firebaseUser.uid);
-    }
-
-    if (firebaseUser.email_verified && user.email_verified === false) {
-      await User.markEmailVerified(user.id).catch(() => {});
-      user.email_verified = true;
-    }
-
-    const business = await Business.findByUserId(user.id);
-    res.json({
-      user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: firebaseUser.email_verified || !!user.email_verified },
-      business: business || null,
-      onboardingComplete: !!business,
-    });
-  } catch (err) {
-    console.error('Firebase sync error:', err.message, err.stack?.split('\n')[1]);
-    res.status(401).json({ error: `Authentication failed: ${err.message}` });
-  }
-};
 
 exports.forgotPassword = async (req, res) => {
   try {

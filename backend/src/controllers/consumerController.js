@@ -118,47 +118,7 @@ exports.register = async (req, res) => {
 };
 
 exports.googleAuth = async (req, res) => {
-  try {
-    const { idToken } = req.body;
-    if (!idToken) return res.status(400).json({ error: 'ID token required' });
-
-    const { verifyFirebaseToken } = require('../middleware/auth');
-    const payload = await verifyFirebaseToken(idToken);
-    if (!payload.email) return res.status(400).json({ error: 'Google account must have an email' });
-
-    let consumer = await ConsumerAccount.findByEmail(payload.email);
-    const isNew = !consumer;
-    if (!consumer) {
-      consumer = await ConsumerAccount.createFromGoogle({ email: payload.email, full_name: payload.name });
-      ConsumerAccount.linkByEmail(consumer.id, payload.email).catch(() => {});
-      sendConsumerWelcomeEmail(consumer);
-      createWelcomeNotification(consumer.id);
-      const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
-      sendEmail({
-        to: ADMIN_EMAIL,
-        subject: `New customer (Google): ${consumer.full_name}`,
-        type: 'admin_notification',
-        html: `<div style="font-family:sans-serif;max-width:480px;padding:24px">
-          <h3 style="margin:0 0 8px;color:#1e293b">New customer via Google Sign-In</h3>
-          <p style="color:#64748b;margin:0 0 4px"><strong>Name:</strong> ${consumer.full_name}</p>
-          <p style="color:#64748b;margin:0"><strong>Email:</strong> ${consumer.email}</p>
-        </div>`,
-      }).catch(() => {});
-    }
-
-    const freshConsumer = await ConsumerAccount.findById(consumer.id) || consumer;
-    const safe = {
-      ...freshConsumer,
-      email_verified: true,
-      onboarding_complete: !!freshConsumer?.onboarding_complete,
-      service_preferences: freshConsumer?.service_preferences || [],
-    };
-    const token = signToken(safe);
-    res.json({ consumer: safe, token, is_new: isNew });
-  } catch (err) {
-    console.error('[consumer/google-auth]', err.message);
-    res.status(401).json({ error: 'Google sign-in failed. Please try again.' });
-  }
+  res.status(410).json({ error: 'Google sign-in is no longer supported. Please use email and password.' });
 };
 
 exports.login = async (req, res) => {

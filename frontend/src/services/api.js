@@ -43,7 +43,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('bam_token') || localStorage.getItem('fbToken');
+  const token = localStorage.getItem('bam_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -84,8 +84,6 @@ export const authAPI = {
   deleteAccount: () => api.delete('/auth/account'),
   verifyEmail: (token) => api.get('/auth/verify-email', { params: { token } }),
   resendVerification: () => api.post('/auth/resend-verification'),
-  // legacy — kept for existing sessions during migration
-  firebaseSync: (idToken, displayName) => api.post('/auth/firebase-sync', { idToken, displayName }),
 };
 
 export const businessAPI = {
@@ -156,7 +154,7 @@ export const customersAPI = {
 };
 
 export const exportBookingsCsv = () => {
-  const token = localStorage.getItem('bam_token') || localStorage.getItem('fbToken');
+  const token = localStorage.getItem('bam_token');
   const base = BASE;
   const url = `${base}/bookings/export/csv`;
   const a = document.createElement('a');

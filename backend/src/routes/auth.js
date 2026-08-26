@@ -27,8 +27,6 @@ router.post(
 
 router.get('/me', authenticate, ctrl.me);
 
-// Firebase sync — called after Firebase sign-in to create/link user in our DB
-router.post('/firebase-sync', ctrl.firebaseSync);
 
 router.post(
   '/forgot-password',

@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { signInWithPopup, GoogleAuthProvider, getIdToken, signOut } from 'firebase/auth';
-import { auth } from '../config/firebase';
 import { consumerAPI } from '../services/api';
 
 const CustomerAuthContext = createContext(null);
@@ -65,21 +63,13 @@ export function CustomerAuthProvider({ children }) {
   };
 
   const googleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const idToken = await getIdToken(result.user);
-    const { consumer: c, token } = await consumerAPI.googleAuth(idToken);
-    localStorage.setItem(TOKEN_KEY, token);
-    setConsumer(c);
-    saveCache(c);
-    return c;
+    throw new Error('Google sign-in is no longer supported. Please use email and password.');
   };
 
   const logout = async () => {
     localStorage.removeItem(TOKEN_KEY);
     clearCache();
     setConsumer(null);
-    try { await signOut(auth); } catch { /* ignore */ }
   };
 
   const update = async (data) => {
