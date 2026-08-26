@@ -19,3 +19,16 @@ end
 target 'App' do
   capacitor_pods
 end
+
+post_install do |installer|
+  # Touch Capacitor Swift sources after every pod install.
+  # Xcode Cloud caches compiled framework binaries between builds; when
+  # CapacitorApp is recompiled fresh but Capacitor.framework is reused from
+  # cache it produces a "Symbol not found: ApplicationDelegateProxy.shared"
+  # dyld crash at launch. Touching the source files makes Xcode treat them
+  # as modified, forcing a clean recompile every build.
+  ['Capacitor', 'CapacitorApp'].each do |pod_name|
+    pod_dir = installer.sandbox.pod_dir(pod_name)
+    Dir.glob("#{pod_dir}/**/*.swift").each { |f| FileUtils.touch(f) }
+  end
+end
