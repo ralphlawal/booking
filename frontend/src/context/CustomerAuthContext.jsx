@@ -62,10 +62,6 @@ export function CustomerAuthProvider({ children }) {
     return c;
   };
 
-  const googleLogin = async () => {
-    throw new Error('Google sign-in is no longer supported. Please use email and password.');
-  };
-
   const logout = async () => {
     localStorage.removeItem(TOKEN_KEY);
     clearCache();
@@ -83,7 +79,7 @@ export function CustomerAuthProvider({ children }) {
   };
 
   return (
-    <CustomerAuthContext.Provider value={{ consumer, loading, register, login, googleLogin, logout, update }}>
+    <CustomerAuthContext.Provider value={{ consumer, loading, register, login, logout, update }}>
       {children}
     </CustomerAuthContext.Provider>
   );
