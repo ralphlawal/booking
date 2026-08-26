@@ -9,7 +9,7 @@ export default function CustomerSignup() {
   const { register } = useCustomerAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '' });
+  const [form, setForm] = useState({ full_name: '', email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
@@ -80,10 +80,6 @@ export default function CustomerSignup() {
               <div>
                 <label className="label">Email address</label>
                 <input className="input" type="email" placeholder="you@email.com" required value={form.email} onChange={set('email')} />
-              </div>
-              <div>
-                <label className="label">Phone <span className="text-gray-400 font-normal">(optional)</span></label>
-                <input className="input" type="tel" placeholder="+44 7700 000000" value={form.phone} onChange={set('phone')} />
               </div>
               <div>
                 <label className="label">Password</label>

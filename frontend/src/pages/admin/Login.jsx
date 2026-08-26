@@ -5,15 +5,14 @@ import { LOGO_WHITE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { login, sendLoginOtp, verifyEmailOtp, sendPhoneOtp, verifyPhoneOtp } = useAuth();
+  const { login, sendLoginOtp, verifyEmailOtp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from;
 
-  const [tab, setTab] = useState('email'); // 'email' | 'code' | 'phone'
+  const [tab, setTab] = useState('email'); // 'email' | 'code'
   const [form, setForm] = useState({ email: '', password: '' });
   const [codeEmail, setCodeEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,36 +72,6 @@ export default function Login() {
     }
   };
 
-  const submitSendOtp = async (e) => {
-    e.preventDefault();
-    if (!phone.trim()) return toast.error('Enter your phone number');
-    setLoading(true);
-    try {
-      await sendPhoneOtp(phone.trim());
-      setOtpSent(true);
-      toast.success('OTP sent — check your messages');
-    } catch (err) {
-      toast.error(err.message || 'Could not send OTP');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const submitVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (otp.length !== 6) return toast.error('Enter the 6-digit code');
-    setLoading(true);
-    try {
-      const data = await verifyPhoneOtp(phone.trim(), otp.trim());
-      toast.success('Welcome back!');
-      navigate(destination(data), { replace: true });
-    } catch (err) {
-      toast.error(err.message || 'Invalid or expired code');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center px-3 py-6 sm:p-6">
       <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] items-center animate-fade-in">
@@ -139,7 +108,7 @@ export default function Login() {
 
             {/* Tab switcher */}
             <div className="flex rounded-lg bg-white/10 p-1 mb-5">
-              {[['email', 'Password'], ['code', 'Email code'], ['phone', 'Phone']].map(([t, label]) => (
+              {[['email', 'Password'], ['code', 'Email code']].map(([t, label]) => (
                 <button
                   key={t}
                   type="button"
@@ -244,66 +213,6 @@ export default function Login() {
                 </button>
                 <button type="button" onClick={() => { setOtpSent(false); setOtp(''); }} className="w-full text-xs text-white/40 hover:text-white/70 transition-colors">
                   ← Use a different email
-                </button>
-              </form>
-            )}
-
-            {/* Phone form */}
-            {tab === 'phone' && !otpSent && (
-              <form onSubmit={submitSendOtp} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">Phone number</label>
-                  <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
-                    type="tel"
-                    placeholder="+44 7700 900000"
-                    required
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                  />
-                  <p className="text-xs text-white/40 mt-1.5">Include country code e.g. +44</p>
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? <Spinner /> : 'Send verification code'}
-                </button>
-              </form>
-            )}
-
-            {tab === 'phone' && otpSent && (
-              <form onSubmit={submitVerifyOtp} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">
-                    6-digit code sent to {phone}
-                  </label>
-                  <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 tracking-widest text-center text-lg font-mono"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="000000"
-                    required
-                    autoFocus
-                    value={otp}
-                    onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? <Spinner /> : 'Verify & Sign In'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setOtpSent(false); setOtp(''); }}
-                  className="w-full text-xs text-white/50 hover:text-white/80 transition-colors"
-                >
-                  Wrong number? Go back
                 </button>
               </form>
             )}
