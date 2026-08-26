@@ -5,7 +5,7 @@ const getClient = () => {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 };
 
-const MODEL = 'claude-sonnet-5-20251101';
+const MODEL = 'claude-sonnet-5-20251022';
 
 /**
  * Summarize a set of reviews into 2–3 sentences.
