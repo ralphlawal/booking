@@ -1,23 +1,43 @@
 #!/bin/sh
 set -e
 
-# This runs RIGHT BEFORE xcodebuild — after Xcode Cloud has restored its cloud build cache.
-# ci_post_clone.sh already deletes DerivedData, but Xcode Cloud restores it afterwards.
-# Deleting it here (the last moment before compilation) guarantees Capacitor.framework
-# is compiled fresh, preventing the "Symbol not found: ApplicationDelegateProxy.shared"
-# dyld crash caused by a stale cached binary.
+echo ">>> ci_pre_xcodebuild: START"
+echo ">>> CI_PRIMARY_REPOSITORY_PATH=$CI_PRIMARY_REPOSITORY_PATH"
+echo ">>> HOME=$HOME"
+echo ">>> whoami=$(whoami)"
 
-echo ">>> ci_pre_xcodebuild: clearing stale build cache"
+# ── Delete DerivedData from every known location on Xcode Cloud ──────────────
+# Xcode Cloud restores its build cache AFTER ci_post_clone.sh runs.
+# This script runs right before xcodebuild — the last safe point to nuke it.
+for DD_PATH in \
+  "$HOME/Library/Developer/Xcode/DerivedData" \
+  "/Users/administrator/Library/Developer/Xcode/DerivedData" \
+  "/Users/runner/Library/Developer/Xcode/DerivedData" \
+  "/Volumes/workspace/DerivedData"; do
+  if [ -d "$DD_PATH" ]; then
+    echo ">>> Deleting DerivedData at: $DD_PATH"
+    rm -rf "$DD_PATH"
+    echo ">>> Deleted."
+  else
+    echo ">>> DerivedData not present at: $DD_PATH"
+  fi
+done
 
-# Clear DerivedData — forces Xcode to recompile all frameworks from source
-rm -rf ~/Library/Developer/Xcode/DerivedData
-
-# Touch all Capacitor pod Swift sources so Xcode marks them as changed,
-# guaranteeing recompilation even if DerivedData is partially restored
+# ── Touch Capacitor Swift sources to bust any content-hash cache ──────────────
 PODS_DIR="$CI_PRIMARY_REPOSITORY_PATH/frontend/ios/App/Pods"
+echo ">>> Pods dir exists: $([ -d "$PODS_DIR" ] && echo YES || echo NO)"
+
 if [ -d "$PODS_DIR" ]; then
-  find "$PODS_DIR/Capacitor" -name "*.swift" -exec touch {} + 2>/dev/null || true
-  find "$PODS_DIR/CapacitorApp" -name "*.swift" -exec touch {} + 2>/dev/null || true
+  for POD in Capacitor CapacitorApp CapacitorCordova; do
+    POD_PATH="$PODS_DIR/$POD"
+    if [ -d "$POD_PATH" ]; then
+      COUNT=$(find "$POD_PATH" -name "*.swift" 2>/dev/null | wc -l | tr -d ' ')
+      echo ">>> $POD: found $COUNT Swift files — touching"
+      find "$POD_PATH" -name "*.swift" -exec touch {} + 2>/dev/null || true
+    else
+      echo ">>> $POD dir not found at $POD_PATH"
+    fi
+  done
 fi
 
-echo ">>> ci_pre_xcodebuild: done"
+echo ">>> ci_pre_xcodebuild: DONE"
