@@ -182,10 +182,10 @@ export default function App() {
             <Route path="/customer/forgot-password" element={<CustomerForgotPassword />} />
             <Route path="/customer/reset-password" element={<CustomerResetPassword />} />
             <Route path="/customer/onboarding" element={<ConsumerProtectedRoute><ConsumerOnboarding /></ConsumerProtectedRoute>} />
-            <Route path="/customer/dashboard" element={<ConsumerVerifiedRoute><CustomerDashboard /></ConsumerVerifiedRoute>} />
-            <Route path="/customer/messages" element={<ConsumerVerifiedRoute><ConsumerMessages /></ConsumerVerifiedRoute>} />
+            <Route path="/customer/dashboard" element={<ConsumerProtectedRoute><CustomerDashboard /></ConsumerProtectedRoute>} />
+            <Route path="/customer/messages" element={<ConsumerProtectedRoute><ConsumerMessages /></ConsumerProtectedRoute>} />
             <Route path="/customer/profile" element={<ConsumerProtectedRoute><ConsumerProfile /></ConsumerProtectedRoute>} />
-            <Route path="/customer/favourites" element={<ConsumerVerifiedRoute><FavouritesPage /></ConsumerVerifiedRoute>} />
+            <Route path="/customer/favourites" element={<ConsumerProtectedRoute><FavouritesPage /></ConsumerProtectedRoute>} />
             <Route path="/admin-support" element={<AdminSupport />} />
 
             {/* Account type chooser */}

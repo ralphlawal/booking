@@ -20,18 +20,7 @@ exports.register = async (req, res) => {
 
     const user = await User.create({ email, password, full_name });
 
-    // Store phone if provided
-    if (phone) {
-      await db.query('UPDATE users SET phone = $1 WHERE id = $2', [phone, user.id]);
-    }
-
-    // Generate 6-digit email OTP for verification
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = new Date(Date.now() + 10 * 60 * 1000);
-    await User.saveEmailOtp(user.id, otp, expires);
-    sendEmailOtpCode({ email: user.email, full_name: user.full_name }, otp, 'verify').catch(() => {});
-
-    // Send welcome email after they verify (fire-and-forget)
+    // Send welcome email (fire-and-forget)
     sendWelcomeEmail(user).catch(() => {});
 
     // Notify admin of new signup
@@ -53,7 +42,6 @@ exports.register = async (req, res) => {
     res.status(201).json({
       token,
       user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: false },
-      requiresEmailVerification: true,
     });
   } catch (err) {
     console.error('Register error:', err);
