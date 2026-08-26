@@ -46,8 +46,8 @@ export default function AdminLayout() {
   }, [business, loading, navigate]);
 
   useEffect(() => {
-    setEmailUnverified(!!user && user.email && !user.email_verified);
-  }, [user]);
+    if (!loading) setEmailUnverified(!!user && user.email && !user.email_verified);
+  }, [user, loading]);
 
   const refreshPendingCount = useCallback(() => {
     bookingsAPI.list({ status: 'pending', limit: 200 })

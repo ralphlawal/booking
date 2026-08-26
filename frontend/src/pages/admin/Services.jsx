@@ -11,6 +11,7 @@ export default function Services() {
   const [modal, setModal] = useState(null); // null | 'create' | service object
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null); // service to delete
 
   const load = () => servicesAPI.list().then(setServices).catch(() => {}).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
@@ -52,7 +53,13 @@ export default function Services() {
   };
 
   const remove = async (svc) => {
-    if (!confirm(`Delete "${svc.name}"?`)) return;
+    setConfirmDelete(svc);
+  };
+
+  const confirmRemove = async () => {
+    if (!confirmDelete) return;
+    const svc = confirmDelete;
+    setConfirmDelete(null);
     try {
       await servicesAPI.delete(svc.id);
       setServices(p => p.filter(s => s.id !== svc.id));
@@ -129,6 +136,20 @@ export default function Services() {
         </div>
       )}
 
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/40 animate-fade-in">
+          <div className="mobile-safe-sheet w-full max-w-sm p-6 space-y-4 animate-slide-up">
+            <h2 className="font-semibold text-lg dark:text-white">Delete "{confirmDelete.name}"?</h2>
+            <p className="text-sm text-gray-500">This can't be undone. Any future bookings for this service will need to be updated manually.</p>
+            <div className="flex gap-3 pt-1">
+              <button onClick={() => setConfirmDelete(null)} className="btn-secondary flex-1">Cancel</button>
+              <button onClick={confirmRemove} className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 sm:p-4 bg-black/40 animate-fade-in">
@@ -152,8 +173,8 @@ export default function Services() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Price (£)</label>
-                  <input className="input" type="number" min="0" step="0.01" placeholder="0.00" value={form.price} onChange={set('price')} />
+                  <label className="label">Price (£) *</label>
+                  <input className="input" type="number" min="0" step="0.01" placeholder="0.00" required value={form.price} onChange={set('price')} />
                 </div>
                 <div>
                   <label className="label">Duration (min) *</label>

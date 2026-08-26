@@ -59,7 +59,7 @@ function CustomerPanel({ customer, onClose, onNotesUpdated }) {
         <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center text-base font-bold text-primary-700 dark:text-primary-400">
-              {customer.full_name[0].toUpperCase()}
+              {(customer.full_name?.[0] || '?').toUpperCase()}
             </div>
             <div>
               <h2 className="font-bold text-gray-900 dark:text-white">{customer.full_name}</h2>
@@ -236,7 +236,9 @@ export default function Customers() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Customers</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{customers.length} total customers</p>
+          <p className="text-gray-500 text-sm mt-0.5">
+            {search.trim() ? `Showing ${filtered.length} of ${customers.length}` : `${customers.length} total customers`}
+          </p>
         </div>
         <input
           className="input sm:w-64"

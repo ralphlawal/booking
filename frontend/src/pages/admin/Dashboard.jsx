@@ -158,11 +158,13 @@ export default function Dashboard() {
   const [gapSuggestion, setGapSuggestion] = useState(null);
   const [gapLoading, setGapLoading] = useState(false);
   const [gapDismissed, setGapDismissed] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const loadBookings = useCallback(() => {
+    setLoadError(false);
     bookingsAPI.list({ limit: 5 })
       .then(d => setData(d))
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -503,6 +505,11 @@ export default function Dashboard() {
         {loading ? (
           <div className="p-5 space-y-3">
             {[...Array(3)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />)}
+          </div>
+        ) : loadError ? (
+          <div className="p-8 text-center">
+            <p className="text-sm text-gray-500 mb-3">Couldn't load bookings</p>
+            <button onClick={loadBookings} className="btn-secondary text-sm">Try again</button>
           </div>
         ) : data?.bookings?.length === 0 ? (
           <div className="p-10 text-center text-gray-400">

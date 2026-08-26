@@ -195,6 +195,10 @@ export default function Settings() {
 
   const saveAvailability = async (e) => {
     e.preventDefault();
+    if (avForm.closing_time <= avForm.opening_time) {
+      toast.error('Closing time must be after opening time');
+      return;
+    }
     setSaving(true);
     try {
       await availabilityAPI.save(avForm);
@@ -1067,7 +1071,7 @@ export default function Settings() {
                       </div>
                       {!allDone && (
                         <p className="text-xs text-red-600 dark:text-red-400 mt-3 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
-                          Complete the items above first — go to your <button onClick={() => setTab('business')} className="underline font-semibold">Business</button> and <button onClick={() => setTab('services')} className="underline font-semibold">Services</button> tabs.
+                          Complete the items above first — go to your <button onClick={() => setTab('business')} className="underline font-semibold">Business</button> tab or the <button onClick={() => navigate('/admin/services')} className="underline font-semibold">Services</button> page.
                         </p>
                       )}
                     </div>
