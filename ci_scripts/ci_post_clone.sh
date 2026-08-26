@@ -13,8 +13,10 @@ brew install node
 cd "$CI_PRIMARY_REPOSITORY_PATH/frontend"
 npm install
 
-# Build the web app (creates dist/ with all assets)
-npm run build
+# Build the web app (creates dist/ with all assets).
+# VITE_API_URL tells the Capacitor app to call the Vercel proxy at the live domain
+# instead of using a relative /api path that doesn't work from capacitor://localhost.
+VITE_API_URL=https://bookam.business npm run build
 
 # Sync web assets and Capacitor configs into the iOS project
 # This creates public/, capacitor.config.json, and config.xml inside ios/App/App/
