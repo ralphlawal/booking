@@ -278,6 +278,15 @@ app.delete('/api/notifications/push-subscribe', consumerAuth, async (req, res) =
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/api/db-ping', async (req, res) => {
+  try {
+    const db = require('./config/database');
+    await db.query('SELECT 1');
+    res.json({ db: 'ok' });
+  } catch (err) {
+    res.status(500).json({ db: 'error', message: err.message, code: err.code });
+  }
+});
 
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use((err, req, res, next) => {
