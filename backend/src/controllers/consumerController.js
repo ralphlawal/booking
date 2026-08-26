@@ -439,3 +439,15 @@ exports.uploadAvatar = async (req, res) => {
     res.status(500).json({ error: 'Upload failed' });
   }
 };
+
+exports.registerPushToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'token required' });
+    const { saveToken } = require('../services/pushService');
+    await saveToken(token, 'consumer', req.consumer.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save push token' });
+  }
+};

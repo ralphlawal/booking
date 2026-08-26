@@ -58,6 +58,7 @@ router.post('/family-members', authenticateConsumer, ctrl.addFamilyMember);
 router.put('/family-members/:id', authenticateConsumer, ctrl.updateFamilyMember);
 router.delete('/family-members/:id', authenticateConsumer, ctrl.deleteFamilyMember);
 router.post('/me/avatar', authenticateConsumer, avatarUpload, ctrl.uploadAvatar);
+router.post('/push-token', authenticateConsumer, ctrl.registerPushToken);
 
 module.exports = router;
 module.exports.authenticateConsumer = authenticateConsumer;
