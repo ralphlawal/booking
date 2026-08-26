@@ -1,10 +1,9 @@
 #!/bin/sh
 set -e
 
-# Install frontend npm dependencies (needed for node_modules/@capacitor/*)
-cd "$CI_WORKSPACE/frontend"
+# CI_PRIMARY_REPOSITORY_PATH is the root of the cloned repo in Xcode Cloud
+cd "$CI_PRIMARY_REPOSITORY_PATH/frontend"
 npm install
 
-# Install CocoaPods dependencies (creates Pods/ and regenerates App.xcworkspace)
-cd "$CI_WORKSPACE/frontend/ios/App"
+cd "$CI_PRIMARY_REPOSITORY_PATH/frontend/ios/App"
 pod install
