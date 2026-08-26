@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { consumerAPI } from '../services/api';
+import { registerPushNotifications } from '../services/pushNotifications';
 
 const CustomerAuthContext = createContext(null);
 
@@ -59,6 +60,9 @@ export function CustomerAuthProvider({ children }) {
     localStorage.setItem(TOKEN_KEY, token);
     setConsumer(c);
     saveCache(c);
+    registerPushNotifications(
+      (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
+    ).catch(() => {});
     return c;
   };
 

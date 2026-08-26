@@ -297,17 +297,32 @@ app.use((err, req, res, next) => {
 async function startReminderJob() {
   const Booking = require('./models/Booking');
   const { sendReminder } = require('./services/emailService');
+  const { notifyUser } = require('./services/pushService');
 
   const run = async () => {
     try {
       const { reminders24h, reminders1h } = await Booking.getPendingReminders();
       for (const b of reminders24h) {
         await sendReminder(b, 24);
+        if (b.consumer_id) {
+          await notifyUser('consumer', b.consumer_id, {
+            title: 'Appointment tomorrow',
+            body: `${b.service_name} at ${b.business_name} — ${b.booking_date} ${b.start_time?.slice(0,5)}`,
+            data: { url: '/customer/dashboard' },
+          }).catch(() => {});
+        }
         await Booking.markReminderSent(b.id, '24h');
         console.log(`[Reminder 24h] Sent to ${b.customer_email} for booking ${b.reference_id}`);
       }
       for (const b of reminders1h) {
         await sendReminder(b, 1);
+        if (b.consumer_id) {
+          await notifyUser('consumer', b.consumer_id, {
+            title: 'Appointment in 1 hour',
+            body: `${b.service_name} at ${b.business_name} — ${b.start_time?.slice(0,5)}`,
+            data: { url: '/customer/dashboard' },
+          }).catch(() => {});
+        }
         await Booking.markReminderSent(b.id, '1h');
         console.log(`[Reminder 1h] Sent to ${b.customer_email} for booking ${b.reference_id}`);
       }

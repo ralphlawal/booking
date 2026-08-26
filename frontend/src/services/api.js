@@ -84,6 +84,7 @@ export const authAPI = {
   deleteAccount: () => api.delete('/auth/account'),
   verifyEmail: (token) => api.get('/auth/verify-email', { params: { token } }),
   resendVerification: () => api.post('/auth/resend-verification'),
+  registerPushToken: (token, userType) => api.post('/auth/push-token', { token, userType }),
 };
 
 export const businessAPI = {
@@ -214,6 +215,7 @@ export const consumerAPI = {
   savePreference: (data) => consumerAxios.post('/consumer/preferences', data),
   removePreference: (businessId) => consumerAxios.delete(`/consumer/preferences/${businessId}`),
   deleteAccount: () => consumerAxios.delete('/consumer/account'),
+  registerPushToken: (token, userType) => consumerAxios.post('/consumer/push-token', { token, userType }),
   getNotifications: () => consumerAxios.get('/consumer/notifications'),
   markNotificationsRead: () => consumerAxios.post('/consumer/notifications/read'),
   verifyEmail: (token) => consumerAxios.get('/consumer/verify-email', { params: { token } }),

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { registerPushNotifications } from '../services/pushNotifications';
 
 const AuthContext = createContext(null);
 
@@ -63,6 +64,9 @@ export const AuthProvider = ({ children }) => {
     setUser(data.user);
     setBusiness(data.business || null);
     saveAuthCache(data.user, data.business || null);
+    registerPushNotifications(
+      (fcmToken) => authAPI.registerPushToken(fcmToken, 'business').catch(() => {}),
+    ).catch(() => {});
     return data;
   };
 

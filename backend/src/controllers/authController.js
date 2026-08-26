@@ -369,3 +369,15 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ error: 'Failed to reset password' });
   }
 };
+
+exports.registerPushToken = async (req, res) => {
+  try {
+    const { token, userType } = req.body;
+    if (!token) return res.status(400).json({ error: 'token required' });
+    const { saveToken } = require('../services/pushService');
+    await saveToken(token, userType || 'business', req.user.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save push token' });
+  }
+};

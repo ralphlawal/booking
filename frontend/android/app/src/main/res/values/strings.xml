@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BookAm</string>
+    <string name="title_activity_main">BookAm</string>
+    <string name="package_name">business.bookam.app</string>
+    <string name="custom_url_scheme">business.bookam.app</string>
+</resources>

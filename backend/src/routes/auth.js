@@ -84,5 +84,6 @@ router.post(
 router.delete('/account', authenticate, ctrl.deleteAccount);
 router.get('/verify-email', ctrl.verifyEmail);
 router.post('/resend-verification', authenticate, ctrl.resendVerification);
+router.post('/push-token', authenticate, ctrl.registerPushToken);
 
 module.exports = router;
