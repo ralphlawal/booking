@@ -117,6 +117,7 @@ const { authenticate, attachBusiness } = require('./middleware/auth');
 const { consumerAuth } = require('./middleware/consumerAuth');
 const staffCtrl = require('./controllers/staffController');
 const resourcesCtrl = require('./controllers/resourcesController');
+const growthCtrl = require('./controllers/growthController');
 const photosCtrl = require('./controllers/photosController');
 const postsCtrl = require('./controllers/postsController');
 const waitlistCtrl = require('./controllers/waitlistController');
@@ -244,6 +245,19 @@ app.delete('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.d
 // AI features
 const aiCtrl = require('./controllers/aiController');
 app.get('/api/ai/review-summary/:slug', aiCtrl.reviewSummary);
+
+// ── Growth / Marketing ────────────────────────────────────────────────────
+app.get('/api/growth/integrations',               authenticate, attachBusiness, growthCtrl.integrations);
+app.get('/api/growth/intelligence',               authenticate, attachBusiness, growthCtrl.intelligence);
+app.get('/api/growth/audience-count',             authenticate, attachBusiness, growthCtrl.audienceCount);
+app.get('/api/growth/campaigns',                  authenticate, attachBusiness, growthCtrl.listCampaigns);
+app.post('/api/growth/campaigns',                 authenticate, attachBusiness, growthCtrl.createCampaign);
+app.patch('/api/growth/campaigns/:id/send',       authenticate, attachBusiness, growthCtrl.sendCampaign);
+app.delete('/api/growth/campaigns/:id',           authenticate, attachBusiness, growthCtrl.deleteCampaign);
+app.get('/api/growth/automations',                authenticate, attachBusiness, growthCtrl.listAutomations);
+app.patch('/api/growth/automations/:trigger_type/toggle', authenticate, attachBusiness, growthCtrl.toggleAutomation);
+app.get('/api/growth/loyalty',                    authenticate, attachBusiness, growthCtrl.loyaltyStats);
+app.get('/api/growth/reviews',                    authenticate, attachBusiness, growthCtrl.listReviews);
 app.get('/api/ai/noshow-risk/:bookingId', authenticate, attachBusiness, aiCtrl.noshowRisk);
 app.get('/api/ai/rebook-timing/:consumerId/:slug', authenticate, attachBusiness, aiCtrl.rebookTiming);
 app.post('/api/ai/match-service', aiCtrl.matchService);

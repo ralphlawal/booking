@@ -434,4 +434,18 @@ export const aiAPI = {
   personaliseMessage: (data) => api.post('/ai/personalise-message', data),
 };
 
+export const growthAPI = {
+  integrations:  () => api.get('/growth/integrations'),
+  intelligence:  () => api.get('/growth/intelligence'),
+  audienceCount: (audience) => api.get('/growth/audience-count', { params: { audience } }),
+  campaigns:     () => api.get('/growth/campaigns'),
+  createCampaign: (data) => api.post('/growth/campaigns', data),
+  sendCampaign:  (id) => api.patch(`/growth/campaigns/${id}/send`),
+  deleteCampaign: (id) => api.delete(`/growth/campaigns/${id}`),
+  automations:   () => api.get('/growth/automations'),
+  toggleAutomation: (trigger_type, data) => api.patch(`/growth/automations/${trigger_type}/toggle`, data),
+  loyalty:       () => api.get('/growth/loyalty'),
+  reviews:       () => api.get('/growth/reviews'),
+};
+
 export default api;

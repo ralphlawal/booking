@@ -62,6 +62,7 @@ import Onboarding from './pages/admin/Onboarding';
 import StaffReport from './pages/admin/StaffReport';
 import StaffPage from './pages/admin/Staff';
 import ResourcesPage from './pages/admin/Resources';
+import GrowthPage from './pages/admin/Growth';
 import FeedPage from './pages/consumer/FeedPage';
 
 class ErrorBoundary extends Component {
@@ -170,6 +171,7 @@ export default function App() {
               <Route path="staff-report" element={<StaffReport />} />
               <Route path="staff" element={<StaffPage />} />
               <Route path="resources" element={<ResourcesPage />} />
+              <Route path="growth" element={<GrowthPage />} />
             </Route>
 
             {/* Email verification */}
