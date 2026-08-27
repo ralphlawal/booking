@@ -1,11 +1,7 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '16.0'
-# Static linkage embeds all Capacitor code directly into the app binary.
-# No Capacitor.framework is shipped in the bundle, so dyld never resolves
-# symbols at launch — eliminating the "Symbol not found: ApplicationDelegateProxy.shared"
-# crash that occurred when Xcode Cloud's build cache returned a stale binary.
-use_frameworks! :linkage => :static
+use_frameworks!
 
 install! 'cocoapods', :disable_input_output_paths => true
 
