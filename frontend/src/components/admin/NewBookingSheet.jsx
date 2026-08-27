@@ -53,7 +53,7 @@ const STEPS = ['Customer', 'Service', 'Date', 'Time', 'Confirm'];
 
 /* ── main component ──────────────────────────────────────────────────────── */
 
-export default function NewBookingSheet({ open, onClose, onCreated, prefillDate, prefillTime }) {
+export default function NewBookingSheet({ open, onClose, onCreated, prefillDate, prefillTime, prefillCustomer }) {
   const { business } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -90,18 +90,28 @@ export default function NewBookingSheet({ open, onClose, onCreated, prefillDate,
   /* reset on open */
   useEffect(() => {
     if (!open) return;
-    setStep(0);
-    setCustomer(null);
     setService(null);
     setStaff(null);
     setDate(prefillDate || '');
     setTime(prefillTime || '');
     setNotes('');
-    setCustomerQ('');
-    setCreating(false);
-    setNewCustomer({ name: '', phone: '', email: '' });
     setServiceQ('');
     setSlots([]);
+
+    /* pre-fill customer if provided (e.g. from CRM "Book" action) */
+    if (prefillCustomer) {
+      setCustomer({ id: prefillCustomer.id, name: prefillCustomer.full_name, phone: prefillCustomer.phone, email: prefillCustomer.email });
+      setCustomerQ('');
+      setCreating(false);
+      setNewCustomer({ name: '', phone: '', email: '' });
+      setStep(1); // skip to service step
+    } else {
+      setCustomer(null);
+      setCustomerQ('');
+      setCreating(false);
+      setNewCustomer({ name: '', phone: '', email: '' });
+      setStep(0);
+    }
 
     /* load catalogs */
     customersAPI.list().then(setCustomers).catch(() => {});

@@ -18,6 +18,17 @@ exports.getBookings = async (req, res) => {
   }
 };
 
+exports.create = async (req, res) => {
+  const { full_name, phone, email, notes } = req.body;
+  if (!full_name?.trim()) return res.status(400).json({ error: 'Name is required' });
+  try {
+    const customer = await Customer.create({ business_id: req.business.id, full_name: full_name.trim(), phone, email, notes });
+    res.status(201).json(customer);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create customer' });
+  }
+};
+
 exports.updateNotes = async (req, res) => {
   try {
     const customer = await Customer.updateNotes(req.params.id, req.business.id, req.body.notes ?? '');

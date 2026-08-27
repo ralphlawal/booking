@@ -150,6 +150,7 @@ export const bookingsAPI = {
 
 export const customersAPI = {
   list: () => api.get('/customers'),
+  create: (data) => api.post('/customers', data),
   getBookings: (id) => api.get(`/customers/${id}/bookings`),
   updateNotes: (id, notes) => api.put(`/customers/${id}/notes`, { notes }),
 };
