@@ -1,7 +1,11 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '16.0'
-use_frameworks!
+# Static linkage embeds all Capacitor code directly into the app binary.
+# No Capacitor.framework is shipped in the bundle, so dyld never resolves
+# symbols at launch — eliminating the "Symbol not found: ApplicationDelegateProxy.shared"
+# crash that occurred when Xcode Cloud's build cache returned a stale binary.
+use_frameworks! :linkage => :static
 
 install! 'cocoapods', :disable_input_output_paths => true
 
@@ -18,28 +22,4 @@ end
 
 target 'App' do
   capacitor_pods
-end
-
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    next unless ['Capacitor', 'CapacitorApp', 'CapacitorCordova'].include?(target.name)
-    target.build_configurations.each do |config|
-      # Disable ALL incremental compilation for Capacitor pods.
-      # Xcode Cloud caches DerivedData between builds. When Capacitor.framework
-      # is restored from cache but CapacitorApp is compiled fresh the symbol
-      # "ApplicationDelegateProxy.shared" is missing → dyld crash on launch.
-      # wholemodule mode compiles everything in one pass with no per-file cache,
-      # so a stale DerivedData entry can never satisfy the build.
-      config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
-      config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
-      config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
-      config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'NO'
-    end
-  end
-
-  # Also touch all Swift sources so timestamp-based caches are invalidated too.
-  ['Capacitor', 'CapacitorApp', 'CapacitorCordova'].each do |pod_name|
-    pod_dir = installer.sandbox.pod_dir(pod_name)
-    Dir.glob("#{pod_dir}/**/*.swift").each { |f| FileUtils.touch(f) }
-  end
 end
