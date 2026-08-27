@@ -106,7 +106,9 @@ app.use('/api/services', require('./routes/services'));
 app.use('/api/availability', require('./routes/availability'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/customers', require('./routes/customers'));
-app.use('/api/consumer', require('./routes/consumer'));
+const consumerRouter = require('./routes/consumer');
+const { authenticateConsumer } = consumerRouter;
+app.use('/api/consumer', consumerRouter);
 app.use('/api/discover', require('./routes/discover'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/reviews', require('./routes/reviews'));
@@ -258,6 +260,59 @@ app.get('/api/growth/automations',                authenticate, attachBusiness, 
 app.patch('/api/growth/automations/:trigger_type/toggle', authenticate, attachBusiness, growthCtrl.toggleAutomation);
 app.get('/api/growth/loyalty',                    authenticate, attachBusiness, growthCtrl.loyaltyStats);
 app.get('/api/growth/reviews',                    authenticate, attachBusiness, growthCtrl.listReviews);
+
+/* ── Reviews: token-based submission (no login) ─────────────────────────── */
+app.get('/api/reviews/token/:token',  reviewsCtrl.getByToken);
+app.post('/api/reviews/token/:token', reviewsCtrl.submitByToken);
+
+/* ── Loyalty program ─────────────────────────────────────────────────────── */
+const loyaltyCtrl = require('./controllers/loyaltyController');
+app.get('/api/loyalty/program',                        authenticate, attachBusiness, loyaltyCtrl.getProgram);
+app.put('/api/loyalty/program',                        authenticate, attachBusiness, loyaltyCtrl.upsertProgram);
+app.get('/api/loyalty/rewards',                        authenticate, attachBusiness, loyaltyCtrl.listRewards);
+app.post('/api/loyalty/rewards',                       authenticate, attachBusiness, loyaltyCtrl.createReward);
+app.patch('/api/loyalty/rewards/:id',                  authenticate, attachBusiness, loyaltyCtrl.updateReward);
+app.delete('/api/loyalty/rewards/:id',                 authenticate, attachBusiness, loyaltyCtrl.deleteReward);
+app.get('/api/loyalty/customer/:customer_id',          authenticate, attachBusiness, loyaltyCtrl.customerPoints);
+app.post('/api/loyalty/adjust',                        authenticate, attachBusiness, loyaltyCtrl.adjustPoints);
+app.get('/api/loyalty/redemptions',                    authenticate, attachBusiness, loyaltyCtrl.listRedemptions);
+app.get('/api/loyalty/:slug/balance',                  authenticateConsumer, loyaltyCtrl.consumerBalance);
+app.post('/api/loyalty/redeem',                        authenticateConsumer, loyaltyCtrl.redeemReward);
+
+/* ── Memberships ─────────────────────────────────────────────────────────── */
+const memberCtrl = require('./controllers/membershipController');
+app.get('/api/memberships/plans',                      authenticate, attachBusiness, memberCtrl.listPlans);
+app.post('/api/memberships/plans',                     authenticate, attachBusiness, memberCtrl.createPlan);
+app.patch('/api/memberships/plans/:id',                authenticate, attachBusiness, memberCtrl.updatePlan);
+app.delete('/api/memberships/plans/:id',               authenticate, attachBusiness, memberCtrl.deletePlan);
+app.get('/api/memberships/subscribers',                authenticate, attachBusiness, memberCtrl.listSubscribers);
+app.post('/api/memberships/subscribers/:id/cancel',    authenticate, attachBusiness, memberCtrl.cancelSubscription);
+app.get('/api/memberships/public/:slug',               memberCtrl.listPublicPlans);
+app.post('/api/memberships/subscribe',                 authenticateConsumer, memberCtrl.subscribe);
+app.get('/api/memberships/mine/:slug',                 authenticateConsumer, memberCtrl.consumerMemberships);
+
+/* ── Service packages ────────────────────────────────────────────────────── */
+const pkgCtrl = require('./controllers/packageController');
+app.get('/api/packages',                               authenticate, attachBusiness, pkgCtrl.listPackages);
+app.post('/api/packages',                              authenticate, attachBusiness, pkgCtrl.createPackage);
+app.patch('/api/packages/:id',                         authenticate, attachBusiness, pkgCtrl.updatePackage);
+app.delete('/api/packages/:id',                        authenticate, attachBusiness, pkgCtrl.deletePackage);
+app.get('/api/packages/customers',                     authenticate, attachBusiness, pkgCtrl.listCustomerPackages);
+app.get('/api/packages/public/:slug',                  pkgCtrl.listPublic);
+app.post('/api/packages/purchase-intent',              authenticateConsumer, pkgCtrl.createPaymentIntent);
+app.post('/api/packages/confirm',                      authenticateConsumer, pkgCtrl.confirmPurchase);
+app.get('/api/packages/mine/:slug',                    authenticateConsumer, pkgCtrl.myPackages);
+app.get('/api/packages/validate',                      authenticateConsumer, pkgCtrl.validatePackage);
+
+/* ── Gift cards ──────────────────────────────────────────────────────────── */
+const gcCtrl = require('./controllers/giftCardController');
+app.get('/api/gift-cards',                             authenticate, attachBusiness, gcCtrl.list);
+app.post('/api/gift-cards',                            authenticate, attachBusiness, gcCtrl.create);
+app.patch('/api/gift-cards/:id/deactivate',            authenticate, attachBusiness, gcCtrl.deactivate);
+app.post('/api/gift-cards/purchase-intent',            gcCtrl.purchaseIntent);
+app.post('/api/gift-cards/confirm',                    gcCtrl.confirmPurchase);
+app.get('/api/gift-cards/validate',                    gcCtrl.validate);
+
 app.get('/api/ai/noshow-risk/:bookingId', authenticate, attachBusiness, aiCtrl.noshowRisk);
 app.get('/api/ai/rebook-timing/:consumerId/:slug', authenticate, attachBusiness, aiCtrl.rebookTiming);
 app.post('/api/ai/match-service', aiCtrl.matchService);

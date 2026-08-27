@@ -1,6 +1,94 @@
 const db = require('../config/database');
 const crypto = require('crypto');
 
+// GET /api/reviews/token/:token  — load review form data for a token
+exports.getByToken = async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT rt.*, b.reference_id, b.booking_date, b.consumer_id,
+              s.name AS service_name, biz.name AS business_name, biz.slug,
+              ca.full_name AS consumer_name
+       FROM review_tokens rt
+       JOIN bookings b ON b.id = rt.booking_id
+       LEFT JOIN services s ON s.id = b.service_id
+       JOIN businesses biz ON biz.id = rt.business_id
+       LEFT JOIN consumer_accounts ca ON ca.id = b.consumer_id
+       WHERE rt.token = $1`,
+      [req.params.token]
+    );
+    const token = rows[0];
+    if (!token) return res.status(404).json({ error: 'Invalid or expired review link' });
+    if (token.used) return res.status(409).json({ error: 'This review link has already been used', already_reviewed: true });
+    if (new Date(token.expires_at) < new Date()) return res.status(410).json({ error: 'This review link has expired' });
+
+    const { rows: existing } = await db.query(
+      'SELECT id FROM reviews WHERE booking_id=$1',
+      [token.booking_id]
+    );
+    if (existing.length) return res.status(409).json({ error: 'A review has already been submitted', already_reviewed: true });
+
+    res.json({
+      token: token.token,
+      booking_id: token.booking_id,
+      reference_id: token.reference_id,
+      booking_date: token.booking_date,
+      service_name: token.service_name,
+      business_name: token.business_name,
+      slug: token.slug,
+      reviewer_name: token.consumer_name,
+    });
+  } catch (err) {
+    console.error('[reviews/getByToken]', err.message);
+    res.status(500).json({ error: 'Failed to load review form' });
+  }
+};
+
+// POST /api/reviews/token/:token  — submit a review via token (no login required)
+exports.submitByToken = async (req, res) => {
+  try {
+    const { rating, comment, reviewer_name } = req.body;
+    if (!rating || rating < 1 || rating > 5) return res.status(400).json({ error: 'Rating 1–5 required' });
+
+    const { rows } = await db.query(
+      `SELECT rt.*, b.customer_id, b.consumer_id
+       FROM review_tokens rt
+       JOIN bookings b ON b.id = rt.booking_id
+       WHERE rt.token = $1 AND rt.used = FALSE
+         AND rt.expires_at > NOW()`,
+      [req.params.token]
+    );
+    const token = rows[0];
+    if (!token) return res.status(404).json({ error: 'Invalid, expired or already-used review link' });
+
+    const { rows: existing } = await db.query(
+      'SELECT id FROM reviews WHERE booking_id=$1',
+      [token.booking_id]
+    );
+    if (existing.length) return res.status(409).json({ error: 'A review already exists for this booking' });
+
+    const reviewId = crypto.randomUUID();
+    const { rows: review } = await db.query(
+      `INSERT INTO reviews
+         (id, booking_id, business_id, customer_id, rating, comment, reviewer_name)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [
+        reviewId, token.booking_id, token.business_id,
+        token.customer_id, parseInt(rating),
+        comment?.trim() || null,
+        reviewer_name?.trim() || null,
+      ]
+    );
+
+    // Mark token as used
+    await db.query('UPDATE review_tokens SET used=TRUE WHERE id=$1', [token.id]);
+
+    res.status(201).json(review[0]);
+  } catch (err) {
+    console.error('[reviews/submitByToken]', err.message);
+    res.status(500).json({ error: 'Failed to submit review' });
+  }
+};
+
 // POST /api/reviews  — consumer submits review after completed booking
 exports.create = async (req, res) => {
   try {

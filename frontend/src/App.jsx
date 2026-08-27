@@ -63,6 +63,8 @@ import StaffReport from './pages/admin/StaffReport';
 import StaffPage from './pages/admin/Staff';
 import ResourcesPage from './pages/admin/Resources';
 import GrowthPage from './pages/admin/Growth';
+import RetentionHub from './pages/admin/RetentionHub';
+import ReviewPage from './pages/public/ReviewPage';
 import FeedPage from './pages/consumer/FeedPage';
 
 class ErrorBoundary extends Component {
@@ -145,6 +147,7 @@ export default function App() {
           <Routes>
             {/* Public booking */}
             <Route path="/book/:slug" element={<BookingPage />} />
+            <Route path="/review/:token" element={<ReviewPage />} />
             <Route path="/booking-success/:ref" element={<BookingSuccess />} />
             <Route path="/booking/lookup" element={<BookingLookup />} />
             <Route path="/booking/attended" element={<AttendedPage />} />
@@ -172,6 +175,7 @@ export default function App() {
               <Route path="staff" element={<StaffPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="growth" element={<GrowthPage />} />
+              <Route path="retention" element={<RetentionHub />} />
             </Route>
 
             {/* Email verification */}

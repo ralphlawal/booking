@@ -5,6 +5,7 @@ const Service = require('../models/Service');
 const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
 const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendBusinessPaymentReleasedEmail, sendWaitlistNotification } = require('../services/emailService');
+const retentionSvc = require('../services/retentionService');
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -234,13 +235,8 @@ exports.updateStatus = async (req, res) => {
       sendBookingStatusUpdate({ ...fullBooking, customer_email: fullBooking.customer_email });
     }
 
-    if (status === 'completed' && fullBooking.customer_email) {
-      // Only send review reminder once the appointment time has actually passed.
-      // Prevents premature "how was it?" emails when a business confirms a future booking.
-      const apptEnd = bookingDateTime(fullBooking.booking_date, fullBooking.end_time || fullBooking.start_time);
-      if (apptEnd && apptEnd <= new Date()) {
-        sendReviewReminder(fullBooking).catch(() => {});
-      }
+    if (status === 'completed') {
+      retentionSvc.onBookingCompleted(fullBooking).catch(() => {});
     }
 
     // If the business confirms a booking whose appointment has already ended,
@@ -572,8 +568,7 @@ exports.confirmService = async (req, res) => {
       sendBusinessPaymentReleasedEmail(booking).catch(() => {});
     }
 
-    // Send review reminder to customer
-    if (booking.customer_email) sendReviewReminder(booking).catch(() => {});
+    retentionSvc.onBookingCompleted(booking).catch(() => {});
 
     res.json({ message: 'Service confirmed — thank you!' });
   } catch (err) {
@@ -940,7 +935,7 @@ exports.attendedAction = async (req, res) => {
     } else if (booking.business_email) {
       sendBusinessPaymentReleasedEmail(booking).catch(() => {});
     }
-    if (booking.customer_email) sendReviewReminder(booking).catch(() => {});
+    retentionSvc.onBookingCompleted(booking).catch(() => {});
 
     return res.json({ message: 'Thank you! Your confirmation has been recorded and payment is being released to the business.' });
   }

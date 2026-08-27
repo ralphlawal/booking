@@ -448,4 +448,50 @@ export const growthAPI = {
   reviews:       () => api.get('/growth/reviews'),
 };
 
+/* ── Loyalty ─────────────────────────────────────────────────────────────── */
+export const loyaltyAPI = {
+  getProgram:     () => api.get('/loyalty/program'),
+  upsertProgram:  (data) => api.put('/loyalty/program', data),
+  listRewards:    () => api.get('/loyalty/rewards'),
+  createReward:   (data) => api.post('/loyalty/rewards', data),
+  updateReward:   (id, data) => api.patch(`/loyalty/rewards/${id}`, data),
+  deleteReward:   (id) => api.delete(`/loyalty/rewards/${id}`),
+  customerPoints: (customerId) => api.get(`/loyalty/customer/${customerId}`),
+  adjustPoints:   (data) => api.post('/loyalty/adjust', data),
+  listRedemptions:() => api.get('/loyalty/redemptions'),
+};
+
+/* ── Memberships ─────────────────────────────────────────────────────────── */
+export const membershipAPI = {
+  listPlans:        () => api.get('/memberships/plans'),
+  createPlan:       (data) => api.post('/memberships/plans', data),
+  updatePlan:       (id, data) => api.patch(`/memberships/plans/${id}`, data),
+  deletePlan:       (id) => api.delete(`/memberships/plans/${id}`),
+  listSubscribers:  () => api.get('/memberships/subscribers'),
+  cancelSub:        (id) => api.post(`/memberships/subscribers/${id}/cancel`),
+};
+
+/* ── Service packages ────────────────────────────────────────────────────── */
+export const packagesAPI = {
+  list:             () => api.get('/packages'),
+  create:           (data) => api.post('/packages', data),
+  update:           (id, data) => api.patch(`/packages/${id}`, data),
+  remove:           (id) => api.delete(`/packages/${id}`),
+  listCustomers:    () => api.get('/packages/customers'),
+};
+
+/* ── Gift cards ──────────────────────────────────────────────────────────── */
+export const giftCardsAPI = {
+  list:      () => api.get('/gift-cards'),
+  create:    (data) => api.post('/gift-cards', data),
+  deactivate:(id) => api.patch(`/gift-cards/${id}/deactivate`),
+  validate:  (code, slug) => api.get('/gift-cards/validate', { params: { code, slug } }),
+};
+
+/* ── Reviews (public token) ──────────────────────────────────────────────── */
+export const reviewTokenAPI = {
+  get:    (token) => api.get(`/reviews/token/${token}`),
+  submit: (token, data) => api.post(`/reviews/token/${token}`, data),
+};
+
 export default api;

@@ -31,8 +31,9 @@ const NAV_GROUPS = [
   {
     label: 'Tools',
     items: [
-      { to: '/admin/growth',       icon: GrowthIcon,   label: 'Growth' },
-      { to: '/admin/messages',     icon: MessageIcon, label: 'Messages' },
+      { to: '/admin/growth',       icon: GrowthIcon,     label: 'Growth' },
+      { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
+      { to: '/admin/messages',     icon: MessageIcon,    label: 'Messages' },
       { to: '/admin/staff-report', icon: ChartIcon,   label: 'Reports' },
       { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
     ],
@@ -54,8 +55,9 @@ const MORE_ITEMS = [
   { to: '/admin/resources',    icon: ResourceIcon, label: 'Resources' },
   { to: '/admin/customers',    icon: UsersIcon,    label: 'Customers' },
   { to: '/admin/posts',        icon: PostsIcon,    label: 'Posts' },
-  { to: '/admin/growth',       icon: GrowthIcon,   label: 'Growth' },
-  { to: '/admin/staff-report', icon: ChartIcon,    label: 'Reports' },
+  { to: '/admin/growth',       icon: GrowthIcon,     label: 'Growth' },
+  { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
+  { to: '/admin/staff-report', icon: ChartIcon,      label: 'Reports' },
   { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
 ];
 
@@ -559,3 +561,4 @@ function ExternalLinkIcon({ className }) { return <svg className={className} fil
 function StaffIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>; }
 function ResourceIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>; }
 function GrowthIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>; }
+function RetentionIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>; }
