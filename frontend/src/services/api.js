@@ -1,12 +1,9 @@
 import axios from 'axios';
+import { apiBaseUrl } from '../config/platform';
 
 // Local dev: Vite proxy handles /api → localhost:5001.
 // Production: /api/* is handled by a Vercel edge catch-all and forwarded to Render.
-const BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : import.meta.env.PROD
-  ? '/api'
-  : '/api';
+const BASE = apiBaseUrl;
 
 // Kick the backend out of sleep on app load through the configured API route.
 // This avoids hardcoding an old Render URL and works through the Vercel proxy too.

@@ -2,12 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, AlertTriangle, Loader, Star } from 'lucide-react';
 import { LOGO_BLUE_H } from '../../config/logos';
+import { apiBaseUrl } from '../../config/platform';
 
-const API = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : import.meta.env.PROD
-  ? '/api'
-  : '/api';
+const API = apiBaseUrl;
 
 const DISPUTE_REASONS = [
   'Service provider did not show up',

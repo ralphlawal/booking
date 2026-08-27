@@ -2,10 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { consumerAPI } from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { LOGO_BLUE_ICON } from '../config/logos';
+import { apiBaseUrl } from '../config/platform';
 
-const API = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
-  : '/api';
+const API = apiBaseUrl;
 
 async function subscribeToPush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
