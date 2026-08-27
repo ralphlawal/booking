@@ -123,6 +123,19 @@ async function runMigrations() {
       inclusive INTEGER NOT NULL DEFAULT 0, updated_at TEXT DEFAULT (datetime('now'))
     );`);
     for (const col of ['payment_type TEXT DEFAULT \'full\'', 'payment_amount REAL', 'tip_amount REAL NOT NULL DEFAULT 0']) addColumn('bookings', col);
+    db.exec(`CREATE TABLE IF NOT EXISTS inbox_conversations (
+      id TEXT PRIMARY KEY, business_id TEXT NOT NULL, customer_id TEXT NOT NULL, booking_id TEXT,
+      last_message_at TEXT DEFAULT (datetime('now')), last_message_preview TEXT,
+      unread_count INTEGER NOT NULL DEFAULT 0, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(business_id, customer_id)
+    );
+    CREATE TABLE IF NOT EXISTS inbox_messages (
+      id TEXT PRIMARY KEY, conversation_id TEXT NOT NULL, business_id TEXT NOT NULL, customer_id TEXT NOT NULL,
+      booking_id TEXT, direction TEXT NOT NULL, channel TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'message',
+      content TEXT NOT NULL, subject TEXT, status TEXT NOT NULL DEFAULT 'queued', provider TEXT,
+      provider_reference TEXT, sender_staff_id TEXT, read_at TEXT, created_at TEXT DEFAULT (datetime('now'))
+    );`);
+    addColumn('staff_members', "inbox_permissions TEXT DEFAULT '[]'");
     console.log('SQLite migrations completed.');
   }
 }

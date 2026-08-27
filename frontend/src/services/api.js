@@ -508,4 +508,14 @@ export const operationsAPI = {
   saveTax:           (data) => api.put('/operations/tax', data),
 };
 
+export const inboxAPI = {
+  conversations: () => api.get('/inbox/conversations'),
+  createConversation: (data) => api.post('/inbox/conversations', data),
+  detail: (id) => api.get(`/inbox/conversations/${id}`),
+  send: (id, data) => api.post(`/inbox/conversations/${id}/messages`, data),
+  staffPermissions: () => api.get('/inbox/staff-permissions'),
+  saveStaffPermissions: (id, permissions) => api.put(`/inbox/staff-permissions/${id}`, { permissions }),
+};
+export const intelligenceAPI = { overview: () => api.get('/intelligence') };
+
 export default api;

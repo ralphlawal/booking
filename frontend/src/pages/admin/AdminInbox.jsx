@@ -1,128 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { MessageSquare, ChevronLeft } from 'lucide-react';
-import { businessChatAPI } from '../../services/api';
-import ChatWindow from '../../components/chat/ChatWindow';
+import { useEffect, useState } from 'react';
+import { MessageSquare, Send, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { inboxAPI } from '../../services/api';
 
-function fmtTime(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  const today = new Date();
-  if (d.toDateString() === today.toDateString())
-    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
-function RoomRow({ room, active, onClick }) {
-  const label = room.type === 'admin_business' ? 'BookAm Support' : (room.consumer_name || 'Customer');
-  const sub = room.type === 'admin_business' ? 'Platform support' : (room.consumer_email || '');
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors border-b border-gray-50 dark:border-gray-800 last:border-0 ${
-        active ? 'bg-primary-50 dark:bg-primary-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
-      }`}
-    >
-      <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0 text-primary-600 dark:text-primary-400 text-sm font-bold">
-        {room.type === 'admin_business' ? '⚑' : (label[0] || '?').toUpperCase()}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{label}</p>
-          <span className="text-[10px] text-gray-400 flex-shrink-0">{fmtTime(room.last_message_at)}</span>
-        </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{room.last_message || sub || 'No messages yet'}</p>
-      </div>
-    </button>
-  );
-}
+const initials = n => (n || '?').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
+const stamp = t => t ? new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
 
 export default function AdminInbox() {
-  const [rooms, setRooms] = useState([]);
-  const [activeRoom, setActiveRoom] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    businessChatAPI.getRooms()
-      .then(setRooms)
-      .catch(() => toast.error('Failed to load messages'))
-      .finally(() => setLoading(false));
-
-    const poll = setInterval(() => {
-      businessChatAPI.getRooms().then(setRooms).catch(() => {});
-    }, 8000);
-    return () => clearInterval(poll);
-  }, []);
-
-  const activeRoomData = rooms.find(r => r.id === activeRoom);
-  const chatTitle = activeRoomData
-    ? activeRoomData.type === 'admin_business'
-      ? 'BookAm Support'
-      : (activeRoomData.consumer_name || 'Customer')
-    : '';
-
-  const showingChat = !!activeRoom;
-
-  return (
-    <div className="animate-fade-in flex" style={{ height: 'min(calc(100dvh - 8rem), 700px)', minHeight: 300 }}>
-      {/* Room list — always visible on md+, hidden on mobile when chat open */}
-      <div className={`${showingChat ? 'hidden md:flex' : 'flex'} w-full md:w-72 flex-shrink-0 flex-col border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg md:rounded-none overflow-hidden`}>
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-primary-600" />
-          <h2 className="font-bold text-gray-900 dark:text-white">Messages</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="p-4 space-y-3">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />)}
-            </div>
-          ) : rooms.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">
-              <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No conversations yet</p>
-              <p className="text-xs mt-1">Customers will message you from your booking page</p>
-            </div>
-          ) : (
-            rooms.map(room => (
-              <RoomRow key={room.id} room={room} active={room.id === activeRoom} onClick={() => setActiveRoom(room.id)} />
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Chat window — always visible on md+, visible on mobile only when chat open */}
-      <div className={`${showingChat ? 'flex' : 'hidden md:flex'} flex-1 min-w-0 flex-col`}>
-        {activeRoom ? (
-          <div className="flex flex-col h-full">
-            {/* Mobile back button */}
-            <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-              <button
-                onClick={() => setActiveRoom(null)}
-                className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-              >
-                <ChevronLeft className="w-4 h-4" /> Back
-              </button>
-              <span className="font-semibold text-sm text-gray-900 dark:text-white">{chatTitle}</span>
-            </div>
-            <div className="flex-1 min-h-0">
-              <ChatWindow
-                roomId={activeRoom}
-                currentSenderType="business"
-                fetchMessages={businessChatAPI.getMessages}
-                sendMessage={businessChatAPI.sendMessage}
-                title={chatTitle}
-                subtitle={activeRoomData?.type === 'admin_business' ? 'Platform support channel' : activeRoomData?.consumer_email}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-gray-400">
-            <MessageSquare className="w-12 h-12 mb-3 text-gray-300" />
-            <p className="font-semibold text-gray-600 dark:text-gray-300">Select a conversation</p>
-            <p className="text-sm mt-1">Choose a chat from the left to start messaging</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const [rooms, setRooms] = useState([]), [active, setActive] = useState(null), [detail, setDetail] = useState(null);
+  const [text, setText] = useState(''), [channel, setChannel] = useState('in_app');
+  const refresh = () => inboxAPI.conversations().then(setRooms).catch(e => toast.error(e.message || 'Could not load inbox'));
+  useEffect(() => { refresh(); const timer = setInterval(refresh, 15000); return () => clearInterval(timer); }, []);
+  const open = async id => { setActive(id); try { setDetail(await inboxAPI.detail(id)); } catch (e) { toast.error(e.message || 'Could not load conversation'); } };
+  const send = async e => { e.preventDefault(); if (!text.trim()) return; try { const m = await inboxAPI.send(active, { content: text, channel }); setDetail(d => ({ ...d, messages: [...d.messages, m] })); setText(''); refresh(); if (m.status === 'queued') toast('Queued — this provider is not configured.'); } catch (e) { toast.error(e.message || 'Could not send message'); } };
+  return <div className="animate-fade-in flex rounded-2xl overflow-hidden border" style={{ height: 'min(calc(100dvh - 8rem), 720px)', borderColor: 'var(--bam-border)', background: 'var(--bam-surface)' }}>
+    <aside className={`${active ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r`} style={{ borderColor: 'var(--bam-border)' }}><div className="p-4 border-b flex gap-2" style={{ borderColor: 'var(--bam-border)' }}><MessageSquare className="text-primary-600"/><div><h1 className="font-bold" style={{ color: 'var(--bam-text)' }}>Messages</h1><p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>Unified customer inbox</p></div></div><div className="overflow-y-auto">{rooms.map(r => <button key={r.id} onClick={() => open(r.id)} className={`w-full flex gap-3 p-4 text-left border-b ${active === r.id ? 'bg-primary-50 dark:bg-primary-950/20' : ''}`} style={{ borderColor: 'var(--bam-border)' }}><div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold">{initials(r.customer_name)}</div><div className="min-w-0 flex-1"><div className="flex justify-between gap-2"><b className="truncate text-sm" style={{ color: 'var(--bam-text)' }}>{r.customer_name}</b><span className="text-[10px]" style={{ color: 'var(--bam-text-muted)' }}>{stamp(r.last_message_at)}</span></div><p className="truncate text-xs mt-1" style={{ color: 'var(--bam-text-muted)' }}>{r.last_message_preview || 'No messages yet'}</p>{r.upcoming_booking && <p className="text-[10px] text-primary-600 mt-1 truncate">{r.upcoming_booking.service_name} · {r.upcoming_booking.booking_date}</p>}</div>{r.unread_count > 0 && <span className="text-xs bg-primary-600 text-white rounded-full h-5 w-5 text-center">{r.unread_count}</span>}</button>)}{!rooms.length && <p className="p-8 text-center text-sm" style={{ color: 'var(--bam-text-muted)' }}>No conversations yet.</p>}</div></aside>
+    <main className={`${active ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0`}>{detail ? <><header className="p-4 border-b flex justify-between" style={{ borderColor: 'var(--bam-border)' }}><div className="flex gap-2"><div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold">{initials(detail.conversation.full_name)}</div><div><b style={{ color: 'var(--bam-text)' }}>{detail.conversation.full_name}</b><p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{detail.conversation.email || detail.conversation.phone}</p></div></div>{detail.upcoming_booking && <div className="text-xs text-right"><Calendar className="w-3 inline mr-1"/>{detail.upcoming_booking.service_name}<p>{detail.upcoming_booking.booking_date} {String(detail.upcoming_booking.start_time).slice(0,5)}</p></div>}</header><div className="flex-1 overflow-y-auto p-4 space-y-3">{detail.messages.map(m => <div key={m.id} className={`max-w-[80%] rounded-2xl p-3 text-sm ${m.direction === 'outbound' ? 'bg-primary-600 text-white ml-auto' : 'bg-gray-100 dark:bg-gray-800'}`} style={m.direction === 'outbound' ? {} : { color: 'var(--bam-text)' }}><p>{m.content}</p><small className="opacity-70">{m.channel} · {m.status} · {stamp(m.created_at)}</small></div>)}</div><div className="px-4 text-xs" style={{ color: 'var(--bam-text-muted)' }}>{detail.previous_bookings.length} bookings in customer history</div><form onSubmit={send} className="p-3 border-t flex gap-2" style={{ borderColor: 'var(--bam-border)' }}><select className="input w-28" value={channel} onChange={e => setChannel(e.target.value)}><option value="in_app">In-app</option><option value="email">Email</option><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option></select><input className="input flex-1" value={text} onChange={e => setText(e.target.value)} placeholder="Write a message…"/><button className="btn-primary px-3"><Send className="w-4"/></button></form></> : <div className="m-auto text-center"><MessageSquare className="w-10 h-10 mx-auto opacity-30"/><p className="mt-2" style={{ color: 'var(--bam-text-muted)' }}>Select a conversation</p></div>}</main>
+  </div>;
 }

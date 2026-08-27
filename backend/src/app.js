@@ -126,6 +126,8 @@ const waitlistCtrl = require('./controllers/waitlistController');
 const promoCtrl = require('./controllers/promoController');
 const intakeCtrl = require('./controllers/intakeController');
 const operationsCtrl = require('./controllers/operationsController');
+const inboxCtrl = require('./controllers/inboxController');
+const intelligenceCtrl = require('./controllers/intelligenceController');
 
 // Resources
 app.get('/api/resources',     authenticate, attachBusiness, resourcesCtrl.list);
@@ -191,6 +193,15 @@ app.post('/api/operations/pos/sales', authenticate, attachBusiness, operationsCt
 app.get('/api/operations/report', authenticate, attachBusiness, operationsCtrl.report);
 app.get('/api/operations/tax', authenticate, attachBusiness, operationsCtrl.getTaxSettings);
 app.put('/api/operations/tax', authenticate, attachBusiness, operationsCtrl.saveTaxSettings);
+
+// Unified customer inbox. External channels remain queued unless their provider is configured.
+app.get('/api/inbox/conversations', authenticate, attachBusiness, inboxCtrl.list);
+app.post('/api/inbox/conversations', authenticate, attachBusiness, inboxCtrl.createConversation);
+app.get('/api/inbox/conversations/:id', authenticate, attachBusiness, inboxCtrl.detail);
+app.post('/api/inbox/conversations/:id/messages', authenticate, attachBusiness, inboxCtrl.send);
+app.get('/api/inbox/staff-permissions', authenticate, attachBusiness, inboxCtrl.staffPermissions);
+app.put('/api/inbox/staff-permissions/:staffId', authenticate, attachBusiness, inboxCtrl.updateStaffPermissions);
+app.get('/api/intelligence', authenticate, attachBusiness, intelligenceCtrl.overview);
 
 // Intake forms
 app.get('/api/intake/public/:slug', intakeCtrl.getPublic);
