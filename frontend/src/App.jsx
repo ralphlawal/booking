@@ -139,6 +139,7 @@ export default function App() {
           <BrowserRouter>
           <Toaster
             position="top-center"
+            containerStyle={isNativeApp() ? { top: 'calc(0.75rem + env(safe-area-inset-top, 0px))', left: 'max(0.75rem, env(safe-area-inset-left, 0px))', right: 'max(0.75rem, env(safe-area-inset-right, 0px))' } : undefined}
             toastOptions={{
               duration: 3500,
               style: { borderRadius: '12px', fontSize: '14px', fontWeight: 500 },

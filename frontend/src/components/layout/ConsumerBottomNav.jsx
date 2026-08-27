@@ -54,8 +54,8 @@ export default function ConsumerBottomNav() {
     <>
       {/* Mobile: frosted glass bottom bar */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-200/60 dark:border-gray-800/70 shadow-nav"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="consumer-bottom-nav lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-200/60 dark:border-gray-800/70 shadow-nav"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }}
       >
         <div className="max-w-md mx-auto px-1 flex">
           {NAV.map(({ to, icon, label, gradient }) => (

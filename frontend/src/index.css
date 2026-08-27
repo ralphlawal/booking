@@ -94,6 +94,22 @@
     line-height: 1.6;
   }
 
+  /* Prevent iOS from zooming the entire WebView when an input receives focus.
+     The 16px native control size still allows the rest of the app to use the
+     compact typography intended for mobile. */
+  @media (max-width: 767px) {
+    .native-app input,
+    .native-app select,
+    .native-app textarea { font-size: 16px !important; }
+  }
+
+  .native-app,
+  .native-app body,
+  .native-app #root {
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
+
   #root {
     min-height: 100dvh;
     overflow-x: hidden;

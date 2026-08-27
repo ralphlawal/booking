@@ -135,6 +135,12 @@ async function notifyRecipient({ room, sender_type, sender_name, content }) {
         body: preview,
         link: '/customer/messages',
       });
+      const { notifyUser } = require('../services/pushService');
+      notifyUser('consumer', consumer.id, {
+        title: `New message from ${sender_name}`,
+        body: preview,
+        data: { url: '/customer/messages' },
+      }).catch(() => {});
       // Email too if they haven't been active recently
       if (consumer.email) {
         sendEmail({

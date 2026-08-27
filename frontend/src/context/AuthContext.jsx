@@ -75,6 +75,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem(TOKEN_KEY, data.token);
     setUser(data.user);
     saveAuthCache(data.user, null);
+    registerPushNotifications(
+      (fcmToken) => authAPI.registerPushToken(fcmToken, 'business').catch(() => {}),
+    ).catch(() => {});
     return data;
   };
 

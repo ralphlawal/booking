@@ -3,23 +3,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { resourcesAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
+import { Armchair, BedDouble, DoorOpen, Lightbulb, Package, Wrench } from 'lucide-react';
 
 /* ── constants ───────────────────────────────────────────────────────────── */
 
 const RESOURCE_TYPES = [
-  { value: 'room',      label: 'Room',      icon: '🚪' },
-  { value: 'chair',     label: 'Chair',     icon: '💺' },
-  { value: 'bed',       label: 'Bed',       icon: '🛏' },
-  { value: 'equipment', label: 'Equipment', icon: '🔧' },
-  { value: 'other',     label: 'Other',     icon: '📦' },
+  { value: 'room',      label: 'Room',      icon: DoorOpen },
+  { value: 'chair',     label: 'Chair',     icon: Armchair },
+  { value: 'bed',       label: 'Bed',       icon: BedDouble },
+  { value: 'equipment', label: 'Equipment', icon: Wrench },
+  { value: 'other',     label: 'Other',     icon: Package },
 ];
 
 const EMPTY = {
   name: '', type: 'room', description: '', quantity: 1, is_active: true,
 };
 
-function typeIcon(t) {
-  return RESOURCE_TYPES.find(r => r.value === t)?.icon ?? '📦';
+function ResourceIcon({ type, className }) {
+  const Icon = RESOURCE_TYPES.find(r => r.value === type)?.icon ?? Package;
+  return <Icon className={className} strokeWidth={1.8} aria-hidden="true" />;
 }
 
 /* ── ResourceForm ────────────────────────────────────────────────────────── */
@@ -56,7 +58,7 @@ function ResourceForm({ initial, onSave, onClose, isDark, border }) {
             <label key={t.value} className="flex flex-col items-center gap-1 p-3 rounded-xl cursor-pointer transition-all text-center"
               style={{ background: form.type === t.value ? 'rgba(99,102,241,0.1)' : 'var(--bam-surface-soft)', border: `1px solid ${form.type === t.value ? 'rgba(99,102,241,0.4)' : border}` }}>
               <input type="radio" name="res-type" value={t.value} checked={form.type === t.value} onChange={set('type')} className="sr-only" />
-              <span className="text-xl">{t.icon}</span>
+              <t.icon className="w-5 h-5" strokeWidth={1.8} aria-hidden="true" />
               <span className="text-xs font-semibold" style={{ color: form.type === t.value ? '#6366f1' : 'var(--bam-text-muted)' }}>{t.label}</span>
             </label>
           ))}
@@ -111,9 +113,9 @@ function ResourceCard({ resource, onEdit, onDelete, border, isDark }) {
     <div className={`rounded-2xl p-4 border transition-all ${!resource.is_active ? 'opacity-50' : ''}`}
       style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: 'var(--bam-surface-soft)' }}>
-          {typeIcon(resource.type)}
+          <ResourceIcon type={resource.type} className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -224,7 +226,7 @@ export default function Resources() {
 
       {/* Info banner */}
       <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.2)' }}>
-        <span className="text-xl mt-0.5">💡</span>
+        <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary-600 dark:text-primary-400" strokeWidth={1.8} aria-hidden="true" />
         <div>
           <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>How resources work</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>
@@ -239,7 +241,7 @@ export default function Resources() {
         </div>
       ) : resources.length === 0 ? (
         <div className="card p-12 text-center">
-          <p className="text-4xl mb-3">📦</p>
+          <Package className="w-9 h-9 mx-auto mb-3 text-primary-600 dark:text-primary-400" strokeWidth={1.7} aria-hidden="true" />
           <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No resources yet</p>
           <p className="text-sm mt-1 mb-5" style={{ color: 'var(--bam-text-muted)' }}>
             Add your rooms, chairs, and equipment to start preventing double-booking

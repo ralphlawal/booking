@@ -4,6 +4,7 @@ import { loyaltyAPI, membershipAPI, packagesAPI, giftCardsAPI, servicesAPI } fro
 import { useTheme } from '../../context/ThemeContext';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
+import { Gift, Gem, Package, Repeat2, UserRound } from 'lucide-react';
 
 /* ── Shared primitives ───────────────────────────────────────────────────── */
 
@@ -22,9 +23,10 @@ function Spinner() {
 }
 
 function EmptyState({ icon, title, body, action }) {
+  const Icon = icon;
   return (
     <div className="rounded-2xl p-12 text-center" style={{ background: 'var(--bam-surface)', border: '1px solid var(--bam-border)' }}>
-      <p className="text-5xl mb-3">{icon}</p>
+      <div className="mb-3 flex justify-center text-primary-600 dark:text-primary-400"><Icon className="w-9 h-9" strokeWidth={1.7} aria-hidden="true" /></div>
       <p className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>{title}</p>
       {body && <p className="text-sm mt-1.5 mb-5" style={{ color: 'var(--bam-text-muted)' }}>{body}</p>}
       {action}
@@ -61,10 +63,10 @@ function Sheet({ open, onClose, title, children, border, isDark }) {
 }
 
 const TABS = [
-  { id: 'loyalty',      label: 'Loyalty',      icon: '💎' },
-  { id: 'memberships',  label: 'Memberships',  icon: '🔁' },
-  { id: 'packages',     label: 'Packages',     icon: '📦' },
-  { id: 'gift-cards',   label: 'Gift Cards',   icon: '🎁' },
+  { id: 'loyalty',      label: 'Loyalty',      icon: Gem },
+  { id: 'memberships',  label: 'Memberships',  icon: Repeat2 },
+  { id: 'packages',     label: 'Packages',     icon: Package },
+  { id: 'gift-cards',   label: 'Gift Cards',   icon: Gift },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -176,7 +178,7 @@ function LoyaltyTab({ border, isDark }) {
           </button>
         </div>
         {rewards.length === 0 ? (
-          <EmptyState icon="🎁" title="No rewards yet" body="Create rewards customers can redeem their points for" />
+          <EmptyState icon={Gift} title="No rewards yet" body="Create rewards customers can redeem their points for" />
         ) : (
           <div className="space-y-2">
             {rewards.map(r => (
@@ -338,7 +340,7 @@ function MembershipsTab({ border, isDark }) {
 
       {view === 'plans' && (
         plans.length === 0 ? (
-          <EmptyState icon="🔁" title="No membership plans" body="Create your first plan — e.g. Hair Club at £49/month" action={<button onClick={openCreate} className="btn-primary text-sm">Create plan</button>} />
+          <EmptyState icon={Repeat2} title="No membership plans" body="Create your first plan — e.g. Hair Club at £49/month" action={<button onClick={openCreate} className="btn-primary text-sm">Create plan</button>} />
         ) : (
           <div className="space-y-3">
             {plans.map(p => (
@@ -381,7 +383,7 @@ function MembershipsTab({ border, isDark }) {
 
       {view === 'subscribers' && (
         subs.length === 0 ? (
-          <EmptyState icon="👤" title="No subscribers yet" body="Active memberships will appear here" />
+          <EmptyState icon={UserRound} title="No subscribers yet" body="Active memberships will appear here" />
         ) : (
           <div className="space-y-3">
             {subs.map(s => (
@@ -547,7 +549,7 @@ function PackagesTab({ border, isDark }) {
 
       {view === 'packages' && (
         packages.length === 0 ? (
-          <EmptyState icon="📦" title="No packages yet" body="Create bundles of sessions customers can buy in advance — e.g. 6 massages for €240"
+          <EmptyState icon={Package} title="No packages yet" body="Create bundles of sessions customers can buy in advance — e.g. 6 massages for €240"
             action={<button onClick={openCreate} className="btn-primary text-sm">Create package</button>} />
         ) : (
           <div className="space-y-3">
@@ -587,7 +589,7 @@ function PackagesTab({ border, isDark }) {
 
       {view === 'customers' && (
         customers.length === 0 ? (
-          <EmptyState icon="👤" title="No purchases yet" body="Customer package purchases will appear here" />
+          <EmptyState icon={UserRound} title="No purchases yet" body="Customer package purchases will appear here" />
         ) : (
           <div className="space-y-2">
             {customers.map(c => (
@@ -730,7 +732,7 @@ function GiftCardsTab({ border, isDark }) {
       {loading ? (
         <div className="space-y-2">{[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-2xl animate-pulse" style={{ background: 'var(--bam-surface-soft)' }} />)}</div>
       ) : filtered.length === 0 ? (
-        <EmptyState icon="🎁" title={filter === 'all' ? 'No gift cards yet' : `No ${filter} cards`}
+        <EmptyState icon={Gift} title={filter === 'all' ? 'No gift cards yet' : `No ${filter} cards`}
           body={filter === 'all' ? 'Issue gift cards to customers or let customers purchase them from your booking page' : undefined}
           action={filter === 'all' ? <button onClick={() => setShowForm(true)} className="btn-primary text-sm">Issue gift card</button> : undefined} />
       ) : (
@@ -831,7 +833,7 @@ export default function RetentionHub() {
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${activeTab === tab.id ? 'border-indigo-500 text-indigo-600' : 'border-transparent'}`}
             style={{ color: activeTab === tab.id ? undefined : 'var(--bam-text-muted)' }}>
-            <span>{tab.icon}</span>{tab.label}
+            <tab.icon className="w-4 h-4" strokeWidth={1.9} aria-hidden="true" />{tab.label}
           </button>
         ))}
       </div>

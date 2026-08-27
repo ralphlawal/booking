@@ -4,16 +4,17 @@ import { growthAPI, promoAPI, reviewReplyAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
+import { BarChart3, Bell, Gem, Mail, Megaphone, MessageCircle, Smartphone, Sparkles, Star, Tag, TriangleAlert, Zap } from 'lucide-react';
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
 const TABS = [
-  { id: 'overview',     label: 'Overview',     icon: '📊' },
-  { id: 'campaigns',    label: 'Campaigns',    icon: '📣' },
-  { id: 'automations',  label: 'Automations',  icon: '⚡' },
-  { id: 'promotions',   label: 'Promotions',   icon: '🏷' },
-  { id: 'reviews',      label: 'Reviews',      icon: '⭐' },
-  { id: 'loyalty',      label: 'Loyalty',      icon: '💎' },
+  { id: 'overview',     label: 'Overview',     icon: BarChart3 },
+  { id: 'campaigns',    label: 'Campaigns',    icon: Megaphone },
+  { id: 'automations',  label: 'Automations',  icon: Zap },
+  { id: 'promotions',   label: 'Promotions',   icon: Tag },
+  { id: 'reviews',      label: 'Reviews',      icon: Star },
+  { id: 'loyalty',      label: 'Loyalty',      icon: Gem },
 ];
 
 const AUDIENCES = [
@@ -27,14 +28,16 @@ const AUDIENCES = [
 ];
 
 const CHANNELS = [
-  { value: 'email',    label: 'Email',          icon: '✉️' },
-  { value: 'sms',      label: 'SMS',            icon: '💬' },
-  { value: 'push',     label: 'Push',           icon: '🔔' },
-  { value: 'in_app',   label: 'In-app',         icon: '📲' },
-  { value: 'whatsapp', label: 'WhatsApp',       icon: '🟢', soon: true },
+  { value: 'email',    label: 'Email',          icon: Mail },
+  { value: 'sms',      label: 'SMS',            icon: MessageCircle },
+  { value: 'push',     label: 'Push',           icon: Bell },
+  { value: 'in_app',   label: 'In-app',         icon: Smartphone },
+  { value: 'whatsapp', label: 'WhatsApp',       icon: MessageCircle, soon: true },
 ];
 
 const PRIORITY_COLOR = { high: '#ef4444', medium: '#f59e0b', low: '#10b981' };
+
+const insightIcons = { '📊': BarChart3, '📣': Megaphone, '⚡': Zap, '🏷': Tag, '⭐': Star, '💎': Gem, '💡': Sparkles, '⚠️': TriangleAlert };
 
 function StatCard({ label, value, sub, trend, color }) {
   const up = trend > 0;
@@ -53,6 +56,7 @@ function StatCard({ label, value, sub, trend, color }) {
 }
 
 function InsightCard({ insight, integrations, onAction, border }) {
+  const InsightIcon = insightIcons[insight.icon] || Sparkles;
   return (
     <div className="rounded-2xl p-4 border-l-4" style={{
       background: 'var(--bam-surface)',
@@ -60,7 +64,7 @@ function InsightCard({ insight, integrations, onAction, border }) {
       borderLeftColor: PRIORITY_COLOR[insight.priority] || 'var(--bam-border)',
     }}>
       <div className="flex items-start gap-3">
-        <span className="text-2xl flex-shrink-0">{insight.icon}</span>
+        <InsightIcon className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary-600 dark:text-primary-400" strokeWidth={1.8} aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{insight.title}</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>{insight.description}</p>
@@ -129,6 +133,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
           <label className="label">Channel</label>
           <div className="grid grid-cols-3 gap-2">
             {CHANNELS.map(ch => {
+              const ChannelIcon = ch.icon;
               const configured = !ch.soon && (integrations ? integrations[ch.value] : true);
               const sel = form.channel === ch.value;
               return (
@@ -136,7 +141,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
                   style={{ background: sel ? 'rgba(99,102,241,.1)' : 'var(--bam-surface-soft)', borderColor: sel ? 'rgba(99,102,241,.4)' : border }}>
                   <input type="radio" name="channel" value={ch.value} className="sr-only" checked={sel}
                     onChange={set('channel')} disabled={ch.soon || !configured} />
-                  <span className="text-xl">{ch.icon}</span>
+                  <ChannelIcon className="w-5 h-5" strokeWidth={1.8} aria-hidden="true" />
                   <span className="text-xs font-bold" style={{ color: sel ? '#6366f1' : 'var(--bam-text-muted)' }}>{ch.label}</span>
                   {ch.soon && <span className="text-[9px] bg-gray-200 dark:bg-gray-700 px-1.5 rounded-full text-gray-500">Soon</span>}
                   {!ch.soon && !configured && <span className="text-[9px] bg-amber-100 dark:bg-amber-900/30 px-1.5 rounded-full text-amber-600">Not set up</span>}
@@ -146,7 +151,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
           </div>
           {!channelOk && !selectedChannel?.soon && (
             <div className="mt-2 rounded-xl p-3 text-xs" style={{ background: 'rgba(245,158,11,.08)', border: '1px solid rgba(245,158,11,.25)', color: '#92400e' }}>
-              ⚠️ This channel isn't configured yet. Add the required credentials to your backend environment variables to enable sending.
+              <span className="flex items-center gap-2"><TriangleAlert className="w-4 h-4 flex-shrink-0" aria-hidden="true" />This channel isn't configured yet. Add the required credentials to your backend environment variables to enable sending.</span>
             </div>
           )}
         </div>
@@ -281,11 +286,12 @@ function OverviewTab({ integrations, onCreateCampaign, border }) {
         <h2 className="font-bold text-base mb-3" style={{ color: 'var(--bam-text)' }}>Channel Status</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {CHANNELS.map(ch => {
+            const ChannelIcon = ch.icon;
             const ok = !ch.soon && integrations?.[ch.value];
             return (
               <div key={ch.value} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">{ch.icon}</span>
+                  <ChannelIcon className="w-4 h-4" strokeWidth={1.8} aria-hidden="true" />
                   <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{ch.label}</p>
                 </div>
                 {ch.soon
@@ -930,7 +936,7 @@ export default function Growth() {
           <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (tab.id !== 'campaigns') setCampaignPrefill(null); }}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${activeTab === tab.id ? 'border-primary-500 text-primary-600' : 'border-transparent'}`}
             style={{ color: activeTab === tab.id ? undefined : 'var(--bam-text-muted)' }}>
-            <span>{tab.icon}</span>
+            <tab.icon className="w-4 h-4" strokeWidth={1.9} aria-hidden="true" />
             {tab.label}
           </button>
         ))}

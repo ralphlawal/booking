@@ -318,7 +318,7 @@ export default function AdminLayout() {
         {/* Page content */}
         <main
           className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 lg:pb-6 pb-admin-nav"
-          style={{ background: 'var(--bam-bg)', color: 'var(--bam-text)' }}
+          style={{ background: 'var(--bam-bg)', color: 'var(--bam-text)', paddingLeft: 'max(0.75rem, env(safe-area-inset-left, 0px))', paddingRight: 'max(0.75rem, env(safe-area-inset-right, 0px))' }}
         >
           {emailUnverified && (
             <div className="mb-4 sm:mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/60 rounded-xl px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
@@ -355,11 +355,13 @@ export default function AdminLayout() {
 
       {/* ── Mobile bottom nav (lg:hidden) ────────────────────────────────── */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t"
+        className="admin-bottom-nav lg:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t"
         style={{
           background: isDark ? 'rgba(6,11,28,0.97)' : 'rgba(255,255,255,0.97)',
           borderColor: 'var(--bam-border)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
           boxShadow: isDark
             ? '0 -1px 0 rgba(255,255,255,0.06), 0 -8px 32px rgba(0,0,0,0.45)'
             : '0 -4px 24px rgba(0,0,0,0.07)',

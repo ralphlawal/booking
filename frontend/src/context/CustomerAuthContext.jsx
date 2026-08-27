@@ -52,6 +52,9 @@ export function CustomerAuthProvider({ children }) {
     localStorage.setItem(TOKEN_KEY, token);
     setConsumer(c);
     saveCache(c);
+    registerPushNotifications(
+      (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
+    ).catch(() => {});
     return c;
   };
 
