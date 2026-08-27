@@ -1,7 +1,6 @@
-// Vercel Edge Function — proxies all /api/* requests to Render server-to-server.
-// The browser calls its own domain (no CORS). Render gets a server-to-server call (no CORS).
-// Also serves the Capacitor iOS/Android native app which calls from capacitor://localhost.
-export const config = { runtime: 'edge' };
+// Vercel Node.js serverless function — proxies all /api/* requests to Render server-to-server.
+// The browser calls its own domain (no CORS issue for same-origin). Capacitor app calls
+// https://bookam.business/api/* (cross-origin from capacitor://localhost) — CORS handled here.
 
 const BACKEND = process.env.BACKEND_URL || 'https://bookly-api-3bz0.onrender.com';
 
@@ -24,52 +23,69 @@ function corsHeaders(origin) {
   };
 }
 
-export default async function handler(req) {
-  const origin = req.headers.get('origin') || '';
+function setCors(res, origin) {
+  const headers = corsHeaders(origin);
+  Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v));
+}
+
+export default async function handler(req, res) {
+  const origin = req.headers['origin'] || '';
+  setCors(res, origin);
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(origin) });
+    res.status(204).end();
+    return;
   }
 
   try {
-    const url = new URL(req.url);
+    const url = new URL(req.url, 'http://localhost');
 
     const targetPath = url.pathname.startsWith('/api/proxy')
       ? url.pathname.replace(/^\/api\/proxy\/?/, '/api/')
       : url.pathname;
     const target = `${BACKEND.replace(/\/$/, '')}${targetPath}${url.search}`;
 
-    const headers = new Headers();
+    const forwardHeaders = {};
     for (const key of ['accept', 'content-type', 'authorization', 'stripe-signature']) {
-      const value = req.headers.get(key);
-      if (value) headers.set(key, value);
+      if (req.headers[key]) forwardHeaders[key] = req.headers[key];
     }
 
     const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
-    const body = hasBody ? await req.arrayBuffer() : undefined;
+    let body;
+    if (hasBody) {
+      body = await new Promise((resolve, reject) => {
+        const chunks = [];
+        req.on('data', chunk => chunks.push(chunk));
+        req.on('end', () => resolve(Buffer.concat(chunks)));
+        req.on('error', reject);
+      });
+    }
 
     const upstream = await fetch(target, {
       method: req.method,
-      headers,
-      body,
+      headers: forwardHeaders,
+      body: hasBody ? body : undefined,
     });
 
-    const responseHeaders = new Headers(corsHeaders(origin));
+    const skip = new Set([
+      'access-control-allow-origin',
+      'access-control-allow-credentials',
+      'content-encoding',
+      'content-length',
+      'transfer-encoding',
+    ]);
     upstream.headers.forEach((v, k) => {
-      if (!['access-control-allow-origin', 'access-control-allow-credentials', 'content-encoding', 'content-length'].includes(k.toLowerCase())) {
-        responseHeaders.set(k, v);
-      }
+      if (!skip.has(k.toLowerCase())) res.setHeader(k, v);
     });
 
-    return new Response(upstream.body, {
-      status: upstream.status,
-      headers: responseHeaders,
-    });
+    res.status(upstream.status);
+    const data = await upstream.arrayBuffer();
+    res.end(Buffer.from(data));
   } catch (err) {
-    return Response.json(
-      { error: 'Could not reach BookAm server', detail: err?.message || 'Proxy failed' },
-      { status: 502 }
-    );
+    res.status(502).json({
+      error: 'Could not reach BookAm server',
+      detail: err?.message || 'Proxy failed',
+    });
   }
 }
