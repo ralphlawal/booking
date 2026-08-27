@@ -430,7 +430,7 @@ const AUTOMATION_TEMPLATES = [
   {
     trigger_type: 'inactive_30',
     name: 'Win-back (30 days)',
-    description: 'Sent to customers who haven't booked in 30 days.',
+    description: "Sent to customers who haven't booked in 30 days.",
     icon: '🎯',
     channel: 'email',
     subject: 'We miss you',
