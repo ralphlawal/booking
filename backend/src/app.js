@@ -85,7 +85,11 @@ app.use('/api/consumer/login', limiter({ windowMs: 15 * 60 * 1000, max: 20, mess
 app.use('/api/chat/admin/login', limiter({ windowMs: 15 * 60 * 1000, max: 6, message: { error: 'Too many admin login attempts' } }));
 app.use('/api/chat', limiter({ windowMs: 60 * 1000, max: 90, message: { error: 'Too many chat requests' } }));
 app.use('/api/bookings/public', limiter({ windowMs: 60 * 1000, max: 10, message: { error: 'Too many bookings' } }));
+app.use('/api/bookings/ref', limiter({ windowMs: 15 * 60 * 1000, max: 30, message: { error: 'Too many booking requests' } }));
 app.use('/api/payments/create-intent', limiter({ windowMs: 60 * 1000, max: 20, message: { error: 'Too many payment attempts' } }));
+app.use('/api/gift-cards/purchase-intent', limiter({ windowMs: 60 * 1000, max: 20, message: { error: 'Too many payment attempts' } }));
+app.use('/api/packages/purchase-intent', limiter({ windowMs: 60 * 1000, max: 20, message: { error: 'Too many payment attempts' } }));
+app.use('/api/reviews/token', limiter({ windowMs: 15 * 60 * 1000, max: 30, message: { error: 'Too many review requests' } }));
 app.use('/api/admin', limiter({ windowMs: 15 * 60 * 1000, max: 240, message: { error: 'Too many admin requests' } }));
 
 // Stripe webhooks must receive the exact raw body before JSON parsing.
@@ -213,7 +217,7 @@ app.post('/api/intake/respond', intakeCtrl.respond);
 // Walk-in booking
 const bookingsCtrl = require('./controllers/bookingsController');
 app.post('/api/bookings/walkin', authenticate, attachBusiness, bookingsCtrl.createWalkin);
-app.post('/api/bookings/ref/:ref/reschedule-request', bookingsCtrl.rescheduleRequest);
+app.post('/api/bookings/ref/:ref/reschedule-request', consumerAuth, bookingsCtrl.rescheduleRequest);
 // Token-based attended confirmation/dispute via email link (no login required)
 app.post('/api/bookings/attended-action', bookingsCtrl.attendedAction);
 
@@ -252,7 +256,8 @@ app.post('/api/admin/geocode-backfill', businessCtrl.geocodeBackfill);
 // on Render free tier where the server sleeps. Secured with CRON_SECRET env var.
 app.get('/api/cron/trigger', async (req, res) => {
   const secret = process.env.CRON_SECRET;
-  if (secret && req.query.secret !== secret) return res.status(401).json({ error: 'Unauthorized' });
+  if (!secret) return res.status(503).json({ error: 'Scheduled jobs are not configured' });
+  if (req.query.secret !== secret) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const { runAutoRelease, runAttendedEmails } = require('./controllers/bookingsController');
     const [released, sent] = await Promise.all([

@@ -82,7 +82,7 @@ const TIME_WINDOWS = {
 // GET /api/discover?q=&category=&lat=&lng=&page=&limit=
 exports.search = async (req, res) => {
   try {
-    const { q, category, lat, lng, page = 1, limit = 20, available_today } = req.query;
+    const { q, category, lat, lng, page = 1, limit = 20, available_today, instant_booking, min_rating, max_price, max_distance } = req.query;
     const offset = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
 
     // Today's day name in lowercase (matches working_days JSON values)
@@ -116,13 +116,16 @@ exports.search = async (req, res) => {
       params.push(`%${category}%`);
       idx++;
     }
-    if (available_today === 'true') {
+    if (available_today === 'true' || instant_booking === 'true') {
       query += ` AND av.working_days ? $${idx}`;
       params.push(TODAY);
       idx++;
     }
 
-    query += ` GROUP BY b.id, av.opening_time, av.closing_time ORDER BY avg_rating DESC, b.created_at DESC LIMIT $${idx} OFFSET $${idx + 1}`;
+    query += ` GROUP BY b.id, av.opening_time, av.closing_time`;
+    if (min_rating != null && !Number.isNaN(Number(min_rating))) { query += ` HAVING COALESCE(AVG(r.rating), 0) >= $${idx}`; params.push(Number(min_rating)); idx++; }
+    if (max_price != null && !Number.isNaN(Number(max_price))) { query += `${query.includes(' HAVING ') ? ' AND' : ' HAVING'} MIN(s.price) <= $${idx}`; params.push(Number(max_price)); idx++; }
+    query += ` ORDER BY avg_rating DESC, b.created_at DESC LIMIT $${idx} OFFSET $${idx + 1}`;
     params.push(parseInt(limit), offset);
 
     const { rows } = await db.query(query, params);
@@ -144,6 +147,9 @@ exports.search = async (req, res) => {
           if (b.distance_km === null) return -1;
           return a.distance_km - b.distance_km;
         });
+      if (max_distance != null && !Number.isNaN(Number(max_distance))) {
+        results = results.filter(b => b.distance_km !== null && b.distance_km <= Number(max_distance));
+      }
 
       // Lazily geocode up to 3 businesses with location text but no coordinates (fire-and-forget)
       const needsGeo = rows.filter(b => b.location && !b.latitude && !b.longitude).slice(0, 3);

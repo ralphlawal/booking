@@ -198,7 +198,28 @@ exports.getByReference = async (req, res) => {
   try {
     const booking = await Booking.findByReference(req.params.ref);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
-    res.json(booking);
+    // Booking references are shown in confirmation emails and are not credentials.
+    // Expose only the information needed by the public success screen; full details
+    // remain available through the email-verified lookup or authenticated dashboards.
+    const publicBooking = {
+      reference_id: booking.reference_id,
+      booking_date: booking.booking_date,
+      start_time: booking.start_time,
+      end_time: booking.end_time,
+      status: booking.status,
+      payment_status: booking.payment_status,
+      service_name: booking.service_name,
+      service_price: booking.service_price,
+      price: booking.service_price,
+      service_id: booking.service_id,
+      business_name: booking.business_name,
+      business_phone: booking.business_phone,
+      business_email: booking.business_email,
+      business_location: booking.business_location,
+      location: booking.business_location,
+      slug: booking.slug,
+    };
+    res.json(publicBooking);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch booking' });
   }
@@ -422,6 +443,9 @@ exports.cancelByCustomer = async (req, res) => {
   try {
     const booking = await Booking.findByReference(req.params.ref);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (!booking.consumer_id || booking.consumer_id !== req.consumerId) {
+      return res.status(403).json({ error: 'You can only manage bookings made from your account' });
+    }
     if (['cancelled', 'completed'].includes(booking.status)) {
       return res.status(400).json({ error: `Booking is already ${booking.status}` });
     }
@@ -525,11 +549,14 @@ exports.cancelByCustomer = async (req, res) => {
   }
 };
 
-// POST /bookings/ref/:ref/confirm-service  (public — consumer confirms service was rendered)
+// POST /bookings/ref/:ref/confirm-service
 exports.confirmService = async (req, res) => {
   try {
     const booking = await Booking.findByReference(req.params.ref);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (!booking.consumer_id || booking.consumer_id !== req.consumerId) {
+      return res.status(403).json({ error: 'You can only confirm your own booking' });
+    }
     if (!['confirmed', 'completed', 'pending'].includes(booking.status)) {
       return res.status(400).json({ error: 'Cannot confirm service for this booking' });
     }
@@ -552,7 +579,7 @@ exports.confirmService = async (req, res) => {
     if (dispRows.length > 0) return res.status(400).json({ error: 'A dispute is open for this booking' });
 
     const id = crypto.randomUUID();
-    const consumer_id = req.body.consumer_id || null;
+    const consumer_id = req.consumerId;
     await db.query(
       'INSERT INTO service_confirmations (id, booking_id, consumer_id) VALUES ($1, $2, $3)',
       [id, booking.id, consumer_id]
@@ -703,8 +730,12 @@ exports.raiseDispute = async (req, res) => {
   try {
     const booking = await Booking.findByReference(req.params.ref);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (!booking.consumer_id || booking.consumer_id !== req.consumerId) {
+      return res.status(403).json({ error: 'You can only dispute your own booking' });
+    }
 
-    const { reason, description, consumer_id } = req.body;
+    const { reason, description } = req.body;
+    const consumer_id = req.consumerId;
     if (!reason?.trim()) return res.status(400).json({ error: 'Reason is required' });
 
     // Dispute window: must be raised within 6 hours of appointment end time
@@ -1071,18 +1102,8 @@ exports.rescheduleRequest = async (req, res) => {
     const booking = await Booking.findByReference(req.params.ref);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-    // Verify consumer owns this booking
-    let consumerIdFromToken = null;
-    const header = req.headers.authorization;
-    if (header?.startsWith('Bearer ')) {
-      try {
-        const jwt2 = require('jsonwebtoken');
-        const p = jwt2.verify(header.split(' ')[1], JWT_SECRET);
-        if (p.type === 'consumer') consumerIdFromToken = p.consumerId;
-      } catch {}
-    }
-    if (booking.consumer_id && consumerIdFromToken && booking.consumer_id !== consumerIdFromToken) {
-      return res.status(403).json({ error: 'Not your booking' });
+    if (!booking.consumer_id || booking.consumer_id !== req.consumerId) {
+      return res.status(403).json({ error: 'You can only manage bookings made from your account' });
     }
 
     const { preferred_date, preferred_time, message } = req.body;

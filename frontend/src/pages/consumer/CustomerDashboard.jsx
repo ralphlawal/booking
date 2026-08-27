@@ -524,7 +524,7 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
     if (!reason) { toast.error('Please select a reason'); return; }
     setSubmitting(true);
     try {
-      await consumerAPI.raiseDispute(booking.reference_id, { reason, description, consumer_id: consumer?.id });
+      await consumerAPI.raiseDispute(booking.reference_id, { reason, description });
       toast.success('Dispute raised — we\'ll review within 48 hours');
       onSubmitted(booking.id);
       onClose();
@@ -811,7 +811,7 @@ export default function CustomerDashboard() {
     if (!confirmTarget) return;
     setConfirming(true);
     try {
-      await consumerAPI.confirmService(confirmTarget.reference_id, consumer?.id);
+      await consumerAPI.confirmService(confirmTarget.reference_id);
       setBookings(prev => prev.map(b => b.id === confirmTarget.id ? { ...b, service_confirmed: true, status: 'completed' } : b));
       toast.success('Service confirmed — thank you!');
       setConfirmTarget(null);

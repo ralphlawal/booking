@@ -40,6 +40,10 @@ async function runMigrations() {
     addColumn('bookings', 'idempotency_key TEXT');
     try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency_key ON bookings(idempotency_key) WHERE idempotency_key IS NOT NULL AND idempotency_key <> ''`); } catch {}
     try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_active_slot ON bookings(business_id, booking_date, start_time) WHERE status <> 'cancelled'`); } catch {}
+    try { db.exec(`CREATE INDEX IF NOT EXISTS idx_bookings_business_status_date ON bookings(business_id, status, booking_date DESC)`); } catch {}
+    try { db.exec(`CREATE INDEX IF NOT EXISTS idx_bookings_customer_business_date ON bookings(customer_id, business_id, booking_date DESC)`); } catch {}
+    try { db.exec(`CREATE INDEX IF NOT EXISTS idx_reviews_business_created ON reviews(business_id, created_at DESC)`); } catch {}
+    try { db.exec(`CREATE INDEX IF NOT EXISTS idx_waitlist_business_status_created ON waitlist(business_id, status, created_at DESC)`); } catch {}
     try {
       db.exec(`CREATE TABLE IF NOT EXISTS admin_audit_logs (
         id TEXT PRIMARY KEY, admin_role TEXT, action TEXT NOT NULL,

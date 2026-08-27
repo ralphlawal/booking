@@ -93,9 +93,33 @@ exports.getPublicBusiness = async (req, res) => {
   try {
     const business = await Business.findBySlug(req.params.slug);
     if (!business) return res.status(404).json({ error: 'Business not found' });
-    // Strip internal fields
-    const { user_id, ...pub } = business;
-    res.json(pub);
+    // Public profiles are consumed by the marketplace and booking flow. Return an
+    // explicit public contract rather than stripping only one internal column:
+    // payout, verification, ownership, and operational fields must never leak.
+    let settings = business.settings || {};
+    if (typeof settings === 'string') {
+      try { settings = JSON.parse(settings); } catch { settings = {}; }
+    }
+    const publicSettings = Object.fromEntries(
+      ['website', 'instagram', 'facebook'].flatMap(key => settings?.[key] ? [[key, settings[key]]] : [])
+    );
+    res.json({
+      id: business.id,
+      name: business.name,
+      slug: business.slug,
+      description: business.description,
+      phone: business.phone,
+      email: business.email,
+      location: business.location,
+      category: business.category,
+      logo_url: business.logo_url,
+      timezone: business.timezone,
+      latitude: business.latitude,
+      longitude: business.longitude,
+      is_verified: business.is_verified,
+      verification_status: business.verification_status,
+      settings: publicSettings,
+    });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch business' });
   }

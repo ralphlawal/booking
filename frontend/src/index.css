@@ -607,3 +607,22 @@ header.sticky.top-0 {
 
 /* ── Stripe Elements ────────────────────────────────────────────────────── */
 .StripeElement { background: transparent; }
+
+/* ── Responsive route primitives ────────────────────────────────────────── */
+.responsive-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 0.75rem; }
+.responsive-table-wrap table { min-width: 42rem; }
+.keyboard-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); scroll-padding-bottom: calc(var(--admin-nav-height) + 1rem); }
+.sticky-mobile-action {
+  position: sticky; bottom: 0; z-index: 20; padding: 0.75rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: var(--bam-surface); border-top: 1px solid var(--bam-border);
+}
+@media (max-width: 1023px) {
+  .modal-panel, [role="dialog"] { max-height: calc(100dvh - var(--safe-top) - 1rem); }
+  .page-shell, .app-shell { padding-bottom: var(--admin-nav-padding); }
+  .responsive-table-cards thead { display: none; }
+  .responsive-table-cards, .responsive-table-cards tbody, .responsive-table-cards tr, .responsive-table-cards td { display: block; width: 100%; }
+  .responsive-table-cards tr { border: 1px solid var(--bam-border); border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 0.75rem; }
+  .responsive-table-cards td { padding: 0.25rem 0; text-align: right; }
+  .responsive-table-cards td::before { content: attr(data-label); float: left; font-weight: 700; color: var(--bam-text-muted); }
+}

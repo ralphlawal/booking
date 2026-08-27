@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -24,24 +24,12 @@ import VerifyEmail from './pages/public/VerifyEmail';
 import LegalPage from './pages/public/LegalPage';
 
 // Consumer pages
-import ExplorePage from './pages/consumer/ExplorePage';
-import SmartMatchPage from './pages/consumer/SmartMatchPage';
 import CustomerLogin from './pages/consumer/CustomerLogin';
 import CustomerSignup from './pages/consumer/CustomerSignup';
 import CustomerForgotPassword from './pages/consumer/CustomerForgotPassword';
 import CustomerResetPassword from './pages/consumer/CustomerResetPassword';
-import CustomerDashboard from './pages/consumer/CustomerDashboard';
-import BusinessProfile from './pages/consumer/BusinessProfile';
-import ConsumerProfile from './pages/consumer/ConsumerProfile';
-import ConsumerMessages from './pages/consumer/ConsumerMessages';
-import ConsumerOnboarding from './pages/consumer/ConsumerOnboarding';
-import FavouritesPage from './pages/consumer/FavouritesPage';
 
 // Support
-import AdminSupport from './pages/support/AdminSupport';
-
-// Admin inbox
-import AdminInbox from './pages/admin/AdminInbox';
 
 // Auth pages
 import Login from './pages/admin/Login';
@@ -51,23 +39,37 @@ import ResetPassword from './pages/admin/ResetPassword';
 
 // Admin pages
 import AdminLayout from './components/layout/AdminLayout';
-import Dashboard from './pages/admin/Dashboard';
-import Services from './pages/admin/Services';
-import Bookings from './pages/admin/Bookings';
-import Calendar from './pages/admin/Calendar';
-import Customers from './pages/admin/Customers';
-import Settings from './pages/admin/Settings';
-import Posts from './pages/admin/Posts';
-import Onboarding from './pages/admin/Onboarding';
-import StaffReport from './pages/admin/StaffReport';
-import StaffPage from './pages/admin/Staff';
-import ResourcesPage from './pages/admin/Resources';
-import GrowthPage from './pages/admin/Growth';
-import RetentionHub from './pages/admin/RetentionHub';
-import Operations from './pages/admin/Operations';
-import Intelligence from './pages/admin/Intelligence';
 import ReviewPage from './pages/public/ReviewPage';
-import FeedPage from './pages/consumer/FeedPage';
+import OfflineNotice from './components/shared/OfflineNotice';
+
+// Product areas are loaded when they are opened. This keeps public booking and
+// the first dashboard paint fast while retaining the same routes and behaviour.
+const ExplorePage = lazy(() => import('./pages/consumer/ExplorePage'));
+const SmartMatchPage = lazy(() => import('./pages/consumer/SmartMatchPage'));
+const CustomerDashboard = lazy(() => import('./pages/consumer/CustomerDashboard'));
+const BusinessProfile = lazy(() => import('./pages/consumer/BusinessProfile'));
+const ConsumerProfile = lazy(() => import('./pages/consumer/ConsumerProfile'));
+const ConsumerMessages = lazy(() => import('./pages/consumer/ConsumerMessages'));
+const ConsumerOnboarding = lazy(() => import('./pages/consumer/ConsumerOnboarding'));
+const FavouritesPage = lazy(() => import('./pages/consumer/FavouritesPage'));
+const FeedPage = lazy(() => import('./pages/consumer/FeedPage'));
+const AdminSupport = lazy(() => import('./pages/support/AdminSupport'));
+const AdminInbox = lazy(() => import('./pages/admin/AdminInbox'));
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
+const Services = lazy(() => import('./pages/admin/Services'));
+const Bookings = lazy(() => import('./pages/admin/Bookings'));
+const Calendar = lazy(() => import('./pages/admin/Calendar'));
+const Customers = lazy(() => import('./pages/admin/Customers'));
+const Settings = lazy(() => import('./pages/admin/Settings'));
+const Posts = lazy(() => import('./pages/admin/Posts'));
+const Onboarding = lazy(() => import('./pages/admin/Onboarding'));
+const StaffReport = lazy(() => import('./pages/admin/StaffReport'));
+const StaffPage = lazy(() => import('./pages/admin/Staff'));
+const ResourcesPage = lazy(() => import('./pages/admin/Resources'));
+const GrowthPage = lazy(() => import('./pages/admin/Growth'));
+const RetentionHub = lazy(() => import('./pages/admin/RetentionHub'));
+const Operations = lazy(() => import('./pages/admin/Operations'));
+const Intelligence = lazy(() => import('./pages/admin/Intelligence'));
 
 class ErrorBoundary extends Component {
   state = { hasError: false };
@@ -143,9 +145,11 @@ export default function App() {
             }}
           />
           <BroadcastBanner />
+          <OfflineNotice />
           <FloatingChatWidget />
           <CookieConsent />
           <BrowserNotificationPrompt />
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public booking */}
             <Route path="/book/:slug" element={<BookingPage />} />
@@ -209,6 +213,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
           </BrowserRouter>
         </AuthProvider>
         </NotificationProvider>

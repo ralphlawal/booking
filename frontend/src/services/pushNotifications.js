@@ -12,7 +12,6 @@ export async function registerPushNotifications(onToken, onNotification) {
   await PushNotifications.register();
 
   PushNotifications.addListener('registration', (token) => {
-    console.log('[Push] FCM token:', token.value);
     if (onToken) onToken(token.value);
   });
 

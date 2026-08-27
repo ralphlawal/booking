@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const { authenticate, attachBusiness } = require('../middleware/auth');
+const { consumerAuth } = require('../middleware/consumerAuth');
 const ctrl = require('../controllers/bookingsController');
 const Business = require('../models/Business');
 
@@ -36,14 +37,15 @@ router.get('/ref/:ref', ctrl.getByReference);
 // Public: look up booking by reference + email verification
 router.post('/lookup', ctrl.lookup);
 
-// Public: customer cancels their own booking
-router.post('/ref/:ref/cancel', ctrl.cancelByCustomer);
+// A reference is an identifier, not proof of ownership. Customer account actions
+// must be authenticated and checked against the booking's consumer owner.
+router.post('/ref/:ref/cancel', consumerAuth, ctrl.cancelByCustomer);
 
 // Public: customer confirms service was rendered
-router.post('/ref/:ref/confirm-service', ctrl.confirmService);
+router.post('/ref/:ref/confirm-service', consumerAuth, ctrl.confirmService);
 
 // Public: customer raises a dispute
-router.post('/ref/:ref/dispute', ctrl.raiseDispute);
+router.post('/ref/:ref/dispute', consumerAuth, ctrl.raiseDispute);
 
 // Admin: dispute management + auto-release (auth checked inside controller)
 router.get('/admin/disputes', ctrl.getDisputes);

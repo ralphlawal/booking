@@ -190,8 +190,9 @@ exports.calculateServerAmount = calculateServerAmount;
 exports.getForBooking = async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT stripe_payment_intent_id, payment_status FROM bookings WHERE id = $1',
-      [req.params.bookingId]
+      `SELECT stripe_payment_intent_id, payment_status
+       FROM bookings WHERE id = $1 AND business_id = $2`,
+      [req.params.bookingId, req.business.id]
     );
     res.json(rows[0] || null);
   } catch (err) {

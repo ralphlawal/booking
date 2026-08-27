@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { businessAPI, availabilityAPI, staffAPI, photosAPI, promoAPI, intakeAPI, waitlistAPI, stripeConnectAPI, aiAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -46,6 +46,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState(searchParams.get('tab') || 'business');
+  const [settingsSearch, setSettingsSearch] = useState('');
   const [bizForm, setBizForm] = useState({});
   const [avForm, setAvForm] = useState({ working_days: [], opening_time: '09:00', closing_time: '18:00', slot_interval_minutes: 30, buffer_minutes: 0 });
   const [blocked, setBlocked] = useState([]);
@@ -394,26 +395,31 @@ export default function Settings() {
     finally { setVerSaving(false); }
   };
 
-  const TABS = ['business','availability','blocked','staff','photos','intake','promo','waitlist','qr','embed','payouts','verification','security'];
-  const TAB_LABELS = ['Business Info','Availability','Blocked Days','Staff','Gallery','Intake Forms','Promo Codes','Waitlist','QR & Link','Embed Widget','Payouts','Verification','Security'];
+  const SETTINGS_GROUPS = [
+    { label: 'Business', items: [['business','Business profile'],['availability','Opening hours'],['blocked','Booking settings'],['qr','Locations & booking link']] },
+    { label: 'Services', items: [['services','Services'],['resources','Resources'],['photos','Portfolio & photos']] },
+    { label: 'Team', items: [['staff','Staff, roles & schedules']] },
+    { label: 'Customers', items: [['intake','Forms'],['reviews','Reviews'],['loyalty','Loyalty']] },
+    { label: 'Payments', items: [['payouts','Payment methods & payouts'],['business','Deposits & cancellation policy']] },
+    { label: 'Marketing', items: [['promo','Promotions'],['waitlist','Waitlist'],['growth','Campaigns & automations']] },
+    { label: 'Integrations', items: [['embed','Website & embed'],['qr','Google, social & calendar']] },
+    { label: 'Account', items: [['verification','Verification'],['security','Security, privacy & data']] },
+    { label: 'Support', items: [['support','Help & contact support']] },
+  ];
+  const INTERNAL_TABS = new Set(['business','availability','blocked','staff','photos','intake','promo','waitlist','qr','embed','payouts','verification','security']);
+  const destination = key => ({ services: '/admin/services', resources: '/admin/resources', reviews: '/admin/growth', loyalty: '/admin/growth', growth: '/admin/growth', support: '/admin-support' }[key]);
+  const visibleGroups = useMemo(() => SETTINGS_GROUPS.map(group => ({ ...group, items: group.items.filter(([, label]) => label.toLowerCase().includes(settingsSearch.toLowerCase()) || group.label.toLowerCase().includes(settingsSearch.toLowerCase())) })).filter(group => group.items.length), [settingsSearch]);
+  const openSetting = key => { if (INTERNAL_TABS.has(key)) { setTab(key); setSearchParams({ tab: key }); } else navigate(destination(key)); };
 
   return (
     <div className="space-y-5 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Manage your business profile and availability</p>
+        <p className="text-gray-500 text-sm mt-0.5">Organised controls for your business, team, payments, and account</p>
       </div>
-
-      {/* Tabs — horizontal scroll on mobile */}
-      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-max sm:w-fit">
-          {TAB_LABELS.map((t, i) => (
-            <button key={t} onClick={() => setTab(TABS[i])}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${tab === TABS[i] ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
-              {t}
-            </button>
-          ))}
-        </div>
+      <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--bam-border)', background: 'var(--bam-surface)' }}>
+        <input value={settingsSearch} onChange={e => setSettingsSearch(e.target.value)} className="input w-full mb-3" placeholder="Search settings…" />
+        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">{visibleGroups.map(group => <div key={group.label}><p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--bam-text-faint)' }}>{group.label}</p>{group.items.map(([key,label]) => <button key={`${group.label}-${label}`} onClick={() => openSetting(key)} className={`w-full text-left px-3 py-2 rounded-lg text-sm ${tab === key ? 'bg-primary-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200'}`}>{label}</button>)}</div>)}</div>
       </div>
 
       {/* Business Info */}

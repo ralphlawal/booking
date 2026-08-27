@@ -393,7 +393,7 @@ export default function ManageBookingPage() {
         {/* Action buttons */}
         {!panel && (
           <div className="space-y-3">
-            {canReschedule && (
+            {consumer && canReschedule && (
               <button
                 onClick={() => setPanel('reschedule')}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
@@ -403,7 +403,7 @@ export default function ManageBookingPage() {
               </button>
             )}
 
-            {canCancel && (
+            {consumer && canCancel && (
               <button
                 onClick={() => setPanel('cancel')}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
@@ -431,6 +431,15 @@ export default function ManageBookingPage() {
               >
                 <Building2 className="w-5 h-5" />
                 View business
+              </Link>
+            )}
+
+            {!consumer && (canReschedule || canCancel) && (
+              <Link
+                to="/customer/login"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-all"
+              >
+                Sign in to manage this booking
               </Link>
             )}
           </div>

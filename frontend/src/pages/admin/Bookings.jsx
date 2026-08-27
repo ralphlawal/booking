@@ -482,7 +482,8 @@ export default function Bookings() {
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-gray-400">
             <ClipboardList className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-            <p className="font-medium">{search ? 'No matching bookings' : 'No bookings found'}</p>
+            <p className="font-medium">{search ? 'No matching bookings' : "You're all clear."}</p>
+            {!search && <p className="text-sm mt-1">Your upcoming appointments will appear here.</p>}
             {search && <button onClick={() => setSearch('')} className="text-sm text-primary-600 mt-1 hover:underline">Clear search</button>}
           </div>
         ) : (

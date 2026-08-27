@@ -23,18 +23,23 @@ const isTimeoutError = (err) =>
   || err.response?.status === 504;
 
 function userFacingApiMessage(err, fallback = 'Something went wrong') {
+  if (err.response?.status === 401) return 'Your session has expired. Please sign in again.';
+  if (err.response?.status === 403) return 'You don’t have permission to do that.';
   if (isNetworkError(err)) {
     return typeof navigator !== 'undefined' && navigator.onLine === false
       ? 'You appear to be offline. Check your internet connection and try again.'
       : 'Could not connect to BookAm. Please try again in a moment.';
   }
-  if (err.response?.status === 503 || err.response?.status === 504) {
+  if (err.response?.status === 500 || err.response?.status === 502 || err.response?.status === 503 || err.response?.status === 504) {
     return 'BookAm is temporarily unavailable. Please try again shortly.';
   }
   if (err.response?.status === 429) {
     return 'Too many requests. Please wait a moment and try again.';
   }
-  return err.response?.data?.error || err.message || fallback;
+  const candidate = err.response?.data?.error || err.message || fallback;
+  // Never surface raw server/database errors to customers or businesses.
+  if (/\b(500|502|503|504|internal server|postgres|sqlite|stack|exception)\b/i.test(candidate)) return 'Something went wrong. Please try again.';
+  return candidate;
 }
 
 const api = axios.create({
@@ -235,7 +240,7 @@ export const consumerAPI = {
   updateFamilyMember: (id, data) => consumerAxios.put(`/consumer/family-members/${id}`, data),
   deleteFamilyMember: (id) => consumerAxios.delete(`/consumer/family-members/${id}`),
   cancelBooking: (ref) => consumerAxios.post(`/bookings/ref/${ref}/cancel`),
-  confirmService: (ref, consumer_id) => consumerAxios.post(`/bookings/ref/${ref}/confirm-service`, { consumer_id }),
+  confirmService: (ref) => consumerAxios.post(`/bookings/ref/${ref}/confirm-service`),
   raiseDispute: (ref, data) => consumerAxios.post(`/bookings/ref/${ref}/dispute`, data),
   rescheduleRequest: (ref, data) => consumerAxios.post(`/bookings/ref/${ref}/reschedule-request`, data),
   uploadAvatar: (file) => {

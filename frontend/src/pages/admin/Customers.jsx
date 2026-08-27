@@ -777,7 +777,8 @@ export default function Customers() {
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-4xl mb-3">👤</p>
-            <p className="font-semibold" style={{ color: 'var(--bam-text-muted)' }}>{search ? 'No matching customers' : 'No customers here'}</p>
+            <p className="font-semibold" style={{ color: 'var(--bam-text-muted)' }}>{search ? 'No matching customers' : 'No customers yet'}</p>
+            {!search && <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Your customers will appear here after your first booking.</p>}
             {search && <button onClick={() => setSearch('')} className="text-sm text-primary-600 mt-1 hover:underline">Clear search</button>}
           </div>
         ) : (

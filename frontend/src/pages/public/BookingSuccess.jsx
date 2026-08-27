@@ -155,7 +155,7 @@ export default function BookingSuccess() {
             </Link>
           )}
 
-          {!cancelled && booking.status !== 'completed' && (
+          {consumer && !cancelled && booking.status !== 'completed' && (
             <button
               onClick={() => setShowCancelModal(true)}
               className="w-full py-2.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors"
