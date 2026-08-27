@@ -41,6 +41,8 @@ import ResetPassword from './pages/admin/ResetPassword';
 import AdminLayout from './components/layout/AdminLayout';
 import ReviewPage from './pages/public/ReviewPage';
 import OfflineNotice from './components/shared/OfflineNotice';
+import NativeWelcome from './pages/native/NativeWelcome';
+import { isNativeApp } from './config/platform';
 
 // Product areas are loaded when they are opened. This keeps public booking and
 // the first dashboard paint fast while retaining the same routes and behaviour.
@@ -210,7 +212,7 @@ export default function App() {
             <Route path="/signup" element={<SignupChooser />} />
 
             {/* Landing */}
-            <Route path="/" element={<Landing />} />
+            <Route path="/" element={isNativeApp() ? <NativeWelcome /> : <Landing />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
