@@ -1,232 +1,567 @@
-import React, { useEffect, useState } from 'react';
-import { Scissors, Lock } from 'lucide-react';
-import { servicesAPI } from '../../services/api';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { servicesAPI, resourcesAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
-const EMPTY = { name: '', description: '', price: '', duration_minutes: 60, is_active: true, deposit_required: false, deposit_amount: '', category: '', max_group_size: 1 };
+/* ── constants ───────────────────────────────────────────────────────────── */
 
-export default function Services() {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // null | 'create' | service object
-  const [form, setForm] = useState(EMPTY);
+const EMPTY = {
+  name: '', description: '', category: '', price: '', duration_minutes: 60,
+  buffer_time: 0, sort_order: 0, is_active: true, online_booking_enabled: true,
+  deposit_required: false, deposit_amount: '', max_group_size: 1,
+  cancellation_policy: '', location: '', addons: [], resource_ids: [],
+};
+
+const CANCELLATION_PRESETS = [
+  '24 hours notice required',
+  '48 hours notice required',
+  'No refunds within 24 hours',
+  'Fully refundable up to 48 hours before',
+  'Non-refundable deposit',
+];
+
+const SYM = '€';
+
+/* ── helpers ─────────────────────────────────────────────────────────────── */
+
+function groupByCategory(services) {
+  const groups = {};
+  for (const s of services) {
+    const cat = s.category?.trim() || 'Uncategorised';
+    (groups[cat] = groups[cat] || []).push(s);
+  }
+  return Object.entries(groups).sort(([a], [b]) =>
+    a === 'Uncategorised' ? 1 : b === 'Uncategorised' ? -1 : a.localeCompare(b)
+  );
+}
+
+/* ── ServiceForm ─────────────────────────────────────────────────────────── */
+
+function ServiceForm({ initial, resources, onSave, onClose, isDark, border }) {
+  const [form, setForm] = useState({ ...EMPTY, ...initial });
   const [saving, setSaving] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(null); // service to delete
+  const [addonInput, setAddonInput] = useState('');
 
-  const load = () => servicesAPI.list().then(setServices).catch(() => {}).finally(() => setLoading(false));
-  useEffect(() => { load(); }, []);
+  const set = (k) => (e) =>
+    setForm(p => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
-  const openCreate = () => { setForm(EMPTY); setModal('create'); };
-  const openEdit = (svc) => { setForm({ ...svc, price: svc.price, deposit_amount: svc.deposit_amount || '', deposit_required: svc.deposit_required || false, max_group_size: svc.max_group_size || 1 }); setModal(svc); };
-  const closeModal = () => setModal(null);
+  const addAddon = () => {
+    const v = addonInput.trim();
+    if (!v) return;
+    setForm(p => ({ ...p, addons: [...(p.addons || []), v] }));
+    setAddonInput('');
+  };
 
-  const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const removeAddon = (i) =>
+    setForm(p => ({ ...p, addons: (p.addons || []).filter((_, idx) => idx !== i) }));
 
-  const save = async (e) => {
+  const toggleResource = (id) =>
+    setForm(p => {
+      const ids = p.resource_ids || [];
+      return { ...p, resource_ids: ids.includes(id) ? ids.filter(r => r !== id) : [...ids, id] };
+    });
+
+  const submit = async (e) => {
     e.preventDefault();
+    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    if (!form.duration_minutes || parseInt(form.duration_minutes) < 5) { toast.error('Duration must be at least 5 min'); return; }
     setSaving(true);
     try {
-      if (modal === 'create') {
-        const svc = await servicesAPI.create(form);
-        setServices(p => [...p, svc]);
-        toast.success('Service created');
-      } else {
-        const svc = await servicesAPI.update(modal.id, form);
-        setServices(p => p.map(s => s.id === svc.id ? svc : s));
-        toast.success('Service updated');
-      }
-      closeModal();
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setSaving(false);
-    }
+      await onSave({
+        ...form,
+        price: parseFloat(form.price) || 0,
+        duration_minutes: parseInt(form.duration_minutes),
+        buffer_time: parseInt(form.buffer_time) || 0,
+        deposit_amount: form.deposit_required ? (parseFloat(form.deposit_amount) || 0) : 0,
+        max_group_size: parseInt(form.max_group_size) || 1,
+        addons: form.addons || [],
+        resource_ids: form.resource_ids || [],
+      });
+    } catch (err) { toast.error(err.message || 'Failed to save'); }
+    finally { setSaving(false); }
   };
 
-  const toggle = async (svc) => {
+  return (
+    <form onSubmit={submit} className="p-5 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 80px)' }}>
+      {/* Name + Category */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <label className="label">Service Name *</label>
+          <input className="input" placeholder="e.g. Classic Haircut" required value={form.name} onChange={set('name')} />
+        </div>
+        <div>
+          <label className="label">Category</label>
+          <input className="input" placeholder="Hair, Nails, Skin…" value={form.category || ''} onChange={set('category')} />
+        </div>
+        <div>
+          <label className="label">Location / Room</label>
+          <input className="input" placeholder="Studio A, Mobile…" value={form.location || ''} onChange={set('location')} />
+        </div>
+      </div>
+
+      {/* Description */}
+      <div>
+        <label className="label">Description</label>
+        <textarea className="input resize-none" rows={2} placeholder="What does this service include?" value={form.description || ''} onChange={set('description')} />
+      </div>
+
+      {/* Price / Duration / Buffer */}
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="label">Price ({SYM}) *</label>
+          <input className="input" type="number" min="0" step="0.01" placeholder="0.00" required value={form.price} onChange={set('price')} />
+        </div>
+        <div>
+          <label className="label">Duration (min) *</label>
+          <input className="input" type="number" min="5" step="5" required value={form.duration_minutes} onChange={set('duration_minutes')} />
+        </div>
+        <div>
+          <label className="label">Buffer (min)</label>
+          <input className="input" type="number" min="0" step="5" value={form.buffer_time || 0} onChange={set('buffer_time')} />
+          <p className="text-[10px] mt-0.5" style={{ color: 'var(--bam-text-faint)' }}>Cleanup / prep time</p>
+        </div>
+      </div>
+
+      {/* Toggles */}
+      <div className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}` }}>
+        <label className="flex items-center justify-between cursor-pointer">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--bam-text)' }}>Online booking</p>
+            <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>Show this service on your public booking page</p>
+          </div>
+          <Toggle checked={!!form.online_booking_enabled} onChange={v => setForm(p => ({ ...p, online_booking_enabled: v }))} />
+        </label>
+        {form.id && (
+          <label className="flex items-center justify-between cursor-pointer border-t pt-3" style={{ borderColor: border }}>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--bam-text)' }}>Active</p>
+              <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>Inactive services are hidden everywhere</p>
+            </div>
+            <Toggle checked={!!form.is_active} onChange={v => setForm(p => ({ ...p, is_active: v }))} />
+          </label>
+        )}
+      </div>
+
+      {/* Deposit */}
+      <div className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}` }}>
+        <label className="flex items-center justify-between cursor-pointer">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--bam-text)' }}>Require deposit</p>
+            <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>No-show protection — shown on booking page</p>
+          </div>
+          <Toggle checked={!!form.deposit_required} onChange={v => setForm(p => ({ ...p, deposit_required: v }))} />
+        </label>
+        {form.deposit_required && (
+          <div className="pt-2 border-t" style={{ borderColor: border }}>
+            <label className="label">Deposit amount ({SYM})</label>
+            <input className="input" type="number" min="0" step="0.01" placeholder="e.g. 10.00" value={form.deposit_amount || ''} onChange={set('deposit_amount')} />
+          </div>
+        )}
+      </div>
+
+      {/* Group size */}
+      <div>
+        <label className="label">Max group size</label>
+        <input className="input" type="number" min="1" max="50" value={form.max_group_size || 1} onChange={set('max_group_size')} />
+        <p className="text-xs mt-1" style={{ color: 'var(--bam-text-faint)' }}>1 = individual only. Higher = group/class booking.</p>
+      </div>
+
+      {/* Cancellation policy */}
+      <div>
+        <label className="label">Cancellation Policy</label>
+        <textarea className="input resize-none" rows={2} placeholder="e.g. 24 hours notice required for full refund" value={form.cancellation_policy || ''} onChange={set('cancellation_policy')} />
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {CANCELLATION_PRESETS.map(p => (
+            <button key={p} type="button" onClick={() => setForm(f => ({ ...f, cancellation_policy: p }))}
+              className="text-[10px] px-2 py-1 rounded-lg font-semibold transition-colors"
+              style={{ background: 'var(--bam-surface)', border: `1px solid ${border}`, color: 'var(--bam-text-muted)' }}>
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Add-ons */}
+      <div>
+        <label className="label">Add-ons / Extras</label>
+        <div className="flex gap-2">
+          <input className="input flex-1 text-sm" placeholder="e.g. Deep conditioning treatment" value={addonInput} onChange={e => setAddonInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addAddon())} />
+          <button type="button" onClick={addAddon} className="btn-secondary text-sm px-3 flex-shrink-0">Add</button>
+        </div>
+        {(form.addons || []).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {(form.addons || []).map((a, i) => (
+              <span key={i} className="flex items-center gap-1 text-xs px-2 py-1 rounded-full font-semibold"
+                style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}`, color: 'var(--bam-text-muted)' }}>
+                {a}
+                <button type="button" onClick={() => removeAddon(i)} className="hover:text-red-500 transition-colors ml-0.5">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Resources */}
+      {resources.length > 0 && (
+        <div>
+          <label className="label">Required Resources</label>
+          <div className="grid grid-cols-2 gap-2">
+            {resources.filter(r => r.is_active).map(r => {
+              const sel = (form.resource_ids || []).includes(r.id);
+              return (
+                <label key={r.id} className={`flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${sel ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                  style={!sel ? { border: `1px solid ${border}`, background: 'var(--bam-surface-soft)' } : {}}>
+                  <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={sel} onChange={() => toggleResource(r.id)} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--bam-text)' }}>{r.name}</p>
+                    <p className="text-xs capitalize" style={{ color: 'var(--bam-text-faint)' }}>{r.type}{r.quantity > 1 ? ` · ×${r.quantity}` : ''}</p>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex gap-3 pt-2 border-t" style={{ borderColor: border }}>
+        <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+        <button type="submit" disabled={saving} className="btn-primary flex-1">
+          {saving ? <Spinner /> : form.id ? 'Save Changes' : 'Create Service'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/* ── ServiceCard ─────────────────────────────────────────────────────────── */
+
+function ServiceCard({ svc, onEdit, onDuplicate, onToggleActive, onToggleOnline, onMoveUp, onMoveDown, isFirst, isLast, isDark, border }) {
+  return (
+    <div className={`rounded-2xl p-4 border transition-all ${!svc.is_active ? 'opacity-50' : ''}`}
+      style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+      <div className="flex items-start gap-3">
+        {/* Sort handles */}
+        <div className="flex flex-col gap-0.5 mt-0.5 flex-shrink-0">
+          <button onClick={onMoveUp} disabled={isFirst} className="p-1 rounded transition-colors disabled:opacity-20"
+            style={{ color: 'var(--bam-text-faint)' }}>
+            <ChevUpIcon className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onMoveDown} disabled={isLast} className="p-1 rounded transition-colors disabled:opacity-20"
+            style={{ color: 'var(--bam-text-faint)' }}>
+            <ChevDownIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <h3 className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{svc.name}</h3>
+            {!svc.is_active && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Archived</span>
+            )}
+            {svc.is_active && !svc.online_booking_enabled && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">Staff only</span>
+            )}
+            {svc.is_active && svc.online_booking_enabled && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">Online ✓</span>
+            )}
+          </div>
+          {svc.description && <p className="text-xs mb-2 line-clamp-2" style={{ color: 'var(--bam-text-muted)' }}>{svc.description}</p>}
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="font-bold text-base text-primary-600 dark:text-primary-400">{SYM}{parseFloat(svc.price || 0).toFixed(2)}</span>
+            <span className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{svc.duration_minutes} min</span>
+            {svc.buffer_time > 0 && <span className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>+{svc.buffer_time}m buffer</span>}
+            {svc.deposit_required && svc.deposit_amount > 0 && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
+                🔒 {SYM}{parseFloat(svc.deposit_amount).toFixed(0)} deposit
+              </span>
+            )}
+            {parseInt(svc.max_group_size) > 1 && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400">
+                Up to {svc.max_group_size} people
+              </span>
+            )}
+          </div>
+
+          {/* Resources */}
+          {svc.resources?.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {svc.resources.map(r => (
+                <span key={r.id} className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}`, color: 'var(--bam-text-faint)' }}>
+                  📦 {r.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Add-ons */}
+          {svc.addons?.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {svc.addons.map((a, i) => (
+                <span key={i} className="text-[10px] px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--bam-surface-soft)', color: 'var(--bam-text-faint)' }}>
+                  + {a}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button onClick={() => onToggleOnline(svc)} title={svc.online_booking_enabled ? 'Disable online booking' : 'Enable online booking'}
+            className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--bam-text-faint)' }}>
+            {svc.online_booking_enabled ? <GlobeIcon className="w-4 h-4" /> : <GlobeOffIcon className="w-4 h-4" />}
+          </button>
+          <button onClick={() => onDuplicate(svc)} title="Duplicate" className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--bam-text-faint)' }}>
+            <CopyIcon className="w-4 h-4" />
+          </button>
+          <button onClick={() => onEdit(svc)} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--bam-text-faint)' }}>
+            <EditIcon className="w-4 h-4" />
+          </button>
+          <button onClick={() => onToggleActive(svc)} title={svc.is_active ? 'Archive' : 'Restore'}
+            className="p-1.5 rounded-lg transition-colors" style={{ color: svc.is_active ? 'var(--bam-text-faint)' : '#10b981' }}>
+            {svc.is_active ? <ArchiveIcon className="w-4 h-4" /> : <RestoreIcon className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main page ───────────────────────────────────────────────────────────── */
+
+export default function Services() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+
+  const [services, setServices]   = useState([]);
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [modal, setModal]         = useState(null); // null | 'create' | service
+  const [showArchived, setShowArchived] = useState(false);
+
+  const load = useCallback(() => {
+    Promise.all([
+      servicesAPI.list(),
+      resourcesAPI.list().catch(() => []),
+    ]).then(([svcs, res]) => {
+      setServices(svcs);
+      setResources(res);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const active   = services.filter(s => s.is_active);
+  const archived = services.filter(s => !s.is_active);
+  const displayed = showArchived ? services : active;
+  const groups = useMemo(() => groupByCategory(displayed), [displayed]);
+
+  const openEdit   = (svc) => setModal({ ...svc, resource_ids: (svc.resources || []).map(r => r.id) });
+  const openCreate = () => setModal('create');
+  const closeModal = () => setModal(null);
+
+  const handleSave = async (formData) => {
+    if (modal === 'create') {
+      const svc = await servicesAPI.create(formData);
+      setServices(p => [...p, svc]);
+      toast.success('Service created ✓');
+    } else {
+      const svc = await servicesAPI.update(modal.id, formData);
+      setServices(p => p.map(s => s.id === svc.id ? svc : s));
+      toast.success('Service updated ✓');
+    }
+    closeModal();
+  };
+
+  const handleDuplicate = async (svc) => {
+    const { id, created_at, updated_at, resources: r, ...rest } = svc;
+    try {
+      const dup = await servicesAPI.create({ ...rest, name: `${svc.name} (copy)`, resource_ids: (r || []).map(x => x.id) });
+      setServices(p => [...p, dup]);
+      toast.success('Duplicated ✓');
+    } catch { toast.error('Duplicate failed'); }
+  };
+
+  const handleToggleActive = async (svc) => {
     try {
       const updated = await servicesAPI.update(svc.id, { is_active: !svc.is_active });
-      setServices(p => p.map(s => s.id === updated.id ? updated : s));
-    } catch (err) {
-      toast.error(err.message);
-    }
+      setServices(p => p.map(s => s.id === svc.id ? updated : s));
+      toast.success(svc.is_active ? 'Archived' : 'Restored');
+    } catch { toast.error('Update failed'); }
   };
 
-  const remove = async (svc) => {
-    setConfirmDelete(svc);
-  };
-
-  const confirmRemove = async () => {
-    if (!confirmDelete) return;
-    const svc = confirmDelete;
-    setConfirmDelete(null);
+  const handleToggleOnline = async (svc) => {
     try {
-      await servicesAPI.delete(svc.id);
-      setServices(p => p.filter(s => s.id !== svc.id));
-      toast.success('Service deleted');
-    } catch (err) {
-      toast.error(err.message);
-    }
+      const updated = await servicesAPI.update(svc.id, { online_booking_enabled: !svc.online_booking_enabled });
+      setServices(p => p.map(s => s.id === svc.id ? updated : s));
+    } catch { toast.error('Update failed'); }
+  };
+
+  const move = async (svc, dir) => {
+    const catGroup = groups.find(([_, svcs]) => svcs.some(s => s.id === svc.id));
+    if (!catGroup) return;
+    const [, catSvcs] = catGroup;
+    const idx = catSvcs.findIndex(s => s.id === svc.id);
+    if ((dir === -1 && idx === 0) || (dir === 1 && idx === catSvcs.length - 1)) return;
+    const newCat = [...catSvcs];
+    [newCat[idx], newCat[idx + dir]] = [newCat[idx + dir], newCat[idx]];
+    const allSorted = groups.flatMap(([, svcs]) => (svcs[0]?.id === catSvcs[0]?.id ? newCat : svcs));
+    setServices(p => {
+      const sorted = allSorted.map((s, i) => ({ ...s, sort_order: i }));
+      return p.map(orig => sorted.find(s => s.id === orig.id) || orig);
+    });
+    await servicesAPI.reorder(allSorted.map(s => s.id)).catch(() => {});
   };
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Services</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Manage what you offer to customers</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--bam-text)' }}>Services</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>
+            {active.length} active{archived.length > 0 ? ` · ${archived.length} archived` : ''}
+          </p>
         </div>
-        <button onClick={openCreate} className="btn-primary">
-          <PlusIcon /> Add Service
-        </button>
+        <div className="flex items-center gap-2">
+          {archived.length > 0 && (
+            <button onClick={() => setShowArchived(!showArchived)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
+              style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}`, color: 'var(--bam-text-muted)' }}>
+              {showArchived ? 'Hide archived' : `Show archived (${archived.length})`}
+            </button>
+          )}
+          <button onClick={openCreate} className="btn-primary flex items-center gap-1.5 text-sm">
+            <PlusIcon className="w-4 h-4" /> Add Service
+          </button>
+        </div>
       </div>
 
+      {/* Resource hint if none created */}
+      {!loading && resources.length === 0 && (
+        <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}` }}>
+          <span className="text-2xl">📦</span>
+          <div>
+            <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>No resources created yet</p>
+            <p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>
+              Add rooms, chairs, or equipment in the <a href="/admin/resources" className="text-primary-600 hover:underline">Resources</a> section to prevent double-booking.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Services by category */}
       {loading ? (
-        <div className="grid sm:grid-cols-2 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="card h-32 animate-pulse bg-gray-100" />)}
+        <div className="grid sm:grid-cols-2 gap-3">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--bam-surface-soft)' }} />)}
         </div>
       ) : services.length === 0 ? (
-        <div className="app-panel p-12 text-center">
-          <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3"><Scissors className="w-6 h-6 text-primary-400" /></div>
-          <p className="font-semibold text-gray-700">No services yet</p>
-          <p className="text-sm text-gray-500 mt-1 mb-5">Add your first service to start accepting bookings</p>
+        <div className="card p-12 text-center">
+          <p className="text-4xl mb-3">✂️</p>
+          <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No services yet</p>
+          <p className="text-sm mt-1 mb-5" style={{ color: 'var(--bam-text-muted)' }}>Add your first service to start accepting bookings</p>
           <button onClick={openCreate} className="btn-primary">Add Service</button>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
-          {services.map(svc => (
-            <div key={svc.id} className={`card p-5 transition-all ${!svc.is_active ? 'opacity-60' : ''}`}>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{svc.name}</h3>
-                    <span className={`badge ${svc.is_active ? 'badge-confirmed' : 'bg-gray-100 text-gray-500'}`}>
-                      {svc.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                    {svc.category && <span className="text-xs px-2 py-0.5 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400">{svc.category}</span>}
-                  </div>
-                  {svc.description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{svc.description}</p>}
-                  <div className="flex items-center gap-3 mt-3 flex-wrap">
-                    <span className="text-primary-700 dark:text-primary-400 font-bold">£{parseFloat(svc.price).toFixed(2)}</span>
-                    <span className="text-gray-400 text-sm">·</span>
-                    <span className="text-gray-600 dark:text-gray-400 text-sm">{svc.duration_minutes} min</span>
-                    {Boolean(svc.deposit_required) && Number(svc.deposit_amount) > 0 && (
-                      <span className="inline-flex items-center gap-1 text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                        <Lock className="w-3 h-3" /> £{parseFloat(svc.deposit_amount).toFixed(0)} deposit
-                      </span>
-                    )}
-                    {Number(svc.max_group_size) > 1 && (
-                      <span className="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
-                        Up to {svc.max_group_size} people
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 ml-3">
-                  <button onClick={() => toggle(svc)} title={svc.is_active ? 'Deactivate' : 'Activate'}
-                    className="p-1.5 text-gray-400 hover:text-primary-600 rounded-lg transition-colors">
-                    {svc.is_active ? <EyeOffIcon /> : <EyeIcon />}
-                  </button>
-                  <button onClick={() => openEdit(svc)} className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg transition-colors"><EditIcon /></button>
-                  <button onClick={() => remove(svc)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors"><TrashIcon /></button>
-                </div>
+        <div className="space-y-6">
+          {groups.map(([category, svcs]) => (
+            <div key={category}>
+              <div className="flex items-center gap-3 mb-3">
+                <h2 className="font-bold text-sm uppercase tracking-widest" style={{ color: 'var(--bam-text-faint)' }}>{category}</h2>
+                <div className="flex-1 h-px" style={{ background: border }} />
+                <span className="text-xs font-semibold" style={{ color: 'var(--bam-text-faint)' }}>{svcs.length}</span>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {svcs.map((svc, i) => (
+                  <ServiceCard
+                    key={svc.id} svc={svc} isDark={isDark} border={border}
+                    onEdit={openEdit}
+                    onDuplicate={handleDuplicate}
+                    onToggleActive={handleToggleActive}
+                    onToggleOnline={handleToggleOnline}
+                    onMoveUp={() => move(svc, -1)}
+                    onMoveDown={() => move(svc, 1)}
+                    isFirst={i === 0}
+                    isLast={i === svcs.length - 1}
+                  />
+                ))}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Delete confirmation */}
-      {confirmDelete && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/40 animate-fade-in">
-          <div className="mobile-safe-sheet w-full max-w-sm p-6 space-y-4 animate-slide-up">
-            <h2 className="font-semibold text-lg dark:text-white">Delete "{confirmDelete.name}"?</h2>
-            <p className="text-sm text-gray-500">This can't be undone. Any future bookings for this service will need to be updated manually.</p>
-            <div className="flex gap-3 pt-1">
-              <button onClick={() => setConfirmDelete(null)} className="btn-secondary flex-1">Cancel</button>
-              <button onClick={confirmRemove} className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors">Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal */}
-      {modal && (
-        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 sm:p-4 bg-black/40 animate-fade-in">
-          <div className="mobile-safe-sheet w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
-              <h2 className="font-semibold text-lg dark:text-white">{modal === 'create' ? 'New Service' : 'Edit Service'}</h2>
-              <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400"><XIcon /></button>
-            </div>
-            <form onSubmit={save} className="p-5 space-y-4">
-              <div>
-                <label className="label">Service Name *</label>
-                <input className="input" placeholder="Classic Haircut" required value={form.name} onChange={set('name')} />
+      {/* Edit / Create sheet */}
+      <AnimatePresence>
+        {modal && (
+          <>
+            <motion.div
+              key="svc-backdrop"
+              className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={closeModal}
+            />
+            <motion.div
+              key="svc-sheet"
+              className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[480px] sm:rounded-2xl flex flex-col overflow-hidden"
+              style={{ background: isDark ? '#0c1528' : '#fff', border: `1px solid ${border}`, maxHeight: '95dvh' }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                <div className="w-10 h-1 rounded-full" style={{ background: 'var(--bam-border-medium)' }} />
               </div>
-              <div>
-                <label className="label">Category</label>
-                <input className="input" placeholder="e.g. Hair, Nails, Beauty" value={form.category || ''} onChange={set('category')} />
-              </div>
-              <div>
-                <label className="label">Description</label>
-                <textarea className="input resize-none" rows={2} value={form.description} onChange={set('description')} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Price (£) *</label>
-                  <input className="input" type="number" min="0" step="0.01" placeholder="0.00" required value={form.price} onChange={set('price')} />
-                </div>
-                <div>
-                  <label className="label">Duration (min) *</label>
-                  <input className="input" type="number" min="5" step="5" required value={form.duration_minutes} onChange={set('duration_minutes')} />
-                </div>
-              </div>
-              {modal !== 'create' && (
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={form.is_active} onChange={set('is_active')} />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Active (visible to customers)</span>
-                </label>
-              )}
-              {/* Group booking */}
-              <div>
-                <label className="label">Max group size</label>
-                <input className="input" type="number" min="1" max="50" step="1" value={form.max_group_size || 1} onChange={set('max_group_size')} />
-                <p className="text-xs text-gray-400 mt-1">Set to 1 for solo bookings only. Higher values let customers choose a participant count.</p>
-              </div>
-              {/* No-show deposit */}
-              <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 space-y-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={form.deposit_required || false} onChange={set('deposit_required')} />
-                  <div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Require deposit (no-show protection)</span>
-                    <p className="text-xs text-gray-400">Shows the deposit amount on your booking page — collected by you at the appointment</p>
-                  </div>
-                </label>
-                {form.deposit_required && (
-                  <div>
-                    <label className="label">Deposit amount (£)</label>
-                    <input className="input" type="number" min="0" step="0.01" placeholder="10.00" value={form.deposit_amount} onChange={set('deposit_amount')} />
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancel</button>
-                <button type="submit" disabled={saving} className="btn-primary flex-1">
-                  {saving ? <Spinner /> : modal === 'create' ? 'Create' : 'Save Changes'}
+              <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: border }}>
+                <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>
+                  {modal === 'create' ? 'New Service' : `Edit: ${modal.name}`}
+                </h2>
+                <button onClick={closeModal} className="p-1.5 rounded-xl" style={{ color: 'var(--bam-text-muted)' }}>
+                  <XIcon className="w-5 h-5" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+              <ServiceForm
+                initial={modal === 'create' ? EMPTY : modal}
+                resources={resources}
+                onSave={handleSave}
+                onClose={closeModal}
+                isDark={isDark}
+                border={border}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function Spinner() { return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />; }
-function PlusIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>; }
-function EditIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>; }
-function TrashIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>; }
-function XIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
-function EyeIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>; }
-function EyeOffIcon() { return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>; }
+/* ── Toggle ──────────────────────────────────────────────────────────────── */
+function Toggle({ checked, onChange }) {
+  return (
+    <button type="button" onClick={() => onChange(!checked)}
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'}`}>
+      <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5.5 left-0' : 'left-0.5'}`} style={{ transform: checked ? 'translateX(20px)' : 'translateX(0)' }} />
+    </button>
+  );
+}
+
+/* ── Icons ───────────────────────────────────────────────────────────────── */
+function Spinner() { return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />; }
+function PlusIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>; }
+function XIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
+function EditIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>; }
+function CopyIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>; }
+function ArchiveIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>; }
+function RestoreIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>; }
+function GlobeIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>; }
+function GlobeOffIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="1" y1="1" x2="23" y2="23"/><path d="M10.5 5.05A10 10 0 1118.95 16.5"/><path d="M12 2a15.3 15.3 0 013.18 10.3M12 2c-.6 0-1.18.1-1.73.26M2 12h4"/></svg>; }
+function ChevUpIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="18 15 12 9 6 15"/></svg>; }
+function ChevDownIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="6 9 12 15 18 9"/></svg>; }

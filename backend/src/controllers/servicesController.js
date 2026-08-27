@@ -21,17 +21,23 @@ exports.listPublic = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { name, description, price, duration_minutes } = req.body;
+    const {
+      name, description, price, duration_minutes,
+      deposit_required, deposit_amount, category, max_group_size,
+      buffer_time, sort_order, online_booking_enabled,
+      cancellation_policy, location, addons, resource_ids,
+    } = req.body;
     const service = await Service.create({
       business_id: req.business.id,
-      name,
-      description,
-      price,
-      duration_minutes,
+      name, description, price, duration_minutes,
+      deposit_required, deposit_amount, category, max_group_size,
+      buffer_time, sort_order, online_booking_enabled,
+      cancellation_policy, location, addons, resource_ids,
     });
     checkAutoVerify(req.business.id).catch(() => {});
     res.status(201).json(service);
   } catch (err) {
+    console.error('[services/create]', err.message);
     res.status(500).json({ error: 'Failed to create service' });
   }
 };
@@ -43,6 +49,7 @@ exports.update = async (req, res) => {
     checkAutoVerify(req.business.id).catch(() => {});
     res.json(service);
   } catch (err) {
+    console.error('[services/update]', err.message);
     res.status(500).json({ error: 'Failed to update service' });
   }
 };
@@ -54,5 +61,16 @@ exports.remove = async (req, res) => {
     res.json({ message: 'Service deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete service' });
+  }
+};
+
+exports.reorder = async (req, res) => {
+  try {
+    const { ordered_ids } = req.body;
+    if (!Array.isArray(ordered_ids)) return res.status(400).json({ error: 'ordered_ids must be an array' });
+    await Service.reorder(req.business.id, ordered_ids);
+    res.json({ message: 'Reordered' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reorder services' });
   }
 };

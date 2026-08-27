@@ -1,5 +1,6 @@
 const { Availability, BlockedSlot } = require('../models/Availability');
 const Booking = require('../models/Booking');
+const db = require('../config/database');
 
 const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
@@ -57,7 +58,7 @@ const getDayNameInTz = (date, tz) => {
   }
 };
 
-const getAvailableSlots = async (business_id, date, service_duration_minutes, timezone = 'UTC') => {
+const getAvailableSlots = async (business_id, date, service_duration_minutes, timezone = 'UTC', service_buffer_minutes = 0, service_id = null) => {
   const availability = await Availability.findByBusinessId(business_id);
   if (!availability) return [];
 
@@ -71,13 +72,16 @@ const getAvailableSlots = async (business_id, date, service_duration_minutes, ti
   const blocked = await BlockedSlot.findByBusinessAndDate(business_id, date);
   if (blocked.some(b => b.is_full_day)) return [];
 
+  // Use service-specific buffer if provided, else fall back to global
+  const effectiveBuffer = service_buffer_minutes > 0 ? service_buffer_minutes : (availability.buffer_minutes || 0);
+
   // Generate raw slots
   const allSlots = generateSlots(
     availability.opening_time,
     availability.closing_time,
     availability.slot_interval_minutes,
     service_duration_minutes,
-    availability.buffer_minutes
+    effectiveBuffer
   );
 
   // Remove time-blocked slots
@@ -104,6 +108,42 @@ const getAvailableSlots = async (business_id, date, service_duration_minutes, ti
       return slotStart < bEnd && slotEnd > bStart;
     });
   });
+
+  // Resource conflict checking — if service requires specific resources,
+  // remove slots where those resources are already occupied
+  if (service_id) {
+    try {
+      const { rows: srRows } = await db.query(
+        'SELECT resource_id FROM service_resources WHERE service_id = $1',
+        [service_id]
+      );
+      if (srRows.length > 0) {
+        const resourceIds = srRows.map(r => r.resource_id);
+        const { rows: conflicting } = await db.query(
+          `SELECT b.start_time, b.end_time
+           FROM bookings b
+           JOIN service_resources sr ON sr.service_id = b.service_id
+           WHERE b.business_id = $1 AND b.booking_date = $2
+             AND b.status != 'cancelled'
+             AND sr.resource_id = ANY($3::uuid[])`,
+          [business_id, date, resourceIds]
+        );
+        if (conflicting.length > 0) {
+          available = available.filter(slot => {
+            const sStart = timeToMinutes(slot.start);
+            const sEnd   = timeToMinutes(slot.end);
+            return !conflicting.some(c => {
+              const cStart = timeToMinutes((c.start_time || '').slice(0, 5));
+              const cEnd   = timeToMinutes((c.end_time   || '').slice(0, 5));
+              return sStart < cEnd && sEnd > cStart;
+            });
+          });
+        }
+      }
+    } catch {
+      // Table may not exist yet — skip resource check gracefully
+    }
+  }
 
   // Filter out past slots if the requested date is today in the business's timezone
   const now = getNowInTz(tz);

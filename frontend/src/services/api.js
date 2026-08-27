@@ -121,6 +121,14 @@ export const servicesAPI = {
   create: (data) => api.post('/services', data),
   update: (id, data) => api.put(`/services/${id}`, data),
   delete: (id) => api.delete(`/services/${id}`),
+  reorder: (ordered_ids) => api.put('/services/reorder', { ordered_ids }),
+};
+
+export const resourcesAPI = {
+  list: () => api.get('/resources'),
+  create: (data) => api.post('/resources', data),
+  update: (id, data) => api.put(`/resources/${id}`, data),
+  remove: (id) => api.delete(`/resources/${id}`),
 };
 
 export const availabilityAPI = {

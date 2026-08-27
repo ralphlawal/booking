@@ -19,6 +19,7 @@ router.post(
   ctrl.create
 );
 
+router.put('/reorder', ctrl.reorder);
 router.put('/:id', ctrl.update);
 router.delete('/:id', ctrl.remove);
 

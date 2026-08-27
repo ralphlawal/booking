@@ -12,7 +12,11 @@ function normalizeStaff(row) {
   return {
     ...row,
     working_days: parseJson(row.working_days, []),
+    service_ids:  parseJson(row.service_ids,  []),
+    breaks:       parseJson(row.breaks,        []),
+    time_off:     parseJson(row.time_off,      []),
     is_active: row.is_active === undefined ? row.is_active : !!row.is_active,
+    permissions: row.permissions || 'staff',
   };
 }
 
@@ -47,15 +51,22 @@ exports.listPublic = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { name, role, bio, avatar_url, phone, email, working_days, opening_time, closing_time, commission_type, commission_value } = req.body;
+    const { name, role, bio, avatar_url, phone, email, working_days, opening_time, closing_time,
+            commission_type, commission_value, permissions, service_ids, breaks, time_off } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Name is required' });
     const id = crypto.randomUUID();
     const { rows } = await db.query(
-      `INSERT INTO staff_members (id, business_id, name, role, bio, avatar_url, phone, email, working_days, opening_time, closing_time, commission_type, commission_value)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      `INSERT INTO staff_members
+         (id, business_id, name, role, bio, avatar_url, phone, email, working_days, opening_time, closing_time,
+          commission_type, commission_value, permissions, service_ids, breaks, time_off)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *`,
       [id, req.business.id, name.trim(), role||null, bio||null, avatar_url||null, phone||null, email||null,
        working_days||[], opening_time||'09:00', closing_time||'18:00',
-       commission_type||'none', parseFloat(commission_value)||0]
+       commission_type||'none', parseFloat(commission_value)||0,
+       permissions||'staff',
+       JSON.stringify(Array.isArray(service_ids) ? service_ids : []),
+       JSON.stringify(Array.isArray(breaks) ? breaks : []),
+       JSON.stringify(Array.isArray(time_off) ? time_off : [])]
     );
     res.status(201).json(normalizeStaff(rows[0]));
   } catch (err) {
@@ -66,18 +77,36 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { name, role, bio, avatar_url, phone, email, working_days, opening_time, closing_time, is_active, commission_type, commission_value } = req.body;
+    const { name, role, bio, avatar_url, phone, email, working_days, opening_time, closing_time,
+            is_active, commission_type, commission_value,
+            permissions, service_ids, breaks, time_off } = req.body;
     const { rows } = await db.query(
       `UPDATE staff_members
-       SET name = COALESCE($1,name), role=$2, bio=$3, avatar_url=$4, phone=$5, email=$6,
-           working_days=COALESCE($7,working_days), opening_time=COALESCE($8,opening_time),
-           closing_time=COALESCE($9,closing_time), is_active=COALESCE($10,is_active),
-           commission_type=COALESCE($13,commission_type), commission_value=COALESCE($14,commission_value)
-       WHERE id=$11 AND business_id=$12 RETURNING *`,
+       SET name            = COALESCE($1, name),
+           role            = $2,
+           bio             = $3,
+           avatar_url      = $4,
+           phone           = $5,
+           email           = $6,
+           working_days    = COALESCE($7,  working_days),
+           opening_time    = COALESCE($8,  opening_time),
+           closing_time    = COALESCE($9,  closing_time),
+           is_active       = COALESCE($10, is_active),
+           commission_type = COALESCE($13, commission_type),
+           commission_value= COALESCE($14, commission_value),
+           permissions     = COALESCE($15, permissions),
+           service_ids     = COALESCE($16, service_ids),
+           breaks          = COALESCE($17, breaks),
+           time_off        = COALESCE($18, time_off)
+       WHERE id = $11 AND business_id = $12 RETURNING *`,
       [name||null, role||null, bio||null, avatar_url||null, phone||null, email||null,
        working_days||null, opening_time||null, closing_time||null, is_active??null,
        req.params.id, req.business.id,
-       commission_type||null, commission_value != null ? parseFloat(commission_value) : null]
+       commission_type||null, commission_value != null ? parseFloat(commission_value) : null,
+       permissions||null,
+       service_ids != null ? JSON.stringify(Array.isArray(service_ids) ? service_ids : []) : null,
+       breaks    != null ? JSON.stringify(Array.isArray(breaks)    ? breaks    : []) : null,
+       time_off  != null ? JSON.stringify(Array.isArray(time_off)  ? time_off  : []) : null]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Staff member not found' });
     res.json(normalizeStaff(rows[0]));

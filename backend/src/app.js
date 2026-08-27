@@ -116,11 +116,18 @@ app.use('/api/chat', require('./routes/chat'));
 const { authenticate, attachBusiness } = require('./middleware/auth');
 const { consumerAuth } = require('./middleware/consumerAuth');
 const staffCtrl = require('./controllers/staffController');
+const resourcesCtrl = require('./controllers/resourcesController');
 const photosCtrl = require('./controllers/photosController');
 const postsCtrl = require('./controllers/postsController');
 const waitlistCtrl = require('./controllers/waitlistController');
 const promoCtrl = require('./controllers/promoController');
 const intakeCtrl = require('./controllers/intakeController');
+
+// Resources
+app.get('/api/resources',     authenticate, attachBusiness, resourcesCtrl.list);
+app.post('/api/resources',    authenticate, attachBusiness, resourcesCtrl.create);
+app.put('/api/resources/:id', authenticate, attachBusiness, resourcesCtrl.update);
+app.delete('/api/resources/:id', authenticate, attachBusiness, resourcesCtrl.remove);
 
 // Staff
 app.get('/api/staff', authenticate, attachBusiness, staffCtrl.list);
@@ -385,7 +392,13 @@ function runSqliteMigrations() {
     'bank_currency TEXT', 'bank_name TEXT', 'bank_iban TEXT', 'bank_bic TEXT',
     'bank_routing_number TEXT', 'bank_updated_at TEXT',
   ]) { addColumn('businesses', col); }
-  for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT']) addColumn('services', col);
+  for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT',
+    'max_group_size INTEGER DEFAULT 1', 'buffer_time INTEGER DEFAULT 0', 'sort_order INTEGER DEFAULT 0',
+    'online_booking_enabled INTEGER DEFAULT 1', 'cancellation_policy TEXT', 'location TEXT', 'addons TEXT DEFAULT "[]"',
+  ]) addColumn('services', col);
+  for (const col of ['permissions TEXT DEFAULT "staff"', 'service_ids TEXT DEFAULT "[]"',
+    'breaks TEXT DEFAULT "[]"', 'time_off TEXT DEFAULT "[]"',
+  ]) addColumn('staff_members', col);
   for (const col of ['consumer_id TEXT', 'mandate_id TEXT', 'stripe_payment_intent_id TEXT', "payment_status TEXT DEFAULT 'unpaid'", 'staff_member_id TEXT', 'promo_code TEXT', 'discount_amount REAL DEFAULT 0', 'intake_response_id TEXT', 'stripe_transfer_id TEXT', "stripe_transfer_status TEXT DEFAULT 'pending'", "currency TEXT DEFAULT 'gbp'", 'idempotency_key TEXT', 'attended_email_sent_at TEXT']) addColumn('bookings', col);
   try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency_key ON bookings(idempotency_key) WHERE idempotency_key IS NOT NULL AND idempotency_key <> ''`); } catch {}
   try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_active_slot ON bookings(business_id, booking_date, start_time) WHERE status <> 'cancelled'`); } catch {}

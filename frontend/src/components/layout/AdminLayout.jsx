@@ -21,9 +21,11 @@ const NAV_GROUPS = [
   {
     label: 'Business',
     items: [
-      { to: '/admin/services',  icon: TagIcon,    label: 'Services' },
-      { to: '/admin/customers', icon: UsersIcon,  label: 'Customers' },
-      { to: '/admin/posts',     icon: PostsIcon,  label: 'Posts' },
+      { to: '/admin/services',  icon: TagIcon,      label: 'Services' },
+      { to: '/admin/staff',     icon: StaffIcon,    label: 'Staff' },
+      { to: '/admin/resources', icon: ResourceIcon, label: 'Resources' },
+      { to: '/admin/customers', icon: UsersIcon,    label: 'Customers' },
+      { to: '/admin/posts',     icon: PostsIcon,    label: 'Posts' },
     ],
   },
   {
@@ -46,10 +48,12 @@ const BOTTOM_NAV = [
 
 /* ── "More" sheet items ──────────────────────────────────────────────────── */
 const MORE_ITEMS = [
-  { to: '/admin/services',     icon: TagIcon,     label: 'Services' },
-  { to: '/admin/customers',    icon: UsersIcon,   label: 'Customers' },
-  { to: '/admin/posts',        icon: PostsIcon,   label: 'Posts' },
-  { to: '/admin/staff-report', icon: ChartIcon,   label: 'Reports' },
+  { to: '/admin/services',     icon: TagIcon,      label: 'Services' },
+  { to: '/admin/staff',        icon: StaffIcon,    label: 'Staff' },
+  { to: '/admin/resources',    icon: ResourceIcon, label: 'Resources' },
+  { to: '/admin/customers',    icon: UsersIcon,    label: 'Customers' },
+  { to: '/admin/posts',        icon: PostsIcon,    label: 'Posts' },
+  { to: '/admin/staff-report', icon: ChartIcon,    label: 'Reports' },
   { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
 ];
 
@@ -550,3 +554,5 @@ function MessageIcon({ className }) { return <svg className={className} fill="no
 function ChartIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>; }
 function MoreIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>; }
 function ExternalLinkIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>; }
+function StaffIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>; }
+function ResourceIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>; }
