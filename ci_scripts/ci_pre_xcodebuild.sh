@@ -5,6 +5,6 @@ set -e
 # means Capacitor code is linked into the app binary at compile time.
 # No Capacitor.framework ships in the bundle, so the dyld "Symbol not found:
 # ApplicationDelegateProxy.shared" crash cannot occur.
-# This script is intentionally minimal — no cache-clearing hacks needed.
-
-echo ">>> ci_pre_xcodebuild: nothing to do (static linkage active)"
+# The post_install hook sets DIAGNOSE_MISSING_TARGET_DEPENDENCIES=NO to
+# suppress Xcode 26 explicit-dependency warnings that otherwise fail the build.
+echo ">>> ci_pre_xcodebuild: static linkage active (dyld crash fix)"
