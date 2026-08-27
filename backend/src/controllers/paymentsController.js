@@ -10,7 +10,7 @@ const getStripe = () => {
   return require('stripe')(process.env.STRIPE_SECRET_KEY);
 };
 
-async function calculateServerAmount({ service_id, business_slug, promo_code, participant_count = 1 }) {
+async function calculateServerAmount({ service_id, business_slug, promo_code, participant_count = 1, payment_type = 'full', tip = 0 }) {
   if (!service_id || !business_slug) {
     const err = new Error('service_id and business_slug are required');
     err.status = 400;
@@ -18,7 +18,8 @@ async function calculateServerAmount({ service_id, business_slug, promo_code, pa
   }
 
   const { rows } = await db.query(
-    `SELECT s.id, s.name AS service_name, s.price, b.id AS business_id, b.name AS business_name
+    `SELECT s.id, s.name AS service_name, s.price, s.deposit_required, s.deposit_amount,
+            b.id AS business_id, b.name AS business_name
      FROM services s
      JOIN businesses b ON b.id = s.business_id
      WHERE s.id = $1 AND b.slug = $2 AND b.is_active = TRUE AND s.is_active = TRUE`,
@@ -63,12 +64,32 @@ async function calculateServerAmount({ service_id, business_slug, promo_code, pa
     promoCode = promo.code;
   }
 
-  const finalAmount = Math.max(0, Math.round((price - discount) * 100));
+  if (!['full', 'deposit', 'balance'].includes(payment_type)) {
+    const err = new Error('payment_type must be full, deposit, or balance');
+    err.status = 400;
+    throw err;
+  }
+  // A deposit uses the business-configured server-side amount. A client can never
+  // choose the amount, and promotions only affect a full payment at checkout.
+  const isDeposit = payment_type === 'deposit';
+  const dueBeforeTip = isDeposit
+    ? Math.min(price, Math.max(0, parseFloat(item.deposit_amount || 0)) * qty)
+    : Math.max(0, price - discount);
+  if (isDeposit && dueBeforeTip <= 0) {
+    const err = new Error('This service does not have an online deposit configured');
+    err.status = 400;
+    throw err;
+  }
+  const safeTip = Math.max(0, Math.round((parseFloat(tip) || 0) * 100) / 100);
+  const finalAmount = Math.max(0, Math.round((dueBeforeTip + safeTip) * 100));
   return {
     ...item,
     price,
-    discount,
-    promoCode,
+    discount: isDeposit ? 0 : discount,
+    promoCode: isDeposit ? null : promoCode,
+    payment_type,
+    tip_amount: safeTip,
+    service_amount: dueBeforeTip,
     amount_pence: finalAmount,
   };
 }
@@ -77,13 +98,13 @@ async function calculateServerAmount({ service_id, business_slug, promo_code, pa
 // Called before booking is submitted — creates a PaymentIntent for the server-verified service price.
 exports.createIntent = async (req, res) => {
   try {
-    const { currency = 'gbp', idempotency_key, service_id, business_slug, promo_code, participant_count = 1 } = req.body;
+    const { currency = 'gbp', idempotency_key, service_id, business_slug, promo_code, participant_count = 1, payment_type = 'full', tip = 0 } = req.body;
     const normalizedCurrency = String(currency || 'gbp').toLowerCase();
     if (!['gbp', 'eur', 'usd'].includes(normalizedCurrency)) {
       return res.status(400).json({ error: 'Unsupported payment currency' });
     }
 
-    const amount = await calculateServerAmount({ service_id, business_slug, promo_code, participant_count });
+    const amount = await calculateServerAmount({ service_id, business_slug, promo_code, participant_count, payment_type, tip });
     if (amount.amount_pence < 50) {
       return res.status(400).json({ error: 'Online payment amount must be at least 50p' });
     }
@@ -123,6 +144,8 @@ exports.createIntent = async (req, res) => {
         platform_fee_pence: String(applicationFee),
         platform_fee_percent: String(feePercent),
         server_amount_pence: String(amount.amount_pence),
+        payment_type: amount.payment_type,
+        tip_amount: String(amount.tip_amount),
         ...(amount.promoCode ? { promo_code: amount.promoCode, discount_amount: amount.discount.toFixed(2) } : {}),
         ...(idempotency_key ? { booking_idempotency_key: idempotency_key } : {}),
       },
@@ -130,11 +153,27 @@ exports.createIntent = async (req, res) => {
     const requestOptions = idempotency_key ? { idempotencyKey: `booking-payment-${idempotency_key}` } : undefined;
     const intent = await stripe.paymentIntents.create(createParams, requestOptions);
 
+    // Ledger only contains the provider reference and amounts; Stripe retains all
+    // sensitive payment-method data. It is safe for reporting and reconciliation.
+    db.query(
+      `INSERT INTO payment_transactions
+         (id,business_id,provider,provider_reference,payment_method,kind,status,amount,currency,metadata)
+       VALUES ($1,$2,'stripe',$3,'card',$4,'pending',$5,$6,$7)
+       ON CONFLICT (provider,provider_reference) DO NOTHING`,
+      [require('crypto').randomUUID(), amount.business_id, intent.id,
+       amount.payment_type === 'deposit' ? 'deposit' : amount.payment_type === 'balance' ? 'balance' : 'payment',
+       amount.amount_pence / 100, normalizedCurrency,
+       JSON.stringify({ service_id, tip_amount: amount.tip_amount, platform_fee_pence: applicationFee })]
+    ).catch(() => {}); // Allows old deployments to serve existing payment flows until migrated.
+
     res.json({
       client_secret: intent.client_secret,
       payment_intent_id: intent.id,
       amount_pence: amount.amount_pence,
       discount_amount: amount.discount,
+      payment_type: amount.payment_type,
+      service_amount: amount.service_amount,
+      tip_amount: amount.tip_amount,
       platform_fee_pence: applicationFee,
       platform_fee_percent: feePercent,
     });
@@ -193,6 +232,11 @@ exports.webhook = async (req, res) => {
          WHERE stripe_payment_intent_id = $2`,
         [pi.id, pi.id]
       );
+      await db.query(
+        `UPDATE payment_transactions SET status='succeeded'
+         WHERE provider='stripe' AND provider_reference=$1 AND status='pending'`,
+        [pi.id]
+      ).catch(() => {});
       const { rows } = await db.query(
         `SELECT b.reference_id, b.consumer_id, b.booking_date, s.name AS service_name, bus.name AS business_name
          FROM bookings b
@@ -224,6 +268,11 @@ exports.webhook = async (req, res) => {
          WHERE stripe_payment_intent_id = $1`,
         [pi.id]
       );
+      await db.query(
+        `UPDATE payment_transactions SET status='failed'
+         WHERE provider='stripe' AND provider_reference=$1 AND status='pending'`,
+        [pi.id]
+      ).catch(() => {});
     } catch (err) {
       console.error('[stripe-webhook] db update error:', err.message);
     }
@@ -258,6 +307,11 @@ exports.webhook = async (req, res) => {
            WHERE stripe_payment_intent_id = $2 AND payment_status NOT IN ('refunded', 'partial_refund')`,
           [isFullRefund ? 'refunded' : 'partial_refund', piId]
         );
+        await db.query(
+          `UPDATE payment_transactions SET status=$1
+           WHERE provider='stripe' AND provider_reference=$2 AND status='succeeded'`,
+          [isFullRefund ? 'refunded' : 'partially_refunded', piId]
+        ).catch(() => {});
       } catch (err) {
         console.error('[stripe-webhook] refund sync error:', err.message);
       }

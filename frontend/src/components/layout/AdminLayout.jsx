@@ -33,6 +33,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/admin/growth',       icon: GrowthIcon,     label: 'Growth' },
       { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
+      { to: '/admin/operations',   icon: ChartIcon,      label: 'Operations' },
       { to: '/admin/messages',     icon: MessageIcon,    label: 'Messages' },
       { to: '/admin/staff-report', icon: ChartIcon,   label: 'Reports' },
       { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
@@ -57,6 +58,7 @@ const MORE_ITEMS = [
   { to: '/admin/posts',        icon: PostsIcon,    label: 'Posts' },
   { to: '/admin/growth',       icon: GrowthIcon,     label: 'Growth' },
   { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
+  { to: '/admin/operations',   icon: ChartIcon,      label: 'Operations' },
   { to: '/admin/staff-report', icon: ChartIcon,      label: 'Reports' },
   { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
 ];

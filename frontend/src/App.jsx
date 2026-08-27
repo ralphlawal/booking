@@ -64,6 +64,7 @@ import StaffPage from './pages/admin/Staff';
 import ResourcesPage from './pages/admin/Resources';
 import GrowthPage from './pages/admin/Growth';
 import RetentionHub from './pages/admin/RetentionHub';
+import Operations from './pages/admin/Operations';
 import ReviewPage from './pages/public/ReviewPage';
 import FeedPage from './pages/consumer/FeedPage';
 
@@ -176,6 +177,7 @@ export default function App() {
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="growth" element={<GrowthPage />} />
               <Route path="retention" element={<RetentionHub />} />
+              <Route path="operations" element={<Operations />} />
             </Route>
 
             {/* Email verification */}

@@ -125,6 +125,7 @@ const postsCtrl = require('./controllers/postsController');
 const waitlistCtrl = require('./controllers/waitlistController');
 const promoCtrl = require('./controllers/promoController');
 const intakeCtrl = require('./controllers/intakeController');
+const operationsCtrl = require('./controllers/operationsController');
 
 // Resources
 app.get('/api/resources',     authenticate, attachBusiness, resourcesCtrl.list);
@@ -176,6 +177,20 @@ app.post('/api/promo', authenticate, attachBusiness, promoCtrl.create);
 app.patch('/api/promo/:id', authenticate, attachBusiness, promoCtrl.update);
 app.delete('/api/promo/:id', authenticate, attachBusiness, promoCtrl.remove);
 app.post('/api/promo/validate', promoCtrl.validate);
+
+// Financial operations: catalog, inventory, server-calculated POS checkout, and reporting.
+// Card-present processing is deliberately not emulated; only configured Stripe online flows
+// or explicitly recorded manual payment methods are accepted.
+app.get('/api/operations/products', authenticate, attachBusiness, operationsCtrl.listProducts);
+app.post('/api/operations/products', authenticate, attachBusiness, operationsCtrl.createProduct);
+app.patch('/api/operations/products/:id', authenticate, attachBusiness, operationsCtrl.updateProduct);
+app.post('/api/operations/products/:id/stock', authenticate, attachBusiness, operationsCtrl.adjustStock);
+app.get('/api/operations/inventory/movements', authenticate, attachBusiness, operationsCtrl.inventoryMovements);
+app.post('/api/operations/checkout/quote', authenticate, attachBusiness, operationsCtrl.quote);
+app.post('/api/operations/pos/sales', authenticate, attachBusiness, operationsCtrl.createPosSale);
+app.get('/api/operations/report', authenticate, attachBusiness, operationsCtrl.report);
+app.get('/api/operations/tax', authenticate, attachBusiness, operationsCtrl.getTaxSettings);
+app.put('/api/operations/tax', authenticate, attachBusiness, operationsCtrl.saveTaxSettings);
 
 // Intake forms
 app.get('/api/intake/public/:slug', intakeCtrl.getPublic);

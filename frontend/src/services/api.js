@@ -494,4 +494,18 @@ export const reviewTokenAPI = {
   submit: (token, data) => api.post(`/reviews/token/${token}`, data),
 };
 
+/* ── Financial operations / POS ─────────────────────────────────────────── */
+export const operationsAPI = {
+  products:          () => api.get('/operations/products'),
+  createProduct:     (data) => api.post('/operations/products', data),
+  updateProduct:     (id, data) => api.patch(`/operations/products/${id}`, data),
+  adjustStock:       (id, data) => api.post(`/operations/products/${id}/stock`, data),
+  inventoryMovements:(productId) => api.get('/operations/inventory/movements', { params: productId ? { product_id: productId } : {} }),
+  quote:             (data) => api.post('/operations/checkout/quote', data),
+  createPosSale:     (data) => api.post('/operations/pos/sales', data),
+  report:            (params) => api.get('/operations/report', { params }),
+  tax:               () => api.get('/operations/tax'),
+  saveTax:           (data) => api.put('/operations/tax', data),
+};
+
 export default api;

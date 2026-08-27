@@ -76,6 +76,53 @@ async function runMigrations() {
       booking_clicks INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`);
+    // Keep local SQLite development aligned with the PostgreSQL operations layer
+    // from migration 038. Processor references are identifiers only, never card data.
+    db.exec(`CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, sku TEXT,
+      description TEXT, price REAL NOT NULL DEFAULT 0, cost REAL NOT NULL DEFAULT 0,
+      stock_quantity INTEGER NOT NULL DEFAULT 0, low_stock_threshold INTEGER NOT NULL DEFAULT 0,
+      supplier TEXT, category TEXT, is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(business_id, sku)
+    );
+    CREATE TABLE IF NOT EXISTS inventory_movements (
+      id TEXT PRIMARY KEY, business_id TEXT NOT NULL, product_id TEXT NOT NULL,
+      type TEXT NOT NULL, quantity INTEGER NOT NULL, unit_cost REAL, note TEXT,
+      order_id TEXT, created_by TEXT, created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS orders (
+      id TEXT PRIMARY KEY, business_id TEXT NOT NULL, customer_id TEXT, booking_id TEXT,
+      order_number TEXT NOT NULL, channel TEXT NOT NULL DEFAULT 'pos', status TEXT NOT NULL DEFAULT 'open',
+      currency TEXT NOT NULL DEFAULT 'gbp', subtotal REAL NOT NULL DEFAULT 0, discount_total REAL NOT NULL DEFAULT 0,
+      tax_total REAL NOT NULL DEFAULT 0, tip_total REAL NOT NULL DEFAULT 0, gift_card_total REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0, paid_total REAL NOT NULL DEFAULT 0, note TEXT,
+      created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(business_id, order_number)
+    );
+    CREATE TABLE IF NOT EXISTS order_items (
+      id TEXT PRIMARY KEY, order_id TEXT NOT NULL, item_type TEXT NOT NULL, reference_id TEXT,
+      name TEXT NOT NULL, quantity INTEGER NOT NULL DEFAULT 1, unit_price REAL NOT NULL DEFAULT 0,
+      discount_amount REAL NOT NULL DEFAULT 0, tax_amount REAL NOT NULL DEFAULT 0, line_total REAL NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS payment_transactions (
+      id TEXT PRIMARY KEY, business_id TEXT NOT NULL, order_id TEXT, booking_id TEXT,
+      provider TEXT NOT NULL DEFAULT 'manual', provider_reference TEXT, payment_method TEXT NOT NULL,
+      kind TEXT NOT NULL DEFAULT 'payment', status TEXT NOT NULL DEFAULT 'pending', amount REAL NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'gbp', metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(provider, provider_reference)
+    );
+    CREATE TABLE IF NOT EXISTS refunds (
+      id TEXT PRIMARY KEY, business_id TEXT NOT NULL, payment_transaction_id TEXT, booking_id TEXT,
+      provider TEXT NOT NULL, provider_reference TEXT, amount REAL NOT NULL, currency TEXT NOT NULL DEFAULT 'gbp',
+      reason TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS business_tax_settings (
+      business_id TEXT PRIMARY KEY, tax_name TEXT NOT NULL DEFAULT 'Tax', rate REAL NOT NULL DEFAULT 0,
+      inclusive INTEGER NOT NULL DEFAULT 0, updated_at TEXT DEFAULT (datetime('now'))
+    );`);
+    for (const col of ['payment_type TEXT DEFAULT \'full\'', 'payment_amount REAL', 'tip_amount REAL NOT NULL DEFAULT 0']) addColumn('bookings', col);
     console.log('SQLite migrations completed.');
   }
 }

@@ -36,7 +36,7 @@ exports.create = async (req, res) => {
   if (req.body.website) return res.status(201).json({ reference_id: 'BOT-BLOCKED', honeypot: true });
   try {
     const { service_id, booking_date, start_time, customer_name, customer_phone, customer_email, notes, stripe_payment_intent_id, idempotency_key,
-            consumer_id, staff_member_id, promo_code, participant_count } = req.body;
+            consumer_id, staff_member_id, promo_code, participant_count, payment_type = 'full', tip = 0 } = req.body;
     const participants = Math.max(1, parseInt(participant_count) || 1);
 
     const service = await Service.findById(service_id);
@@ -53,6 +53,8 @@ exports.create = async (req, res) => {
         business_slug: req.business.slug,
         promo_code,
         participant_count: participants,
+        payment_type,
+        tip,
       });
       verifiedPromoCode = amount.promoCode;
       verifiedDiscount = amount.discount;
@@ -112,15 +114,19 @@ exports.create = async (req, res) => {
     });
 
     // Save optional new-feature fields (requires migration 014+ columns to exist)
-    if (staff_member_id || verifiedPromoCode || verifiedDiscount || participants > 1) {
+    if (staff_member_id || verifiedPromoCode || verifiedDiscount || participants > 1 || stripe_payment_intent_id) {
       db.query(
         `UPDATE bookings SET
            staff_member_id = COALESCE($1, staff_member_id),
            promo_code = COALESCE($2, promo_code),
            discount_amount = COALESCE($3, discount_amount),
-           participant_count = $5
+           participant_count = $5,
+           payment_type = $6,
+           payment_amount = $7,
+           tip_amount = $8
          WHERE id = $4`,
-        [staff_member_id || null, verifiedPromoCode || null, verifiedDiscount || null, booking.id, participants]
+        [staff_member_id || null, verifiedPromoCode || null, verifiedDiscount || null, booking.id, participants,
+         payment_type, stripe_payment_intent_id ? expectedAmountPence / 100 : null, stripe_payment_intent_id ? Math.max(0, Number(tip) || 0) : 0]
       ).catch(() => {});
     }
     // Increment promo uses_count
@@ -430,8 +436,9 @@ exports.cancelByCustomer = async (req, res) => {
 
     // Refund policy: >24h = full, ≤24h = 50%
     const refundPercent = hoursUntil > 24 ? 100 : 50;
-    // findByReference returns service_price (joined from services table), not booking.price
-    const amountPence   = Math.round(parseFloat(booking.service_price || booking.price || 0) * 100);
+    // Refund the amount actually collected (deposit or full payment), never a
+    // client-supplied service price. Older bookings fall back to service price.
+    const amountPence   = Math.round(parseFloat(booking.payment_amount || booking.service_price || booking.price || 0) * 100);
     const refundPence   = Math.round(amountPence * refundPercent / 100);
     let   refundIssued  = false;
 
@@ -445,11 +452,28 @@ exports.cancelByCustomer = async (req, res) => {
         const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
         const refundParams = { payment_intent: booking.stripe_payment_intent_id };
         if (refundPercent < 100) refundParams.amount = refundPence;
-        await stripe.refunds.create(refundParams);
+        const stripeRefund = await stripe.refunds.create(refundParams);
         await db.query(
           'UPDATE bookings SET payment_status = $1 WHERE id = $2',
           [refundPercent === 100 ? 'refunded' : 'partial_refund', booking.id]
         );
+        // Ledger references are safe provider IDs only—no card data is copied.
+        await db.query(
+          `INSERT INTO refunds (id,business_id,booking_id,provider,provider_reference,amount,currency,reason,status)
+           VALUES ($1,$2,$3,'stripe',$4,$5,$6,'Customer cancellation','succeeded')`,
+          [crypto.randomUUID(), booking.business_id, booking.id, stripeRefund.id, refundPence / 100, booking.currency || 'gbp']
+        ).catch(() => {});
+        await db.query(
+          `UPDATE payment_transactions SET status=$1 WHERE provider='stripe' AND provider_reference=$2`,
+          [refundPercent === 100 ? 'refunded' : 'partially_refunded', booking.stripe_payment_intent_id]
+        ).catch(() => {});
+        const retained = amountPence - refundPence;
+        if (retained > 0) await db.query(
+          `INSERT INTO payment_transactions (id,business_id,booking_id,provider,provider_reference,payment_method,kind,status,amount,currency,metadata)
+           VALUES ($1,$2,$3,'manual',$4,'other','cancellation_fee','succeeded',$5,$6,$7)
+           ON CONFLICT (provider,provider_reference) DO NOTHING`,
+          [crypto.randomUUID(), booking.business_id, booking.id, `cancellation-fee-${booking.id}`, retained / 100, booking.currency || 'gbp', JSON.stringify({ refund_percent: refundPercent })]
+        ).catch(() => {});
         refundIssued = true;
       } catch (stripeErr) {
         console.error('[cancel/refund]', stripeErr.message);
