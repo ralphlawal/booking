@@ -76,6 +76,7 @@ api.interceptors.response.use(
 export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (email, password, full_name) => api.post('/auth/register', { email, password, full_name }),
+  refresh: (refreshToken) => api.post('/auth/refresh', { refreshToken }),
   me: () => api.get('/auth/me'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
@@ -208,6 +209,7 @@ consumerAxios.interceptors.response.use(
 export const consumerAPI = {
   register: (data) => consumerAxios.post('/consumer/register', data),
   login: (email, password) => consumerAxios.post('/consumer/login', { email, password }),
+  refresh: (refreshToken) => consumerAxios.post('/consumer/refresh', { refreshToken }),
   googleAuth: (idToken) => consumerAxios.post('/consumer/google-auth', { idToken }),
   forgotPassword: (email) => consumerAxios.post('/consumer/forgot-password', { email }),
   resetPassword: (token, password) => consumerAxios.post('/consumer/reset-password', { token, password }),

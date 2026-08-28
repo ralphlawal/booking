@@ -6,6 +6,7 @@ import { persistCriticalValues } from '../services/persistentStore';
 const CustomerAuthContext = createContext(null);
 
 const TOKEN_KEY = 'customerToken';
+const REFRESH_TOKEN_KEY = 'customerRefreshToken';
 const CACHE_KEY = 'customerProfile';
 
 function saveCache(c) {
@@ -15,15 +16,24 @@ function loadCache() {
   try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch { return null; }
 }
 function clearCache() {
-  try { localStorage.removeItem(CACHE_KEY); } catch {}
+  try {
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  } catch {}
 }
 
-async function saveConsumerSession(consumer, token) {
+async function saveConsumerSession(consumer, token, refreshToken) {
   const cache = JSON.stringify(consumer);
+  const durableRefreshToken = refreshToken || localStorage.getItem(REFRESH_TOKEN_KEY);
   localStorage.setItem(TOKEN_KEY, token);
+  if (durableRefreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, durableRefreshToken);
   localStorage.setItem(CACHE_KEY, cache);
   // Wait for the native UserDefaults write before routing away from sign-in.
-  await persistCriticalValues({ [TOKEN_KEY]: token, [CACHE_KEY]: cache });
+  await persistCriticalValues({
+    [TOKEN_KEY]: token,
+    [REFRESH_TOKEN_KEY]: durableRefreshToken,
+    [CACHE_KEY]: cache,
+  });
 }
 
 export function CustomerAuthProvider({ children }) {
@@ -50,11 +60,26 @@ export function CustomerAuthProvider({ children }) {
           saveCache(data);
         }
       })
-      .catch((err) => {
+      .catch(async (err) => {
         // Do not let an expired token from startup clear a token written by a
         // successful sign-in that completed while this request was in flight.
         if (err.status === 401 && localStorage.getItem(TOKEN_KEY) === token) {
-          // Token is invalid or expired — clear everything
+          const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+          if (refreshToken) {
+            try {
+              const data = await consumerAPI.refresh(refreshToken);
+              await saveConsumerSession(data.consumer, data.token, data.refreshToken);
+              setConsumer(data.consumer);
+              return;
+            } catch (refreshError) {
+              if (refreshError.status !== 401) {
+                const cached = loadCache();
+                if (cached) setConsumer(cached);
+                return;
+              }
+            }
+          }
+          // Both credentials are invalid — clear everything.
           localStorage.removeItem(TOKEN_KEY);
           clearCache();
         } else {
@@ -70,8 +95,8 @@ export function CustomerAuthProvider({ children }) {
   const register = async (data) => {
     localStorage.removeItem(TOKEN_KEY);
     clearCache();
-    const { consumer: c, token } = await consumerAPI.register(data);
-    await saveConsumerSession(c, token);
+    const { consumer: c, token, refreshToken } = await consumerAPI.register(data);
+    await saveConsumerSession(c, token, refreshToken);
     setConsumer(c);
     registerPushNotifications(
       (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
@@ -82,8 +107,8 @@ export function CustomerAuthProvider({ children }) {
   const login = async (email, password) => {
     localStorage.removeItem(TOKEN_KEY);
     clearCache();
-    const { consumer: c, token } = await consumerAPI.login(email, password);
-    await saveConsumerSession(c, token);
+    const { consumer: c, token, refreshToken } = await consumerAPI.login(email, password);
+    await saveConsumerSession(c, token, refreshToken);
     setConsumer(c);
     registerPushNotifications(
       (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),

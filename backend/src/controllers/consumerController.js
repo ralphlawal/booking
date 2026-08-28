@@ -6,6 +6,7 @@ const Notification = require('../models/Notification');
 const { sendEmail, sendVerificationEmail } = require('../services/emailService');
 const db = require('../config/database');
 const { saveUploadedMedia } = require('../utils/mediaStorage');
+const { issueRefreshToken, rotateRefreshToken, revokeAllUserSessions } = require('../services/sessionService');
 
 function generateReferralCode(name) {
   const prefix = (name || 'BOOK').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X');
@@ -66,6 +67,7 @@ exports.register = async (req, res) => {
     const { referral_code: usedCode } = req.body;
     const consumer = await ConsumerAccount.create({ email, password, full_name, phone });
     const token = signToken(consumer);
+    const refreshToken = await issueRefreshToken('consumer', consumer.id);
 
     // Assign a unique referral code to every new consumer
     const myCode = generateReferralCode(full_name);
@@ -110,7 +112,7 @@ exports.register = async (req, res) => {
       </div>`,
     }).catch(() => {});
 
-    res.status(201).json({ consumer, token });
+    res.status(201).json({ consumer, token, refreshToken });
   } catch (err) { 
     console.error('[consumer/register]', err.message);
     res.status(500).json({ error: 'Registration failed' });
@@ -134,11 +136,12 @@ exports.login = async (req, res) => {
 
     const { password_hash, ...safe } = consumer;
     const token = signToken(safe);
+    const refreshToken = await issueRefreshToken('consumer', safe.id);
 
     // Link any past guest bookings with matching email (fire and forget)
     ConsumerAccount.linkByEmail(safe.id, safe.email).catch(() => {});
 
-    res.json({ consumer: safe, token });
+    res.json({ consumer: safe, token, refreshToken });
   } catch (err) {
     console.error('[consumer/login]', err.message);
     res.status(500).json({ error: 'Login failed' });
@@ -146,6 +149,19 @@ exports.login = async (req, res) => {
 };
 
 exports.me = (req, res) => res.json(req.consumer);
+
+exports.refresh = async (req, res) => {
+  try {
+    const session = await rotateRefreshToken(req.body?.refreshToken, 'consumer');
+    if (!session) return res.status(401).json({ error: 'Your sign-in session has ended. Please sign in again.' });
+    const consumer = await ConsumerAccount.findById(session.userId);
+    if (!consumer) return res.status(401).json({ error: 'Your account is no longer available.' });
+    res.json({ consumer, token: signToken(consumer), refreshToken: session.refreshToken });
+  } catch (err) {
+    console.error('[consumer/refresh]', err.message);
+    res.status(500).json({ error: 'Unable to restore your session. Please try again.' });
+  }
+};
 
 exports.update = async (req, res) => {
   try {
@@ -250,6 +266,7 @@ exports.resetPassword = async (req, res) => {
 
 exports.deleteAccount = async (req, res) => {
   try {
+    await revokeAllUserSessions('consumer', req.consumer.id);
     await ConsumerAccount.deleteById(req.consumer.id);
     res.json({ message: 'Account deleted successfully' });
   } catch (err) {

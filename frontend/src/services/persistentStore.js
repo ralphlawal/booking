@@ -14,8 +14,10 @@ import { isNativeApp } from '../config/platform';
 
 const PERSIST_KEYS = [
   'bam_token',          // business JWT
+  'bam_refresh_token',  // rotating business refresh session
   'bookam_biz_auth',    // cached business user + business
   'customerToken',      // consumer JWT
+  'customerRefreshToken', // rotating consumer refresh session
   'customerProfile',    // cached consumer profile
   'adminSupportToken',  // admin support JWT
 ];

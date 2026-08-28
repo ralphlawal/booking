@@ -25,6 +25,8 @@ router.post(
   ctrl.login
 );
 
+router.post('/refresh', [body('refreshToken').notEmpty()], validate, ctrl.refresh);
+
 router.get('/me', authenticate, ctrl.me);
 
 

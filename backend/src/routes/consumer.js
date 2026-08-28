@@ -35,6 +35,7 @@ const requireVerifiedConsumer = (req, res, next) => {
 
 router.post('/register', ctrl.register);
 router.post('/login', ctrl.login);
+router.post('/refresh', ctrl.refresh);
 router.post('/google-auth', ctrl.googleAuth);
 router.post('/forgot-password', ctrl.forgotPassword);
 router.post('/reset-password', ctrl.resetPassword);

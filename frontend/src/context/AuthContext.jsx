@@ -6,6 +6,7 @@ import { persistCriticalValues } from '../services/persistentStore';
 const AuthContext = createContext(null);
 
 const TOKEN_KEY = 'bam_token';
+const REFRESH_TOKEN_KEY = 'bam_refresh_token';
 const CACHE_KEY = 'bookam_biz_auth';
 
 function saveAuthCache(user, business) {
@@ -17,6 +18,7 @@ function loadAuthCache() {
 function clearAuthCache() {
   try {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(CACHE_KEY);
     localStorage.removeItem('fbToken'); // clear any old Firebase token on logout
   } catch {}
@@ -28,11 +30,17 @@ function getStoredToken() {
 
 async function saveBusinessSession(data) {
   const cache = JSON.stringify({ user: data.user, business: data.business || null });
+  const refreshToken = data.refreshToken || localStorage.getItem(REFRESH_TOKEN_KEY);
   localStorage.setItem(TOKEN_KEY, data.token);
+  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   localStorage.setItem(CACHE_KEY, cache);
   // Do not resolve login until iOS has durably written the token. This avoids
   // a successful sign-in being lost if the app is closed straight afterwards.
-  await persistCriticalValues({ [TOKEN_KEY]: data.token, [CACHE_KEY]: cache });
+  await persistCriticalValues({
+    [TOKEN_KEY]: data.token,
+    [REFRESH_TOKEN_KEY]: refreshToken,
+    [CACHE_KEY]: cache,
+  });
 }
 
 export const AuthProvider = ({ children }) => {
@@ -57,12 +65,25 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       setBusiness(data.business || null);
       saveAuthCache(data.user, data.business || null);
-    }).catch((err) => {
+    }).catch(async (err) => {
       // A user may have signed in again while this startup session check was
       // still in flight. Only clear storage if this is still the same token;
       // otherwise an expired old session can erase a newly created one.
       if (err.status === 401 && getStoredToken() === token) {
-        // Token invalid — clear session
+        // An access JWT may simply have expired. Restore it with the rotating
+        // refresh session before treating this as a real logout.
+        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        if (refreshToken) {
+          try {
+            const data = await authAPI.refresh(refreshToken);
+            await saveBusinessSession(data);
+            setUser(data.user);
+            setBusiness(data.business || null);
+            return;
+          } catch (refreshError) {
+            if (refreshError.status !== 401) return; // retain cached UI during a temporary outage
+          }
+        }
         clearAuthCache();
         setUser(null);
         setBusiness(null);

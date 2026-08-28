@@ -478,6 +478,17 @@ function runSqliteMigrations() {
   const { db } = require('./config/database.sqlite');
   const sql = fs.readFileSync(path.join(__dirname, '../migrations/001_sqlite_schema.sql'), 'utf8');
   db.exec(sql);
+  db.exec(`CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
+    id TEXT PRIMARY KEY,
+    user_type TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    revoked_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (NOW())
+  );
+  CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_user
+    ON auth_refresh_tokens (user_type, user_id, expires_at);`);
   const addColumn = (table, column) => {
     try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${column}`); } catch {}
   };

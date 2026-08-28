@@ -5,6 +5,7 @@ const Business = require('../models/Business');
 const { sendEmail, sendWelcomeEmail, sendVerificationEmail, sendEmailOtpCode } = require('../services/emailService');
 const { sendSms } = require('../services/smsService');
 const db = require('../config/database');
+const { issueRefreshToken, rotateRefreshToken, revokeAllUserSessions } = require('../services/sessionService');
 
 const signToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
@@ -39,8 +40,10 @@ exports.register = async (req, res) => {
     }).catch(() => {});
 
     const token = signToken(user.id);
+    const refreshToken = await issueRefreshToken('business', user.id);
     res.status(201).json({
       token,
+      refreshToken,
       user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: false },
     });
   } catch (err) {
@@ -72,9 +75,11 @@ exports.login = async (req, res) => {
 
     const business = await Business.findByUserId(user.id);
     const token = signToken(user.id);
+    const refreshToken = await issueRefreshToken('business', user.id);
 
     res.json({
       token,
+      refreshToken,
       user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: !!user.email_verified },
       business: business || null,
       onboardingComplete: !!business,
@@ -92,6 +97,26 @@ exports.me = async (req, res) => {
     business: business || null,
     onboardingComplete: !!business,
   });
+};
+
+exports.refresh = async (req, res) => {
+  try {
+    const session = await rotateRefreshToken(req.body?.refreshToken, 'business');
+    if (!session) return res.status(401).json({ error: 'Your sign-in session has ended. Please sign in again.' });
+    const user = await User.findById(session.userId);
+    if (!user) return res.status(401).json({ error: 'Your account is no longer available.' });
+    const business = await Business.findByUserId(user.id);
+    res.json({
+      token: signToken(user.id),
+      refreshToken: session.refreshToken,
+      user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: !!user.email_verified },
+      business: business || null,
+      onboardingComplete: !!business,
+    });
+  } catch (err) {
+    console.error('Session refresh error:', err.message);
+    res.status(500).json({ error: 'Unable to restore your session. Please try again.' });
+  }
 };
 
 exports.verifyEmail = async (req, res) => {
@@ -167,6 +192,7 @@ exports.forgotPassword = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
   try {
     const userId = req.user.id;
+    await revokeAllUserSessions('business', userId);
 
     if (process.env.DATABASE_URL) {
       const { pool } = require('../config/database.pg');
@@ -215,9 +241,11 @@ exports.verifyEmailOtp = async (req, res) => {
 
     const business = await Business.findByUserId(user.id);
     const token = signToken(user.id);
+    const refreshToken = await issueRefreshToken('business', user.id);
 
     res.json({
       token,
+      refreshToken,
       user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: true },
       business: business || null,
       onboardingComplete: !!business,
@@ -293,8 +321,10 @@ exports.verifyPhoneOtp = async (req, res) => {
     if (user.full_name === 'User' && !full_name) {
       const business = await Business.findByUserId(user.id);
       const token = signToken(user.id);
+      const refreshToken = await issueRefreshToken('business', user.id);
       return res.json({
         token,
+        refreshToken,
         user: { id: user.id, phone: user.phone, full_name: user.full_name },
         business: business || null,
         onboardingComplete: !!business,
@@ -304,6 +334,7 @@ exports.verifyPhoneOtp = async (req, res) => {
 
     const business = await Business.findByUserId(user.id);
     const token = signToken(user.id);
+    const refreshToken = await issueRefreshToken('business', user.id);
 
     if (!user.full_name || user.full_name === 'User') {
       sendWelcomeEmail({ email: null, full_name: 'new user' }).catch(() => {});
@@ -313,6 +344,7 @@ exports.verifyPhoneOtp = async (req, res) => {
 
     res.json({
       token,
+      refreshToken,
       user: { id: user.id, phone: user.phone, full_name: user.full_name },
       business: business || null,
       onboardingComplete: !!business,
