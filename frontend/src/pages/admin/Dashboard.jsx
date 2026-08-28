@@ -8,6 +8,7 @@ import {
 import { bookingsAPI, servicesAPI, availabilityAPI, staffAPI, aiAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { openExternalLink, publicWebUrl } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 import { Ban, CalendarClock, CalendarDays, CalendarPlus, ChartColumn, CircleDollarSign, ClipboardList, Lightbulb, Megaphone, Scissors, Star, UserPlus, Users } from 'lucide-react';
 
@@ -581,9 +582,10 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           {business && (
             <a
-              href={`/book/${business.slug}`}
+              href={publicWebUrl(`/book/${business.slug}`)}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(event) => openExternalLink(event, publicWebUrl(`/book/${business.slug}`))}
               className="btn-secondary text-xs hidden sm:flex gap-1.5"
             >
               <ExternalIcon className="w-3.5 h-3.5" />
@@ -702,7 +704,8 @@ export default function Dashboard() {
               </p>
               {business && (
                 <a
-                  href={`/book/${business.slug}`} target="_blank" rel="noopener noreferrer"
+                  href={publicWebUrl(`/book/${business.slug}`)} target="_blank" rel="noopener noreferrer"
+                  onClick={(event) => openExternalLink(event, publicWebUrl(`/book/${business.slug}`))}
                   className="btn-primary mt-4 inline-flex text-sm"
                 >
                   Open booking page

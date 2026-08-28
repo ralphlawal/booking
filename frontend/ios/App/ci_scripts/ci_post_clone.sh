@@ -13,19 +13,11 @@ brew install node
 cd "$CI_PRIMARY_REPOSITORY_PATH/frontend"
 npm install
 
-# Explore, geocoding and static booking maps need the public Mapbox token at
-# compile time. Failing explicitly prevents a release with a non-functional
-# map experience. Add VITE_MAPBOX_TOKEN as a secret Xcode Cloud environment
-# variable (the value itself is never echoed here).
-if [ -z "${VITE_MAPBOX_TOKEN:-}" ]; then
-  echo "Missing required Xcode Cloud environment variable: VITE_MAPBOX_TOKEN"
-  exit 1
-fi
-
-# Build the web app (creates dist/ with all assets).
-# VITE_API_URL tells the Capacitor app to call the Vercel proxy at the live domain
-# instead of using a relative /api path that doesn't work from capacitor://localhost.
-VITE_API_URL=https://bookam.business VITE_MAPBOX_TOKEN="$VITE_MAPBOX_TOKEN" npm run build
+# Build the web app (creates dist/ with all assets). `build:native` preflights
+# the required env vars (VITE_API_URL, VITE_MAPBOX_TOKEN) and aborts if either is
+# missing — a release without them ships a broken map / API base URL. Set
+# VITE_MAPBOX_TOKEN as a secret Xcode Cloud environment variable.
+VITE_API_URL=https://bookam.business VITE_MAPBOX_TOKEN="${VITE_MAPBOX_TOKEN:-}" npm run build:native
 
 # Sync web assets and Capacitor configs into the iOS project
 # This creates public/, capacitor.config.json, and config.xml inside ios/App/App/

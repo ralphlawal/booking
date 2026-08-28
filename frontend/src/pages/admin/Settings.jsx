@@ -358,18 +358,21 @@ export default function Settings() {
     setConnectWorking(true);
     try {
       const { url } = await stripeConnectAPI.onboard();
-      await openExternalUrl(url);
+      // On native the redirect back from Stripe lands in the in-app browser,
+      // not the app, so refresh the connection status when it's dismissed.
+      await openExternalUrl(url, {
+        onClose: () => { toast.success('Finishing Stripe setup…'); loadConnectStatus(); },
+      });
     } catch (err) {
       toast.error(err.message || 'Could not start Stripe onboarding');
-      setConnectWorking(false);
-    }
+    } finally { setConnectWorking(false); }
   };
 
   const handleStripeDashboard = async () => {
     setConnectWorking(true);
     try {
       const { url } = await stripeConnectAPI.dashboard();
-      await openExternalUrl(url);
+      await openExternalUrl(url, { onClose: () => loadConnectStatus() });
     } catch (err) {
       toast.error(err.message || 'Could not open Stripe dashboard');
     } finally { setConnectWorking(false); }

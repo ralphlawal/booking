@@ -18,9 +18,17 @@ export function publicWebUrl(path = '/') {
   return `${window.location.origin}${normalizedPath}`;
 }
 
-export async function openExternalUrl(url) {
+export async function openExternalUrl(url, { onClose } = {}) {
   if (!url) return;
   if (isNativePlatform()) {
+    if (onClose) {
+      // Fires when the in-app browser (SFSafariViewController / Custom Tab) is
+      // dismissed — lets callers refresh state that changed on the external site.
+      const handle = await Browser.addListener('browserFinished', () => {
+        handle.remove();
+        onClose();
+      });
+    }
     await Browser.open({ url, windowName: '_system' });
     return;
   }

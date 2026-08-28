@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { bookingsAPI } from '../../services/api';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
+import { openExternalLink, publicWebUrl } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 import VerifyRequired from '../shared/VerifyRequired';
 
@@ -309,9 +310,10 @@ export default function AdminLayout() {
                     {copied ? <CheckIcon className="w-5 h-5 text-green-500" /> : <CopyIcon className="w-5 h-5" />}
                   </button>
                   <a
-                    href={`/book/${business.slug}`}
+                    href={publicWebUrl(`/book/${business.slug}`)}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(event) => openExternalLink(event, publicWebUrl(`/book/${business.slug}`))}
                     className="btn-secondary text-xs hidden sm:flex gap-1.5 !py-1.5"
                   >
                     <ExternalLinkIcon className="w-3.5 h-3.5" />
