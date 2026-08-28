@@ -3,6 +3,7 @@ import { consumerAPI } from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { LOGO_BLUE_ICON } from '../config/logos';
 import { apiBaseUrl } from '../config/platform';
+import { navigateWithinApp, openExternalUrl } from '../services/nativeBridge';
 
 const API = apiBaseUrl;
 
@@ -66,7 +67,7 @@ export function NotificationProvider({ children }) {
       });
       n.onclick = () => {
         window.focus();
-        if (notification.link) window.location.href = notification.link;
+        if (notification.link && !navigateWithinApp(notification.link)) openExternalUrl(notification.link).catch(() => {});
       };
     } catch {}
   }, []);

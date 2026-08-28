@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { staffAPI } from '../../services/api';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import toast from 'react-hot-toast';
+import { shareCsvFile } from '../../services/nativeBridge';
 
 const today = new Date();
 const DEFAULT_FROM = format(startOfMonth(today), 'yyyy-MM-dd');
@@ -45,16 +46,21 @@ export default function StaffReport() {
     finally { setSaving(false); }
   };
 
-  const exportCSV = () => {
+  const exportCSV = async () => {
     const header = 'Name,Role,Completed Bookings,Revenue (£),Commission Type,Commission Rate,Commission Owed (£)';
     const lines = rows.map(r =>
       `"${r.name}","${r.role||''}",${r.completed_bookings},${parseFloat(r.revenue).toFixed(2)},${r.commission_type},${r.commission_value},${parseFloat(r.commission).toFixed(2)}`
     );
-    const blob = new Blob([[header, ...lines].join('\n')], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `staff-report-${from}-${to}.csv`; a.click();
-    URL.revokeObjectURL(url);
+    try {
+      await shareCsvFile({
+        filename: `staff-report-${from}-${to}.csv`,
+        contents: [header, ...lines].join('\n'),
+        title: 'BookAm staff report',
+      });
+      toast.success('Your export is ready to share or save');
+    } catch (err) {
+      toast.error(err.message || 'Could not export the staff report');
+    }
   };
 
   return (

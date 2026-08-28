@@ -1,5 +1,6 @@
-import React, { Component, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import React, { Component, Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -43,6 +44,7 @@ import ReviewPage from './pages/public/ReviewPage';
 import OfflineNotice from './components/shared/OfflineNotice';
 import NativeWelcome from './pages/native/NativeWelcome';
 import { isNativeApp } from './config/platform';
+import { NATIVE_NAVIGATE_EVENT } from './services/nativeBridge';
 
 // Product areas are loaded when they are opened. This keeps public booking and
 // the first dashboard paint fast while retaining the same routes and behaviour.
@@ -129,6 +131,56 @@ const ConsumerVerifiedRoute = ({ children }) => {
 
 const PageLoader = () => <LoadingScreen />;
 
+function NativeNavigationBridge() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const receiveNavigation = (event) => {
+      if (typeof event.detail === 'string' && event.detail !== `${location.pathname}${location.search}${location.hash}`) {
+        navigate(event.detail);
+      }
+    };
+    window.addEventListener(NATIVE_NAVIGATE_EVENT, receiveNavigation);
+
+    if (!isNativeApp()) return () => window.removeEventListener(NATIVE_NAVIGATE_EVENT, receiveNavigation);
+
+    let listener;
+    const addListener = async () => {
+      listener = await CapacitorApp.addListener('backButton', () => {
+        // Normal in-app history should always win. Push/deep links can start
+        // without history, so send those users to the appropriate home rather
+        // than unexpectedly closing BookAm.
+        if (window.history.length > 1) {
+          navigate(-1);
+          return;
+        }
+        if (location.pathname.startsWith('/admin/') && location.pathname !== '/admin/dashboard') {
+          navigate('/admin/dashboard', { replace: true });
+          return;
+        }
+        if (location.pathname.startsWith('/customer/') && location.pathname !== '/customer/dashboard') {
+          navigate('/customer/dashboard', { replace: true });
+          return;
+        }
+        if (location.pathname.startsWith('/profile/') || location.pathname.startsWith('/book/')) {
+          navigate('/explore', { replace: true });
+          return;
+        }
+        CapacitorApp.exitApp();
+      });
+    };
+    addListener();
+
+    return () => {
+      window.removeEventListener(NATIVE_NAVIGATE_EVENT, receiveNavigation);
+      listener?.remove();
+    };
+  }, [location.hash, location.pathname, location.search, navigate]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -153,6 +205,7 @@ export default function App() {
           <CookieConsent />
           <BrowserNotificationPrompt />
           <Suspense fallback={<PageLoader />}>
+          <NativeNavigationBridge />
           <Routes>
             {/* Public booking */}
             <Route path="/book/:slug" element={<BookingPage />} />

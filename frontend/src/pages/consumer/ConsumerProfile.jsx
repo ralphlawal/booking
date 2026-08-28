@@ -10,6 +10,7 @@ import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import BackButton from '../../components/shared/BackButton';
 import { compressImage } from '../../utils/compressImage';
 import toast from 'react-hot-toast';
+import { publicWebUrl, shareContent } from '../../services/nativeBridge';
 
 function StarPicker({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
@@ -553,14 +554,16 @@ export default function ConsumerProfile() {
                       {codeCopied ? <CheckIcon className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                       {codeCopied ? 'Copied!' : 'Copy code'}
                     </button>
-                    {navigator.share && (
-                      <button
-                        onClick={() => navigator.share({ title: 'Join BookAm', text: `Use my code ${referral.referral_code} to sign up on BookAm and get started booking local services instantly.`, url: window.location.origin + '/customer/signup' })}
-                        className="btn-primary flex-1 flex items-center justify-center gap-2"
-                      >
-                        Share link
-                      </button>
-                    )}
+                    <button
+                      onClick={async () => {
+                        try {
+                          await shareContent({ title: 'Join BookAm', text: `Use my code ${referral.referral_code} to sign up on BookAm and get started booking local services instantly.`, url: publicWebUrl('/customer/signup') });
+                        } catch { toast.error('Could not share your referral link'); }
+                      }}
+                      className="btn-primary flex-1 flex items-center justify-center gap-2"
+                    >
+                      Share link
+                    </button>
                   </div>
 
                   <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">

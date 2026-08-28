@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { apiBaseUrl } from '../config/platform';
+import { shareCsvFile } from './nativeBridge';
 
 // Local dev: Vite proxy handles /api → localhost:5001.
 // Production: /api/* is handled by a Vercel edge catch-all and forwarded to Render.
@@ -11,7 +12,7 @@ if (import.meta.env.PROD) {
   fetch(`${BASE}/health`).catch(() => {});
 }
 
-const RETRY_DELAY_MS = 38000; // wait 38s then retry — Render typically wakes in 30-45s
+const RETRY_DELAY_MS = 3000;
 
 const isNetworkError = (err) => err.message === 'Network Error' || !err.response;
 const isTimeoutError = (err) =>
@@ -165,25 +166,18 @@ export const customersAPI = {
   updateNotes: (id, notes) => api.put(`/customers/${id}/notes`, { notes }),
 };
 
-export const exportBookingsCsv = () => {
+export const exportBookingsCsv = async () => {
   const token = localStorage.getItem('bam_token');
   const base = BASE;
   const url = `${base}/bookings/export/csv`;
-  const a = document.createElement('a');
-  a.href = url;
-  a.rel = 'noopener';
-  // Use fetch so we can add the auth header, then trigger download
-  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-    .then(r => r.blob())
-    .then(blob => {
-      const blobUrl = URL.createObjectURL(blob);
-      a.href = blobUrl;
-      a.download = `bookings-${new Date().toISOString().slice(0, 10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    });
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!response.ok) throw new Error('Could not create booking export');
+  const contents = await response.text();
+  await shareCsvFile({
+    filename: `bookings-${new Date().toISOString().slice(0, 10)}.csv`,
+    contents,
+    title: 'BookAm bookings export',
+  });
 };
 
 const CONSUMER_TOKEN_KEY = 'customerToken';

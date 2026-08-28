@@ -5,6 +5,7 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import LoadingScreen from '../../components/shared/LoadingScreen';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
+import { openExternalLink } from '../../services/nativeBridge';
 
 function buildGCalLink(booking) {
   try {
@@ -131,6 +132,7 @@ export default function BookingSuccess() {
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(event) => openExternalLink(event, whatsappLink)}
             className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
           >
             <WhatsAppIcon />
@@ -142,6 +144,7 @@ export default function BookingSuccess() {
               href={buildGCalLink(booking)}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(event) => openExternalLink(event, buildGCalLink(booking))}
               className="flex items-center justify-center gap-2 w-full py-3 bg-white border border-gray-200 hover:border-primary-300 text-gray-700 rounded-lg font-semibold transition-colors text-sm"
             >
               <CalendarIcon />

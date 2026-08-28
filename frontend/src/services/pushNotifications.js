@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import toast from 'react-hot-toast';
+import { navigateWithinApp, openExternalUrl } from './nativeBridge';
 
 const isNative = Capacitor.isNativePlatform();
 let listenersAttached = false;
@@ -37,7 +38,7 @@ export async function registerPushNotifications(onToken, onNotification) {
 
     PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
       const url = action.notification?.data?.url;
-      if (url) window.location.href = url;
+      if (url && !navigateWithinApp(url)) openExternalUrl(url).catch(() => {});
     });
   }
 

@@ -25,6 +25,15 @@ export function CustomerAuthProvider({ children }) {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) { setLoading(false); return; }
 
+    // Mirror the business experience: render the last known profile right
+    // away, then refresh it in the background. This avoids a launch spinner
+    // while a mobile connection wakes up.
+    const cached = loadCache();
+    if (cached) {
+      setConsumer(cached);
+      setLoading(false);
+    }
+
     consumerAPI.me()
       .then(data => {
         if (data) {

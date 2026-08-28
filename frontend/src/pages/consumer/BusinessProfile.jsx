@@ -14,6 +14,7 @@ import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import BackButton from '../../components/shared/BackButton';
 import AIChatBooking from '../../components/shared/AIChatBooking';
 import toast from 'react-hot-toast';
+import { openExternalLink, publicWebUrl, shareContent } from '../../services/nativeBridge';
 
 const DAY_SHORT = { Monday:'Mon', Tuesday:'Tue', Wednesday:'Wed', Thursday:'Thu', Friday:'Fri', Saturday:'Sat', Sunday:'Sun' };
 const DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -173,12 +174,12 @@ export default function BusinessProfile() {
   };
 
   const handleShare = async () => {
-    const url = window.location.origin + `/book/${slug}`;
-    if (navigator.share) {
-      await navigator.share({ title: business?.name, url }).catch(() => {});
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copied!');
+    const url = publicWebUrl(`/book/${slug}`);
+    try {
+      await shareContent({ title: business?.name || 'BookAm', url });
+      if (!navigator.share) toast.success('Link copied!');
+    } catch {
+      toast.error('Could not share this booking page');
     }
   };
 
@@ -342,6 +343,7 @@ export default function BusinessProfile() {
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location || `${business.latitude},${business.longitude}`)}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(event) => openExternalLink(event, `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location || `${business.latitude},${business.longitude}`)}`)}
               className="block mt-4 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm hover:opacity-90 transition-opacity"
             >
               <img
@@ -360,6 +362,7 @@ export default function BusinessProfile() {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(event) => openExternalLink(event, `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`)}
                 className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors group"
               >
                 <MapPin className="w-4 h-4 flex-shrink-0 text-primary-500" />

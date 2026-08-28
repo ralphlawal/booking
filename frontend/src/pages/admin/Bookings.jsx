@@ -358,13 +358,15 @@ export default function Bookings() {
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     setExporting(true);
     try {
-      exportBookingsCsv();
-      toast.success('Downloading CSV…');
+      await exportBookingsCsv();
+      toast.success('Your booking export is ready to share or save');
+    } catch (err) {
+      toast.error(err.message || 'Could not export bookings');
     } finally {
-      setTimeout(() => setExporting(false), 1500);
+      setExporting(false);
     }
   };
 

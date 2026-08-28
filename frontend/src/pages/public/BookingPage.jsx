@@ -9,6 +9,7 @@ import {
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
+import { openExternalLink, publicWebUrl, shareContent } from '../../services/nativeBridge';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -764,9 +765,13 @@ export default function BookingPage() {
   };
 
   const share = async () => {
-    const url = window.location.href;
-    if (navigator.share) { navigator.share({ title: business?.name, url }).catch(() => {}); }
-    else { navigator.clipboard.writeText(url).then(() => toast.success('Link copied!')).catch(() => {}); }
+    const url = publicWebUrl(`${window.location.pathname}${window.location.search}`);
+    try {
+      await shareContent({ title: business?.name || 'BookAm', url });
+      if (!navigator.share) toast.success('Link copied!');
+    } catch {
+      toast.error('Could not share this booking page');
+    }
   };
 
   const openBooking = (svc = null, participants = 1, staff = null) => {
@@ -949,7 +954,7 @@ export default function BookingPage() {
                   </div>
                 )}
                 {mapUrl && (
-                  <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--bp-accent)' }}>
+                  <a href={mapUrl} target="_blank" rel="noopener noreferrer" onClick={(event) => openExternalLink(event, mapUrl)} className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--bp-accent)' }}>
                     <span className="text-base">📍</span> Get directions
                   </a>
                 )}
@@ -1081,7 +1086,7 @@ export default function BookingPage() {
                         {business.location && <p className="text-xs mt-0.5" style={{ color: 'var(--bp-muted)' }}>{business.location}</p>}
                       </div>
                       {mapUrl && (
-                        <a href={mapUrl} target="_blank" rel="noopener noreferrer"
+                        <a href={mapUrl} target="_blank" rel="noopener noreferrer" onClick={(event) => openExternalLink(event, mapUrl)}
                           className="px-4 py-2 rounded-xl text-xs font-bold text-white flex-shrink-0"
                           style={{ background: 'var(--bp-accent)' }}>
                           Directions ↗
