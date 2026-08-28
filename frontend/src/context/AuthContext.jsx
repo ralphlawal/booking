@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
+    clearAuthCache();
     const data = await authAPI.login(email, password);
     localStorage.setItem(TOKEN_KEY, data.token);
     setUser(data.user);
@@ -74,6 +75,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (email, password, full_name) => {
+    clearAuthCache();
     const data = await authAPI.register(email, password, full_name);
     localStorage.setItem(TOKEN_KEY, data.token);
     setUser(data.user);

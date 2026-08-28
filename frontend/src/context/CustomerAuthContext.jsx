@@ -50,6 +50,8 @@ export function CustomerAuthProvider({ children }) {
   }, []);
 
   const register = async (data) => {
+    localStorage.removeItem(TOKEN_KEY);
+    clearCache();
     const { consumer: c, token } = await consumerAPI.register(data);
     localStorage.setItem(TOKEN_KEY, token);
     setConsumer(c);
@@ -61,6 +63,8 @@ export function CustomerAuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
+    localStorage.removeItem(TOKEN_KEY);
+    clearCache();
     const { consumer: c, token } = await consumerAPI.login(email, password);
     localStorage.setItem(TOKEN_KEY, token);
     setConsumer(c);
