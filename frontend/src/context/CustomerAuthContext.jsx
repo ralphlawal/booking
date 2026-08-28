@@ -33,7 +33,9 @@ export function CustomerAuthProvider({ children }) {
         }
       })
       .catch((err) => {
-        if (err.status === 401) {
+        // Do not let an expired token from startup clear a token written by a
+        // successful sign-in that completed while this request was in flight.
+        if (err.status === 401 && localStorage.getItem(TOKEN_KEY) === token) {
           // Token is invalid or expired — clear everything
           localStorage.removeItem(TOKEN_KEY);
           clearCache();

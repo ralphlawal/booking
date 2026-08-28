@@ -49,7 +49,10 @@ export const AuthProvider = ({ children }) => {
       saveAuthCache(data.user, data.business || null);
     }).catch((err) => {
       const isNetwork = !err.status || err.status === 504;
-      if (!isNetwork) {
+      // A user may have signed in again while this startup session check was
+      // still in flight. Only clear storage if this is still the same token;
+      // otherwise an expired old session can erase a newly created one.
+      if (!isNetwork && getStoredToken() === token) {
         // Token invalid — clear session
         clearAuthCache();
         setUser(null);
