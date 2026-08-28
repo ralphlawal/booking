@@ -22,6 +22,21 @@ const PERSIST_KEYS = [
 
 let installed = false;
 
+/**
+ * Commit important values to UserDefaults before a caller continues. The
+ * localStorage write-through wrapper is useful for ordinary preferences, but
+ * authentication must not depend on a fire-and-forget native bridge call: an
+ * iOS app can be backgrounded or terminated immediately after sign-in.
+ */
+export async function persistCriticalValues(values) {
+  if (!isNativeApp()) return;
+  await Promise.all(
+    Object.entries(values)
+      .filter(([key, value]) => PERSIST_KEYS.includes(key) && value != null)
+      .map(([key, value]) => Preferences.set({ key, value: String(value) }))
+  );
+}
+
 /** Copy persisted values from Preferences into localStorage, then keep the two
  *  in sync for every future write. Call once, awaited, before rendering. */
 export async function hydratePersistentStore() {

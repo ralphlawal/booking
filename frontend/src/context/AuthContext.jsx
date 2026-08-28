@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
+import { persistCriticalValues } from '../services/persistentStore';
 
 const AuthContext = createContext(null);
 
@@ -23,6 +24,15 @@ function clearAuthCache() {
 
 function getStoredToken() {
   return localStorage.getItem(TOKEN_KEY);
+}
+
+async function saveBusinessSession(data) {
+  const cache = JSON.stringify({ user: data.user, business: data.business || null });
+  localStorage.setItem(TOKEN_KEY, data.token);
+  localStorage.setItem(CACHE_KEY, cache);
+  // Do not resolve login until iOS has durably written the token. This avoids
+  // a successful sign-in being lost if the app is closed straight afterwards.
+  await persistCriticalValues({ [TOKEN_KEY]: data.token, [CACHE_KEY]: cache });
 }
 
 export const AuthProvider = ({ children }) => {
@@ -48,11 +58,10 @@ export const AuthProvider = ({ children }) => {
       setBusiness(data.business || null);
       saveAuthCache(data.user, data.business || null);
     }).catch((err) => {
-      const isNetwork = !err.status || err.status === 504;
       // A user may have signed in again while this startup session check was
       // still in flight. Only clear storage if this is still the same token;
       // otherwise an expired old session can erase a newly created one.
-      if (!isNetwork && getStoredToken() === token) {
+      if (err.status === 401 && getStoredToken() === token) {
         // Token invalid — clear session
         clearAuthCache();
         setUser(null);
@@ -64,10 +73,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     clearAuthCache();
     const data = await authAPI.login(email, password);
-    localStorage.setItem(TOKEN_KEY, data.token);
+    await saveBusinessSession(data);
     setUser(data.user);
     setBusiness(data.business || null);
-    saveAuthCache(data.user, data.business || null);
     registerPushNotifications(
       (fcmToken) => authAPI.registerPushToken(fcmToken, 'business').catch(() => {}),
     ).catch(() => {});
@@ -77,9 +85,8 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, full_name) => {
     clearAuthCache();
     const data = await authAPI.register(email, password, full_name);
-    localStorage.setItem(TOKEN_KEY, data.token);
+    await saveBusinessSession(data);
     setUser(data.user);
-    saveAuthCache(data.user, null);
     registerPushNotifications(
       (fcmToken) => authAPI.registerPushToken(fcmToken, 'business').catch(() => {}),
     ).catch(() => {});
@@ -90,10 +97,9 @@ export const AuthProvider = ({ children }) => {
 
   const verifyEmailOtp = async (email, otp) => {
     const data = await authAPI.verifyEmailOtp(email, otp);
-    localStorage.setItem(TOKEN_KEY, data.token);
+    await saveBusinessSession(data);
     setUser(data.user);
     setBusiness(data.business || null);
-    saveAuthCache(data.user, data.business || null);
     return data;
   };
 
@@ -101,10 +107,9 @@ export const AuthProvider = ({ children }) => {
 
   const verifyPhoneOtp = async (phone, otp, full_name) => {
     const data = await authAPI.verifyPhoneOtp(phone, otp, full_name);
-    localStorage.setItem(TOKEN_KEY, data.token);
+    await saveBusinessSession(data);
     setUser(data.user);
     setBusiness(data.business || null);
-    saveAuthCache(data.user, data.business || null);
     return data;
   };
 

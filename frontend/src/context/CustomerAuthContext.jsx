@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { consumerAPI } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
+import { persistCriticalValues } from '../services/persistentStore';
 
 const CustomerAuthContext = createContext(null);
 
@@ -15,6 +16,14 @@ function loadCache() {
 }
 function clearCache() {
   try { localStorage.removeItem(CACHE_KEY); } catch {}
+}
+
+async function saveConsumerSession(consumer, token) {
+  const cache = JSON.stringify(consumer);
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(CACHE_KEY, cache);
+  // Wait for the native UserDefaults write before routing away from sign-in.
+  await persistCriticalValues({ [TOKEN_KEY]: token, [CACHE_KEY]: cache });
 }
 
 export function CustomerAuthProvider({ children }) {
@@ -62,9 +71,8 @@ export function CustomerAuthProvider({ children }) {
     localStorage.removeItem(TOKEN_KEY);
     clearCache();
     const { consumer: c, token } = await consumerAPI.register(data);
-    localStorage.setItem(TOKEN_KEY, token);
+    await saveConsumerSession(c, token);
     setConsumer(c);
-    saveCache(c);
     registerPushNotifications(
       (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
     ).catch(() => {});
@@ -75,9 +83,8 @@ export function CustomerAuthProvider({ children }) {
     localStorage.removeItem(TOKEN_KEY);
     clearCache();
     const { consumer: c, token } = await consumerAPI.login(email, password);
-    localStorage.setItem(TOKEN_KEY, token);
+    await saveConsumerSession(c, token);
     setConsumer(c);
-    saveCache(c);
     registerPushNotifications(
       (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
     ).catch(() => {});
