@@ -4,6 +4,7 @@ import { MapPin, Sparkles, ChevronRight, Check, Navigation, CalendarCheck, Messa
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
+import { getCurrentPosition } from '../../services/nativeBridge';
 
 const CATEGORIES = [
   { id: 'barber', label: 'Barber', icon: Scissors },
@@ -68,7 +69,7 @@ export default function ConsumerOnboarding() {
   const detectLocation = () => {
     if (!navigator.geolocation) return toast.error('Location not supported on this device — please type your city or postcode');
     setDetectingLocation(true);
-    navigator.geolocation.getCurrentPosition(
+    getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         setCoords({ latitude, longitude });

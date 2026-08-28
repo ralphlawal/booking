@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import { Geolocation } from '@capacitor/geolocation';
 
 const APP_ORIGINS = new Set([
   'https://bookam.business',
@@ -107,4 +108,45 @@ export async function shareContent({ title, text, url }) {
     return;
   }
   throw new Error('Sharing is not available on this device');
+}
+
+// Drop-in replacement for navigator.geolocation.getCurrentPosition. On native
+// the WebView's own geolocation is unreliable / silently denied without the
+// @capacitor/geolocation plugin driving the OS runtime prompt, so route
+// through it and hand back a browser-shaped position object.
+export function getCurrentPosition(onSuccess, onError, options = {}) {
+  if (!isNativePlatform()) {
+    if (!navigator.geolocation) {
+      onError?.({ code: 2, message: 'Geolocation unavailable' });
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+    return;
+  }
+
+  (async () => {
+    try {
+      const perm = await Geolocation.requestPermissions();
+      if (perm.location === 'denied' && perm.coarseLocation === 'denied') {
+        onError?.({ code: 1, message: 'Location permission denied' });
+        return;
+      }
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: options.enableHighAccuracy ?? false,
+        timeout: options.timeout ?? 10000,
+        maximumAge: options.maximumAge ?? 0,
+      });
+      onSuccess?.({
+        coords: {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        },
+        timestamp: pos.timestamp,
+      });
+    } catch (err) {
+      const denied = /denied|permission/i.test(err?.message || '');
+      onError?.({ code: denied ? 1 : 2, message: err?.message || 'Could not get location' });
+    }
+  })();
 }

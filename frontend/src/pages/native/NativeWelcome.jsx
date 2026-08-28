@@ -4,7 +4,7 @@ import { LOGO_WHITE_H } from '../../config/logos';
 
 export default function NativeWelcome() {
   return (
-    <main className="min-h-[100dvh] overflow-hidden bg-[#09081d] text-white flex flex-col" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top, 0px))', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))', paddingLeft: 'max(1.5rem, env(safe-area-inset-left, 0px))', paddingRight: 'max(1.5rem, env(safe-area-inset-right, 0px))' }}>
+    <main className="min-h-[100dvh] overflow-y-auto bg-[#09081d] text-white flex flex-col" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top, 0px))', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))', paddingLeft: 'max(1.5rem, env(safe-area-inset-left, 0px))', paddingRight: 'max(1.5rem, env(safe-area-inset-right, 0px))' }}>
       <div className="flex items-center justify-center pt-2">
         <img src={LOGO_WHITE_H} alt="BookAm" className="h-8 w-auto" />
       </div>

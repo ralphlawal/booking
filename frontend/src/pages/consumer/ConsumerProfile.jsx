@@ -10,7 +10,7 @@ import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import BackButton from '../../components/shared/BackButton';
 import { compressImage } from '../../utils/compressImage';
 import toast from 'react-hot-toast';
-import { publicWebUrl, shareContent } from '../../services/nativeBridge';
+import { getCurrentPosition, publicWebUrl, shareContent } from '../../services/nativeBridge';
 
 function StarPicker({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
@@ -165,7 +165,7 @@ export default function ConsumerProfile() {
   const detectLocation = () => {
     if (!navigator.geolocation) return toast.error('Location not supported in this browser');
     setDetectingLoc(true);
-    navigator.geolocation.getCurrentPosition(
+    getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         setLocCoords({ latitude, longitude });

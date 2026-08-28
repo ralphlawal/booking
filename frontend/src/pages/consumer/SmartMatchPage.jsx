@@ -6,6 +6,7 @@ import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
+import { getCurrentPosition } from '../../services/nativeBridge';
 
 const TIME_PREFS = [
   { value: 'morning',   label: 'Morning',   desc: '6am – 12pm', Icon: Sunrise },
@@ -151,7 +152,7 @@ export default function SmartMatchPage() {
   const getLocation = () => {
     if (!navigator.geolocation) return;
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
+    getCurrentPosition(
       (pos) => {
         set('coords')({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);

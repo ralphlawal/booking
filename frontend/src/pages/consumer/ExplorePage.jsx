@@ -10,6 +10,7 @@ import { LOGO_BLUE_H } from '../../config/logos';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import toast from 'react-hot-toast';
+import { getCurrentPosition } from '../../services/nativeBridge';
 
 const POPULAR_SERVICES = ['Haircut', 'Beard trim', 'Shave', 'Nails', 'Lashes', 'Massage', 'Tutoring', 'Cleaning'];
 
@@ -274,7 +275,7 @@ export default function ExplorePage() {
       return;
     }
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
+    getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
