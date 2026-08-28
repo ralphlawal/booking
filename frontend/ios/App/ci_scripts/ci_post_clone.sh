@@ -14,9 +14,9 @@ cd "$CI_PRIMARY_REPOSITORY_PATH/frontend"
 npm install
 
 # Build the web app (creates dist/ with all assets). `build:native` preflights
-# the required env vars (VITE_API_URL, VITE_MAPBOX_TOKEN) and aborts if either is
-# missing — a release without them ships a broken map / API base URL. Set
-# VITE_MAPBOX_TOKEN as a secret Xcode Cloud environment variable.
+# the required API variable. Mapbox is optional: without its secret the app
+# uses the map fallback, but the App Store archive must still be buildable.
+# Set VITE_MAPBOX_TOKEN as a secret Xcode Cloud environment variable when ready.
 VITE_API_URL=https://bookam.business VITE_MAPBOX_TOKEN="${VITE_MAPBOX_TOKEN:-}" npm run build:native
 
 # Sync web assets and Capacitor configs into the iOS project
