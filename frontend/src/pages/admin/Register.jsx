@@ -93,6 +93,13 @@ export default function Register() {
               </button>
             </form>
 
+          <p className="text-center text-xs leading-5 text-white/45 mt-4">
+            By creating an account, you agree to BookAm’s{' '}
+            <Link to="/legal/terms" className="text-primary-200 hover:text-white underline underline-offset-2">Terms</Link>{' '}
+            and{' '}
+            <Link to="/legal/privacy" className="text-primary-200 hover:text-white underline underline-offset-2">Privacy Policy</Link>.
+          </p>
+
           <p className="text-center text-sm text-white/50 mt-5">
             Already have a business account?{' '}
             <Link to="/admin/login" className="text-primary-300 font-medium hover:text-primary-200 transition-colors">

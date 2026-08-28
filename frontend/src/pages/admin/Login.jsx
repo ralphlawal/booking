@@ -234,6 +234,11 @@ export default function Login() {
               <CustomerIcon /> Sign in as Customer
             </Link>
           </div>
+          <p className="mt-5 text-center text-xs text-white/40">
+            <Link to="/legal/terms" className="hover:text-white/70 underline underline-offset-2">Terms</Link>
+            <span className="px-2">·</span>
+            <Link to="/legal/privacy" className="hover:text-white/70 underline underline-offset-2">Privacy</Link>
+          </p>
         </div>
       </div>
     </div>

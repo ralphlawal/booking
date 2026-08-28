@@ -32,7 +32,12 @@ export default function NativeWelcome() {
           <span className="ml-3 flex-1"><span className="block font-bold">I’m booking an appointment</span><span className="block text-xs text-white/55 mt-0.5">Discover and book local businesses</span></span>
           <ArrowRight className="w-5 h-5 text-white/70" />
         </Link>
-        <p className="pt-3 text-center text-xs leading-5 text-white/40">By continuing, you agree to BookAm’s Terms and Privacy Policy.</p>
+        <p className="pt-3 text-center text-xs leading-5 text-white/45">
+          By continuing, you agree to BookAm’s{' '}
+          <Link to="/legal/terms" className="underline underline-offset-2 text-white/70">Terms</Link>{' '}
+          and{' '}
+          <Link to="/legal/privacy" className="underline underline-offset-2 text-white/70">Privacy Policy</Link>.
+        </p>
       </section>
     </main>
   );

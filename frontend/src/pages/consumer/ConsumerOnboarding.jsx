@@ -221,7 +221,7 @@ export default function ConsumerOnboarding() {
           {[
             { icon: <CalendarCheck className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Book services near you', desc: 'Browse and book barbers, stylists, trainers and more — instantly.' },
             { icon: <MessageSquare className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Message businesses directly', desc: 'Chat with businesses before and after your appointment.' },
-            { icon: <Shield className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'BookAm Buyer Protection', desc: 'Your payment is held securely. Raise a dispute within 14 days if anything goes wrong.' },
+            { icon: <Shield className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Booking support when you need it', desc: 'View booking details, contact the business, and reach BookAm support if you need help.' },
           ].map(item => (
             <div key={item.title} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               {item.icon}

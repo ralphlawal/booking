@@ -6,31 +6,34 @@ import { LOGO_BLUE_H } from '../../config/logos';
 const PAGES = {
   terms: {
     title: 'Terms of Service',
-    updated: '24 May 2026',
-    intro: 'These terms explain how customers and businesses use BookAm Business for discovery, bookings, messages, payments, and support.',
+    updated: '28 August 2026',
+    intro: 'These terms explain the rules for customers and businesses using BookAm to discover services, manage bookings, communicate, and use available payment features.',
     sections: [
       ['Using BookAm', 'You must provide accurate account, booking, business, and contact information. Do not misuse the platform, impersonate another person, upload harmful content, or interfere with the service.'],
       ['Business Responsibilities', 'Businesses are responsible for their services, prices, availability, staff, customer communications, cancellations, and compliance with local laws.'],
       ['Customer Responsibilities', 'Customers are responsible for attending appointments, giving correct contact details, reading service information, and contacting the business or BookAm support when something goes wrong.'],
-      ['Payments', 'Where online payments are available, payments are processed through Stripe. BookAm may display booking and payment status, support dispute handling, and help with refunds where appropriate.'],
+      ['Payments, cancellations and refunds', 'A business’s displayed cancellation policy applies to its bookings. Where an online payment option is enabled, payment processing is provided by the relevant payment provider. Refund eligibility, timing, and any cancellation fee depend on the applicable policy, payment status, and the circumstances of the booking.'],
+      ['Content and reviews', 'You are responsible for content you submit, including business listings, photos, posts, messages, and reviews. Content must be accurate, lawful, and respectful. We may remove content that is misleading, harmful, unlawful, or violates these terms.'],
       ['Availability', 'We work to keep the service reliable, but BookAm may be unavailable during maintenance, outages, provider downtime, or technical incidents.'],
+      ['Changes and contact', 'We may update BookAm and these terms as the product develops. For support or questions, contact hello@bookam.business.'],
     ],
   },
   privacy: {
     title: 'Privacy Policy',
-    updated: '24 May 2026',
-    intro: 'This policy explains the information BookAm Business collects and how it is used to run bookings, accounts, payments, support, and safety features.',
+    updated: '28 August 2026',
+    intro: 'This policy explains what information BookAm collects, why it is used, and the choices available to customers and businesses.',
     sections: [
-      ['Information We Collect', 'We collect account details, business profiles, booking details, customer contact details, messages, support requests, payment status, and technical information needed to operate the service.'],
-      ['How We Use Data', 'We use data to create bookings, show profiles, send notifications, provide support, prevent abuse, process payments, improve the product, and meet legal obligations.'],
-      ['Sharing', 'Booking details are shared between the customer and the relevant business. Payment processing is handled by Stripe. Email delivery may be handled by Resend. We do not sell personal data.'],
-      ['Retention', 'We keep records as needed for bookings, support, security, tax/accounting, dispute handling, and legal obligations. You can request account deletion through the app or support.'],
-      ['Your Rights', 'You can ask to access, correct, export, or delete your data by contacting BookAm support. Some records may need to be kept where required by law or legitimate business reasons.'],
+      ['Information we collect', 'This can include account details such as name, email address, phone number and profile photo; business listing details; booking, service, message and support information; and device or technical information needed to secure and operate BookAm. If you choose “use my location”, we use your location to show relevant nearby businesses and appointments.'],
+      ['How we use information', 'We use information to create and manage accounts and bookings, show business listings, provide customer and business support, send requested notifications, prevent fraud and abuse, improve reliability, and meet legal obligations.'],
+      ['Who receives information', 'Booking details and messages are shared with the customer and the relevant business. If a payment or communication provider is enabled for a feature, it receives only the information needed to provide that feature. We do not sell personal data.'],
+      ['Payments', 'BookAm does not store full card numbers or card security codes. Payment information is handled by the payment provider used for the transaction. We may store limited payment references and status information needed for bookings, refunds, accounting, and support.'],
+      ['Retention and deletion', 'We retain information for as long as needed to provide BookAm, keep the service secure, resolve disputes, meet accounting or legal obligations, and enforce our terms. Customers can delete their account in Profile → Account. Businesses can delete their account in Settings → Security, privacy & data. Deletion is permanent, subject to records we must retain by law or for legitimate security and dispute purposes.'],
+      ['Your choices', 'You can update account information in the app, control notification and location permissions in your device settings, and contact hello@bookam.business to request access, correction, export, or deletion of personal information.'],
     ],
   },
   refunds: {
     title: 'Refunds, Cancellations and Disputes',
-    updated: '24 May 2026',
+    updated: '28 August 2026',
     intro: 'This page explains how cancellations, refunds, and service disputes should be handled on BookAm Business.',
     sections: [
       ['Cancellations', 'Customers should cancel as early as possible using their booking link or by contacting the business. Businesses may set their own cancellation rules and should communicate them clearly.'],
@@ -42,7 +45,7 @@ const PAGES = {
   },
   cookies: {
     title: 'Cookie Policy',
-    updated: '24 May 2026',
+    updated: '28 August 2026',
     intro: 'This policy explains how BookAm Business uses cookies and browser storage to keep the app secure, reliable, and useful.',
     sections: [
       ['Essential Cookies and Storage', 'We use essential cookies, local storage, and similar browser storage to keep users signed in, remember preferences, protect accounts, manage chat sessions, save cookie choices, and support booking flows.'],

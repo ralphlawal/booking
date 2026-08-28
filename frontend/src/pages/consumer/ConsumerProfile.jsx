@@ -814,11 +814,11 @@ export default function ConsumerProfile() {
                 </div>
                 <div className="py-3">
                   <p className="font-semibold text-gray-900 dark:text-white mb-1">Raising a dispute</p>
-                  <p className="text-xs">If the service was not rendered, tap <strong>"Report issue"</strong> within <strong>6 hours</strong> of your appointment end time. Payment is held while we investigate.</p>
+                  <p className="text-xs">If there is an issue with a booking, use <strong>"Report issue"</strong> and include clear details. BookAm will review the information and may contact you or the business.</p>
                 </div>
                 <div className="py-3">
                   <p className="font-semibold text-gray-900 dark:text-white mb-1">Cancellation refunds</p>
-                  <p className="text-xs">Cancel <strong>more than 24h before</strong> → full refund. Cancel within 24h → 50% refund. Refunds arrive within 5–10 business days.</p>
+                  <p className="text-xs">Cancellation and refund eligibility depend on the business’s stated policy and the booking. Review the policy before you confirm a booking.</p>
                 </div>
               </div>
             </div>

@@ -1037,7 +1037,7 @@ exports.attendedAction = async (req, res) => {
     </div>`,
   }).catch(() => {});
 
-  return res.json({ message: 'Your dispute has been raised. Our team will investigate within 48 hours and payment is held until resolved.' });
+  return res.json({ message: 'Your dispute has been raised. Our team will review it and may contact you or the business for more information.' });
 };
 
 // POST /bookings/walkin  — business creates walk-in booking from dashboard (authenticated)

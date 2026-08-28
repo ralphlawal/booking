@@ -127,6 +127,11 @@ export default function CustomerLogin() {
                 Go to business sign in
               </Link>
             </p>
+            <p className="text-center text-xs text-gray-400 pt-1">
+              <Link to="/legal/terms" className="hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2">Terms</Link>
+              <span className="px-2">·</span>
+              <Link to="/legal/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2">Privacy</Link>
+            </p>
           </div>
         </div>
       </div>

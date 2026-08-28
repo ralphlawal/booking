@@ -150,7 +150,7 @@ export default function AttendedPage() {
           <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-4" />
           <h1 className="text-2xl font-black text-gray-900">Report an issue</h1>
           <p className="text-gray-500 text-sm mt-1">
-            Please describe what happened. Our team will investigate within 48 hours and payment is held until resolved.
+            Please describe what happened. Our team will review the information and may contact you or the business for more detail.
           </p>
         </div>
         <div className="app-panel p-6">

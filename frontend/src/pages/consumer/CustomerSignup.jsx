@@ -107,6 +107,13 @@ export default function CustomerSignup() {
               </button>
             </form>
 
+            <p className="text-center text-xs leading-5 text-gray-400">
+              By creating an account, you agree to BookAm’s{' '}
+              <Link to="/legal/terms" className="text-primary-600 dark:text-primary-400 hover:underline">Terms</Link>{' '}
+              and{' '}
+              <Link to="/legal/privacy" className="text-primary-600 dark:text-primary-400 hover:underline">Privacy Policy</Link>.
+            </p>
+
             <p className="text-center text-sm text-gray-500 dark:text-gray-400">
               Already have an account?{' '}
               <Link to="/customer/login" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">

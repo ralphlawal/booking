@@ -753,6 +753,16 @@ export default function Settings() {
             </form>
           </div>
 
+          <div className="app-panel p-6">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Privacy & legal</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Review how BookAm handles account and booking data.</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              <a href="/legal/privacy" className="font-medium text-primary-600 dark:text-primary-400 hover:underline">Privacy policy</a>
+              <a href="/legal/terms" className="font-medium text-primary-600 dark:text-primary-400 hover:underline">Terms of service</a>
+              <a href="/legal/refunds" className="font-medium text-primary-600 dark:text-primary-400 hover:underline">Refunds & cancellations</a>
+            </div>
+          </div>
+
           {/* Danger Zone — Delete Account */}
           <div className="rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-900/10 p-6">
             <h3 className="font-semibold text-red-700 dark:text-red-400 mb-1">Danger Zone</h3>
