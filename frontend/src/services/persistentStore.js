@@ -30,11 +30,16 @@ let installed = false;
  */
 export async function persistCriticalValues(values) {
   if (!isNativeApp()) return;
-  await Promise.all(
-    Object.entries(values)
-      .filter(([key, value]) => PERSIST_KEYS.includes(key) && value != null)
-      .map(([key, value]) => Preferences.set({ key, value: String(value) }))
-  );
+  try {
+    await Promise.all(
+      Object.entries(values)
+        .filter(([key, value]) => PERSIST_KEYS.includes(key) && value != null)
+        .map(([key, value]) => Preferences.set({ key, value: String(value) }))
+    );
+  } catch {
+    // Keep sign-in usable if a development build is missing a native plugin.
+    // Release builds include CapacitorPreferences through the iOS Podfile.
+  }
 }
 
 /** Copy persisted values from Preferences into localStorage, then keep the two
