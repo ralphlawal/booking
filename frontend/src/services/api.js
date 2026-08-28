@@ -45,6 +45,15 @@ const api = axios.create({
   timeout: 30000,
 });
 
+let businessSessionRefresher = null;
+let consumerSessionRefresher = null;
+
+// Auth contexts register these once they have mounted. Keeping the recovery
+// here means an expired access JWT is renewed for every request, not just when
+// the app first opens.
+export const registerBusinessSessionRefresher = (refresh) => { businessSessionRefresher = refresh; };
+export const registerConsumerSessionRefresher = (refresh) => { consumerSessionRefresher = refresh; };
+
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('bam_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -53,12 +62,22 @@ api.interceptors.request.use(config => {
 
 api.interceptors.response.use(
   res => res.data,
-  err => {
+  async err => {
     // Auto-retry GET requests once after a delay when the server is cold-starting
     const config = err.config;
     const isNetwork = isNetworkError(err);
     const isTimeout = isTimeoutError(err);
     const isGet = config?.method === 'get';
+    if (err.response?.status === 401 && !config?._sessionRetried && !String(config?.url || '').includes('/auth/refresh') && businessSessionRefresher) {
+      config._sessionRetried = true;
+      try {
+        await businessSessionRefresher();
+        return api(config);
+      } catch {
+        // The context will decide whether a failed refresh should log out or
+        // retain a cached offline session.
+      }
+    }
     if (isGet && (isTimeout || isNetwork) && !config._retried) {
       config._retried = true;
       return new Promise(resolve =>
@@ -191,10 +210,19 @@ consumerAxios.interceptors.request.use(config => {
 });
 consumerAxios.interceptors.response.use(
   res => res.data,
-  err => {
+  async err => {
     const config = err.config;
     const isNetwork = isNetworkError(err);
     const isTimeout = isTimeoutError(err);
+    if (err.response?.status === 401 && !config?._sessionRetried && !String(config?.url || '').includes('/consumer/refresh') && consumerSessionRefresher) {
+      config._sessionRetried = true;
+      try {
+        await consumerSessionRefresher();
+        return consumerAxios(config);
+      } catch {
+        // Fall through to the normal human-readable error.
+      }
+    }
     if (config?.method === 'get' && (isTimeout || isNetwork) && !config._retried) {
       config._retried = true;
       return new Promise(resolve => setTimeout(() => resolve(consumerAxios(config)), RETRY_DELAY_MS));

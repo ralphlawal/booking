@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI, registerBusinessSessionRefresher } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
 import { persistCriticalValues } from '../services/persistentStore';
 
@@ -48,6 +48,21 @@ export const AuthProvider = ({ children }) => {
   const [business, setBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshBusinessSession = async () => {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!refreshToken) throw new Error('No refresh session');
+    const data = await authAPI.refresh(refreshToken);
+    await saveBusinessSession(data);
+    setUser(data.user);
+    setBusiness(data.business || null);
+    return data;
+  };
+
+  useEffect(() => {
+    registerBusinessSessionRefresher(refreshBusinessSession);
+    return () => registerBusinessSessionRefresher(null);
+  });
+
   useEffect(() => {
     const token = getStoredToken();
     if (!token) { setLoading(false); return; }
@@ -72,10 +87,7 @@ export const AuthProvider = ({ children }) => {
         const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
         if (refreshToken) {
           try {
-            const data = await authAPI.refresh(refreshToken);
-            await saveBusinessSession(data);
-            setUser(data.user);
-            setBusiness(data.business || null);
+            await refreshBusinessSession();
             return;
           } catch { /* fall through — keep the cached session */ }
         }

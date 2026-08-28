@@ -23,6 +23,17 @@ const PERSIST_KEYS = [
 ];
 
 let installed = false;
+// Capacitor bridge calls are asynchronous. Keep them strictly ordered: without
+// this, a remove from the start of sign-in can finish after the new token's
+// set and silently log the person back out on the next app launch.
+let nativeWriteQueue = Promise.resolve();
+
+function queueNativeWrite(operation) {
+  nativeWriteQueue = nativeWriteQueue
+    .catch(() => {})
+    .then(operation);
+  return nativeWriteQueue;
+}
 
 /**
  * Commit important values to UserDefaults before a caller continues. The
@@ -36,7 +47,7 @@ export async function persistCriticalValues(values) {
     await Promise.all(
       Object.entries(values)
         .filter(([key, value]) => PERSIST_KEYS.includes(key) && value != null)
-        .map(([key, value]) => Preferences.set({ key, value: String(value) }))
+        .map(([key, value]) => queueNativeWrite(() => Preferences.set({ key, value: String(value) })))
     );
   } catch {
     // Keep sign-in usable if a development build is missing a native plugin.
@@ -76,13 +87,13 @@ export async function hydratePersistentStore() {
   window.localStorage.setItem = function (key, value) {
     rawSetItem(key, value);
     if (PERSIST_KEYS.includes(key)) {
-      Preferences.set({ key, value: String(value) }).catch(() => {});
+      queueNativeWrite(() => Preferences.set({ key, value: String(value) })).catch(() => {});
     }
   };
   window.localStorage.removeItem = function (key) {
     rawRemoveItem(key);
     if (PERSIST_KEYS.includes(key)) {
-      Preferences.remove({ key }).catch(() => {});
+      queueNativeWrite(() => Preferences.remove({ key })).catch(() => {});
     }
   };
 }

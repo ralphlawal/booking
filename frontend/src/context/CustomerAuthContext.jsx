@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { consumerAPI } from '../services/api';
+import { consumerAPI, registerConsumerSessionRefresher } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
 import { persistCriticalValues } from '../services/persistentStore';
 
@@ -40,6 +40,20 @@ export function CustomerAuthProvider({ children }) {
   const [consumer, setConsumer] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshConsumerSession = async () => {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!refreshToken) throw new Error('No refresh session');
+    const data = await consumerAPI.refresh(refreshToken);
+    await saveConsumerSession(data.consumer, data.token, data.refreshToken);
+    setConsumer(data.consumer);
+    return data;
+  };
+
+  useEffect(() => {
+    registerConsumerSessionRefresher(refreshConsumerSession);
+    return () => registerConsumerSessionRefresher(null);
+  });
+
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) { setLoading(false); return; }
@@ -66,9 +80,7 @@ export function CustomerAuthProvider({ children }) {
           const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
           if (refreshToken) {
             try {
-              const data = await consumerAPI.refresh(refreshToken);
-              await saveConsumerSession(data.consumer, data.token, data.refreshToken);
-              setConsumer(data.consumer);
+              await refreshConsumerSession();
               return;
             } catch { /* fall through — keep the cached session */ }
           }
