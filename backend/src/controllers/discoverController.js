@@ -1,6 +1,26 @@
 const db = require('../config/database');
 const https = require('https');
 
+// A marketplace listing must be ready for a customer to act on. Payout setup
+// is intentionally not included: it is a private financial configuration and
+// must never prevent a business from being discovered.
+const MARKETPLACE_READY = `
+  b.is_active = TRUE
+  AND NULLIF(TRIM(b.name), '') IS NOT NULL
+  AND NULLIF(TRIM(b.slug), '') IS NOT NULL
+  AND NULLIF(TRIM(b.category), '') IS NOT NULL
+  AND NULLIF(TRIM(b.location), '') IS NOT NULL
+  AND EXISTS (
+    SELECT 1 FROM services ready_service
+    WHERE ready_service.business_id = b.id AND ready_service.is_active = TRUE
+  )
+  AND EXISTS (
+    SELECT 1 FROM availability_settings ready_availability
+    WHERE ready_availability.business_id = b.id
+      AND COALESCE(jsonb_array_length(ready_availability.working_days), 0) > 0
+  )
+`;
+
 function geocodeLocationBg(businessId, locationText) {
   const q = encodeURIComponent(locationText);
   https.get({
@@ -101,7 +121,7 @@ exports.search = async (req, res) => {
       LEFT JOIN services s ON s.business_id = b.id AND s.is_active = TRUE
       LEFT JOIN reviews  r ON r.business_id = b.id
       LEFT JOIN availability_settings av ON av.business_id = b.id
-      WHERE b.is_active = TRUE
+      WHERE ${MARKETPLACE_READY}
     `;
     const params = [];
     let idx = 1;
@@ -167,9 +187,9 @@ exports.search = async (req, res) => {
 exports.categories = async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT category, COUNT(*) AS count FROM businesses
-       WHERE is_active = TRUE AND category IS NOT NULL
-       GROUP BY category ORDER BY count DESC LIMIT 30`
+      `SELECT b.category, COUNT(*) AS count FROM businesses b
+       WHERE ${MARKETPLACE_READY}
+       GROUP BY b.category ORDER BY count DESC LIMIT 30`
     );
     res.json(rows);
   } catch (err) {
@@ -205,7 +225,7 @@ exports.smartMatch = async (req, res) => {
        FROM businesses b
        JOIN services s ON s.business_id = b.id AND s.is_active = TRUE
        LEFT JOIN reviews r ON r.business_id = b.id
-       WHERE b.is_active = TRUE
+       WHERE ${MARKETPLACE_READY}
          AND (s.name ILIKE $1 OR b.category ILIKE $1 OR b.description ILIKE $1)
        GROUP BY b.id, s.id
        ORDER BY avg_rating DESC`,
