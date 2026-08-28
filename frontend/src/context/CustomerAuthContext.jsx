@@ -61,8 +61,7 @@ export function CustomerAuthProvider({ children }) {
         }
       })
       .catch(async (err) => {
-        // Do not let an expired token from startup clear a token written by a
-        // successful sign-in that completed while this request was in flight.
+        // Access token may have expired — try to restore it silently.
         if (err.status === 401 && localStorage.getItem(TOKEN_KEY) === token) {
           const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
           if (refreshToken) {
@@ -71,23 +70,14 @@ export function CustomerAuthProvider({ children }) {
               await saveConsumerSession(data.consumer, data.token, data.refreshToken);
               setConsumer(data.consumer);
               return;
-            } catch (refreshError) {
-              if (refreshError.status !== 401) {
-                const cached = loadCache();
-                if (cached) setConsumer(cached);
-                return;
-              }
-            }
+            } catch { /* fall through — keep the cached session */ }
           }
-          // Both credentials are invalid — clear everything.
-          localStorage.removeItem(TOKEN_KEY);
-          clearCache();
-        } else {
-          // Network error or server cold-start timeout — use cached profile so the
-          // user is not logged out just because the server was briefly unavailable.
-          const cached = loadCache();
-          if (cached) setConsumer(cached);
         }
+        // Never sign the user out during a cold start. A dead session will be
+        // rejected on the next user-initiated request; a flaky network or a
+        // transient token issue must not wipe a stored login.
+        const cached = loadCache();
+        if (cached) setConsumer(cached);
       })
       .finally(() => setLoading(false));
   }, []);

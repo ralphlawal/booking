@@ -66,12 +66,9 @@ export const AuthProvider = ({ children }) => {
       setBusiness(data.business || null);
       saveAuthCache(data.user, data.business || null);
     }).catch(async (err) => {
-      // A user may have signed in again while this startup session check was
-      // still in flight. Only clear storage if this is still the same token;
-      // otherwise an expired old session can erase a newly created one.
+      // An access JWT may have expired — try to restore it silently with the
+      // rotating refresh session.
       if (err.status === 401 && getStoredToken() === token) {
-        // An access JWT may simply have expired. Restore it with the rotating
-        // refresh session before treating this as a real logout.
         const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
         if (refreshToken) {
           try {
@@ -80,13 +77,17 @@ export const AuthProvider = ({ children }) => {
             setUser(data.user);
             setBusiness(data.business || null);
             return;
-          } catch (refreshError) {
-            if (refreshError.status !== 401) return; // retain cached UI during a temporary outage
-          }
+          } catch { /* fall through — keep the cached session */ }
         }
-        clearAuthCache();
-        setUser(null);
-        setBusiness(null);
+      }
+      // Never sign the user out during a cold start. If the session is truly
+      // dead the next user-initiated request will 401 and the response
+      // interceptor surfaces "please sign in again" — but a flaky network,
+      // cold server, or a transient token issue must not wipe a stored login.
+      const cached = loadAuthCache();
+      if (cached?.user) {
+        setUser(cached.user);
+        setBusiness(cached.business || null);
       }
     }).finally(() => setLoading(false));
   }, []);

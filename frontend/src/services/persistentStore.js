@@ -86,3 +86,25 @@ export async function hydratePersistentStore() {
     }
   };
 }
+
+/**
+ * Re-copy persisted values from Preferences into localStorage. iOS can evict
+ * WKWebView localStorage while the app is merely backgrounded (not just on a
+ * full termination), so call this on every app resume — it's cheap and keeps
+ * the auth token available for the next request without a re-login.
+ */
+export async function rehydratePersistentStore() {
+  if (!isNativeApp()) return;
+  await Promise.all(
+    PERSIST_KEYS.map(async (key) => {
+      try {
+        const { value } = await Preferences.get({ key });
+        if (value != null && window.localStorage.getItem(key) !== value) {
+          window.localStorage.setItem(key, value);
+        }
+      } catch {
+        /* ignore */
+      }
+    })
+  );
+}

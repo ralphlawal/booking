@@ -45,6 +45,7 @@ import OfflineNotice from './components/shared/OfflineNotice';
 import NativeWelcome from './pages/native/NativeWelcome';
 import { isNativeApp } from './config/platform';
 import { NATIVE_NAVIGATE_EVENT } from './services/nativeBridge';
+import { rehydratePersistentStore } from './services/persistentStore';
 
 // Product areas are loaded when they are opened. This keeps public booking and
 // the first dashboard paint fast while retaining the same routes and behaviour.
@@ -146,7 +147,13 @@ function NativeNavigationBridge() {
     if (!isNativeApp()) return () => window.removeEventListener(NATIVE_NAVIGATE_EVENT, receiveNavigation);
 
     let listener;
+    let resumeListener;
     const addListener = async () => {
+      // iOS can drop WKWebView localStorage while backgrounded; pull the auth
+      // token back from native storage every time the app comes forward.
+      resumeListener = await CapacitorApp.addListener('resume', () => {
+        rehydratePersistentStore().catch(() => {});
+      });
       listener = await CapacitorApp.addListener('backButton', () => {
         // Normal in-app history should always win. Push/deep links can start
         // without history, so send those users to the appropriate home rather
@@ -175,6 +182,7 @@ function NativeNavigationBridge() {
     return () => {
       window.removeEventListener(NATIVE_NAVIGATE_EVENT, receiveNavigation);
       listener?.remove();
+      resumeListener?.remove();
     };
   }, [location.hash, location.pathname, location.search, navigate]);
 
