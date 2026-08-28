@@ -26,7 +26,8 @@ const allowedOrigins = new Set(
     'https://www.bookam.business',
     'capacitor://localhost',   // iOS Capacitor WebView
     'ionic://localhost',       // iOS Capacitor alternative
-    'http://localhost',        // Android Capacitor WebView
+    'https://localhost',       // Android Capacitor WebView (androidScheme: 'https')
+    'http://localhost',        // Android Capacitor WebView (legacy http scheme)
     process.env.FRONTEND_URL,
     ...(process.env.CORS_ORIGINS || '').split(','),
     process.env.NODE_ENV !== 'production' ? 'http://localhost:5173' : null,
