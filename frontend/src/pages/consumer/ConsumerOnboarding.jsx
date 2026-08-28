@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Sparkles, ChevronRight, Check, Navigation, CalendarCheck, MessageSquare, Shield } from 'lucide-react';
+import { MapPin, Sparkles, ChevronRight, Check, Navigation, CalendarCheck, MessageSquare, Shield, Scissors, HeartPulse, Dumbbell, Camera, Paintbrush, Sparkle, BrushCleaning, Brain, HandHeart } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
-  { id: 'barber', label: 'Barber', emoji: '✂️' },
-  { id: 'beauty', label: 'Beauty', emoji: '💄' },
-  { id: 'nails', label: 'Nails', emoji: '💅' },
-  { id: 'fitness', label: 'Fitness', emoji: '🏋️' },
-  { id: 'massage', label: 'Massage', emoji: '🧘' },
-  { id: 'health', label: 'Health', emoji: '🏥' },
-  { id: 'hair', label: 'Hair', emoji: '💇' },
-  { id: 'tattoo', label: 'Tattoo', emoji: '🎨' },
-  { id: 'photography', label: 'Photography', emoji: '📷' },
-  { id: 'cleaning', label: 'Cleaning', emoji: '🧹' },
-  { id: 'personal_training', label: 'Personal Training', emoji: '🏃' },
-  { id: 'therapy', label: 'Therapy', emoji: '🧠' },
+  { id: 'barber', label: 'Barber', icon: Scissors },
+  { id: 'beauty', label: 'Beauty', icon: Sparkle },
+  { id: 'nails', label: 'Nails', icon: HandHeart },
+  { id: 'fitness', label: 'Fitness', icon: Dumbbell },
+  { id: 'massage', label: 'Massage', icon: HeartPulse },
+  { id: 'health', label: 'Health', icon: HeartPulse },
+  { id: 'hair', label: 'Hair', icon: Scissors },
+  { id: 'tattoo', label: 'Tattoo', icon: Paintbrush },
+  { id: 'photography', label: 'Photography', icon: Camera },
+  { id: 'cleaning', label: 'Cleaning', icon: BrushCleaning },
+  { id: 'personal_training', label: 'Personal Training', icon: Dumbbell },
+  { id: 'therapy', label: 'Therapy', icon: Brain },
 ];
 
 export default function ConsumerOnboarding() {
@@ -33,6 +33,22 @@ export default function ConsumerOnboarding() {
 
   // Step 1: Preferences
   const [selected, setSelected] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem('bookam.consumer.onboarding') || 'null');
+      if (saved) {
+        setStep(saved.step || 0);
+        setLocationText(saved.locationText || '');
+        setCoords(saved.coords || null);
+        setSelected(Array.isArray(saved.selected) ? saved.selected : []);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { window.sessionStorage.setItem('bookam.consumer.onboarding', JSON.stringify({ step, locationText, coords, selected })); } catch {}
+  }, [step, locationText, coords, selected]);
 
   useEffect(() => {
     if (!consumer) return;
@@ -99,6 +115,7 @@ export default function ConsumerOnboarding() {
       if (locationText) payload.location_text = locationText;
       if (coords) { payload.latitude = coords.latitude; payload.longitude = coords.longitude; }
       await update(payload);
+      try { window.sessionStorage.removeItem('bookam.consumer.onboarding'); } catch {}
       navigate('/customer/dashboard');
     } catch {
       toast.error('Could not save — you can update this in your profile later');
@@ -116,6 +133,13 @@ export default function ConsumerOnboarding() {
   };
 
   const STEPS = [
+    {
+      icon: <Sparkles className="w-8 h-8 text-primary-500" />,
+      title: 'Your time is yours again.',
+      subtitle: 'Discover trusted local businesses and book when it suits you.',
+      content: <div className="space-y-3"><Feature icon={<CalendarCheck className="w-4 h-4" />} text="Book appointments in a few taps" /><Feature icon={<MapPin className="w-4 h-4" />} text="Discover businesses near you" /><Feature icon={<MessageSquare className="w-4 h-4" />} text="Keep every booking and message together" /></div>,
+      canContinue: true,
+    },
     {
       icon: <MapPin className="w-8 h-8 text-primary-500" />,
       title: `Welcome, ${consumer?.full_name?.split(' ')[0] || 'there'}.`,
@@ -164,6 +188,7 @@ export default function ConsumerOnboarding() {
         <div className="grid grid-cols-3 gap-2.5">
           {CATEGORIES.map(cat => {
             const isSelected = selected.includes(cat.id);
+            const Icon = cat.icon;
             return (
               <button
                 key={cat.id}
@@ -175,7 +200,7 @@ export default function ConsumerOnboarding() {
                     : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300'
                 }`}
               >
-                <span className="text-xl">{cat.emoji}</span>
+                <Icon className={`w-5 h-5 ${isSelected ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'}`} />
                 <span className={`text-[11px] font-bold leading-tight ${isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-gray-600 dark:text-gray-400'}`}>
                   {cat.label}
                 </span>
@@ -222,7 +247,7 @@ export default function ConsumerOnboarding() {
   const isLast = step === STEPS.length - 1;
 
   return (
-    <div className="app-page bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center p-4">
+    <div className="app-page min-h-[100dvh] bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-6">
@@ -269,9 +294,9 @@ export default function ConsumerOnboarding() {
                 <>Continue <ChevronRight className="w-4 h-4" /></>
               )}
             </button>
-            {!isLast && (
+            {!isLast && step > 0 && (
               <button
-                onClick={step === 0 ? () => setStep(1) : saveAndFinish}
+                onClick={saveAndFinish}
                 disabled={saving}
                 className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-center py-2 transition-colors"
               >
@@ -287,4 +312,8 @@ export default function ConsumerOnboarding() {
       </div>
     </div>
   );
+}
+
+function Feature({ icon, text }) {
+  return <div className="flex items-center gap-3 rounded-xl bg-primary-50 dark:bg-primary-900/30 p-3 text-sm font-semibold text-gray-800 dark:text-gray-100"><span className="text-primary-600 dark:text-primary-300">{icon}</span>{text}</div>;
 }

@@ -146,6 +146,20 @@ export default function Onboarding() {
   const [selectedServices, setSelectedServices] = useState(new Set());
 
   useEffect(() => {
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem('bookam.business.onboarding') || 'null');
+      if (!saved) return;
+      setStep(Number.isInteger(saved.step) ? saved.step : 0);
+      setForm((current) => ({ ...current, ...(saved.form || {}) }));
+      setSelectedServices(new Set(Array.isArray(saved.selectedServices) ? saved.selectedServices : []));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { window.sessionStorage.setItem('bookam.business.onboarding', JSON.stringify({ step, form, selectedServices: [...selectedServices] })); } catch {}
+  }, [step, form, selectedServices]);
+
+  useEffect(() => {
     if (business) navigate('/admin/dashboard', { replace: true });
   }, [business, navigate]);
 
@@ -184,6 +198,7 @@ export default function Onboarding() {
     setLoading(true);
     try {
       const biz = await businessAPI.create(form);
+      try { window.sessionStorage.removeItem('bookam.business.onboarding'); } catch {}
       updateBusiness(biz);
 
       // Create selected starter services in background
@@ -210,7 +225,7 @@ export default function Onboarding() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="app-page bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="app-page min-h-[100dvh] bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 flex items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="w-full max-w-lg animate-fade-in">
 
         <div className="text-center mb-8">
