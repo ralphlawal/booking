@@ -103,18 +103,18 @@
     .native-app textarea { font-size: 16px !important; }
   }
 
-  .native-app,
+  /* Do NOT put overscroll-behavior or a height cap on the document/body here:
+     in WKWebView it can freeze page scrolling entirely. Scroll containment
+     lives on the explicit inner scroll areas below instead. */
   .native-app body,
   .native-app #root {
     min-height: 100dvh;
-    overscroll-behavior: none;
   }
 
   .native-app .native-scroll,
   .native-app [data-native-scroll="true"] {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
-    touch-action: pan-y pinch-zoom;
   }
 
   #root {
