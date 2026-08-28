@@ -143,6 +143,11 @@ export default function AdminLayout() {
 
   const isDark  = theme === 'dark';
   const logoSrc = isDark ? LOGO_WHITE_H : LOGO_BLUE_H;
+  const canGoBack = location.pathname !== '/admin/dashboard';
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/admin/dashboard');
+  };
 
   /* Shared nav-link builder for sidebar */
   const sidebarLink = ({ to, icon: Icon, label, badge }) => (
@@ -270,6 +275,11 @@ export default function AdminLayout() {
           }}
         >
           <div className="min-h-14 lg:min-h-16 flex items-center justify-between px-3 sm:px-4 lg:px-6 py-2 lg:py-0">
+            {canGoBack && (
+              <button onClick={goBack} className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center" style={{ color: 'var(--bam-text-muted)' }} aria-label="Go back">
+                <BackIcon className="w-5 h-5" />
+              </button>
+            )}
             {/* Mobile: logo (centered) */}
             <div className="lg:hidden absolute left-1/2 -translate-x-1/2 pointer-events-none max-w-[42vw]">
               <img src={logoSrc} alt="BookAm Business" className="h-7 sm:h-8 w-auto object-contain" />
@@ -317,7 +327,8 @@ export default function AdminLayout() {
 
         {/* Page content */}
         <main
-          className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 lg:pb-6 pb-admin-nav"
+          className="native-scroll flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 lg:pb-6 pb-admin-nav"
+          data-native-scroll="true"
           style={{ background: 'var(--bam-bg)', color: 'var(--bam-text)', paddingLeft: 'max(0.75rem, env(safe-area-inset-left, 0px))', paddingRight: 'max(0.75rem, env(safe-area-inset-right, 0px))' }}
         >
           {emailUnverified && (
@@ -471,29 +482,20 @@ export default function AdminLayout() {
                 {/* Nav grid */}
                 <div className="grid grid-cols-3 gap-2.5 mb-5">
                   {MORE_ITEMS.map(({ to, icon: Icon, label }) => (
-                    <NavLink
+                    <button
                       key={to}
-                      to={to}
-                      onClick={() => setMoreOpen(false)}
-                      className={({ isActive }) =>
-                        `flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border text-xs font-semibold transition-all ${
-                          isActive
-                            ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white border-primary-600 shadow-primary-sm'
-                            : 'border-[--bam-border] text-[--bam-text-muted]'
-                        }`
-                      }
-                      style={({ isActive }) => isActive
-                        ? {}
-                        : { background: 'var(--bam-surface-soft)' }
-                      }
+                      type="button"
+                      onClick={() => { setMoreOpen(false); navigate(to); }}
+                      className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border text-xs font-semibold transition-all ${
+                        location.pathname === to
+                          ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white border-primary-600 shadow-primary-sm'
+                          : 'border-[--bam-border] text-[--bam-text-muted]'
+                      }`}
+                      style={location.pathname === to ? {} : { background: 'var(--bam-surface-soft)' }}
                     >
-                      {({ isActive }) => (
-                        <>
-                          <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[--bam-text-muted]'}`} />
-                          {label}
-                        </>
-                      )}
-                    </NavLink>
+                      <Icon className={`w-5 h-5 ${location.pathname === to ? 'text-white' : 'text-[--bam-text-muted]'}`} />
+                      {label}
+                    </button>
                   ))}
                 </div>
 
@@ -549,6 +551,7 @@ export default function AdminLayout() {
 
 /* ── Icons ─────────────────────────────────────────────────────────────── */
 function GridIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>; }
+function BackIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.25}><path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" /></svg>; }
 function CalendarCheckIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>; }
 function CalendarIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>; }
 function TagIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>; }

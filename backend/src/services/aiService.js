@@ -7,6 +7,18 @@ const getClient = () => {
 
 const MODEL = 'claude-sonnet-5';
 
+function plainText(value, maxLength = 360) {
+  return String(value || '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/[*_`#]/g, '')
+    .replace(/^\s*(?:[-•]|\d+[.)])\s*/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLength)
+    .replace(/\s+\S*$/, '')
+    .trim();
+}
+
 /**
  * Summarize a set of reviews into 2–3 sentences.
  * Returns null if not enough reviews or no API key.
@@ -169,10 +181,10 @@ async function suggestGapFilling({ businessName, category, gaps, avgBookingsPerD
     max_tokens: 250,
     messages: [{
       role: 'user',
-      content: `You are a revenue advisor for ${businessName} (${category || 'service business'}). Their average is ${avgBookingsPerDay} bookings/day. Here are their upcoming booking gaps:\n${gapSummary}\n\nGive 2–3 specific, actionable suggestions to fill these gaps (e.g. run a flash promo, target lapsed customers, create a last-minute discount). Be direct and practical. Under 80 words total.`,
+      content: `You are a revenue advisor for ${businessName} (${category || 'service business'}). Their average is ${avgBookingsPerDay} bookings/day. Here are their upcoming booking gaps:\n${gapSummary}\n\nWrite one concise recommendation based only on this supplied data. Maximum 55 words. Use plain sentences only: no Markdown, headings, bullets, numbering, bold text, emojis, invented figures, or claims about channels the business has not configured.`,
     }],
   });
-  return msg.content[0]?.text?.trim() || null;
+  return plainText(msg.content[0]?.text, 360) || null;
 }
 
 /**

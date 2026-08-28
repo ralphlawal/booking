@@ -106,7 +106,11 @@ function BusinessCard({ biz, from }) {
 
 function MapView({ results, coords, onSwitchList, from }) {
   const [popup, setPopup] = useState(null);
-  const withCoords = results.filter(b => b.latitude && b.longitude);
+  const withCoords = results.filter((business) => Number.isFinite(Number(business.latitude)) && Number.isFinite(Number(business.longitude)));
+
+  if (!MAPBOX_TOKEN) {
+    return <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-amber-900"><Map className="w-9 h-9 mx-auto mb-3 text-amber-600" /><p className="font-bold">Map is being set up</p><p className="mt-1 text-sm">You can still browse businesses and check live appointment times from each profile.</p><button onClick={onSwitchList} className="btn-primary mt-4 text-sm">View businesses</button></div>;
+  }
 
   if (!withCoords.length) {
     return (
@@ -174,7 +178,7 @@ function MapView({ results, coords, onSwitchList, from }) {
                   state={{ from }}
                   className="block text-center text-xs font-semibold bg-primary-600 text-white px-3 py-1.5 rounded-lg hover:bg-primary-700 transition-colors"
                 >
-                  View & Book
+                  Check availability
                 </Link>
               </div>
             </Popup>
@@ -354,7 +358,7 @@ export default function ExplorePage() {
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${availableToday ? 'bg-white' : 'bg-emerald-400'}`} />
-              Available today
+              Open today
             </button>
             {coords && !aiMatching && (
               <p className="text-emerald-600 text-xs font-medium">Sorted by distance</p>

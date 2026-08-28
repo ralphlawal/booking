@@ -110,6 +110,13 @@
     overscroll-behavior: none;
   }
 
+  .native-app .native-scroll,
+  .native-app [data-native-scroll="true"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y pinch-zoom;
+  }
+
   #root {
     min-height: 100dvh;
     overflow-x: hidden;

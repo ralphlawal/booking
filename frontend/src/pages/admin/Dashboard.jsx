@@ -9,6 +9,7 @@ import { bookingsAPI, servicesAPI, availabilityAPI, staffAPI, aiAPI } from '../.
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
+import { Ban, CalendarClock, CalendarDays, CalendarPlus, ChartColumn, CircleDollarSign, ClipboardList, Lightbulb, Megaphone, Scissors, Star, UserPlus, Users } from 'lucide-react';
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
@@ -34,6 +35,15 @@ function fmtDuration(mins) {
   if (mins < 60) return `${mins}m`;
   const h = Math.floor(mins / 60), m = mins % 60;
   return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+function plainRecommendation(value) {
+  return String(value || '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/[*_`#]/g, '')
+    .replace(/^\s*(?:[-•]|\d+[.)])\s*/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function isPast(dateStr, timeStr) {
@@ -109,6 +119,7 @@ function PeriodToggle({ value, onChange }) {
 }
 
 function SnapshotCard({ label, value, sub, icon, accent, loading, trend }) {
+  const Icon = icon;
   return (
     <div
       className="rounded-2xl p-4 sm:p-5 flex flex-col gap-3"
@@ -119,7 +130,7 @@ function SnapshotCard({ label, value, sub, icon, accent, loading, trend }) {
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg flex-shrink-0"
           style={{ background: accent }}
         >
-          {icon}
+          <Icon className="w-5 h-5" strokeWidth={1.9} aria-hidden="true" />
         </span>
         {trend != null && (
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
@@ -147,11 +158,12 @@ function SnapshotCard({ label, value, sub, icon, accent, loading, trend }) {
 }
 
 function QuickActionBtn({ icon, label, to, onClick, accent = '#5b3eea' }) {
+  const Icon = icon;
   const cls = 'flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border text-xs font-semibold transition-all tap-highlight-none active:scale-[0.97]';
   const style = { background: 'var(--bam-surface-soft)', borderColor: 'var(--bam-border)', color: 'var(--bam-text-muted)' };
   const inner = (
     <>
-      <span className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0" style={{ background: accent }}>{icon}</span>
+      <span className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0" style={{ background: accent }}><Icon className="w-5 h-5" strokeWidth={1.9} aria-hidden="true" /></span>
       {label}
     </>
   );
@@ -301,6 +313,7 @@ function BookingCard({ booking, staffMap, onAction, loadingAction }) {
 }
 
 function InsightRow({ icon, text, tone = 'default' }) {
+  const Icon = icon;
   const TONES = {
     default: 'bg-[--bam-surface-soft] text-[--bam-text-muted]',
     green:   'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400',
@@ -311,7 +324,7 @@ function InsightRow({ icon, text, tone = 'default' }) {
   };
   return (
     <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium ${TONES[tone]}`}>
-      <span className="text-base flex-shrink-0">{icon}</span>
+      <Icon className="w-4 h-4 flex-shrink-0" strokeWidth={1.9} aria-hidden="true" />
       <span>{text}</span>
     </div>
   );
@@ -497,10 +510,10 @@ export default function Dashboard() {
     const statusBreakdown = analytics?.statusBreakdown || [];
 
     if (todayStats.pending > 0) {
-      list.push({ icon: '⏰', text: `${todayStats.pending} booking${todayStats.pending > 1 ? 's' : ''} waiting for confirmation`, tone: 'amber' });
+      list.push({ icon: CalendarClock, text: `${todayStats.pending} booking${todayStats.pending > 1 ? 's' : ''} waiting for confirmation`, tone: 'amber' });
     }
     if (topService) {
-      list.push({ icon: '⭐', text: `Your most popular service is ${topService}`, tone: 'violet' });
+      list.push({ icon: Star, text: `Your most popular service is ${topService}`, tone: 'violet' });
     }
 
     /* Week-over-week booking trend */
@@ -509,7 +522,7 @@ export default function Dashboard() {
     if (prev7 > 0 && last7 !== prev7) {
       const pct = Math.round(((last7 - prev7) / prev7) * 100);
       list.push({
-        icon: pct >= 0 ? '📈' : '📉',
+        icon: ChartColumn,
         text: `Bookings are ${pct >= 0 ? 'up' : 'down'} ${Math.abs(pct)}% vs last week`,
         tone: pct >= 0 ? 'green' : 'red',
       });
@@ -521,7 +534,7 @@ export default function Dashboard() {
       !isPast(b.booking_date, b.start_time)
     ).length;
     if (remaining > 0) {
-      list.push({ icon: '📅', text: `${remaining} appointment${remaining > 1 ? 's' : ''} still ahead today`, tone: 'blue' });
+      list.push({ icon: CalendarDays, text: `${remaining} appointment${remaining > 1 ? 's' : ''} still ahead today`, tone: 'blue' });
     }
 
     /* Completion rate hint */
@@ -530,7 +543,7 @@ export default function Dashboard() {
     if (total >= 10) {
       const rate = Math.round((completed / total) * 100);
       if (rate < 60) {
-        list.push({ icon: '💡', text: `Completion rate is ${rate}% — try sending reminders`, tone: 'amber' });
+        list.push({ icon: Lightbulb, text: `Completion rate is ${rate}% — try sending reminders`, tone: 'amber' });
       }
     }
 
@@ -596,28 +609,28 @@ export default function Dashboard() {
                 label="Appointments"
                 value={todayStats.appointments}
                 sub="Today's appointments"
-                icon="📋" accent="#5b3eea"
+                icon={ClipboardList} accent="#5b3eea"
                 loading={loadingToday}
               />
               <SnapshotCard
                 label="Revenue"
                 value={`${todayStats.sym}${todayStats.revenue.toFixed(0)}`}
                 sub="Confirmed + completed"
-                icon="💰" accent="#10b981"
+                icon={CircleDollarSign} accent="#10b981"
                 loading={loadingToday}
               />
               <SnapshotCard
                 label="Pending"
                 value={todayStats.pending}
                 sub="Awaiting confirmation"
-                icon="⏳" accent="#f59e0b"
+                icon={CalendarClock} accent="#f59e0b"
                 loading={loadingToday}
               />
               <SnapshotCard
                 label="Cancellations"
                 value={todayStats.cancellations}
                 sub="Cancelled today"
-                icon="✕" accent="#ef4444"
+                icon={Ban} accent="#ef4444"
                 loading={loadingToday}
               />
             </>
@@ -628,21 +641,21 @@ export default function Dashboard() {
                 value={periodStats?.appointments ?? '—'}
                 sub={`This ${period.toLowerCase()}`}
                 trend={periodStats?.trend}
-                icon="📋" accent="#5b3eea"
+                icon={ClipboardList} accent="#5b3eea"
                 loading={loadingAnalytics}
               />
               <SnapshotCard
                 label="Revenue"
                 value={periodStats ? `€${periodStats.revenue.toFixed(0)}` : '—'}
                 sub={`This ${period.toLowerCase()}`}
-                icon="💰" accent="#10b981"
+                icon={CircleDollarSign} accent="#10b981"
                 loading={loadingAnalytics}
               />
               <SnapshotCard
                 label="Top Service"
                 value={topService || '—'}
                 sub="Most booked service"
-                icon="⭐" accent="#8b5cf6"
+                icon={Star} accent="#8b5cf6"
                 loading={loadingAnalytics}
               />
               <SnapshotCard
@@ -651,7 +664,7 @@ export default function Dashboard() {
                   ? (periodStats.appointments / (period === 'Week' ? 7 : 30)).toFixed(1)
                   : '—'}
                 sub="Bookings per day"
-                icon="📊" accent="#3b82f6"
+                icon={ChartColumn} accent="#3b82f6"
                 loading={loadingAnalytics}
               />
             </>
@@ -745,12 +758,12 @@ export default function Dashboard() {
               Quick Actions
             </h2>
             <div className="grid grid-cols-2 gap-2.5">
-              <QuickActionBtn to="/admin/bookings"  label="New Booking"  icon="➕" accent="#5b3eea" />
-              <QuickActionBtn to="/admin/customers" label="Add Customer" icon="👤" accent="#10b981" />
-              <QuickActionBtn to="/admin/services"  label="Add Service"  icon="✂️" accent="#f59e0b" />
-              <QuickActionBtn to="/admin/settings"  label="Block Time"   icon="🚫" accent="#ef4444" />
-              <QuickActionBtn to="/admin/posts"     label="Promote"      icon="📣" accent="#8b5cf6" />
-              <QuickActionBtn to="/admin/customers" label="Customers"    icon="👥" accent="#3b82f6" />
+              <QuickActionBtn to="/admin/bookings"  label="New Booking"  icon={CalendarPlus} accent="#5b3eea" />
+              <QuickActionBtn to="/admin/customers" label="Add Customer" icon={UserPlus} accent="#10b981" />
+              <QuickActionBtn to="/admin/services"  label="Add Service"  icon={Scissors} accent="#f59e0b" />
+              <QuickActionBtn to="/admin/settings"  label="Block Time"   icon={Ban} accent="#ef4444" />
+              <QuickActionBtn to="/admin/posts"     label="Promote"      icon={Megaphone} accent="#8b5cf6" />
+              <QuickActionBtn to="/admin/customers" label="Customers"    icon={Users} accent="#3b82f6" />
             </div>
           </section>
 
@@ -795,7 +808,7 @@ export default function Dashboard() {
                         : 'Tip from BookAm Intelligence'}
                     </p>
                     <p className="text-xs leading-relaxed mt-1 text-violet-700 dark:text-violet-400">
-                      {gapSuggestion.suggestion}
+                      {plainRecommendation(gapSuggestion.suggestion)}
                     </p>
                     <div className="flex gap-2 mt-3">
                       <Link to="/admin/posts"
