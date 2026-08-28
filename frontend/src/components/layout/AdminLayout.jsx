@@ -439,8 +439,7 @@ export default function AdminLayout() {
       </nav>
 
       {/* ── More bottom sheet ─────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {moreOpen && (
+      {moreOpen && (
           <>
             {/* Backdrop */}
             <motion.div
@@ -448,7 +447,6 @@ export default function AdminLayout() {
               className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setMoreOpen(false)}
             />
@@ -467,7 +465,6 @@ export default function AdminLayout() {
               }}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
-              exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
             >
               {/* Handle */}
@@ -543,8 +540,7 @@ export default function AdminLayout() {
               </div>
             </motion.div>
           </>
-        )}
-      </AnimatePresence>
+      )}
     </div>
   );
 }
