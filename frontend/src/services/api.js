@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { apiBaseUrl } from '../config/platform';
 import { shareCsvFile } from './nativeBridge';
+import { getPersistedItem } from './persistentStore';
 
 // Local dev: Vite proxy handles /api → localhost:5001.
 // Production: /api/* is handled by a Vercel edge catch-all and forwarded to Render.
@@ -55,7 +56,7 @@ export const registerBusinessSessionRefresher = (refresh) => { businessSessionRe
 export const registerConsumerSessionRefresher = (refresh) => { consumerSessionRefresher = refresh; };
 
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('bam_token');
+  const token = getPersistedItem('bam_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -188,7 +189,7 @@ export const customersAPI = {
 };
 
 export const exportBookingsCsv = async () => {
-  const token = localStorage.getItem('bam_token');
+  const token = getPersistedItem('bam_token');
   const base = BASE;
   const url = `${base}/bookings/export/csv`;
   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -205,7 +206,7 @@ const CONSUMER_TOKEN_KEY = 'customerToken';
 
 const consumerAxios = axios.create({ baseURL: BASE, timeout: 30000 });
 consumerAxios.interceptors.request.use(config => {
-  const token = localStorage.getItem(CONSUMER_TOKEN_KEY);
+  const token = getPersistedItem(CONSUMER_TOKEN_KEY);
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -297,7 +298,7 @@ export const reviewsAPI = {
 const ADMIN_TOKEN_KEY = 'adminSupportToken';
 const adminAxios = axios.create({ baseURL: BASE, timeout: 30000 });
 adminAxios.interceptors.request.use(config => {
-  const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+  const token = getPersistedItem(ADMIN_TOKEN_KEY);
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });

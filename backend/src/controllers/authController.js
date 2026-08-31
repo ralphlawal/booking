@@ -10,8 +10,12 @@ const { sendSms } = require('../services/smsService');
 const db = require('../config/database');
 const { issueRefreshToken, rotateRefreshToken, revokeAllUserSessions } = require('../services/sessionService');
 
+// Long-lived access tokens: the installed apps hold the session on-device and
+// a short expiry there just means silent re-auth churn (and, when native
+// storage is briefly unavailable, an unwanted logout). The rotating refresh
+// token in auth_refresh_tokens is still the real revocation lever.
 const signToken = (userId) =>
-  jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+  jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '180d' });
 
 exports.register = async (req, res) => {
   try {

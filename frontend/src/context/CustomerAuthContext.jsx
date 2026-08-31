@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { consumerAPI, registerConsumerSessionRefresher } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
-import { persistCriticalValues } from '../services/persistentStore';
+import { persistCriticalValues, getPersistedItem } from '../services/persistentStore';
 
 const CustomerAuthContext = createContext(null);
 
@@ -13,7 +13,7 @@ function saveCache(c) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch {}
 }
 function loadCache() {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch { return null; }
+  try { return JSON.parse(getPersistedItem(CACHE_KEY) || 'null'); } catch { return null; }
 }
 function clearCache() {
   try {
@@ -24,7 +24,7 @@ function clearCache() {
 
 async function saveConsumerSession(consumer, token, refreshToken) {
   const cache = JSON.stringify(consumer);
-  const durableRefreshToken = refreshToken || localStorage.getItem(REFRESH_TOKEN_KEY);
+  const durableRefreshToken = refreshToken || getPersistedItem(REFRESH_TOKEN_KEY);
   localStorage.setItem(TOKEN_KEY, token);
   if (durableRefreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, durableRefreshToken);
   localStorage.setItem(CACHE_KEY, cache);
@@ -41,7 +41,7 @@ export function CustomerAuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const refreshConsumerSession = async () => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    const refreshToken = getPersistedItem(REFRESH_TOKEN_KEY);
     if (!refreshToken) throw new Error('No refresh session');
     const data = await consumerAPI.refresh(refreshToken);
     await saveConsumerSession(data.consumer, data.token, data.refreshToken);
@@ -55,7 +55,7 @@ export function CustomerAuthProvider({ children }) {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = getPersistedItem(TOKEN_KEY);
     if (!token) { setLoading(false); return; }
 
     // Mirror the business experience: render the last known profile right
@@ -76,8 +76,8 @@ export function CustomerAuthProvider({ children }) {
       })
       .catch(async (err) => {
         // Access token may have expired — try to restore it silently.
-        if (err.status === 401 && localStorage.getItem(TOKEN_KEY) === token) {
-          const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        if (err.status === 401 && getPersistedItem(TOKEN_KEY) === token) {
+          const refreshToken = getPersistedItem(REFRESH_TOKEN_KEY);
           if (refreshToken) {
             try {
               await refreshConsumerSession();

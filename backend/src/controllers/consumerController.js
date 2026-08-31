@@ -19,11 +19,13 @@ function generateReferralCode(name) {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
+// Long-lived access token — the app keeps the session on-device; the rotating
+// refresh token is the revocation lever. See note in authController.
 const signToken = (consumer) =>
   jwt.sign(
     { consumerId: consumer.id, type: 'consumer' },
     JWT_SECRET,
-    { expiresIn: '30d' }
+    { expiresIn: process.env.CONSUMER_JWT_EXPIRES_IN || '365d' }
   );
 
 const createWelcomeNotification = (consumerId) => {

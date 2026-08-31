@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI, registerBusinessSessionRefresher } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
-import { persistCriticalValues } from '../services/persistentStore';
+import { persistCriticalValues, getPersistedItem } from '../services/persistentStore';
 
 const AuthContext = createContext(null);
 
@@ -13,7 +13,7 @@ function saveAuthCache(user, business) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify({ user, business })); } catch {}
 }
 function loadAuthCache() {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch { return null; }
+  try { return JSON.parse(getPersistedItem(CACHE_KEY) || 'null'); } catch { return null; }
 }
 function clearAuthCache() {
   try {
@@ -25,12 +25,12 @@ function clearAuthCache() {
 }
 
 function getStoredToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return getPersistedItem(TOKEN_KEY);
 }
 
 async function saveBusinessSession(data) {
   const cache = JSON.stringify({ user: data.user, business: data.business || null });
-  const refreshToken = data.refreshToken || localStorage.getItem(REFRESH_TOKEN_KEY);
+  const refreshToken = data.refreshToken || getPersistedItem(REFRESH_TOKEN_KEY);
   localStorage.setItem(TOKEN_KEY, data.token);
   if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   localStorage.setItem(CACHE_KEY, cache);
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const refreshBusinessSession = async () => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    const refreshToken = getPersistedItem(REFRESH_TOKEN_KEY);
     if (!refreshToken) throw new Error('No refresh session');
     const data = await authAPI.refresh(refreshToken);
     await saveBusinessSession(data);
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
       // An access JWT may have expired — try to restore it silently with the
       // rotating refresh session.
       if (err.status === 401 && getStoredToken() === token) {
-        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        const refreshToken = getPersistedItem(REFRESH_TOKEN_KEY);
         if (refreshToken) {
           try {
             await refreshBusinessSession();

@@ -2,120 +2,144 @@ import { Preferences } from '@capacitor/preferences';
 import { isNativeApp } from '../config/platform';
 
 /**
- * iOS WKWebView does not reliably keep localStorage across a full app
- * termination, so anything stored only in localStorage (auth tokens, cached
- * profile) is gone on the next cold launch and the user lands back on sign-in.
+ * Keeping an installed app signed in, defence in depth.
  *
- * This module mirrors a small whitelist of keys into @capacitor/preferences
- * (UserDefaults on iOS — always persists) and rehydrates them into localStorage
- * at boot, before React renders, so the synchronous axios interceptors keep
- * working unchanged.
+ * iOS WKWebView drops localStorage on a full app termination (and sometimes
+ * while merely backgrounded), so a token kept only in localStorage is gone on
+ * the next launch and the user lands on sign-in. We therefore keep the auth
+ * keys in THREE places and reconcile them constantly:
+ *
+ *   1. @capacitor/preferences  → UserDefaults on iOS, survives termination
+ *   2. an in-memory mirror     → survives a mid-session localStorage eviction
+ *   3. localStorage            → what the synchronous axios interceptors read
+ *
+ * Reads go through getPersistedItem() (localStorage → memory). Writes fan out
+ * to all three. We rehydrate on boot (before React renders) and on every
+ * resume, and force a Preferences flush when the app is backgrounded.
  */
 
 const PERSIST_KEYS = [
-  'bam_token',          // business JWT
-  'bam_refresh_token',  // rotating business refresh session
-  'bookam_biz_auth',    // cached business user + business
-  'customerToken',      // consumer JWT
+  'bam_token',            // business JWT
+  'bam_refresh_token',    // rotating business refresh session
+  'bookam_biz_auth',      // cached business user + business
+  'customerToken',        // consumer JWT
   'customerRefreshToken', // rotating consumer refresh session
-  'customerProfile',    // cached consumer profile
-  'adminSupportToken',  // admin support JWT
+  'customerProfile',      // cached consumer profile
+  'adminSupportToken',    // admin support JWT
 ];
 
-let installed = false;
-// Capacitor bridge calls are asynchronous. Keep them strictly ordered: without
-// this, a remove from the start of sign-in can finish after the new token's
-// set and silently log the person back out on the next app launch.
-let nativeWriteQueue = Promise.resolve();
+// In-memory mirror — the one store iOS can never evict during a session.
+const memory = Object.create(null);
 
+let installed = false;
+let rawSetItem = null;
+let rawRemoveItem = null;
+
+// Capacitor bridge calls are async; keep them strictly ordered so a remove at
+// the start of sign-in can't land after the new token's set.
+let nativeWriteQueue = Promise.resolve();
 function queueNativeWrite(operation) {
-  nativeWriteQueue = nativeWriteQueue
-    .catch(() => {})
-    .then(operation);
+  nativeWriteQueue = nativeWriteQueue.catch(() => {}).then(operation);
   return nativeWriteQueue;
 }
 
-/**
- * Commit important values to UserDefaults before a caller continues. The
- * localStorage write-through wrapper is useful for ordinary preferences, but
- * authentication must not depend on a fire-and-forget native bridge call: an
- * iOS app can be backgrounded or terminated immediately after sign-in.
- */
+/** Read a persisted value with fallbacks. Use this instead of localStorage
+ *  .getItem for anything in PERSIST_KEYS — it survives a WebView eviction. */
+export function getPersistedItem(key) {
+  try {
+    const v = window.localStorage.getItem(key);
+    if (v != null) return v;
+  } catch { /* ignore */ }
+  return memory[key] ?? null;
+}
+
+/** Commit values to every store and wait for the native write. Callers (sign-in,
+ *  refresh) must await this before routing away — an iOS app can be killed the
+ *  instant after. */
 export async function persistCriticalValues(values) {
+  const entries = Object.entries(values).filter(([k, v]) => PERSIST_KEYS.includes(k) && v != null);
+  for (const [k, v] of entries) {
+    memory[k] = String(v);
+    try { (rawSetItem || window.localStorage.setItem.bind(window.localStorage))(k, String(v)); } catch { /* ignore */ }
+  }
   if (!isNativeApp()) return;
   try {
-    await Promise.all(
-      Object.entries(values)
-        .filter(([key, value]) => PERSIST_KEYS.includes(key) && value != null)
-        .map(([key, value]) => queueNativeWrite(() => Preferences.set({ key, value: String(value) })))
-    );
+    await Promise.all(entries.map(([k, v]) => queueNativeWrite(() => Preferences.set({ key: k, value: String(v) }))));
   } catch {
-    // Keep sign-in usable if a development build is missing a native plugin.
-    // Release builds include CapacitorPreferences through the iOS Podfile.
+    // Release builds link CapacitorPreferences; a dev build might not.
   }
 }
 
-/** Copy persisted values from Preferences into localStorage, then keep the two
- *  in sync for every future write. Call once, awaited, before rendering. */
-export async function hydratePersistentStore() {
-  if (!isNativeApp() || installed) return;
-  installed = true;
+/** Best-effort push of the current whitelisted values into Preferences. Called
+ *  when the app is backgrounded, which is also when iOS flushes UserDefaults to
+ *  disk — so a force-quit afterwards can't lose the token. */
+export function flushToNative() {
+  if (!isNativeApp()) return Promise.resolve();
+  const jobs = [];
+  for (const key of PERSIST_KEYS) {
+    const val = getPersistedItem(key);
+    if (val != null) jobs.push(queueNativeWrite(() => Preferences.set({ key, value: String(val) })));
+  }
+  return Promise.all(jobs).catch(() => {});
+}
 
-  const rawSetItem = window.localStorage.setItem.bind(window.localStorage);
-  const rawRemoveItem = window.localStorage.removeItem.bind(window.localStorage);
-
-  // 1. Rehydrate: Preferences is the source of truth on native.
+async function pullFromNative() {
+  let sawPlugin = false;
   await Promise.all(
     PERSIST_KEYS.map(async (key) => {
       try {
         const { value } = await Preferences.get({ key });
+        sawPlugin = true;
         if (value != null) {
-          rawSetItem(key, value);
+          memory[key] = value;
+          if (window.localStorage.getItem(key) !== value) {
+            (rawSetItem || window.localStorage.setItem.bind(window.localStorage))(key, value);
+          }
         } else {
-          // First launch after adding this: seed Preferences from whatever
-          // localStorage still holds so we don't lose an active session.
-          const existing = window.localStorage.getItem(key);
-          if (existing != null) await Preferences.set({ key, value: existing });
+          // Seed Preferences from whatever localStorage still holds.
+          const existing = window.localStorage.getItem(key) ?? memory[key];
+          if (existing != null) await Preferences.set({ key, value: String(existing) });
         }
       } catch {
-        /* ignore — fall back to whatever localStorage has */
+        /* plugin missing / not ready */
       }
     })
   );
+  return sawPlugin;
+}
 
-  // 2. Write-through: mirror future localStorage writes for whitelisted keys.
+/** Reconcile all three stores and install the write-through. Call once, awaited,
+ *  before rendering. */
+export async function hydratePersistentStore() {
+  if (!isNativeApp() || installed) return;
+  installed = true;
+
+  rawSetItem = window.localStorage.setItem.bind(window.localStorage);
+  rawRemoveItem = window.localStorage.removeItem.bind(window.localStorage);
+
+  let ok = await pullFromNative();
+  // The bridge can still be warming up on a cold start — one quick retry.
+  if (!ok) { await new Promise((r) => setTimeout(r, 150)); ok = await pullFromNative(); }
+
   window.localStorage.setItem = function (key, value) {
     rawSetItem(key, value);
     if (PERSIST_KEYS.includes(key)) {
+      memory[key] = String(value);
       queueNativeWrite(() => Preferences.set({ key, value: String(value) })).catch(() => {});
     }
   };
   window.localStorage.removeItem = function (key) {
     rawRemoveItem(key);
     if (PERSIST_KEYS.includes(key)) {
+      delete memory[key];
       queueNativeWrite(() => Preferences.remove({ key })).catch(() => {});
     }
   };
 }
 
-/**
- * Re-copy persisted values from Preferences into localStorage. iOS can evict
- * WKWebView localStorage while the app is merely backgrounded (not just on a
- * full termination), so call this on every app resume — it's cheap and keeps
- * the auth token available for the next request without a re-login.
- */
+/** Re-pull from Preferences into localStorage + memory. Call on every resume —
+ *  iOS may have evicted the WebView store while the app was backgrounded. */
 export async function rehydratePersistentStore() {
   if (!isNativeApp()) return;
-  await Promise.all(
-    PERSIST_KEYS.map(async (key) => {
-      try {
-        const { value } = await Preferences.get({ key });
-        if (value != null && window.localStorage.getItem(key) !== value) {
-          window.localStorage.setItem(key, value);
-        }
-      } catch {
-        /* ignore */
-      }
-    })
-  );
+  await pullFromNative();
 }
