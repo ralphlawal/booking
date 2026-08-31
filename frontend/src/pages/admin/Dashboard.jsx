@@ -579,20 +579,6 @@ export default function Dashboard() {
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {business && (
-            <a
-              href={publicWebUrl(`/book/${business.slug}`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(event) => openExternalLink(event, publicWebUrl(`/book/${business.slug}`))}
-              className="btn-secondary text-xs hidden sm:flex gap-1.5"
-            >
-              <ExternalIcon className="w-3.5 h-3.5" />
-              Booking page
-            </a>
-          )}
-        </div>
       </div>
 
       {/* ── SNAPSHOT ─────────────────────────────────────────────── */}

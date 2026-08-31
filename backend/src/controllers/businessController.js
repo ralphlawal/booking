@@ -118,6 +118,7 @@ exports.getPublicBusiness = async (req, res) => {
       longitude: business.longitude,
       is_verified: business.is_verified,
       verification_status: business.verification_status,
+      currency: (business.bank_currency || 'GBP').toUpperCase(),
       settings: publicSettings,
     });
   } catch (err) {

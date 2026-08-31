@@ -52,7 +52,7 @@ function PostCard({ post }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
             <span className="font-bold text-sm text-gray-900 dark:text-white truncate">{post.business_name}</span>
-            {post.is_verified && <BadgeCheck className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />}
+            {!!post.is_verified && <BadgeCheck className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />}
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-400">
             {post.business_category && <span>{post.business_category}</span>}

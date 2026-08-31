@@ -261,10 +261,10 @@ function ServiceCard({ svc, onEdit, onDuplicate, onToggleActive, onToggleOnline,
             {!svc.is_active && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Archived</span>
             )}
-            {svc.is_active && !svc.online_booking_enabled && (
+            {!!svc.is_active && !svc.online_booking_enabled && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">Staff only</span>
             )}
-            {svc.is_active && svc.online_booking_enabled && (
+            {!!svc.is_active && svc.online_booking_enabled && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">Online ✓</span>
             )}
           </div>
@@ -274,7 +274,7 @@ function ServiceCard({ svc, onEdit, onDuplicate, onToggleActive, onToggleOnline,
             <span className="font-bold text-base text-primary-600 dark:text-primary-400">{SYM}{parseFloat(svc.price || 0).toFixed(2)}</span>
             <span className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{svc.duration_minutes} min</span>
             {svc.buffer_time > 0 && <span className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>+{svc.buffer_time}m buffer</span>}
-            {svc.deposit_required && svc.deposit_amount > 0 && (
+            {!!svc.deposit_required && svc.deposit_amount > 0 && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
                 🔒 {SYM}{parseFloat(svc.deposit_amount).toFixed(0)} deposit
               </span>

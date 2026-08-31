@@ -10,6 +10,7 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
 import { openExternalLink, publicWebUrl, shareContent } from '../../services/nativeBridge';
+import { currencySymbol } from '../../utils/currency';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -19,7 +20,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
-function cur(biz) { return biz?.settings?.currency || '€'; }
+function cur(biz) { return currencySymbol(biz?.currency || biz?.settings?.currency); }
 
 function isOpenNow(avail) {
   if (!avail?.working_days?.length || !avail.opening_time || !avail.closing_time) return null;
@@ -117,10 +118,10 @@ function ServiceCard({ svc, biz, onBook, preselected }) {
               <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--bp-chip)', color: 'var(--bp-muted)' }}>
                 ⏱ {svc.duration_minutes} min
               </span>
-              {svc.buffer_time > 0 && (
+              {Number(svc.buffer_time) > 0 && (
                 <span className="text-xs" style={{ color: 'var(--bp-faint)' }}>+{svc.buffer_time}m</span>
               )}
-              {svc.deposit_required && parseFloat(svc.deposit_amount) > 0 && (
+              {Number(svc.deposit_required) > 0 && parseFloat(svc.deposit_amount) > 0 && (
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700">
                   🔒 {C}{parseFloat(svc.deposit_amount).toFixed(0)} deposit
                 </span>
@@ -902,7 +903,7 @@ export default function BookingPage() {
               <div className="flex-1 min-w-0 pb-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">{business.name}</h1>
-                  {business.is_verified && (
+                  {!!business.is_verified && (
                     <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
                       ✓ Verified
                     </span>
@@ -1072,13 +1073,17 @@ export default function BookingPage() {
                   <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--bp-border)' }}>
                     {business.latitude && business.longitude && MAPBOX_TOKEN ? (
                       <img
-                        src={`https://api.mapbox.com/styles/v1/mapbox/light-v11/static/pin-s+18181b(${business.longitude},${business.latitude})/${business.longitude},${business.latitude},14,0/600x200@2x?access_token=${MAPBOX_TOKEN}`}
+                        src={`https://api.mapbox.com/styles/v1/mapbox/light-v11/static/pin-s+18181b(${business.longitude},${business.latitude})/${business.longitude},${business.latitude},14,0/1200x360@2x?access_token=${MAPBOX_TOKEN}`}
                         alt="Map"
-                        className="w-full h-40 object-cover"
+                        className="w-full h-48 sm:h-56 object-cover"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="h-32 flex items-center justify-center text-4xl" style={{ background: 'var(--bp-chip)' }}>🗺</div>
+                      <div className="h-24 flex items-center justify-center gap-2 px-4 text-sm font-medium"
+                        style={{ background: 'var(--bp-chip)', color: 'var(--bp-muted)' }}>
+                        <span className="text-lg">📍</span>
+                        <span className="truncate">{business.location || 'Location shared after booking'}</span>
+                      </div>
                     )}
                     <div className="p-4 flex items-center justify-between gap-3" style={{ background: 'var(--bp-card)' }}>
                       <div>

@@ -529,7 +529,7 @@ function AutomationsTab({ integrations, border, isDark }) {
                       onChange={() => toggle(auto)}
                       disabled={!!toggling || !channelOk}
                     />
-                    {auto.is_active && <span className="text-[10px] font-bold text-emerald-500">Active</span>}
+                    {!!auto.is_active && <span className="text-[10px] font-bold text-emerald-500">Active</span>}
                   </div>
                 </div>
               </div>

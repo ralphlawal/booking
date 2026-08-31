@@ -350,7 +350,7 @@ function MembershipsTab({ border, isDark }) {
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-bold" style={{ color: 'var(--bam-text)' }}>{p.name}</p>
                       {!p.is_active && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Inactive</span>}
-                      {p.priority_booking && <span className="text-[10px] px-2 py-0.5 rounded-full text-amber-600" style={{ background: 'rgba(245,158,11,.08)' }}>Priority booking</span>}
+                      {!!p.priority_booking && <span className="text-[10px] px-2 py-0.5 rounded-full text-amber-600" style={{ background: 'rgba(245,158,11,.08)' }}>Priority booking</span>}
                     </div>
                     <p className="text-xl font-extrabold" style={{ color: '#6366f1' }}>
                       {p.currency?.toUpperCase()} {parseFloat(p.price).toFixed(2)}<span className="text-sm font-normal text-gray-400">/{p.interval}</span>
