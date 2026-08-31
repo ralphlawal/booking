@@ -114,7 +114,9 @@ exports.login = async (req, res) => {
 exports.me = async (req, res) => {
   const business = await Business.findByUserId(req.user.id);
   res.json({
-    user: req.user,
+    // email_verified is a real boolean on Postgres but 0/1 on SQLite — normalise
+    // so the client can rely on a strict `=== true` / `!== true` check.
+    user: { ...req.user, email_verified: !!req.user.email_verified, is_verified: !!req.user.is_verified },
     business: business || null,
     onboardingComplete: !!business,
   });

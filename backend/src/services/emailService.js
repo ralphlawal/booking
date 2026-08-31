@@ -41,7 +41,7 @@ const detailRow = (label, value, shade) =>
      <td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${value}</td>
    </tr>`;
 
-const sendEmail = async ({ to, subject, html, business_id, booking_id, type, from }) => {
+const sendEmail = async ({ to, subject, html, business_id, booking_id, type, from, replyTo }) => {
   const client = getClient();
   if (!client) {
     await logNotification(type || 'email', business_id, booking_id, to, subject, 'skipped_no_key');
@@ -49,7 +49,7 @@ const sendEmail = async ({ to, subject, html, business_id, booking_id, type, fro
     return;
   }
   try {
-    await client.emails.send({ from: from || FROM, to, subject, html });
+    await client.emails.send({ from: from || FROM, to, subject, html, ...(replyTo ? { replyTo } : {}) });
     await logNotification(type || 'email', business_id, booking_id, to, subject, 'sent');
   } catch (err) {
     console.error('Email send error:', err.message);
@@ -187,7 +187,7 @@ const sendBookingRescheduled = (booking) =>
 // A personal note from the founder, sent once the email is verified (the
 // "account fully opened" moment). Deliberately plain and human — no big header
 // banner — and sent from ralph@bookam.business so replies reach a real inbox.
-const RALPH_FROM = 'Ralph Lawal <ralph@bookam.business>';
+const RALPH_FROM = 'Ralph Lawal <ralph.lawal@bookam.business>';
 
 const sendRalphWelcomeEmail = (recipient, kind = 'business') => {
   const firstName = (recipient.full_name || '').trim().split(/\s+/)[0] || 'there';
@@ -198,44 +198,45 @@ const sendRalphWelcomeEmail = (recipient, kind = 'business') => {
   const body = isBiz
     ? `
       <p>Hi ${firstName},</p>
-      <p>You verified your email, which means you've now done more setup than roughly half the internet. Genuinely — well done.</p>
-      <p>I'm Ralph, I built BookAm. The reason it exists: I got tired of watching brilliant people — barbers, stylists, cleaners, coaches — lose half their week to "hey are you free Saturday?" and the client who books, vanishes, and never texts back.</p>
-      <p>So here's the deal from my side:</p>
+      <p>Your email is verified — which, statistically, puts you ahead of most people who start a signup form. Nice work.</p>
+      <p>I'm Ralph Lawal. I built BookAm because I was tired of watching genuinely great people — barbers, stylists, cleaners, trainers, therapists — hand half their week to admin: the DMs, the "you free Saturday?", the client who books and quietly disappears.</p>
+      <p>So here's what BookAm does for you, in plain terms:</p>
       <ul style="margin:0 0 16px;padding-left:20px;color:#334155;font-size:15px;line-height:1.7">
-        <li>You get a booking page that works while you sleep.</li>
-        <li>Deposits so no-shows cost <em>them</em>, not you.</li>
-        <li>Money that lands in your account automatically after each appointment.</li>
-        <li>Me, actually reading replies to this email. Tell me what's broken, what's missing, what would make you switch for good. I ship fixes weekly.</li>
+        <li><strong>A booking page that works while you sleep</strong> — one link, clients book themselves, 24/7.</li>
+        <li><strong>Deposits</strong>, so a no-show costs <em>them</em>, not you.</li>
+        <li><strong>Automatic payouts</strong> — money in your account after each appointment, no chasing.</li>
+        <li><strong>A real person on the other end.</strong> Reply to this email and it reaches me. Tell me what's clunky or missing — I ship improvements every week.</li>
       </ul>
-      <p>It's early, it's improving fast, and you're in before the crowd. Let's get your page live.</p>
+      <p>It's early, it's moving fast, and you're in before the crowd. Let's get your page live.</p>
     `
     : `
       <p>Hi ${firstName},</p>
-      <p>Email verified. That's the hard part done — the rest is just booking nice things for yourself.</p>
-      <p>I'm Ralph, I built BookAm. I wanted one place to book a haircut, a massage, a deep clean — without the DMs, the "call to confirm", and the guessing whether they're even open.</p>
-      <p>What you get:</p>
+      <p>Email verified — the boring part is over. From here it's just booking good things for yourself.</p>
+      <p>I'm Ralph Lawal, and I built BookAm because booking a haircut, a massage or a deep clean still somehow involves three DMs and a "call to confirm". It shouldn't.</p>
+      <p>Here's what you get:</p>
       <ul style="margin:0 0 16px;padding-left:20px;color:#334155;font-size:15px;line-height:1.7">
-        <li>Book real local businesses in a couple of taps, any time.</li>
-        <li>Everything you've booked in one place, with reminders so you actually show up.</li>
-        <li>Reviews you can trust, because they're from people who actually went.</li>
+        <li><strong>Book real local businesses in a couple of taps</strong> — any time, no phone tag.</li>
+        <li><strong>Every appointment in one place</strong>, with reminders so you actually turn up.</li>
+        <li><strong>Reviews you can trust</strong>, because they come from people who genuinely went.</li>
       </ul>
-      <p>We're new and getting better every week. If something annoys you, hit reply — it comes straight to me.</p>
+      <p>We're new and getting sharper every week. If anything annoys you, hit reply — it comes straight to me.</p>
     `;
 
   return sendEmail({
     to: recipient.email,
     from: RALPH_FROM,
-    subject: isBiz ? `${firstName}, welcome to BookAm (a note from me)` : `Welcome to BookAm, ${firstName} 👋`,
+    replyTo: 'ralph.lawal@bookam.business',
+    subject: isBiz ? `${firstName}, welcome to BookAm — a note from me` : `Welcome to BookAm, ${firstName} 👋`,
     type: 'ralph_welcome',
     html: `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;padding:32px 16px">
         <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px 28px 24px">
           ${body}
           <p style="margin:20px 0 4px">
-            <a href="${ctaUrl}" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px">${ctaLabel} →</a>
+            <a href="${ctaUrl}" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px">${ctaLabel} &rarr;</a>
           </p>
-          <p style="margin:22px 0 0;color:#334155;font-size:15px">— Ralph<br/>
-            <span style="color:#94a3b8;font-size:13px">Founder, BookAm · just reply to this email</span>
+          <p style="margin:22px 0 0;color:#334155;font-size:15px">&mdash; Ralph Lawal<br/>
+            <span style="color:#94a3b8;font-size:13px">Founder, BookAm &middot; just reply to this email</span>
           </p>
         </div>
       </div>`,
@@ -427,9 +428,10 @@ const sendEmailOtpCode = (user, otp, purpose = 'verify') => {
     ? `Your BookAm sign-in code: ${otp}`
     : `Your BookAm verification code: ${otp}`;
   const heading = isLogin ? 'Your sign-in code' : 'Verify your email';
+  const firstName = (user.full_name || '').trim().split(/\s+/)[0];
   const subtext = isLogin
-    ? `Hi${user.full_name ? ` ${user.full_name}` : ''}, use this code to sign in to your BookAm Business account.`
-    : `Hi${user.full_name ? ` ${user.full_name}` : ''}, enter this code to verify your email and activate your account.`;
+    ? `Hi${firstName ? ` ${firstName}` : ''} — pop this in to sign in. It's yours for the next 10 minutes.`
+    : `Hi${firstName ? ` ${firstName}` : ''} — one quick step and you're in. Enter this code to confirm it's really you.`;
 
   return sendEmail({
     to: user.email,
