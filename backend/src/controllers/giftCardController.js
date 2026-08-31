@@ -21,7 +21,10 @@ exports.list = async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT gc.*,
-              (SELECT json_agg(t ORDER BY t.created_at DESC)
+              (SELECT json_agg(json_build_object(
+                        'id', t.id, 'type', t.type, 'amount', t.amount,
+                        'note', t.note, 'booking_id', t.booking_id, 'created_at', t.created_at)
+                      ORDER BY t.created_at DESC)
                FROM gift_card_transactions t WHERE t.gift_card_id = gc.id) AS transactions
        FROM gift_cards gc
        WHERE gc.business_id = $1

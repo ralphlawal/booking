@@ -20,64 +20,53 @@ function channelStatus() {
   };
 }
 
-// Resolve audience filter → list of customers with contact details
+// Resolve audience filter → list of customers with contact details.
+// Visit count, spend and last-visit are derived from bookings here (the
+// customers table only stores identity), so this works on Postgres and SQLite.
 async function resolveAudience(businessId, audience) {
   let whereExtra = '';
   if (audience === 'new') {
-    whereExtra = `AND c.total_visits <= 1`;
+    whereExtra = `AND q.visits <= 1`;
   } else if (audience === 'returning') {
-    whereExtra = `AND c.total_visits > 1`;
-  } else if (audience === 'vip') {
-    // Top 10% by spend — approximate with > avg
-    whereExtra = `AND c.lifetime_spend > (SELECT AVG(lifetime_spend) FROM customers WHERE business_id = $1 AND lifetime_spend > 0)`;
+    whereExtra = `AND q.visits > 1`;
   } else if (audience === 'inactive_30') {
-    whereExtra = `AND c.last_visit < NOW() - INTERVAL '30 days'`;
+    whereExtra = `AND (q.last_visit IS NULL OR q.last_visit < CURRENT_DATE - INTERVAL '30 days')`;
   } else if (audience === 'inactive_60') {
-    whereExtra = `AND c.last_visit < NOW() - INTERVAL '60 days'`;
+    whereExtra = `AND (q.last_visit IS NULL OR q.last_visit < CURRENT_DATE - INTERVAL '60 days')`;
   } else if (audience === 'at_risk') {
-    // Visited 2+ times but not in 45 days
-    whereExtra = `AND c.total_visits >= 2 AND c.last_visit < NOW() - INTERVAL '45 days'`;
+    whereExtra = `AND q.visits >= 2 AND q.last_visit < CURRENT_DATE - INTERVAL '45 days'`;
   }
-  // audience === 'all': no extra filter
+  // 'all' → no filter; 'vip' → post-filtered in JS below (needs the cohort average)
 
-  if (isPostgres) {
-    const { rows } = await db.query(
-      `SELECT DISTINCT ON (COALESCE(b.customer_email, c.email))
-              c.id, c.name, c.email, c.phone,
-              b.customer_email AS booking_email,
-              b.customer_phone AS booking_phone,
-              b.consumer_id
+  const { rows } = await db.query(
+    `SELECT * FROM (
+       SELECT c.id, c.full_name, c.email, c.phone,
+         (SELECT b.consumer_id FROM bookings b
+            WHERE b.customer_id = c.id AND b.consumer_id IS NOT NULL
+            ORDER BY b.created_at DESC LIMIT 1) AS consumer_id,
+         (SELECT COUNT(*) FROM bookings b
+            WHERE b.customer_id = c.id AND b.status IN ('completed','confirmed')) AS visits,
+         (SELECT MAX(b.booking_date) FROM bookings b
+            WHERE b.customer_id = c.id AND b.status <> 'cancelled') AS last_visit,
+         (SELECT COALESCE(SUM(COALESCE(s.price, 0)), 0) FROM bookings b
+            LEFT JOIN services s ON s.id = b.service_id
+            WHERE b.customer_id = c.id AND b.status IN ('completed','confirmed')) AS spend
        FROM customers c
-       LEFT JOIN bookings b ON b.business_id = c.business_id
-         AND (b.customer_email IS NOT NULL OR b.consumer_id IS NOT NULL)
-         AND b.id = (
-           SELECT id FROM bookings b2 WHERE b2.business_id = c.business_id
-             AND (b2.customer_email = c.email OR b2.customer_phone = c.phone)
-           ORDER BY b2.created_at DESC LIMIT 1
-         )
-       WHERE c.business_id = $1 ${whereExtra}
-       ORDER BY COALESCE(b.customer_email, c.email), c.last_visit DESC NULLS LAST
-       LIMIT 2000`,
-      [businessId]
-    );
-    return rows;
-  } else {
-    // SQLite fallback
-    const { rows } = await db.query(
-      `SELECT c.id, c.name, c.email, c.phone,
-              (SELECT b.customer_email FROM bookings b
-               WHERE b.business_id = c.business_id
-                 AND (b.customer_email IS NOT NULL OR b.consumer_id IS NOT NULL)
-               ORDER BY b.created_at DESC LIMIT 1) AS booking_email,
-              (SELECT b.consumer_id FROM bookings b
-               WHERE b.business_id = c.business_id
-               ORDER BY b.created_at DESC LIMIT 1) AS consumer_id
-       FROM customers c WHERE c.business_id = ?
-       LIMIT 2000`,
-      [businessId]
-    );
-    return rows;
+       WHERE c.business_id = $1
+     ) q
+     WHERE 1 = 1 ${whereExtra}
+     ORDER BY q.last_visit DESC
+     LIMIT 2000`,
+    [businessId]
+  );
+
+  if (audience === 'vip') {
+    const spends = rows.map(r => Number(r.spend) || 0).filter(v => v > 0);
+    if (!spends.length) return [];
+    const avg = spends.reduce((a, b) => a + b, 0) / spends.length;
+    return rows.filter(r => (Number(r.spend) || 0) > avg);
   }
+  return rows;
 }
 
 // Send one campaign message to one recipient
@@ -151,20 +140,19 @@ exports.intelligence = async (req, res) => {
       // Customers due this week (based on avg booking frequency)
       const { rows: due } = await db.query(
         `WITH freq AS (
-           SELECT c.id, c.name,
+           SELECT c.id, c.full_name,
                   COUNT(b.id) AS visits,
                   MAX(b.booking_date) AS last_date,
                   CASE WHEN COUNT(b.id) > 1
                     THEN EXTRACT(DAY FROM MAX(b.booking_date::timestamp) - MIN(b.booking_date::timestamp)) / NULLIF(COUNT(b.id)-1,0)
                     ELSE NULL END AS avg_interval_days
            FROM customers c
-           JOIN bookings b ON b.business_id = c.business_id
-             AND (b.customer_email = c.email OR b.customer_phone = c.phone)
+           JOIN bookings b ON b.customer_id = c.id
              AND b.status = 'completed'
            WHERE c.business_id = $1
-           GROUP BY c.id, c.name
+           GROUP BY c.id, c.full_name
          )
-         SELECT id, name, last_date, ROUND(avg_interval_days) AS avg_interval_days,
+         SELECT id, full_name AS name, last_date, ROUND(avg_interval_days) AS avg_interval_days,
                 (last_date + (avg_interval_days || ' days')::interval)::date AS next_due
          FROM freq
          WHERE avg_interval_days IS NOT NULL
@@ -187,12 +175,15 @@ exports.intelligence = async (req, res) => {
         });
       }
 
-      // Inactive 30+ days
+      // Inactive 30+ days (visit history derived from bookings)
       const { rows: inactive } = await db.query(
-        `SELECT COUNT(*) AS cnt FROM customers c
-         WHERE c.business_id = $1
-           AND c.last_visit < NOW() - INTERVAL '30 days'
-           AND c.total_visits >= 1`,
+        `SELECT COUNT(*) AS cnt FROM (
+           SELECT c.id,
+             (SELECT COUNT(*) FROM bookings b WHERE b.customer_id = c.id AND b.status IN ('completed','confirmed')) AS visits,
+             (SELECT MAX(b.booking_date) FROM bookings b WHERE b.customer_id = c.id AND b.status <> 'cancelled') AS last_visit
+           FROM customers c WHERE c.business_id = $1
+         ) q
+         WHERE q.visits >= 1 AND q.last_visit < CURRENT_DATE - INTERVAL '30 days'`,
         [bizId]
       );
       const inactiveCount = parseInt(inactive[0]?.cnt || 0);
@@ -246,12 +237,15 @@ exports.intelligence = async (req, res) => {
         }
       }
 
-      // At-risk regular customers
+      // At-risk regular customers (3+ visits, none in 45 days)
       const { rows: atRisk } = await db.query(
-        `SELECT COUNT(*) AS cnt FROM customers c
-         WHERE c.business_id = $1
-           AND c.total_visits >= 3
-           AND c.last_visit < NOW() - INTERVAL '45 days'`,
+        `SELECT COUNT(*) AS cnt FROM (
+           SELECT c.id,
+             (SELECT COUNT(*) FROM bookings b WHERE b.customer_id = c.id AND b.status IN ('completed','confirmed')) AS visits,
+             (SELECT MAX(b.booking_date) FROM bookings b WHERE b.customer_id = c.id AND b.status <> 'cancelled') AS last_visit
+           FROM customers c WHERE c.business_id = $1
+         ) q
+         WHERE q.visits >= 3 AND q.last_visit < CURRENT_DATE - INTERVAL '45 days'`,
         [bizId]
       );
       const atRiskCount = parseInt(atRisk[0]?.cnt || 0);
@@ -534,21 +528,24 @@ exports.toggleAutomation = async (req, res) => {
 // GET /api/growth/loyalty
 exports.loyaltyStats = async (req, res) => {
   try {
-    if (!isPostgres) return res.json({ total_members: 0, avg_visits: 0, top_customers: [] });
+    // Per-customer visit/spend/last-visit derived from bookings (works on both engines).
+    const statSub = `
+      SELECT c.id, c.full_name,
+        (SELECT COUNT(*) FROM bookings b WHERE b.customer_id = c.id AND b.status IN ('completed','confirmed')) AS total_visits,
+        (SELECT COALESCE(SUM(COALESCE(s.price,0)),0) FROM bookings b LEFT JOIN services s ON s.id = b.service_id
+           WHERE b.customer_id = c.id AND b.status IN ('completed','confirmed')) AS lifetime_spend,
+        (SELECT MAX(b.booking_date) FROM bookings b WHERE b.customer_id = c.id AND b.status <> 'cancelled') AS last_visit
+      FROM customers c WHERE c.business_id = $1`;
 
     const { rows } = await db.query(
-      `SELECT
-         COUNT(DISTINCT c.id) AS total_members,
-         COALESCE(AVG(c.total_visits), 0) AS avg_visits,
-         COALESCE(SUM(c.lifetime_spend), 0) AS total_spend
-       FROM customers c
-       WHERE c.business_id = $1 AND c.total_visits >= 2`,
+      `SELECT COUNT(*) AS total_members, COALESCE(AVG(total_visits),0) AS avg_visits,
+              COALESCE(SUM(lifetime_spend),0) AS total_spend
+       FROM (${statSub}) q WHERE q.total_visits >= 2`,
       [req.business.id]
     );
     const { rows: top } = await db.query(
-      `SELECT c.name, c.total_visits, c.lifetime_spend, c.last_visit
-       FROM customers c WHERE c.business_id = $1
-       ORDER BY c.lifetime_spend DESC NULLS LAST LIMIT 5`,
+      `SELECT full_name, total_visits, lifetime_spend, last_visit
+       FROM (${statSub}) q ORDER BY lifetime_spend DESC LIMIT 5`,
       [req.business.id]
     );
     res.json({ ...rows[0], top_customers: top });

@@ -554,6 +554,38 @@ function runSqliteMigrations() {
   }
   try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN no_show_count INTEGER DEFAULT 0`); } catch {}
   try { db.exec(`ALTER TABLE customers ADD COLUMN notes TEXT`); } catch {}
+
+  // ── Retention + Growth feature tables (Postgres migrations 027, 032, 034-037).
+  //    Kept in sync here so local SQLite dev exercises every feature area. ──
+  for (const col of ['no_shows INTEGER DEFAULT 0', 'total_spent REAL DEFAULT 0', 'total_bookings INTEGER DEFAULT 0']) {
+    try { db.exec(`ALTER TABLE customers ADD COLUMN ${col}`); } catch {}
+  }
+  for (const col of ["commission_type TEXT NOT NULL DEFAULT 'none'", 'commission_value REAL NOT NULL DEFAULT 0', "inbox_permissions TEXT DEFAULT '[]'"]) {
+    try { db.exec(`ALTER TABLE staff_members ADD COLUMN ${col}`); } catch {}
+  }
+  for (const col of ['membership_id TEXT', 'gift_card_id TEXT', 'gift_card_amount REAL']) {
+    try { db.exec(`ALTER TABLE bookings ADD COLUMN ${col}`); } catch {}
+  }
+  const featureTables = [
+    `CREATE TABLE IF NOT EXISTS campaigns (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, channel TEXT NOT NULL DEFAULT 'email', audience TEXT NOT NULL DEFAULT 'all', subject TEXT, message TEXT NOT NULL, offer_type TEXT DEFAULT 'none', offer_value TEXT, booking_link TEXT, status TEXT NOT NULL DEFAULT 'draft', scheduled_at TEXT, sent_at TEXT, recipient_count INTEGER DEFAULT 0, delivered_count INTEGER DEFAULT 0, opened_count INTEGER DEFAULT 0, clicked_count INTEGER DEFAULT 0, booked_count INTEGER DEFAULT 0, revenue_generated REAL DEFAULT 0, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS automations (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, trigger_type TEXT NOT NULL, channel TEXT NOT NULL DEFAULT 'email', subject TEXT, message TEXT NOT NULL, delay_hours INTEGER DEFAULT 24, is_active INTEGER DEFAULT 0, sent_count INTEGER DEFAULT 0, booked_count INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')), UNIQUE(business_id, trigger_type))`,
+    `CREATE TABLE IF NOT EXISTS campaign_sends (id TEXT PRIMARY KEY, campaign_id TEXT NOT NULL, customer_email TEXT, customer_phone TEXT, customer_name TEXT, consumer_id TEXT, channel TEXT NOT NULL, status TEXT DEFAULT 'sent', sent_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS loyalty_programs (id TEXT PRIMARY KEY, business_id TEXT NOT NULL UNIQUE, name TEXT NOT NULL DEFAULT 'Loyalty Rewards', type TEXT NOT NULL DEFAULT 'spend', points_per_pound REAL DEFAULT 1, points_per_visit INTEGER DEFAULT 10, points_expiry_days INTEGER DEFAULT 365, is_active INTEGER NOT NULL DEFAULT 1, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS loyalty_rewards (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, description TEXT, type TEXT NOT NULL DEFAULT 'discount', points_cost INTEGER NOT NULL, discount_value REAL, service_id TEXT, max_redemptions INTEGER, redeemed_count INTEGER NOT NULL DEFAULT 0, is_active INTEGER NOT NULL DEFAULT 1, created_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS loyalty_ledger (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, customer_id TEXT, consumer_id TEXT, booking_id TEXT, type TEXT NOT NULL, points INTEGER NOT NULL, note TEXT, expires_at TEXT, created_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS loyalty_redemptions (id TEXT PRIMARY KEY, reward_id TEXT NOT NULL, business_id TEXT NOT NULL, customer_id TEXT, consumer_id TEXT, booking_id TEXT, points_spent INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS membership_plans (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, description TEXT, price REAL NOT NULL, currency TEXT NOT NULL DEFAULT 'gbp', interval TEXT NOT NULL DEFAULT 'month', interval_count INTEGER NOT NULL DEFAULT 1, priority_booking INTEGER NOT NULL DEFAULT 0, stripe_price_id TEXT, stripe_product_id TEXT, is_active INTEGER NOT NULL DEFAULT 1, sort_order INTEGER NOT NULL DEFAULT 0, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS membership_plan_services (id TEXT PRIMARY KEY, plan_id TEXT NOT NULL, service_id TEXT NOT NULL, quantity INTEGER NOT NULL DEFAULT 1, UNIQUE(plan_id, service_id))`,
+    `CREATE TABLE IF NOT EXISTS customer_memberships (id TEXT PRIMARY KEY, plan_id TEXT NOT NULL, business_id TEXT NOT NULL, customer_id TEXT, consumer_id TEXT, status TEXT NOT NULL DEFAULT 'active', stripe_subscription_id TEXT UNIQUE, stripe_customer_id TEXT, current_period_start TEXT, current_period_end TEXT, cancel_at_period_end INTEGER NOT NULL DEFAULT 0, cancelled_at TEXT, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS membership_usage (id TEXT PRIMARY KEY, membership_id TEXT NOT NULL, plan_service_id TEXT NOT NULL, booking_id TEXT, period_start TEXT NOT NULL, created_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS service_packages (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, description TEXT, session_count INTEGER NOT NULL DEFAULT 1, price REAL NOT NULL, currency TEXT NOT NULL DEFAULT 'gbp', valid_days INTEGER DEFAULT 365, is_active INTEGER NOT NULL DEFAULT 1, sort_order INTEGER NOT NULL DEFAULT 0, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS service_package_services (package_id TEXT NOT NULL, service_id TEXT NOT NULL, PRIMARY KEY (package_id, service_id))`,
+    `CREATE TABLE IF NOT EXISTS customer_packages (id TEXT PRIMARY KEY, package_id TEXT NOT NULL, business_id TEXT NOT NULL, customer_id TEXT, consumer_id TEXT, sessions_total INTEGER NOT NULL, sessions_used INTEGER NOT NULL DEFAULT 0, price_paid REAL NOT NULL, currency TEXT NOT NULL DEFAULT 'gbp', stripe_payment_intent_id TEXT, payment_status TEXT NOT NULL DEFAULT 'pending', status TEXT NOT NULL DEFAULT 'active', purchased_at TEXT DEFAULT (datetime('now')), expires_at TEXT, created_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS package_redemptions (id TEXT PRIMARY KEY, customer_package_id TEXT NOT NULL, booking_id TEXT, created_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS gift_cards (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, code TEXT NOT NULL, initial_value REAL NOT NULL, remaining_balance REAL NOT NULL, currency TEXT NOT NULL DEFAULT 'gbp', recipient_name TEXT, recipient_email TEXT, sender_name TEXT, message TEXT, stripe_payment_intent_id TEXT, payment_status TEXT NOT NULL DEFAULT 'pending', status TEXT NOT NULL DEFAULT 'active', expires_at TEXT, created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now')), UNIQUE(business_id, code))`,
+    `CREATE TABLE IF NOT EXISTS gift_card_transactions (id TEXT PRIMARY KEY, gift_card_id TEXT NOT NULL, booking_id TEXT, type TEXT NOT NULL, amount REAL NOT NULL, note TEXT, created_at TEXT DEFAULT (datetime('now')))`,
+  ];
+  for (const t of featureTables) { try { db.exec(t); } catch (e) { console.error('[sqlite feature table]', e.message); } }
 }
 
 async function start() {

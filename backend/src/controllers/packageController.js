@@ -109,7 +109,7 @@ exports.listCustomerPackages = async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT cp.*, p.name AS package_name, p.session_count,
-              c.name AS customer_name, c.email AS customer_email
+              c.full_name AS customer_name, c.email AS customer_email
        FROM customer_packages cp
        JOIN service_packages p ON p.id = cp.package_id
        LEFT JOIN customers c ON c.id = cp.customer_id

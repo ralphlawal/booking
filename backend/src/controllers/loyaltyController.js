@@ -189,7 +189,7 @@ exports.adjustPoints = async (req, res) => {
 exports.listRedemptions = async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT rd.*, r.name AS reward_name, c.name AS customer_name
+      `SELECT rd.*, r.name AS reward_name, c.full_name AS customer_name
        FROM loyalty_redemptions rd
        JOIN loyalty_rewards r ON r.id = rd.reward_id
        LEFT JOIN customers c ON c.id = rd.customer_id

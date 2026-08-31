@@ -151,7 +151,7 @@ exports.listSubscribers = async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT cm.*, p.name AS plan_name, p.price, p.currency, p.interval,
-              c.name AS customer_name, c.email AS customer_email,
+              c.full_name AS customer_name, c.email AS customer_email,
               (
                 SELECT COUNT(*) FROM membership_usage mu WHERE mu.membership_id = cm.id
                   AND mu.period_start = cm.current_period_start

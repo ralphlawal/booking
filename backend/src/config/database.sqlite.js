@@ -29,14 +29,21 @@ const query = async (text, params = []) => {
       return '?';
     })
     .replace(/'([^']*)'::jsonb/g, "'$1'")
-    .replace(/::[a-zA-Z_][\w]*(?:\[\])?/g, '')
+    // Strip Postgres casts, including parameterised types: ::numeric(10,2), ::varchar(255), ::int[]
+    .replace(/::[a-zA-Z_][\w]*(?:\s*\(\s*\d+(?:\s*,\s*\d+)?\s*\))?(?:\[\])?/g, '')
     .replace(/\bILIKE\b/gi, 'LIKE')
     // Postgres JSON helpers → their SQLite JSON1 equivalents (columns are
     // stored as JSON text in the SQLite schema).
     .replace(/\bjsonb?_array_length\b/gi, 'json_array_length')
     .replace(/\bjsonb?_build_object\b/gi, 'json_object')
     .replace(/\bjsonb?_agg\b/gi, 'json_group_array')
-    .replace(/\bjsonb_array_elements_text\b/gi, 'json_each');
+    .replace(/\bjsonb_array_elements_text\b/gi, 'json_each')
+    // Postgres date arithmetic → SQLite datetime()/date() modifiers.
+    .replace(
+      /\b(NOW\(\)|CURRENT_TIMESTAMP|CURRENT_DATE)\s*([-+])\s*INTERVAL\s*'\s*(\d+)\s+([a-z]+?)s?\s*'/gi,
+      (_, base, sign, n, unit) =>
+        `${/DATE/i.test(base) ? 'date' : 'datetime'}('now', '${sign}${n} ${unit.toLowerCase()}s')`
+    );
 
   const stmt = db.prepare(sql);
   const upper = sql.trimStart().toUpperCase();
