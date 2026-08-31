@@ -45,7 +45,7 @@ import OfflineNotice from './components/shared/OfflineNotice';
 import NativeWelcome from './pages/native/NativeWelcome';
 import { isNativeApp } from './config/platform';
 import { NATIVE_NAVIGATE_EVENT } from './services/nativeBridge';
-import { rehydratePersistentStore, flushToNative } from './services/persistentStore';
+import { rehydratePersistentStore, flushToNative, getPersistedItem } from './services/persistentStore';
 
 // Product areas are loaded when they are opened. This keeps public booking and
 // the first dashboard paint fast while retaining the same routes and behaviour.
@@ -131,6 +131,20 @@ const ConsumerVerifiedRoute = ({ children }) => {
 };
 
 const PageLoader = () => <LoadingScreen />;
+
+// Native apps always boot at "/". Send an already-signed-in user straight into
+// the app instead of parking them on the welcome/chooser screen every launch.
+const NativeEntry = () => {
+  const { user, loading: bizLoading } = useAuth();
+  const { consumer, loading: consLoading } = useCustomerAuth();
+  const hasBizToken = !!getPersistedItem('bam_token');
+  const hasConsToken = !!getPersistedItem('customerToken');
+  // Only block on a context that actually has a stored session to restore.
+  if ((hasBizToken && bizLoading) || (hasConsToken && consLoading)) return <PageLoader />;
+  if (user) return <Navigate to="/admin/dashboard" replace />;
+  if (consumer) return <Navigate to="/customer/dashboard" replace />;
+  return <NativeWelcome />;
+};
 
 function NativeNavigationBridge() {
   const navigate = useNavigate();
@@ -283,7 +297,7 @@ export default function App() {
             <Route path="/signup" element={<SignupChooser />} />
 
             {/* Landing */}
-            <Route path="/" element={isNativeApp() ? <NativeWelcome /> : <Landing />} />
+            <Route path="/" element={isNativeApp() ? <NativeEntry /> : <Landing />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
