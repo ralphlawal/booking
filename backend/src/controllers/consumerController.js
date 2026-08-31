@@ -3,7 +3,10 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const ConsumerAccount = require('../models/ConsumerAccount');
 const Notification = require('../models/Notification');
-const { sendEmail, sendVerificationEmail } = require('../services/emailService');
+const { sendEmail, sendVerificationEmail, sendEmailOtpCode, sendRalphWelcomeEmail } = require('../services/emailService');
+
+const genOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+const otpExpiry = () => new Date(Date.now() + 10 * 60 * 1000);
 const db = require('../config/database');
 const { saveUploadedMedia } = require('../utils/mediaStorage');
 const { issueRefreshToken, rotateRefreshToken, revokeAllUserSessions } = require('../services/sessionService');
@@ -66,8 +69,6 @@ exports.register = async (req, res) => {
 
     const { referral_code: usedCode } = req.body;
     const consumer = await ConsumerAccount.create({ email, password, full_name, phone });
-    const token = signToken(consumer);
-    const refreshToken = await issueRefreshToken('consumer', consumer.id);
 
     // Assign a unique referral code to every new consumer
     const myCode = generateReferralCode(full_name);
@@ -88,14 +89,10 @@ exports.register = async (req, res) => {
     // Link any past guest bookings with matching email
     ConsumerAccount.linkByEmail(consumer.id, email).catch(() => {});
 
-    // Send email verification (fire-and-forget)
-    const verifyToken = crypto.randomBytes(32).toString('hex');
-    ConsumerAccount.saveVerifyToken(consumer.id, verifyToken).catch(() => {});
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://bookam.business';
-    sendVerificationEmail(consumer, `${FRONTEND_URL}/customer/verify-email?token=${verifyToken}`).catch(() => {});
-
-    // Send welcome email and in-app notification (fire and forget)
-    sendConsumerWelcomeEmail(consumer);
+    // Send a verification code — the account isn't "fully open" until it's entered.
+    const otp = genOtp();
+    await ConsumerAccount.saveEmailOtp(consumer.id, otp, otpExpiry()).catch((e) => console.error('[consumer] saveEmailOtp:', e.message));
+    sendEmailOtpCode(consumer, otp, 'verify').catch(() => {});
     createWelcomeNotification(consumer.id);
 
     // Notify admin of new signup
@@ -112,8 +109,9 @@ exports.register = async (req, res) => {
       </div>`,
     }).catch(() => {});
 
-    res.status(201).json({ consumer, token, refreshToken });
-  } catch (err) { 
+    // No session until the email is verified via the OTP.
+    res.status(201).json({ needsVerification: true, email: consumer.email });
+  } catch (err) {
     console.error('[consumer/register]', err.message);
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -336,6 +334,51 @@ exports.verifyEmail = async (req, res) => {
   } catch (err) {
     console.error('[consumer/verify-email]', err.message);
     res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
+exports.verifyEmailOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email and code required' });
+    const consumer = await ConsumerAccount.findByEmail(email);
+    if (!consumer) return res.status(400).json({ error: 'Invalid code' });
+    if (String(consumer.email_otp) !== String(otp)) {
+      return res.status(400).json({ error: 'Incorrect code — check your email and try again' });
+    }
+    if (!consumer.email_otp_expires || new Date(consumer.email_otp_expires) < new Date()) {
+      return res.status(400).json({ error: 'Code expired — request a new one' });
+    }
+    await ConsumerAccount.clearEmailOtp(consumer.id);
+
+    // Account fully open — founder's welcome note.
+    sendRalphWelcomeEmail(consumer, 'consumer').catch(() => {});
+
+    const { password_hash, email_otp, email_otp_expires, ...safe } = consumer;
+    safe.email_verified = true;
+    const token = signToken(safe);
+    const refreshToken = await issueRefreshToken('consumer', safe.id);
+    res.json({ consumer: safe, token, refreshToken });
+  } catch (err) {
+    console.error('[consumer/verify-email-otp]', err.message);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
+exports.resendEmailOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    const consumer = await ConsumerAccount.findByEmail(email);
+    if (!consumer) return res.json({ message: 'If that email is registered, a code has been sent.' });
+    if (consumer.email_verified) return res.json({ message: 'Already verified' });
+    const otp = genOtp();
+    await ConsumerAccount.saveEmailOtp(consumer.id, otp, otpExpiry());
+    sendEmailOtpCode(consumer, otp, 'verify').catch(() => {});
+    res.json({ message: 'A new code has been sent.' });
+  } catch (err) {
+    console.error('[consumer/resend-email-otp]', err.message);
+    res.status(500).json({ error: 'Failed to send code' });
   }
 };
 

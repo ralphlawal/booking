@@ -2,7 +2,10 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Business = require('../models/Business');
-const { sendEmail, sendWelcomeEmail, sendVerificationEmail, sendEmailOtpCode } = require('../services/emailService');
+const { sendEmail, sendWelcomeEmail, sendRalphWelcomeEmail, sendVerificationEmail, sendEmailOtpCode } = require('../services/emailService');
+
+const genOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+const otpExpiry = () => new Date(Date.now() + 10 * 60 * 1000);
 const { sendSms } = require('../services/smsService');
 const db = require('../config/database');
 const { issueRefreshToken, rotateRefreshToken, revokeAllUserSessions } = require('../services/sessionService');
@@ -21,8 +24,10 @@ exports.register = async (req, res) => {
 
     const user = await User.create({ email, password, full_name });
 
-    // Send welcome email (fire-and-forget)
-    sendWelcomeEmail(user).catch(() => {});
+    // Send a verification code — the account isn't "fully open" until it's entered.
+    const otp = genOtp();
+    await User.saveEmailOtp(user.id, otp, otpExpiry()).catch((e) => console.error('saveEmailOtp:', e.message));
+    sendEmailOtpCode(user, otp, 'verify').catch(() => {});
 
     // Notify admin of new signup
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ralphlawal2003@gmail.com';
@@ -39,16 +44,32 @@ exports.register = async (req, res) => {
       </div>`,
     }).catch(() => {});
 
-    const token = signToken(user.id);
-    const refreshToken = await issueRefreshToken('business', user.id);
+    // No session until the email is verified via the OTP.
     res.status(201).json({
-      token,
-      refreshToken,
+      needsVerification: true,
+      email: user.email,
       user: { id: user.id, email: user.email, full_name: user.full_name, email_verified: false },
     });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: 'Registration failed' });
+  }
+};
+
+exports.resendEmailOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    const user = await User.findByEmail(email);
+    if (!user) return res.json({ message: 'If that email is registered, a code has been sent.' });
+    if (user.email_verified) return res.json({ message: 'Already verified' });
+    const otp = genOtp();
+    await User.saveEmailOtp(user.id, otp, otpExpiry());
+    sendEmailOtpCode(user, otp, 'verify').catch(() => {});
+    res.json({ message: 'A new code has been sent.' });
+  } catch (err) {
+    console.error('Resend email OTP error:', err);
+    res.status(500).json({ error: 'Failed to send code' });
   }
 };
 
@@ -238,6 +259,9 @@ exports.verifyEmailOtp = async (req, res) => {
     }
 
     await User.clearEmailOtp(user.id);
+
+    // Account is now fully open — send the founder's welcome note.
+    sendRalphWelcomeEmail(user, 'business').catch(() => {});
 
     const business = await Business.findByUserId(user.id);
     const token = signToken(user.id);

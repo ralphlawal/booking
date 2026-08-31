@@ -368,6 +368,20 @@ const ConsumerAccount = {
     );
   },
 
+  async saveEmailOtp(id, otp, expiresAt) {
+    await db.query(
+      'UPDATE consumer_accounts SET email_otp = $1, email_otp_expires = $2 WHERE id = $3',
+      [otp, expiresAt, id]
+    );
+  },
+
+  async clearEmailOtp(id) {
+    await db.query(
+      'UPDATE consumer_accounts SET email_otp = NULL, email_otp_expires = NULL, email_verified = TRUE, email_verify_token = NULL WHERE id = $1',
+      [id]
+    );
+  },
+
   async deleteById(id) {
     // Preserve booking records for the business by nullifying consumer link
     await db.query('UPDATE bookings SET consumer_id = NULL WHERE consumer_id = $1', [id]);

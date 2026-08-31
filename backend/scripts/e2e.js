@@ -83,18 +83,38 @@ async function testHealth() {
 async function testConsumerSignup() {
   section('Consumer signup & login');
 
-  await step('POST /api/consumer/register — new account', async () => {
+  await step('POST /api/consumer/register — new account (OTP issued)', async () => {
     const { status, json } = await req('POST', '/api/consumer/register', {
       body: { email: CONSUMER_EMAIL, password: CONSUMER_PASS, full_name: CONSUMER_NAME },
     });
     if (status !== 201) throw new Error(`Got ${status}: ${json?.error}`);
-    if (!json.token) throw new Error('No token returned');
+    if (!json.needsVerification) throw new Error('Expected needsVerification');
+    return 'registered, code sent';
+  });
+
+  await step('POST /api/consumer/verify-email-otp — activates account', async () => {
+    // Local runs read the code straight from the DB; against a remote base the
+    // code isn't visible, so this leg is skipped.
+    let otp = null;
+    try {
+      if (BASE.includes('localhost') || BASE.includes('127.0.0.1')) {
+        const { db } = require('../src/config/database.sqlite');
+        otp = db.prepare('SELECT email_otp FROM consumer_accounts WHERE email = ?').get(CONSUMER_EMAIL)?.email_otp;
+      }
+    } catch { /* no local DB access */ }
+    if (!otp) return 'skipped (no local DB access)';
+    const { status, json } = await req('POST', '/api/consumer/verify-email-otp', {
+      body: { email: CONSUMER_EMAIL, otp: String(otp) },
+    });
+    if (status !== 200) throw new Error(`Got ${status}: ${json?.error}`);
+    if (!json.token) throw new Error('No token after verify');
     consumerToken = json.token;
     consumerData = json.consumer;
-    return `id=${consumerData.id?.slice(0,8)}`;
+    return `verified, id=${consumerData.id?.slice(0, 8)}`;
   });
 
   await step('GET /api/consumer/me — token works', async () => {
+    if (!consumerToken) return 'skipped (no token — remote base)';
     const { status, json } = await req('GET', '/api/consumer/me', { token: consumerToken });
     if (status !== 200) throw new Error(`Got ${status}`);
     if (json.email !== CONSUMER_EMAIL) throw new Error('Email mismatch');
@@ -242,6 +262,7 @@ async function testConsumerBookings() {
   section('Consumer booking view');
 
   await step('GET /api/consumer/bookings — authenticated', async () => {
+    if (!consumerToken) return "skipped (no consumer token)";
     const { status, json } = await req('GET', '/api/consumer/bookings', { token: consumerToken });
     // May 403 if email not verified — that's acceptable
     if (status === 403) return 'email not verified (expected in CI)';
@@ -299,7 +320,7 @@ async function testChat() {
     // Consumer chat requires email verification — 403 is acceptable in CI
     const { status, json } = await req('POST', '/api/chat/consumer/rooms', {
       token: consumerToken,
-      body: { type: 'support', subject: 'E2E test chat' },
+      body: { type: 'admin_consumer', subject: 'E2E test chat' },
     });
     if (status === 403) return 'email not verified (expected in CI)';
     if (![200, 201].includes(status)) throw new Error(`Got ${status}: ${json?.error}`);
@@ -332,12 +353,14 @@ async function testNotifications() {
   section('Notifications');
 
   await step('GET /api/consumer/notifications', async () => {
+    if (!consumerToken) return "skipped (no consumer token)";
     const { status, json } = await req('GET', '/api/consumer/notifications', { token: consumerToken });
     if (status !== 200) throw new Error(`Got ${status}`);
     return `${json.length} notification(s)`;
   });
 
   await step('POST /api/consumer/notifications/read', async () => {
+    if (!consumerToken) return "skipped (no consumer token)";
     const { status } = await req('POST', '/api/consumer/notifications/read', { token: consumerToken });
     if (status !== 200) throw new Error(`Got ${status}`);
     return 'marked read';

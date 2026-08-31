@@ -41,7 +41,7 @@ const detailRow = (label, value, shade) =>
      <td style="padding:10px 14px;color:#1e293b;font-size:14px;font-weight:500">${value}</td>
    </tr>`;
 
-const sendEmail = async ({ to, subject, html, business_id, booking_id, type }) => {
+const sendEmail = async ({ to, subject, html, business_id, booking_id, type, from }) => {
   const client = getClient();
   if (!client) {
     await logNotification(type || 'email', business_id, booking_id, to, subject, 'skipped_no_key');
@@ -49,7 +49,7 @@ const sendEmail = async ({ to, subject, html, business_id, booking_id, type }) =
     return;
   }
   try {
-    await client.emails.send({ from: FROM, to, subject, html });
+    await client.emails.send({ from: from || FROM, to, subject, html });
     await logNotification(type || 'email', business_id, booking_id, to, subject, 'sent');
   } catch (err) {
     console.error('Email send error:', err.message);
@@ -183,6 +183,64 @@ const sendBookingRescheduled = (booking) =>
       <p style="margin:20px 0 0;color:#94a3b8;font-size:13px;text-align:center">Questions? Contact ${booking.business_name}${booking.business_phone ? ` at ${booking.business_phone}` : ''}.</p>
     `),
   });
+
+// A personal note from the founder, sent once the email is verified (the
+// "account fully opened" moment). Deliberately plain and human — no big header
+// banner — and sent from ralph@bookam.business so replies reach a real inbox.
+const RALPH_FROM = 'Ralph Lawal <ralph@bookam.business>';
+
+const sendRalphWelcomeEmail = (recipient, kind = 'business') => {
+  const firstName = (recipient.full_name || '').trim().split(/\s+/)[0] || 'there';
+  const isBiz = kind === 'business';
+  const ctaUrl = `${process.env.FRONTEND_URL || 'https://bookam.business'}${isBiz ? '/admin/onboarding' : '/explore'}`;
+  const ctaLabel = isBiz ? 'Set up my booking page' : 'Find somewhere to book';
+
+  const body = isBiz
+    ? `
+      <p>Hi ${firstName},</p>
+      <p>You verified your email, which means you've now done more setup than roughly half the internet. Genuinely — well done.</p>
+      <p>I'm Ralph, I built BookAm. The reason it exists: I got tired of watching brilliant people — barbers, stylists, cleaners, coaches — lose half their week to "hey are you free Saturday?" and the client who books, vanishes, and never texts back.</p>
+      <p>So here's the deal from my side:</p>
+      <ul style="margin:0 0 16px;padding-left:20px;color:#334155;font-size:15px;line-height:1.7">
+        <li>You get a booking page that works while you sleep.</li>
+        <li>Deposits so no-shows cost <em>them</em>, not you.</li>
+        <li>Money that lands in your account automatically after each appointment.</li>
+        <li>Me, actually reading replies to this email. Tell me what's broken, what's missing, what would make you switch for good. I ship fixes weekly.</li>
+      </ul>
+      <p>It's early, it's improving fast, and you're in before the crowd. Let's get your page live.</p>
+    `
+    : `
+      <p>Hi ${firstName},</p>
+      <p>Email verified. That's the hard part done — the rest is just booking nice things for yourself.</p>
+      <p>I'm Ralph, I built BookAm. I wanted one place to book a haircut, a massage, a deep clean — without the DMs, the "call to confirm", and the guessing whether they're even open.</p>
+      <p>What you get:</p>
+      <ul style="margin:0 0 16px;padding-left:20px;color:#334155;font-size:15px;line-height:1.7">
+        <li>Book real local businesses in a couple of taps, any time.</li>
+        <li>Everything you've booked in one place, with reminders so you actually show up.</li>
+        <li>Reviews you can trust, because they're from people who actually went.</li>
+      </ul>
+      <p>We're new and getting better every week. If something annoys you, hit reply — it comes straight to me.</p>
+    `;
+
+  return sendEmail({
+    to: recipient.email,
+    from: RALPH_FROM,
+    subject: isBiz ? `${firstName}, welcome to BookAm (a note from me)` : `Welcome to BookAm, ${firstName} 👋`,
+    type: 'ralph_welcome',
+    html: `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;padding:32px 16px">
+        <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px 28px 24px">
+          ${body}
+          <p style="margin:20px 0 4px">
+            <a href="${ctaUrl}" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px">${ctaLabel} →</a>
+          </p>
+          <p style="margin:22px 0 0;color:#334155;font-size:15px">— Ralph<br/>
+            <span style="color:#94a3b8;font-size:13px">Founder, BookAm · just reply to this email</span>
+          </p>
+        </div>
+      </div>`,
+  });
+};
 
 const sendWelcomeEmail = (user) =>
   sendEmail({
@@ -396,4 +454,4 @@ const sendEmailOtpCode = (user, otp, purpose = 'verify') => {
   });
 };
 
-module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail, sendEmailOtpCode, sendBusinessPaymentReleasedEmail, sendWaitlistNotification };
+module.exports = { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendReminder, sendWelcomeEmail, sendRalphWelcomeEmail, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendVerificationEmail, sendEmailOtpCode, sendBusinessPaymentReleasedEmail, sendWaitlistNotification };

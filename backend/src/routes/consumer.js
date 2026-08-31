@@ -51,6 +51,8 @@ router.delete('/account', authenticateConsumer, ctrl.deleteAccount);
 router.get('/notifications', authenticateConsumer, ctrl.getNotifications);
 router.post('/notifications/read', authenticateConsumer, ctrl.markNotificationsRead);
 router.post('/resend-verification', authenticateConsumer, ctrl.resendVerification);
+router.post('/verify-email-otp', ctrl.verifyEmailOtp);
+router.post('/resend-email-otp', ctrl.resendEmailOtp);
 router.get('/verify-email', ctrl.verifyEmail);
 router.get('/referral', authenticateConsumer, ctrl.getReferral);
 router.get('/loyalty', authenticateConsumer, requireVerifiedConsumer, ctrl.getLoyalty);

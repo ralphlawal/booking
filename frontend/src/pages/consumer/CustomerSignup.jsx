@@ -6,12 +6,14 @@ import toast from 'react-hot-toast';
 import { CalendarCheck, Eye, EyeOff, Heart, Search, ShieldCheck } from 'lucide-react';
 
 export default function CustomerSignup() {
-  const { register } = useCustomerAuth();
+  const { register, verifyEmailOtp, resendEmailOtp } = useCustomerAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ full_name: '', email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState('form'); // 'form' | 'otp'
+  const [otp, setOtp] = useState('');
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const submit = async (e) => {
@@ -20,13 +22,33 @@ export default function CustomerSignup() {
     setLoading(true);
     try {
       await register(form);
-      toast.success('Account created! Welcome to BookAm.');
-      navigate('/customer/onboarding');
+      toast.success('Account created — check your email for a 6-digit code');
+      setPhase('otp');
     } catch (err) {
       toast.error(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const submitOtp = async (e) => {
+    e.preventDefault();
+    if (otp.trim().length !== 6) return toast.error('Enter the 6-digit code');
+    setLoading(true);
+    try {
+      await verifyEmailOtp(form.email, otp.trim());
+      toast.success('Email verified — welcome to BookAm!');
+      navigate('/customer/onboarding');
+    } catch (err) {
+      toast.error(err.message || 'Verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resend = async () => {
+    try { await resendEmailOtp(form.email); toast.success('New code sent'); }
+    catch { toast.error('Could not resend — try again shortly'); }
   };
 
   return (
@@ -72,6 +94,23 @@ export default function CustomerSignup() {
               <CalendarCheck className="w-3.5 h-3.5" /> Customer
             </div>
 
+            {phase === 'otp' ? (
+              <form onSubmit={submitOtp} className="space-y-3">
+                <p className="text-sm text-gray-500">Enter the 6-digit code we sent to <span className="font-semibold text-gray-700 dark:text-gray-200">{form.email}</span>.</p>
+                <input
+                  className="input text-center text-2xl tracking-[0.5em] font-mono"
+                  inputMode="numeric" maxLength={6} autoFocus placeholder="••••••"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                />
+                <button type="submit" disabled={loading} className="btn-primary w-full">
+                  {loading ? <Spinner /> : 'Verify & continue →'}
+                </button>
+                <p className="text-center text-sm text-gray-500">
+                  Didn’t get it? <button type="button" onClick={resend} className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">Resend code</button>
+                </p>
+              </form>
+            ) : (
             <form onSubmit={submit} className="space-y-3">
               <div>
                 <label className="label">Full name</label>
@@ -106,6 +145,7 @@ export default function CustomerSignup() {
                 {loading ? <Spinner /> : 'Create account →'}
               </button>
             </form>
+            )}
 
             <p className="text-center text-xs leading-5 text-gray-400">
               By creating an account, you agree to BookAm’s{' '}

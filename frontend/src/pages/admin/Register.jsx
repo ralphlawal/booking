@@ -5,10 +5,12 @@ import { LOGO_WHITE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, verifyEmailOtp, resendEmailOtp } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ full_name: '', email: '', password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState('form'); // 'form' | 'otp'
+  const [otp, setOtp] = useState('');
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
@@ -19,13 +21,33 @@ export default function Register() {
     setLoading(true);
     try {
       await register(form.email, form.password, form.full_name);
-      toast.success('Account created! Setting up your workspace…');
-      navigate('/admin/onboarding');
+      toast.success('Account created — check your email for a 6-digit code');
+      setPhase('otp');
     } catch (err) {
       toast.error(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
+  };
+
+  const submitOtp = async (e) => {
+    e.preventDefault();
+    if (otp.trim().length !== 6) return toast.error('Enter the 6-digit code');
+    setLoading(true);
+    try {
+      await verifyEmailOtp(form.email, otp.trim());
+      toast.success('Email verified — welcome aboard!');
+      navigate('/admin/onboarding');
+    } catch (err) {
+      toast.error(err.message || 'Verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resend = async () => {
+    try { await resendEmailOtp(form.email); toast.success('New code sent'); }
+    catch { toast.error('Could not resend — try again shortly'); }
   };
 
   return (
@@ -62,6 +84,30 @@ export default function Register() {
           </div>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 shadow-2xl">
+          {phase === 'otp' ? (
+            <>
+              <h1 className="text-xl font-bold text-white text-center mb-1">Verify your email</h1>
+              <p className="text-white/50 text-sm text-center mb-6">We sent a 6-digit code to <span className="text-white/80">{form.email}</span></p>
+              <form onSubmit={submitOtp} className="space-y-4">
+                <input
+                  className="w-full px-3.5 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-center text-2xl tracking-[0.5em] font-mono placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                  inputMode="numeric" maxLength={6} autoFocus
+                  placeholder="••••••"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                />
+                <button type="submit" disabled={loading}
+                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                  {loading ? <Spinner /> : 'Verify & continue →'}
+                </button>
+              </form>
+              <p className="text-center text-sm text-white/50 mt-4">
+                Didn’t get it?{' '}
+                <button onClick={resend} className="text-primary-300 font-medium hover:text-primary-200">Resend code</button>
+              </p>
+            </>
+          ) : (
+          <>
           <h1 className="text-xl font-bold text-white text-center mb-1">Create Business Account</h1>
           <p className="text-white/50 text-sm text-center mb-6">Free forever · Get your booking page live today</p>
 
@@ -106,6 +152,8 @@ export default function Register() {
               Sign in
             </Link>
           </p>
+          </>
+          )}
           </div>
 
           <div className="mt-5 text-center">

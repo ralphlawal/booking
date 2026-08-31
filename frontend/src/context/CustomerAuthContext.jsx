@@ -97,13 +97,9 @@ export function CustomerAuthProvider({ children }) {
   const register = async (data) => {
     localStorage.removeItem(TOKEN_KEY);
     clearCache();
-    const { consumer: c, token, refreshToken } = await consumerAPI.register(data);
-    await saveConsumerSession(c, token, refreshToken);
-    setConsumer(c);
-    registerPushNotifications(
-      (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
-    ).catch(() => {});
-    return c;
+    // No session on register — the account is dormant until the email OTP is
+    // verified (see verifyEmailOtp).
+    return consumerAPI.register(data);
   };
 
   const login = async (email, password) => {
@@ -117,6 +113,18 @@ export function CustomerAuthProvider({ children }) {
     ).catch(() => {});
     return c;
   };
+
+  const verifyEmailOtp = async (email, otp) => {
+    const { consumer: c, token, refreshToken } = await consumerAPI.verifyEmailOtp(email, otp);
+    await saveConsumerSession(c, token, refreshToken);
+    setConsumer(c);
+    registerPushNotifications(
+      (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
+    ).catch(() => {});
+    return c;
+  };
+
+  const resendEmailOtp = (email) => consumerAPI.resendEmailOtp(email);
 
   const logout = async () => {
     localStorage.removeItem(TOKEN_KEY);
@@ -135,7 +143,7 @@ export function CustomerAuthProvider({ children }) {
   };
 
   return (
-    <CustomerAuthContext.Provider value={{ consumer, loading, register, login, logout, update }}>
+    <CustomerAuthContext.Provider value={{ consumer, loading, register, login, logout, update, verifyEmailOtp, resendEmailOtp }}>
       {children}
     </CustomerAuthContext.Provider>
   );

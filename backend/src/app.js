@@ -548,7 +548,7 @@ function runSqliteMigrations() {
     `CREATE TABLE IF NOT EXISTS service_resources (id TEXT PRIMARY KEY, service_id TEXT NOT NULL, resource_id TEXT NOT NULL, quantity_required INTEGER DEFAULT 1, UNIQUE(service_id, resource_id))`,
   ];
   for (const t of tables) { try { db.exec(t); } catch {} }
-  for (const col of ['email_verified INTEGER DEFAULT 1', 'email_verify_token TEXT']) {
+  for (const col of ['email_verified INTEGER DEFAULT 1', 'email_verify_token TEXT', 'email_otp TEXT', 'email_otp_expires TEXT']) {
     try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch {}
     try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN ${col}`); } catch {}
   }

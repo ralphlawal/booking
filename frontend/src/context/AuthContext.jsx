@@ -119,21 +119,26 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, full_name) => {
     clearAuthCache();
     const data = await authAPI.register(email, password, full_name);
-    await saveBusinessSession(data);
-    setUser(data.user);
-    registerPushNotifications(
-      (fcmToken) => authAPI.registerPushToken(fcmToken, 'business').catch(() => {}),
-    ).catch(() => {});
+    // Registration no longer returns a session — the account is created but
+    // dormant until the email OTP is verified (see verifyEmailOtp).
+    if (data.token) {
+      await saveBusinessSession(data);
+      setUser(data.user);
+    }
     return data;
   };
 
   const sendLoginOtp = (email) => authAPI.sendLoginOtp(email);
+  const resendEmailOtp = (email) => authAPI.resendEmailOtp(email);
 
   const verifyEmailOtp = async (email, otp) => {
     const data = await authAPI.verifyEmailOtp(email, otp);
     await saveBusinessSession(data);
     setUser(data.user);
     setBusiness(data.business || null);
+    registerPushNotifications(
+      (fcmToken) => authAPI.registerPushToken(fcmToken, 'business').catch(() => {}),
+    ).catch(() => {});
     return data;
   };
 
@@ -178,7 +183,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user, business, loading,
       login, register, logout,
-      sendLoginOtp, verifyEmailOtp,
+      sendLoginOtp, verifyEmailOtp, resendEmailOtp,
       sendPhoneOtp, verifyPhoneOtp,
       forgotPassword, changePassword,
       resendVerificationEmail, deleteAccount,

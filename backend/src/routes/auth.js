@@ -55,6 +55,13 @@ router.post(
 );
 
 router.post(
+  '/resend-email-otp',
+  [body('email').isEmail().normalizeEmail()],
+  validate,
+  ctrl.resendEmailOtp
+);
+
+router.post(
   '/send-login-otp',
   [body('email').isEmail().normalizeEmail()],
   validate,
