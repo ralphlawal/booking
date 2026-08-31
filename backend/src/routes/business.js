@@ -27,12 +27,17 @@ router.post('/me/stripe-connect/dashboard', authenticate, attachBusiness, connec
 router.get('/:slug', ctrl.getPublicBusiness);
 router.get('/:slug/check', ctrl.checkSlug);
 router.get('/:slug/services', async (req, res) => {
-  const Business = require('../models/Business');
-  const Service = require('../models/Service');
-  const biz = await Business.findBySlug(req.params.slug);
-  if (!biz) return res.status(404).json({ error: 'Not found' });
-  const services = await Service.findByBusinessId(biz.id, true);
-  res.json(services);
+  try {
+    const Business = require('../models/Business');
+    const Service = require('../models/Service');
+    const biz = await Business.findBySlug(req.params.slug);
+    if (!biz) return res.status(404).json({ error: 'Not found' });
+    const services = await Service.findByBusinessId(biz.id, true);
+    res.json(services);
+  } catch (err) {
+    console.error('[business/:slug/services]', err.message);
+    res.status(500).json({ error: 'Could not load services' });
+  }
 });
 
 module.exports = router;

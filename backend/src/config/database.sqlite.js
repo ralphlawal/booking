@@ -30,7 +30,13 @@ const query = async (text, params = []) => {
     })
     .replace(/'([^']*)'::jsonb/g, "'$1'")
     .replace(/::[a-zA-Z_][\w]*(?:\[\])?/g, '')
-    .replace(/\bILIKE\b/gi, 'LIKE');
+    .replace(/\bILIKE\b/gi, 'LIKE')
+    // Postgres JSON helpers → their SQLite JSON1 equivalents (columns are
+    // stored as JSON text in the SQLite schema).
+    .replace(/\bjsonb?_array_length\b/gi, 'json_array_length')
+    .replace(/\bjsonb?_build_object\b/gi, 'json_object')
+    .replace(/\bjsonb?_agg\b/gi, 'json_group_array')
+    .replace(/\bjsonb_array_elements_text\b/gi, 'json_each');
 
   const stmt = db.prepare(sql);
   const upper = sql.trimStart().toUpperCase();

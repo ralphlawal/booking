@@ -284,10 +284,11 @@ async function testPaymentEndpoints() {
     return 'no service available to test with';
   });
 
-  await step('GET /api/payments/booking/:id — returns 200 or 404', async () => {
-    const { status } = await req('GET', '/api/payments/booking/nonexistent-id');
-    if (![200, 404].includes(status)) throw new Error(`Got ${status}`);
-    return `${status}`;
+  await step('GET /api/payments/booking/:id — auth enforced', async () => {
+    // This endpoint exposes payment records, so it must reject anonymous access.
+    const anon = await req('GET', '/api/payments/booking/nonexistent-id');
+    if (anon.status !== 401) throw new Error(`Expected 401 without token, got ${anon.status}`);
+    return '401 without token (protected)';
   });
 }
 
@@ -390,12 +391,13 @@ async function testAdminFlow() {
     return `${Array.isArray(json) ? json.length : '?'} disputes`;
   });
 
-  await step('GET /api/cron/trigger — no secret = allowed', async () => {
+  await step('GET /api/cron/trigger — secret enforced', async () => {
     const { status, json } = await req('GET', '/api/cron/trigger');
-    // If CRON_SECRET is set and we don't provide it → 401 (OK)
-    // If not set → 200
-    if (![200, 401].includes(status)) throw new Error(`Got ${status}`);
-    return status === 401 ? 'secret required (CRON_SECRET set)' : `released=${json.released}, sent=${json.sent}`;
+    // 401 = CRON_SECRET set, none supplied · 503 = not configured · 200 = ran
+    if (![200, 401, 503].includes(status)) throw new Error(`Got ${status}`);
+    return status === 200 ? `released=${json.released}, sent=${json.sent}`
+      : status === 401 ? 'secret required (CRON_SECRET set)'
+      : 'not configured (no CRON_SECRET)';
   });
 }
 

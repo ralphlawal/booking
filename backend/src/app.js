@@ -14,6 +14,16 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
 
+// Keep the API alive when a single request or background job leaks an error.
+// Node >= 15 exits the process on an unhandled rejection by default; one bad
+// query must not take the whole service down for every user.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
 const app = express();
 
 if (process.env.NODE_ENV === 'production') {
@@ -534,12 +544,15 @@ function runSqliteMigrations() {
     `CREATE TABLE IF NOT EXISTS intake_responses (id TEXT PRIMARY KEY, intake_form_id TEXT NOT NULL, booking_id TEXT, consumer_name TEXT, responses TEXT NOT NULL DEFAULT '{}', created_at TEXT DEFAULT (datetime('now')))`,
     `CREATE TABLE IF NOT EXISTS waitlist (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, service_id TEXT, consumer_id TEXT, consumer_name TEXT NOT NULL, consumer_email TEXT NOT NULL, consumer_phone TEXT, requested_date TEXT, preferred_time TEXT, status TEXT NOT NULL DEFAULT 'waiting', created_at TEXT DEFAULT (datetime('now')))`,
     `CREATE TABLE IF NOT EXISTS promo_codes (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, code TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'percent', value REAL NOT NULL, min_order_amount REAL DEFAULT 0, max_uses INTEGER, uses_count INTEGER DEFAULT 0, valid_from TEXT, valid_until TEXT, is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT (datetime('now')), UNIQUE(business_id, code))`,
+    `CREATE TABLE IF NOT EXISTS resources (id TEXT PRIMARY KEY, business_id TEXT NOT NULL, name TEXT NOT NULL, type TEXT DEFAULT 'room', description TEXT, quantity INTEGER DEFAULT 1, is_active INTEGER DEFAULT 1, sort_order INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))`,
+    `CREATE TABLE IF NOT EXISTS service_resources (id TEXT PRIMARY KEY, service_id TEXT NOT NULL, resource_id TEXT NOT NULL, quantity_required INTEGER DEFAULT 1, UNIQUE(service_id, resource_id))`,
   ];
   for (const t of tables) { try { db.exec(t); } catch {} }
   for (const col of ['email_verified INTEGER DEFAULT 1', 'email_verify_token TEXT']) {
     try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch {}
     try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN ${col}`); } catch {}
   }
+  try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN no_show_count INTEGER DEFAULT 0`); } catch {}
   try { db.exec(`ALTER TABLE customers ADD COLUMN notes TEXT`); } catch {}
 }
 
