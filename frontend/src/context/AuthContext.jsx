@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI, registerBusinessSessionRefresher } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
-import { persistCriticalValues, getPersistedItem } from '../services/persistentStore';
+import { persistCriticalValues, getPersistedItem, PERSISTENCE_REHYDRATED_EVENT } from '../services/persistentStore';
 
 const AuthContext = createContext(null);
 
@@ -64,23 +64,32 @@ export const AuthProvider = ({ children }) => {
   });
 
   useEffect(() => {
+    let active = true;
+    const restoreSession = async () => {
     const token = getStoredToken();
-    if (!token) { setLoading(false); return; }
+    if (!token) {
+      if (active) setLoading(false);
+      return;
+    }
 
     // Show cached state immediately for fast UI
     const cached = loadAuthCache();
     if (cached?.user) {
-      setUser(cached.user);
-      setBusiness(cached.business || null);
-      setLoading(false);
+      if (active) {
+        setUser(cached.user);
+        setBusiness(cached.business || null);
+        setLoading(false);
+      }
     }
 
     // Verify with server in background
-    authAPI.me().then(data => {
+    try {
+      const data = await authAPI.me();
+      if (!active) return;
       setUser(data.user);
       setBusiness(data.business || null);
       saveAuthCache(data.user, data.business || null);
-    }).catch(async (err) => {
+    } catch (err) {
       // An access JWT may have expired — try to restore it silently with the
       // rotating refresh session.
       if (err.status === 401 && getStoredToken() === token) {
@@ -98,10 +107,22 @@ export const AuthProvider = ({ children }) => {
       // cold server, or a transient token issue must not wipe a stored login.
       const cached = loadAuthCache();
       if (cached?.user) {
-        setUser(cached.user);
-        setBusiness(cached.business || null);
+        if (active) {
+          setUser(cached.user);
+          setBusiness(cached.business || null);
+        }
       }
-    }).finally(() => setLoading(false));
+    } finally {
+      if (active) setLoading(false);
+    }
+    };
+
+    restoreSession();
+    window.addEventListener(PERSISTENCE_REHYDRATED_EVENT, restoreSession);
+    return () => {
+      active = false;
+      window.removeEventListener(PERSISTENCE_REHYDRATED_EVENT, restoreSession);
+    };
   }, []);
 
   const login = async (email, password) => {

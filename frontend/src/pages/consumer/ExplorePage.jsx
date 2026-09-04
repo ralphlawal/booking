@@ -270,10 +270,6 @@ export default function ExplorePage() {
   };
 
   const getLocation = () => {
-    if (!navigator.geolocation) {
-      toast.error('Location not supported in this browser');
-      return;
-    }
     setLocating(true);
     getCurrentPosition(
       (pos) => {

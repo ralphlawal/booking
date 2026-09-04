@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { consumerAPI, registerConsumerSessionRefresher } from '../services/api';
 import { registerPushNotifications } from '../services/pushNotifications';
-import { persistCriticalValues, getPersistedItem } from '../services/persistentStore';
+import { persistCriticalValues, getPersistedItem, PERSISTENCE_REHYDRATED_EVENT } from '../services/persistentStore';
 
 const CustomerAuthContext = createContext(null);
 
@@ -55,26 +55,32 @@ export function CustomerAuthProvider({ children }) {
   });
 
   useEffect(() => {
+    let active = true;
+    const restoreSession = async () => {
     const token = getPersistedItem(TOKEN_KEY);
-    if (!token) { setLoading(false); return; }
+    if (!token) {
+      if (active) setLoading(false);
+      return;
+    }
 
     // Mirror the business experience: render the last known profile right
     // away, then refresh it in the background. This avoids a launch spinner
     // while a mobile connection wakes up.
     const cached = loadCache();
     if (cached) {
-      setConsumer(cached);
-      setLoading(false);
+      if (active) {
+        setConsumer(cached);
+        setLoading(false);
+      }
     }
 
-    consumerAPI.me()
-      .then(data => {
-        if (data) {
+    try {
+      const data = await consumerAPI.me();
+      if (data && active) {
           setConsumer(data);
           saveCache(data);
-        }
-      })
-      .catch(async (err) => {
+      }
+    } catch (err) {
         // Access token may have expired — try to restore it silently.
         if (err.status === 401 && getPersistedItem(TOKEN_KEY) === token) {
           const refreshToken = getPersistedItem(REFRESH_TOKEN_KEY);
@@ -89,9 +95,18 @@ export function CustomerAuthProvider({ children }) {
         // rejected on the next user-initiated request; a flaky network or a
         // transient token issue must not wipe a stored login.
         const cached = loadCache();
-        if (cached) setConsumer(cached);
-      })
-      .finally(() => setLoading(false));
+        if (cached && active) setConsumer(cached);
+    } finally {
+      if (active) setLoading(false);
+    }
+    };
+
+    restoreSession();
+    window.addEventListener(PERSISTENCE_REHYDRATED_EVENT, restoreSession);
+    return () => {
+      active = false;
+      window.removeEventListener(PERSISTENCE_REHYDRATED_EVENT, restoreSession);
+    };
   }, []);
 
   const register = async (data) => {

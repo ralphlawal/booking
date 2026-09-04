@@ -28,6 +28,11 @@ const PERSIST_KEYS = [
   'adminSupportToken',    // admin support JWT
 ];
 
+// Native storage can become available shortly after React has rendered on a
+// cold iOS launch. Contexts listen for this event so they restore the session
+// even when the initial startup timeout had to render the app first.
+export const PERSISTENCE_REHYDRATED_EVENT = 'bookam:persistence-rehydrated';
+
 // In-memory mirror — the one store iOS can never evict during a session.
 const memory = Object.create(null);
 
@@ -105,6 +110,12 @@ async function pullFromNative() {
       }
     })
   );
+  // Do not assume the initial React render waited for Preferences. This is
+  // especially important after a force-quit, when WKWebView starts first and
+  // the Capacitor bridge may arrive a moment later.
+  if (sawPlugin && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(PERSISTENCE_REHYDRATED_EVENT));
+  }
   return sawPlugin;
 }
 
