@@ -4,6 +4,7 @@ import App from './App';
 import './index.css';
 import { isNativeApp } from './config/platform';
 import { hydratePersistentStore } from './services/persistentStore';
+import { loadAnalytics } from './utils/analytics';
 
 if (isNativeApp()) document.documentElement.classList.add('native-app');
 
@@ -24,6 +25,7 @@ const renderApp = () => {
 };
 hydratePersistentStore().finally(renderApp);
 setTimeout(renderApp, 2500);
+loadAnalytics();
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {

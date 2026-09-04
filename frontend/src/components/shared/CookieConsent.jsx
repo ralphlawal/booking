@@ -1,20 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Cookie, ShieldCheck, X } from 'lucide-react';
+import { loadAnalytics } from '../../utils/analytics';
+import { getCookieConsent, hasAnalyticsConsent, saveCookieConsent } from '../../utils/cookieConsent';
 
-const STORAGE_KEY = 'bookam_cookie_consent_v1';
-
-export function getCookieConsent() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-  } catch {
-    return null;
-  }
-}
-
-export function hasAnalyticsConsent() {
-  return getCookieConsent()?.analytics === true;
-}
+export { getCookieConsent, hasAnalyticsConsent };
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
@@ -26,11 +16,8 @@ export default function CookieConsent() {
   }, []);
 
   const saveChoice = (analytics) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      essential: true,
-      analytics,
-      saved_at: new Date().toISOString(),
-    }));
+    saveCookieConsent(analytics);
+    if (analytics) loadAnalytics();
     setVisible(false);
   };
 
