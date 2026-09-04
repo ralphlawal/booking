@@ -18,4 +18,8 @@ export function saveCookieConsent(analytics) {
     analytics,
     saved_at: new Date().toISOString(),
   }));
+  // Lets other fixed-position prompts (e.g. BrowserNotificationPrompt) know
+  // they can now appear — they wait for this so the two never collide at the
+  // bottom of the screen at once.
+  window.dispatchEvent(new Event('bookam:cookie-consent'));
 }

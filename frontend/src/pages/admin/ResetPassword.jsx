@@ -15,11 +15,11 @@ export default function ResetPassword() {
 
   if (!oobCode) {
     return (
-      <div className="app-page bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
+      <div className="app-page bg-gradient-to-br from-primary-50 to-white dark:bg-none dark:bg-[var(--bam-bg)] flex items-center justify-center p-4">
         <div className="app-panel p-8 text-center max-w-sm w-full">
-          <div className="w-12 h-12 rounded-lg bg-primary-50 flex items-center justify-center mx-auto mb-4"><LinkIcon className="w-6 h-6 text-primary-400" /></div>
-          <p className="font-bold text-gray-900 text-lg mb-2">Invalid reset link</p>
-          <p className="text-sm text-gray-500 mb-5">
+          <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-4"><LinkIcon className="w-6 h-6 text-primary-400" /></div>
+          <p className="font-bold text-gray-900 dark:text-white text-lg mb-2">Invalid reset link</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
             This link is missing or has already been used. Request a new one.
           </p>
           <Link to="/admin/forgot-password" className="btn-primary w-full justify-center">
@@ -53,16 +53,16 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="app-page bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-br from-primary-50 to-white dark:bg-none dark:bg-[var(--bam-bg)] flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-slide-up">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-600 rounded-lg mb-4 shadow-lg shadow-primary-200">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-600 rounded-lg mb-4 shadow-lg shadow-primary-200 dark:shadow-none">
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Set new password</h1>
-          <p className="text-gray-500 mt-1 text-sm">Choose a strong password for your account</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Set new password</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Choose a strong password for your account</p>
         </div>
         <div className="app-panel p-6">
           <form onSubmit={submit} className="space-y-4">
@@ -90,7 +90,7 @@ export default function ResetPassword() {
               />
             </div>
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium">
+              <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300 font-medium">
                 {error}
               </div>
             )}

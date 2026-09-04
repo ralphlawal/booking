@@ -3,6 +3,7 @@ import { Bell, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_ICON } from '../../config/logos';
+import { getCookieConsent } from '../../utils/cookieConsent';
 
 const keyFor = (role, id) => `bookam_notify_prompt_${role}_${id || 'anon'}`;
 
@@ -42,11 +43,19 @@ export default function BrowserNotificationPrompt() {
       setVisible(false);
       return;
     }
-    try {
-      setVisible(localStorage.getItem(keyFor(account.role, account.id)) !== 'dismissed');
-    } catch {
-      setVisible(true);
-    }
+    const check = () => {
+      // Wait for the cookie banner to be dismissed first — both are fixed to
+      // the bottom of the screen and must never show at the same time.
+      if (!getCookieConsent()) { setVisible(false); return; }
+      try {
+        setVisible(localStorage.getItem(keyFor(account.role, account.id)) !== 'dismissed');
+      } catch {
+        setVisible(true);
+      }
+    };
+    check();
+    window.addEventListener('bookam:cookie-consent', check);
+    return () => window.removeEventListener('bookam:cookie-consent', check);
   }, [account?.role, account?.id]);
 
   if (!account || !visible) return null;

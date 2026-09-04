@@ -73,10 +73,10 @@ export default function AttendedPage() {
 
   if (step === 'init' || step === 'submitting') {
     return (
-      <div className="app-page bg-gradient-to-b from-primary-50 to-white flex items-center justify-center p-4">
+      <div className="app-page bg-gradient-to-b from-primary-50 to-white dark:bg-none dark:bg-[var(--bam-bg)] flex items-center justify-center p-4">
         <div className="text-center">
           <Loader className="w-10 h-10 text-primary-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">
+          <p className="text-gray-600 dark:text-gray-300 font-medium">
             {step === 'submitting' ? (isConfirm ? 'Recording your confirmation…' : 'Submitting your dispute…') : 'Loading…'}
           </p>
         </div>
@@ -86,15 +86,15 @@ export default function AttendedPage() {
 
   if (step === 'error') {
     return (
-      <div className="app-page bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4">
+      <div className="app-page bg-gradient-to-b from-red-50 to-white dark:bg-none dark:bg-[var(--bam-bg)] flex items-center justify-center p-4">
         <div className="w-full max-w-sm text-center">
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-8" />
-          <div className="app-panel p-8 border-red-100">
-            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-7 h-7 text-red-600" />
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-8 dark:brightness-0 dark:invert" />
+          <div className="app-panel p-8 border-red-100 dark:border-red-900">
+            <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-7 h-7 text-red-600 dark:text-red-400" />
             </div>
-            <h1 className="text-xl font-black text-gray-900 mb-2">Something went wrong</h1>
-            <p className="text-gray-500 text-sm mb-6">{errorMsg}</p>
+            <h1 className="text-xl font-black text-gray-900 dark:text-white mb-2">Something went wrong</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">{errorMsg}</p>
             <a
               href="mailto:hello@bookam.business"
               className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-colors"
@@ -110,22 +110,22 @@ export default function AttendedPage() {
   if (step === 'success') {
     const isDispute = action === 'dispute';
     return (
-      <div className={`app-page bg-gradient-to-b ${isDispute ? 'from-amber-50' : 'from-green-50'} to-white flex items-center justify-center p-4`}>
+      <div className={`app-page bg-gradient-to-b ${isDispute ? 'from-amber-50' : 'from-green-50'} to-white dark:bg-none dark:bg-[var(--bam-bg)] flex items-center justify-center p-4`}>
         <div className="w-full max-w-sm text-center">
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-8" />
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-8 dark:brightness-0 dark:invert" />
           <div className="app-panel p-8">
-            <div className={`w-14 h-14 ${isDispute ? 'bg-amber-100' : 'bg-green-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+            <div className={`w-14 h-14 ${isDispute ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-green-100 dark:bg-green-900/30'} rounded-full flex items-center justify-center mx-auto mb-4`}>
               {isDispute
-                ? <AlertTriangle className="w-7 h-7 text-amber-600" />
-                : <CheckCircle className="w-7 h-7 text-green-600" />
+                ? <AlertTriangle className="w-7 h-7 text-amber-600 dark:text-amber-400" />
+                : <CheckCircle className="w-7 h-7 text-green-600 dark:text-green-400" />
               }
             </div>
-            <h1 className="text-xl font-black text-gray-900 mb-2">
+            <h1 className="text-xl font-black text-gray-900 dark:text-white mb-2">
               {isDispute ? 'Dispute raised' : 'Thank you!'}
             </h1>
-            <p className="text-gray-500 text-sm mb-6">{message}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">{message}</p>
             {!isDispute && (
-              <p className="text-xs text-gray-400 mb-5 flex items-center justify-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-5 flex items-center justify-center gap-1">
                 <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 Check your email for a link to leave a review
               </p>
@@ -144,19 +144,19 @@ export default function AttendedPage() {
 
   // step === 'dispute_form'
   return (
-    <div className="app-page bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4">
+    <div className="app-page bg-gradient-to-b from-red-50 to-white dark:bg-none dark:bg-[var(--bam-bg)] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-4" />
-          <h1 className="text-2xl font-black text-gray-900">Report an issue</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto mb-4 dark:brightness-0 dark:invert" />
+          <h1 className="text-2xl font-black text-gray-900 dark:text-white">Report an issue</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             Please describe what happened. Our team will review the information and may contact you or the business for more detail.
           </p>
         </div>
         <div className="app-panel p-6">
           <form onSubmit={handleDisputeSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">What happened?</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">What happened?</label>
               <select
                 className="input"
                 value={reason}
@@ -168,8 +168,8 @@ export default function AttendedPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Additional details <span className="font-normal text-gray-400">(optional)</span>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                Additional details <span className="font-normal text-gray-400 dark:text-gray-500">(optional)</span>
               </label>
               <textarea
                 className="input resize-none"
@@ -179,8 +179,8 @@ export default function AttendedPage() {
                 onChange={e => setDescription(e.target.value)}
               />
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs text-amber-700 font-medium">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+              <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
                 ⚠️ By submitting a dispute you confirm the service was genuinely not rendered. False disputes may result in your account being flagged.
               </p>
             </div>
@@ -194,7 +194,7 @@ export default function AttendedPage() {
             <button
               type="button"
               onClick={() => submitAction({ action: 'confirm' })}
-              className="w-full text-gray-500 text-sm hover:text-gray-700 transition-colors"
+              className="w-full text-gray-500 dark:text-gray-400 text-sm hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             >
               Actually, I was attended to — confirm service ✓
             </button>

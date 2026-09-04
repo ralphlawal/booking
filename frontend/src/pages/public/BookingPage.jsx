@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   businessAPI, servicesAPI, availabilityAPI, bookingsAPI,
@@ -139,8 +139,8 @@ function ServiceCard({ svc, biz, onBook, preselected }) {
             </span>
             <button
               onClick={() => { if (max > 1) { setExpanded(true); return; } onBook(svc, 1); }}
-              className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all active:scale-95"
-              style={{ background: 'var(--bp-accent)' }}>
+              className="px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95"
+              style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
               Book
             </button>
           </div>
@@ -153,8 +153,8 @@ function ServiceCard({ svc, biz, onBook, preselected }) {
             <div className="flex flex-wrap gap-2 mb-3">
               {Array.from({ length: max }, (_, i) => i + 1).map(n => (
                 <button key={n} onClick={() => setParticipants(n)}
-                  className={`w-9 h-9 rounded-xl text-sm font-bold border transition-all ${participants === n ? 'text-white border-transparent' : ''}`}
-                  style={participants === n ? { background: 'var(--bp-accent)', borderColor: 'var(--bp-accent)' } : { borderColor: 'var(--bp-border)', color: 'var(--bp-muted)', background: 'var(--bp-chip)' }}>
+                  className={`w-9 h-9 rounded-xl text-sm font-bold border transition-all ${participants === n ? 'border-transparent' : ''}`}
+                  style={participants === n ? { background: 'var(--bp-accent)', borderColor: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' } : { borderColor: 'var(--bp-border)', color: 'var(--bp-muted)', background: 'var(--bp-chip)' }}>
                   {n}
                 </button>
               ))}
@@ -165,8 +165,8 @@ function ServiceCard({ svc, biz, onBook, preselected }) {
               </p>
             )}
             <button onClick={() => onBook(svc, participants)}
-              className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all"
-              style={{ background: 'var(--bp-accent)' }}>
+              className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
+              style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
               Continue with {participants} {participants === 1 ? 'person' : 'people'} →
             </button>
           </div>
@@ -457,7 +457,7 @@ function BookingWizard({
                   <button key={date.toISOString()} onClick={() => { set('date')(date); set('time')(null); goNext(); }}
                     className="flex flex-col items-center py-3 rounded-2xl border transition-all"
                     style={sel
-                      ? { background: 'var(--bp-accent)', borderColor: 'var(--bp-accent)', color: '#fff' }
+                      ? { background: 'var(--bp-accent)', borderColor: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }
                       : { background: 'var(--bp-card)', borderColor: 'var(--bp-border)', color: 'var(--bp-muted)' }
                     }>
                     <span className="text-[10px] font-bold uppercase tracking-wide opacity-70">{format(date, 'EEE')}</span>
@@ -486,7 +486,7 @@ function BookingWizard({
                 <p className="text-3xl mb-2">📅</p>
                 <p className="font-bold" style={{ color: 'var(--bp-text)' }}>No slots available</p>
                 <p className="text-sm mt-1 mb-4" style={{ color: 'var(--bp-muted)' }}>Try another date</p>
-                <button onClick={goBack} className="px-4 py-2 rounded-xl font-semibold text-sm text-white" style={{ background: 'var(--bp-accent)' }}>← Change date</button>
+                <button onClick={goBack} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>← Change date</button>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
@@ -496,7 +496,7 @@ function BookingWizard({
                     <button key={slot.start} onClick={() => { set('time')(slot); goNext(); }}
                       className="py-3 rounded-xl text-sm font-bold border transition-all"
                       style={sel
-                        ? { background: 'var(--bp-accent)', borderColor: 'var(--bp-accent)', color: '#fff' }
+                        ? { background: 'var(--bp-accent)', borderColor: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }
                         : { background: 'var(--bp-card)', borderColor: 'var(--bp-border)', color: 'var(--bp-text)' }
                       }>
                       {slot.start}
@@ -515,7 +515,7 @@ function BookingWizard({
             {!consumer ? (
               <div className="rounded-2xl p-4 mb-4 flex items-center justify-between gap-3" style={{ background: 'rgba(99,102,241,.07)', border: '1px solid rgba(99,102,241,.2)' }}>
                 <p className="text-sm font-medium" style={{ color: 'var(--bp-text)' }}>Sign in to auto-fill</p>
-                <a href="/customer/login" className="text-xs font-bold px-3 py-1.5 rounded-xl text-white" style={{ background: 'var(--bp-accent)' }}>Sign in →</a>
+                <Link to="/customer/login" state={{ from: location }} className="text-xs font-bold px-3 py-1.5 rounded-xl" style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>Sign in →</Link>
               </div>
             ) : (
               <p className="text-sm text-emerald-500 font-semibold mb-4">✓ Signed in as {consumer.full_name}</p>
@@ -548,8 +548,8 @@ function BookingWizard({
                 </div>
               ))}
               <button onClick={goNext} disabled={!booking.name || !booking.phone}
-                className="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all disabled:opacity-40"
-                style={{ background: 'var(--bp-accent)' }}>
+                className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40"
+                style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
                 Review Booking →
               </button>
             </div>
@@ -592,7 +592,7 @@ function BookingWizard({
                   onChange={e => { setPromoCode(e.target.value.toUpperCase()); if (promoData) setPromoData(null); }} disabled={!!promoData} />
                 {promoData
                   ? <button type="button" onClick={() => { setPromoData(null); setPromoCode(''); }} className="px-3 text-xs rounded-xl border" style={{ borderColor: 'var(--bp-border)', color: 'var(--bp-muted)' }}>Remove</button>
-                  : <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()} className="px-3 text-xs rounded-xl font-bold text-white disabled:opacity-40" style={{ background: 'var(--bp-accent)' }}>
+                  : <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()} className="px-3 text-xs rounded-xl font-bold disabled:opacity-40" style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
                       {promoLoading ? '…' : 'Apply'}
                     </button>
                 }
@@ -601,8 +601,8 @@ function BookingWizard({
             </div>
 
             <button onClick={handleConfirm} disabled={submitting}
-              className="w-full py-4 rounded-2xl font-bold text-white text-base transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ background: 'var(--bp-accent)' }}>
+              className="w-full py-4 rounded-2xl font-bold text-base transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
               {submitting ? <Spinner /> : requiresPayment ? `Pay ${C}${finalPrice.toFixed(2)} & Confirm` : 'Confirm Booking'}
             </button>
             <p className="text-center text-xs" style={{ color: 'var(--bp-faint)' }}>By booking you agree to the cancellation policy</p>
@@ -665,8 +665,8 @@ function PaymentForm({ onSuccess, submitting, setSubmitting, amount, C, returnUr
         {error && <div className="mt-3 text-sm text-red-600 bg-red-50 rounded-xl p-3">{error}</div>}
       </div>
       <button type="submit" disabled={!stripe || !ready || processing || submitting}
-        className="w-full py-4 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 disabled:opacity-40"
-        style={{ background: 'var(--bp-accent)' }}>
+        className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 disabled:opacity-40"
+        style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
         {processing || submitting ? <><Spinner /> Processing…</> : <>🔒 Pay {C}{amount.toFixed(2)}</>}
       </button>
       <p className="text-center text-xs" style={{ color: 'var(--bp-faint)' }}>256-bit SSL · Powered by Stripe</p>
@@ -823,6 +823,7 @@ export default function BookingPage() {
           --bp-faint: #999999;
           --bp-chip: rgba(0,0,0,0.05);
           --bp-accent: #18181b;
+          --bp-accent-fg: #ffffff;
           --bp-hero-overlay: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%);
         }
         @media (prefers-color-scheme: dark) {
@@ -836,6 +837,7 @@ export default function BookingPage() {
             --bp-faint: #666666;
             --bp-chip: rgba(255,255,255,0.06);
             --bp-accent: #ffffff;
+            --bp-accent-fg: #18181b;
             --bp-hero-overlay: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.75) 100%);
           }
         }
@@ -849,6 +851,7 @@ export default function BookingPage() {
           --bp-faint: #666666;
           --bp-chip: rgba(255,255,255,0.06);
           --bp-accent: #ffffff;
+          --bp-accent-fg: #18181b;
           --bp-hero-overlay: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.75) 100%);
         }
       `}</style>
@@ -866,7 +869,7 @@ export default function BookingPage() {
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {business.logo_url
                   ? <img src={business.logo_url} alt="" className="w-7 h-7 rounded-lg object-cover flex-shrink-0" />
-                  : <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: 'var(--bp-accent)' }}>{business.name[0]}</div>
+                  : <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>{business.name[0]}</div>
                 }
                 <span className="font-bold text-sm truncate" style={{ color: 'var(--bp-text)' }}>{business.name}</span>
               </div>
@@ -1092,8 +1095,8 @@ export default function BookingPage() {
                       </div>
                       {mapUrl && (
                         <a href={mapUrl} target="_blank" rel="noopener noreferrer" onClick={(event) => openExternalLink(event, mapUrl)}
-                          className="px-4 py-2 rounded-xl text-xs font-bold text-white flex-shrink-0"
-                          style={{ background: 'var(--bp-accent)' }}>
+                          className="px-4 py-2 rounded-xl text-xs font-bold flex-shrink-0"
+                          style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
                           Directions ↗
                         </a>
                       )}
@@ -1169,8 +1172,8 @@ export default function BookingPage() {
                   <p className="text-xs text-center" style={{ color: 'var(--bp-faint)' }}>+ {services.length - 4} more services</p>
                 )}
                 <button onClick={() => openBooking(null)}
-                  className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all active:scale-95"
-                  style={{ background: 'var(--bp-accent)' }}>
+                  className="w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-95"
+                  style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
                   Book Now
                 </button>
                 {openStatus !== null && (
@@ -1187,8 +1190,8 @@ export default function BookingPage() {
         {/* ── Mobile sticky Book Now bar ── */}
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-20 p-4 pb-safe" style={{ background: 'var(--bp-card)', borderTop: '1px solid var(--bp-border)', backdropFilter: 'blur(16px)' }}>
           <button onClick={() => openBooking(null)}
-            className="w-full py-4 rounded-2xl font-bold text-white text-base transition-all active:scale-[.98]"
-            style={{ background: 'var(--bp-accent)' }}>
+            className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-[.98]"
+            style={{ background: 'var(--bp-accent)', color: 'var(--bp-accent-fg)' }}>
             Book Now
           </button>
         </div>
