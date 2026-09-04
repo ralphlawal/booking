@@ -265,11 +265,17 @@ exports.intelligence = async (req, res) => {
 
       // Revenue snapshot
       const { rows: revSnap } = await db.query(
+        // A booking does not have a legacy `price` column. Use its recorded
+        // payment amount where present, otherwise the current service price
+        // for older bookings. Referencing `price` directly returned a 500 and
+        // made the Growth screen appear unable to load.
         `SELECT
-           COALESCE(SUM(CASE WHEN DATE_TRUNC('month', booking_date::timestamp) = DATE_TRUNC('month', NOW()) THEN price END), 0) AS this_month,
-           COALESCE(SUM(CASE WHEN DATE_TRUNC('month', booking_date::timestamp) = DATE_TRUNC('month', NOW() - INTERVAL '1 month') THEN price END), 0) AS last_month,
-           COUNT(CASE WHEN booking_date::date >= CURRENT_DATE - 7 AND status = 'confirmed' THEN 1 END) AS bookings_7d
-         FROM bookings WHERE business_id = $1 AND status NOT IN ('cancelled','no_show')`,
+           COALESCE(SUM(CASE WHEN DATE_TRUNC('month', b.booking_date::timestamp) = DATE_TRUNC('month', NOW()) THEN COALESCE(NULLIF(b.payment_amount, 0), s.price, 0) END), 0) AS this_month,
+           COALESCE(SUM(CASE WHEN DATE_TRUNC('month', b.booking_date::timestamp) = DATE_TRUNC('month', NOW() - INTERVAL '1 month') THEN COALESCE(NULLIF(b.payment_amount, 0), s.price, 0) END), 0) AS last_month,
+           COUNT(CASE WHEN b.booking_date::date >= CURRENT_DATE - 7 AND b.status = 'confirmed' THEN 1 END) AS bookings_7d
+         FROM bookings b
+         LEFT JOIN services s ON s.id = b.service_id
+         WHERE b.business_id = $1 AND b.status NOT IN ('cancelled','no_show')`,
         [bizId]
       );
       const rev = revSnap[0] || {};

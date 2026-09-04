@@ -181,7 +181,7 @@ async function suggestGapFilling({ businessName, category, gaps, avgBookingsPerD
     max_tokens: 250,
     messages: [{
       role: 'user',
-      content: `You are a revenue advisor for ${businessName} (${category || 'service business'}). Their average is ${avgBookingsPerDay} bookings/day. Here are their upcoming booking gaps:\n${gapSummary}\n\nWrite one concise recommendation based only on this supplied data. Maximum 55 words. Use plain sentences only: no Markdown, headings, bullets, numbering, bold text, emojis, invented figures, or claims about channels the business has not configured.`,
+      content: `You are a revenue advisor for ${businessName} (${category || 'service business'}). Their average is ${avgBookingsPerDay} bookings/day. Here are their upcoming booking gaps:\n${gapSummary}\n\nWrite one concise, complete recommendation based only on this supplied data. Use one or two complete sentences, maximum 45 words, and end with punctuation. Use plain sentences only: no Markdown, headings, bullets, numbering, bold text, emojis, invented figures, or claims about channels the business has not configured.`,
     }],
   });
   return plainText(msg.content[0]?.text, 360) || null;
