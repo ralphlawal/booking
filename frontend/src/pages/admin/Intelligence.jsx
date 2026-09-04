@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ErrorState, SkeletonList } from '../../components/shared/AsyncState';
 import { intelligenceAPI } from '../../services/api';
+import { businessCurrencySymbol } from '../../utils/currency';
+
+const SYM = businessCurrencySymbol();
 
 const emptyInsights = {
   revenue_7d: 0,
@@ -35,9 +38,9 @@ export default function Intelligence() {
   return <div className="space-y-6 animate-fade-in">
     <div><h1 className="text-2xl font-bold" style={{ color: 'var(--bam-text)' }}>BookAm Intelligence</h1><p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Recommendations grounded in your BookAm business data</p></div>
     {!data.sufficient_data && <div className="p-4 rounded-2xl bg-amber-50 text-amber-800">I don't have enough data to answer detailed questions yet.</div>}
-    <div className="grid sm:grid-cols-3 gap-3"><Card label="Revenue (7 days)" value={`€${Number(insights.revenue_7d || 0).toFixed(2)}`} /><Card label="Bookings this week" value={trend.current || 0} /><Card label="Booking trend" value={trend.change_percent == null ? '—' : `${trend.change_percent}%`} /></div>
+    <div className="grid sm:grid-cols-3 gap-3"><Card label="Revenue (7 days)" value={`${SYM}${Number(insights.revenue_7d || 0).toFixed(2)}`} /><Card label="Bookings this week" value={trend.current || 0} /><Card label="Booking trend" value={trend.change_percent == null ? '—' : `${trend.change_percent}%`} /></div>
     <section><h2 className="font-bold mb-3" style={{ color: 'var(--bam-text)' }}>Recommendations</h2><div className="space-y-2">{recommendations.map((recommendation, index) => <Recommendation key={index} recommendation={recommendation} />)}{!recommendations.length && <p style={{ color: 'var(--bam-text-muted)' }}>No data-backed recommendations yet.</p>}</div></section>
-    <section className="grid lg:grid-cols-2 gap-5"><List title="Popular services" rows={(insights.popular_services || []).map((item) => `${item.name} — €${Number(item.revenue || 0).toFixed(2)} · ${item.bookings} bookings`)} /><List title="Highest-value customers" rows={(insights.highest_value_customers || []).map((item) => `${item.full_name} — €${Number(item.lifetime_value || 0).toFixed(2)}`)} /><List title="Staff performance" rows={(insights.staff_performance || []).map((item) => `${item.name} — ${item.bookings} bookings (last 30 days)`)} /><List title="Retention & attendance" rows={[`${insights.customers_due || 0} customers due for an appointment`, `${cancellations.cancelled || 0} cancellations in 30 days`, `${cancellations.no_shows || 0} no-shows in 30 days`]} /></section>
+    <section className="grid lg:grid-cols-2 gap-5"><List title="Popular services" rows={(insights.popular_services || []).map((item) => `${item.name} — ${SYM}${Number(item.revenue || 0).toFixed(2)} · ${item.bookings} bookings`)} /><List title="Highest-value customers" rows={(insights.highest_value_customers || []).map((item) => `${item.full_name} — ${SYM}${Number(item.lifetime_value || 0).toFixed(2)}`)} /><List title="Staff performance" rows={(insights.staff_performance || []).map((item) => `${item.name} — ${item.bookings} bookings (last 30 days)`)} /><List title="Retention & attendance" rows={[`${insights.customers_due || 0} customers due for an appointment`, `${cancellations.cancelled || 0} cancellations in 30 days`, `${cancellations.no_shows || 0} no-shows in 30 days`]} /></section>
   </div>;
 }
 

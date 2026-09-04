@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { servicesAPI, resourcesAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
+import { businessCurrencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
 /* ── constants ───────────────────────────────────────────────────────────── */
@@ -21,7 +23,7 @@ const CANCELLATION_PRESETS = [
   'Non-refundable deposit',
 ];
 
-const SYM = '€';
+const SYM = businessCurrencySymbol();
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
@@ -451,7 +453,7 @@ export default function Services() {
           <div>
             <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>No resources created yet</p>
             <p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>
-              Add rooms, chairs, or equipment in the <a href="/admin/resources" className="text-primary-600 hover:underline">Resources</a> section to prevent double-booking.
+              Add rooms, chairs, or equipment in the <Link to="/admin/resources" className="text-primary-600 hover:underline">Resources</Link> section to prevent double-booking.
             </p>
           </div>
         </div>

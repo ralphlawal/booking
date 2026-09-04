@@ -17,6 +17,7 @@ import {
   bookingsAPI, servicesAPI, staffAPI, availabilityAPI, customersAPI,
 } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { businessCurrencySymbol } from '../../utils/currency';
 import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import {
@@ -35,7 +36,7 @@ function fmtTime(t) {
 
 function fmtPrice(p) {
   if (!p && p !== 0) return '';
-  return `€${parseFloat(p).toFixed(2)}`;
+  return `${businessCurrencySymbol()}${parseFloat(p).toFixed(2)}`;
 }
 
 function avatarInitials(name = '') {

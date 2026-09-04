@@ -15,3 +15,16 @@ export function money(amount, code, { decimals = 2 } = {}) {
   const n = Number(amount || 0);
   return `${currencySymbol(code)}${n.toFixed(decimals)}`;
 }
+
+// For business-admin pages that display amounts with no per-item currency of
+// their own (services, customers, staff commission, growth stats). Reads the
+// logged-in business's currency straight from the same auth cache AuthContext
+// writes on login, so it's correct without threading business through props.
+export function businessCurrencySymbol() {
+  try {
+    const cache = JSON.parse(localStorage.getItem('bookam_biz_auth') || 'null');
+    return currencySymbol(cache?.business?.bank_currency);
+  } catch {
+    return '£';
+  }
+}

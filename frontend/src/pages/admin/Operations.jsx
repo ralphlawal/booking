@@ -3,8 +3,9 @@ import toast from 'react-hot-toast';
 import { Minus, Plus, ShoppingBag } from 'lucide-react';
 import { operationsAPI, servicesAPI } from '../../services/api';
 import { EmptyState, SkeletonList } from '../../components/shared/AsyncState';
+import { businessCurrencySymbol } from '../../utils/currency';
 
-const money = (value) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(Number(value || 0));
+const money = (value) => `${businessCurrencySymbol()}${Number(value || 0).toFixed(2)}`;
 const blankProduct = { name: '', sku: '', price: '', cost: '', stock_quantity: 0, low_stock_threshold: 0, category: '', supplier: '' };
 
 export default function Operations() {

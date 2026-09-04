@@ -5,6 +5,7 @@ import { customersAPI, aiAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import NewBookingSheet from '../../components/admin/NewBookingSheet';
+import { businessCurrencySymbol } from '../../utils/currency';
 
 /* ── constants ───────────────────────────────────────────────────────────── */
 
@@ -18,7 +19,7 @@ const SEGMENTS = {
   inactive:   { label: 'Inactive',   color: '#94a3b8', bg: '#f8fafc', dark: '#1e293b40' },
 };
 
-const SYM = '€';
+const SYM = businessCurrencySymbol();
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 

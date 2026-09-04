@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 import { Gift, Gem, Package, Repeat2, UserRound } from 'lucide-react';
+import { businessCurrencySymbol } from '../../utils/currency';
 
 /* ── Shared primitives ───────────────────────────────────────────────────── */
 
@@ -549,7 +550,7 @@ function PackagesTab({ border, isDark }) {
 
       {view === 'packages' && (
         packages.length === 0 ? (
-          <EmptyState icon={Package} title="No packages yet" body="Create bundles of sessions customers can buy in advance — e.g. 6 massages for €240"
+          <EmptyState icon={Package} title="No packages yet" body={`Create bundles of sessions customers can buy in advance — e.g. 6 massages for ${businessCurrencySymbol()}240`}
             action={<button onClick={openCreate} className="btn-primary text-sm">Create package</button>} />
         ) : (
           <div className="space-y-3">

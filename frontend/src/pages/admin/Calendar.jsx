@@ -9,6 +9,7 @@ import { bookingsAPI, staffAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import NewBookingSheet from '../../components/admin/NewBookingSheet';
+import { currencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
 /* ── constants ───────────────────────────────────────────────────────────── */
@@ -498,7 +499,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
     finally { setSaving(false); }
   };
 
-  const sym = '€';
+  const sym = currencySymbol(booking.currency);
   const price = parseFloat(booking.service_price || 0);
 
   return (
@@ -832,6 +833,18 @@ export default function Calendar() {
     return format(focusDate, 'MMMM yyyy');
   }, [view, focusDate]);
 
+  // Compact form for narrow screens, where the full label (with the New/Today
+  // buttons and Day/Week/Month toggle alongside it) has no room to breathe.
+  const titleLabelShort = useMemo(() => {
+    if (view === 'day')   return format(focusDate, 'EEE, MMM d');
+    if (view === 'week')  {
+      const ws = startOfWeek(focusDate, { weekStartsOn: 1 });
+      const we = addDays(ws, 6);
+      return `${format(ws, 'd')} – ${format(we, 'd MMM')}`;
+    }
+    return format(focusDate, 'MMM yyyy');
+  }, [view, focusDate]);
+
   return (
     <div
       className="flex flex-col animate-fade-in"
@@ -847,17 +860,20 @@ export default function Calendar() {
       >
         {/* Row 1: Title + View toggle + New button */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <button onClick={() => navigate(-1)} className="p-2 rounded-xl transition-colors flex-shrink-0" style={{ color: 'var(--bam-text-muted)' }}>
               <ChevronLIcon className="w-5 h-5" />
             </button>
-            <h2 className="font-bold text-sm sm:text-base truncate" style={{ color: 'var(--bam-text)' }}>{titleLabel}</h2>
+            <h2 className="font-bold text-sm sm:text-base truncate min-w-0" style={{ color: 'var(--bam-text)' }}>
+              <span className="sm:hidden">{titleLabelShort}</span>
+              <span className="hidden sm:inline">{titleLabel}</span>
+            </h2>
             <button onClick={() => navigate(1)} className="p-2 rounded-xl transition-colors flex-shrink-0" style={{ color: 'var(--bam-text-muted)' }}>
               <ChevronRIcon className="w-5 h-5" />
             </button>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={goToday} className="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all"
+            <button onClick={goToday} className="px-2 sm:px-3 py-1.5 rounded-xl text-xs font-bold border transition-all flex-shrink-0"
               style={{ background: 'var(--bam-surface-soft)', borderColor: 'var(--bam-border)', color: 'var(--bam-text-muted)' }}>
               Today
             </button>
@@ -867,12 +883,13 @@ export default function Calendar() {
                 <button
                   key={v}
                   onClick={() => setView(v)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all capitalize ${
+                  className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all capitalize ${
                     view === v ? 'bg-primary-600 text-white shadow-primary-sm' : ''
                   }`}
                   style={{ color: view === v ? undefined : 'var(--bam-text-muted)' }}
                 >
-                  {v}
+                  <span className="sm:hidden">{v[0].toUpperCase()}</span>
+                  <span className="hidden sm:inline">{v}</span>
                 </button>
               ))}
             </div>

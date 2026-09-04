@@ -9,6 +9,7 @@ import { bookingsAPI, servicesAPI, availabilityAPI, staffAPI, aiAPI } from '../.
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { openExternalLink, publicWebUrl } from '../../services/nativeBridge';
+import { currencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
 import { Ban, CalendarClock, CalendarDays, CalendarPlus, ChartColumn, CircleDollarSign, ClipboardList, Lightbulb, Megaphone, Scissors, Star, UserPlus, Users } from 'lucide-react';
 
@@ -74,10 +75,6 @@ const STATUS_META = {
   cancelled: { label: 'Cancelled', cls: 'badge-cancelled' },
   completed: { label: 'Done',      cls: 'badge-completed' },
 };
-
-function currencySymbol(c) {
-  return { GBP: '£', EUR: '€', USD: '$', CAD: 'CA$', AUD: 'A$' }[c] || '€';
-}
 
 function statsFromDaily(daily = [], days) {
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
@@ -468,14 +465,14 @@ export default function Dashboard() {
 
   const todayStats = useMemo(() => {
     const list = todayBookings;
-    const sym  = list[0]?.currency ? currencySymbol(list[0].currency) : '€';
+    const sym  = currencySymbol(list[0]?.currency || business?.bank_currency);
     const appointments  = list.filter(b => b.status !== 'cancelled').length;
     const revenue       = list.filter(b => ['completed','confirmed'].includes(b.status))
                               .reduce((s, b) => s + (parseFloat(b.service_price) || 0), 0);
     const pending       = list.filter(b => b.status === 'pending').length;
     const cancellations = list.filter(b => b.status === 'cancelled').length;
     return { appointments, revenue, pending, cancellations, sym };
-  }, [todayBookings]);
+  }, [todayBookings, business?.bank_currency]);
 
   const periodStats = useMemo(() => {
     if (period === 'Today') return null;
@@ -634,7 +631,7 @@ export default function Dashboard() {
               />
               <SnapshotCard
                 label="Revenue"
-                value={periodStats ? `€${periodStats.revenue.toFixed(0)}` : '—'}
+                value={periodStats ? `${currencySymbol(business?.bank_currency)}${periodStats.revenue.toFixed(0)}` : '—'}
                 sub={`This ${period.toLowerCase()}`}
                 icon={CircleDollarSign} accent="#10b981"
                 loading={loadingAnalytics}
@@ -789,7 +786,7 @@ export default function Dashboard() {
                 }}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-xl mt-0.5">✨</span>
+                  <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0 text-violet-600 dark:text-violet-300" aria-hidden="true" />
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-violet-800 dark:text-violet-300">
                       {gapSuggestion.gaps?.length

@@ -3,6 +3,7 @@ import { MessageSquare, Headphones, LogOut, Plus, X, ChevronLeft, AlertTriangle,
 import { adminChatAPI, adminDisputesAPI, broadcastAPI, adminPanelAPI } from '../../services/api';
 import ChatWindow from '../../components/chat/ChatWindow';
 import { LOGO_BLUE_H } from '../../config/logos';
+import { currencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
 const TOKEN_KEY = 'adminSupportToken';
@@ -1327,7 +1328,7 @@ function PayoutsPanel() {
   const noPending  = businesses.filter(b => parseFloat(b.pending_payout) <= 0);
 
   const fmt = (v, currency) => {
-    const sym = (currency || 'GBP').toUpperCase() === 'USD' ? '$' : (currency || 'GBP').toUpperCase() === 'EUR' ? '€' : '₦';
+    const sym = currencySymbol(currency);
     const amount = parseFloat(v || 0).toFixed(2);
     try {
       return new Intl.NumberFormat('en-GB', { style: 'currency', currency: (currency || 'GBP').toUpperCase() }).format(amount);
