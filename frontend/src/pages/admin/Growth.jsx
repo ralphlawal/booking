@@ -1,12 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { growthAPI, promoAPI, reviewReplyAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
+import { businessCurrencySymbol } from '../../utils/currency';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 import { BarChart3, Bell, Gem, Mail, Megaphone, MessageCircle, Smartphone, Sparkles, Star, Tag, TriangleAlert, Zap } from 'lucide-react';
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
+
+const SYM = businessCurrencySymbol();
 
 const TABS = [
   { id: 'overview',     label: 'Overview',     icon: BarChart3 },
@@ -241,10 +245,18 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
 function OverviewTab({ integrations, onCreateCampaign, border }) {
   const [intel, setIntel] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    growthAPI.intelligence().then(setIntel).catch(() => {}).finally(() => setLoading(false));
+  const loadIntelligence = useCallback(() => {
+    setLoading(true);
+    setError(false);
+    growthAPI.intelligence()
+      .then(setIntel)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { loadIntelligence(); }, [loadIntelligence]);
 
   const snap = intel?.snapshot;
   const revTrend = snap?.revenue_last_month > 0
@@ -254,8 +266,8 @@ function OverviewTab({ integrations, onCreateCampaign, border }) {
     <div className="space-y-6">
       {/* Snapshot stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StatCard label="Revenue this month" value={snap ? `€${parseFloat(snap.revenue_this_month || 0).toFixed(0)}` : '…'} trend={revTrend} />
-        <StatCard label="Last month" value={snap ? `€${parseFloat(snap.revenue_last_month || 0).toFixed(0)}` : '…'} />
+        <StatCard label="Revenue this month" value={snap ? `${SYM}${parseFloat(snap.revenue_this_month || 0).toFixed(0)}` : '…'} trend={revTrend} />
+        <StatCard label="Last month" value={snap ? `${SYM}${parseFloat(snap.revenue_last_month || 0).toFixed(0)}` : '…'} />
         <StatCard label="Bookings (7 days)" value={snap?.bookings_7d ?? '…'} color="#6366f1" />
       </div>
 
@@ -265,7 +277,13 @@ function OverviewTab({ integrations, onCreateCampaign, border }) {
           <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>Growth Opportunities</h2>
           {loading && <Spinner size="sm" />}
         </div>
-        {!loading && (!intel?.insights || intel.insights.length === 0) ? (
+        {!loading && error ? (
+          <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+            <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>Growth insights are temporarily unavailable</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Please try again in a moment.</p>
+            <button type="button" onClick={loadIntelligence} className="btn-secondary mt-4 text-sm">Try again</button>
+          </div>
+        ) : !loading && (!intel?.insights || intel.insights.length === 0) ? (
           <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
             <p className="text-3xl mb-2">🌱</p>
             <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No opportunities detected yet</p>
@@ -387,7 +405,9 @@ function CampaignsTab({ integrations, prefill, border, isDark }) {
             return (
               <div key={c.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl flex-shrink-0">{ch?.icon || '📨'}</span>
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--bam-surface-soft)' }}>
+                    {ch?.icon ? <ch.icon className="w-4 h-4" style={{ color: 'var(--bam-text-muted)' }} strokeWidth={1.8} /> : <span className="text-lg">📨</span>}
+                  </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{c.name}</p>
@@ -400,7 +420,7 @@ function CampaignsTab({ integrations, prefill, border, isDark }) {
                         ['Sent', c.recipient_count],
                         ['Delivered', c.delivered_count],
                         ['Booked', c.booked_count],
-                        c.revenue_generated > 0 ? ['Revenue', `€${parseFloat(c.revenue_generated).toFixed(0)}`] : null,
+                        c.revenue_generated > 0 ? ['Revenue', `${SYM}${parseFloat(c.revenue_generated).toFixed(0)}`] : null,
                       ].filter(Boolean).map(([k, v]) => (
                         <div key={k} className="text-center">
                           <p className="text-xs font-bold" style={{ color: 'var(--bam-text)' }}>{v}</p>
@@ -505,7 +525,7 @@ function AutomationsTab({ integrations, border, isDark }) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{auto.name}</p>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--bam-surface-soft)', color: 'var(--bam-text-faint)' }}>
-                        {ch?.icon} {ch?.label}
+                        {ch?.label}
                       </span>
                     </div>
                     <p className="text-xs mt-0.5 mb-2" style={{ color: 'var(--bam-text-muted)' }}>{auto.description}</p>
@@ -618,7 +638,7 @@ function PromotionsTab({ border, isDark }) {
                       <button key={t} type="button" onClick={() => setForm(p => ({ ...p, type: t }))}
                         className={`flex-1 py-2.5 text-xs font-bold capitalize transition-all ${form.type === t ? 'text-white' : ''}`}
                         style={form.type === t ? { background: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface-soft)' }}>
-                        {t === 'percent' ? '% Off' : '€ Off'}
+                        {t === 'percent' ? '% Off' : `${SYM} Off`}
                       </button>
                     ))}
                   </div>
@@ -665,7 +685,7 @@ function PromotionsTab({ border, isDark }) {
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-bold font-mono tracking-wider text-sm" style={{ color: 'var(--bam-text)' }}>{p.code}</p>
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(99,102,241,.1)', color: '#6366f1' }}>
-                      {p.type === 'percent' ? `${p.value}% off` : `€${parseFloat(p.value).toFixed(2)} off`}
+                      {p.type === 'percent' ? `${p.value}% off` : `${SYM}${parseFloat(p.value).toFixed(2)} off`}
                     </span>
                     {!p.is_active && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Inactive</span>}
                   </div>
@@ -876,7 +896,7 @@ function LoyaltyTab({ border }) {
         <div className="grid grid-cols-2 gap-3">
           <StatCard label="Returning customers" value={parseInt(stats.total_members || 0).toLocaleString()} sub="2+ bookings" />
           <StatCard label="Avg visits" value={parseFloat(stats.avg_visits || 0).toFixed(1)} sub="per loyal customer" />
-          <StatCard label="Total spend" value={`€${parseFloat(stats.total_spend || 0).toFixed(0)}`} sub="from returning customers" />
+          <StatCard label="Total spend" value={`${SYM}${parseFloat(stats.total_spend || 0).toFixed(0)}`} sub="from returning customers" />
         </div>
       )}
 
@@ -892,7 +912,7 @@ function LoyaltyTab({ border }) {
                   <p className="font-semibold text-sm truncate" style={{ color: 'var(--bam-text)' }}>{c.name}</p>
                   <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>{c.total_visits} visits</p>
                 </div>
-                <span className="font-bold" style={{ color: 'var(--bam-text)' }}>€{parseFloat(c.lifetime_spend || 0).toFixed(0)}</span>
+                <span className="font-bold" style={{ color: 'var(--bam-text)' }}>{SYM}{parseFloat(c.lifetime_spend || 0).toFixed(0)}</span>
               </div>
             ))}
           </div>
@@ -909,7 +929,11 @@ export default function Growth() {
   const isDark = theme === 'dark';
   const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    TABS.some(t => t.id === requestedTab) ? requestedTab : 'overview'
+  );
   const [integrations, setIntegrations] = useState(null);
   const [campaignPrefill, setCampaignPrefill] = useState(null);
 

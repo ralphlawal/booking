@@ -507,7 +507,7 @@ function runSqliteMigrations() {
   for (const col of ['reminder_24h_sent INTEGER DEFAULT 0', 'reminder_1h_sent INTEGER DEFAULT 0']) addColumn('bookings', col);
   for (const col of [
     'is_verified INTEGER DEFAULT 0', 'latitude REAL', 'longitude REAL',
-    "verification_status TEXT DEFAULT 'pending'", "verification_details TEXT DEFAULT '{}'",
+    "verification_status TEXT DEFAULT 'unverified'", "verification_details TEXT DEFAULT '{}'",
     'verified_at TEXT', 'verification_requested_at TEXT', 'verification_rejected_reason TEXT',
     'verification_notes TEXT', 'stripe_account_id TEXT', 'stripe_onboarding_complete BOOLEAN DEFAULT FALSE',
     'bank_holder_name TEXT', 'bank_sort_code TEXT', 'bank_account_number TEXT', 'bank_country TEXT',
@@ -552,6 +552,16 @@ function runSqliteMigrations() {
     try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch {}
     try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN ${col}`); } catch {}
   }
+  // Mirror migration 043 for local SQLite. New accounts always have an OTP,
+  // so this only repairs pre-OTP accounts that have no verification path.
+  try {
+    db.exec(`UPDATE consumer_accounts
+      SET email_verified = 1
+      WHERE COALESCE(email_verified, 0) = 0
+        AND email_otp IS NULL
+        AND email_otp_expires IS NULL
+        AND email_verify_token IS NULL`);
+  } catch {}
   try { db.exec(`ALTER TABLE consumer_accounts ADD COLUMN no_show_count INTEGER DEFAULT 0`); } catch {}
   try { db.exec(`ALTER TABLE customers ADD COLUMN notes TEXT`); } catch {}
 

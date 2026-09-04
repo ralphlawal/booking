@@ -399,14 +399,14 @@ export default function Settings() {
     { label: 'Services', items: [['services','Services'],['resources','Resources'],['photos','Portfolio & photos']] },
     { label: 'Team', items: [['staff','Staff, roles & schedules']] },
     { label: 'Customers', items: [['intake','Forms'],['reviews','Reviews'],['loyalty','Loyalty']] },
-    { label: 'Payments', items: [['payouts','Payment methods & payouts'],['business','Deposits & cancellation policy']] },
+    { label: 'Payments', items: [['payouts','Payment methods & payouts'],['services','Deposits & cancellation policy']] },
     { label: 'Marketing', items: [['promo','Promotions'],['waitlist','Waitlist'],['growth','Campaigns & automations']] },
-    { label: 'Integrations', items: [['embed','Website & embed'],['qr','Google, social & calendar']] },
+    { label: 'Integrations', items: [['embed','Website & embed']] },
     { label: 'Account', items: [['verification','Verification'],['security','Security, privacy & data']] },
     { label: 'Support', items: [['support','Help & contact support']] },
   ];
   const INTERNAL_TABS = new Set(['business','availability','blocked','staff','photos','intake','promo','waitlist','qr','embed','payouts','verification','security']);
-  const destination = key => ({ services: '/admin/services', resources: '/admin/resources', reviews: '/admin/growth', loyalty: '/admin/growth', growth: '/admin/growth', support: '/admin-support' }[key]);
+  const destination = key => ({ services: '/admin/services', resources: '/admin/resources', reviews: '/admin/growth?tab=reviews', loyalty: '/admin/growth?tab=loyalty', growth: '/admin/growth', support: '/admin-support' }[key]);
   const visibleGroups = useMemo(() => SETTINGS_GROUPS.map(group => ({ ...group, items: group.items.filter(([, label]) => label.toLowerCase().includes(settingsSearch.toLowerCase()) || group.label.toLowerCase().includes(settingsSearch.toLowerCase())) })).filter(group => group.items.length), [settingsSearch]);
   const openSetting = key => { if (INTERNAL_TABS.has(key)) { setTab(key); setSearchParams({ tab: key }); } else navigate(destination(key)); };
 

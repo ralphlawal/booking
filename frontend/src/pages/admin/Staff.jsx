@@ -2,7 +2,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staffAPI, servicesAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
+import { businessCurrencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
+
+const SYM = businessCurrencySymbol();
 
 /* ── constants ───────────────────────────────────────────────────────────── */
 
@@ -229,7 +232,7 @@ function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
                       <input type="checkbox" className="w-4 h-4 accent-primary-600 flex-shrink-0" checked={sel} onChange={() => toggleService(svc.id)} />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold truncate" style={{ color: 'var(--bam-text)' }}>{svc.name}</p>
-                        <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>{svc.duration_minutes}min · €{parseFloat(svc.price || 0).toFixed(0)}{svc.category ? ` · ${svc.category}` : ''}</p>
+                        <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>{svc.duration_minutes}min · {SYM}{parseFloat(svc.price || 0).toFixed(0)}{svc.category ? ` · ${svc.category}` : ''}</p>
                       </div>
                     </label>
                   );
@@ -271,7 +274,7 @@ function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
               </div>
               {form.commission_type !== 'none' && (
                 <div>
-                  <label className="label">{form.commission_type === 'percentage' ? 'Commission %' : 'Flat fee (€) per booking'}</label>
+                  <label className="label">{form.commission_type === 'percentage' ? 'Commission %' : `Flat fee (${SYM}) per booking`}</label>
                   <input className="input" type="number" min="0" step={form.commission_type === 'percentage' ? '1' : '0.50'} max={form.commission_type === 'percentage' ? '100' : undefined}
                     placeholder={form.commission_type === 'percentage' ? 'e.g. 20' : 'e.g. 15.00'}
                     value={form.commission_value || ''} onChange={set('commission_value')} />
@@ -325,7 +328,7 @@ function StaffCard({ member, onEdit, onSelect, isSelected, isDark, border }) {
             )}
             {member.commission_type && member.commission_type !== 'none' && member.commission_value > 0 && (
               <p className="text-[10px]" style={{ color: 'var(--bam-text-faint)' }}>
-                {member.commission_type === 'percentage' ? `${member.commission_value}% commission` : `€${member.commission_value} / booking`}
+                {member.commission_type === 'percentage' ? `${member.commission_value}% commission` : `${SYM}${member.commission_value} / booking`}
               </p>
             )}
           </div>
@@ -346,15 +349,17 @@ function StaffCard({ member, onEdit, onSelect, isSelected, isDark, border }) {
 /* ── PerformancePanel ────────────────────────────────────────────────────── */
 
 function PerformancePanel({ member, border }) {
-  const [report, setReport] = useState(null);
+  const [rows, setRows] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!member) return;
     setLoading(true);
-    staffAPI.report(member.id)
-      .then(setReport)
-      .catch(() => setReport(null))
+    // /staff/report returns every active staff member's totals in one call
+    // (it has no per-member filter) — fetch once and pick this member's row.
+    staffAPI.report()
+      .then(setRows)
+      .catch(() => setRows(null))
       .finally(() => setLoading(false));
   }, [member?.id]);
 
@@ -369,13 +374,14 @@ function PerformancePanel({ member, border }) {
 
   if (loading) return <div className="p-6 space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: 'var(--bam-surface-soft)' }} />)}</div>;
 
+  const report = rows?.find(r => r.id === member.id) || null;
+
   const stats = report ? [
-    { label: 'Appointments', value: report.total_appointments ?? '—', sub: 'all time' },
-    { label: 'Revenue', value: report.total_revenue ? `€${parseFloat(report.total_revenue).toFixed(0)}` : '—', sub: 'all time' },
-    { label: 'This month', value: report.monthly_bookings ?? '—', sub: 'bookings' },
-    { label: 'No-shows', value: report.no_shows ?? '—', sub: 'total' },
-    { label: 'Utilisation', value: report.utilisation_pct ? `${Math.round(report.utilisation_pct)}%` : '—', sub: 'this week' },
-    { label: 'Avg rating', value: report.avg_rating ? `${parseFloat(report.avg_rating).toFixed(1)}★` : '—', sub: 'from reviews' },
+    { label: 'Appointments', value: report.total_bookings ?? '—', sub: 'all time' },
+    { label: 'Completed', value: report.completed_bookings ?? '—', sub: 'all time' },
+    { label: 'Cancelled', value: report.cancelled_bookings ?? '—', sub: 'all time' },
+    { label: 'Revenue', value: `${SYM}${parseFloat(report.revenue || 0).toFixed(0)}`, sub: 'from completed bookings' },
+    { label: 'Commission', value: `${SYM}${parseFloat(report.commission || 0).toFixed(0)}`, sub: report.commission_type && report.commission_type !== 'none' ? `${report.commission_value}${report.commission_type === 'percentage' ? '%' : ` ${SYM}`} / booking` : 'not set' },
   ] : [];
 
   return (

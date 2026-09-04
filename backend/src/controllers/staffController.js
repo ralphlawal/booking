@@ -158,7 +158,7 @@ exports.report = async (req, res) => {
     const result = rows.map(r => {
       const revenue = parseFloat(r.revenue) || 0;
       let commission = 0;
-      if (r.commission_type === 'percent') {
+      if (r.commission_type === 'percentage') {
         commission = Math.round(revenue * parseFloat(r.commission_value) / 100 * 100) / 100;
       } else if (r.commission_type === 'flat') {
         commission = parseFloat(r.commission_value) * parseInt(r.completed_bookings);

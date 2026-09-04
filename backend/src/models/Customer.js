@@ -8,7 +8,23 @@ const Customer = {
         'SELECT * FROM customers WHERE business_id = $1 AND phone = $2',
         [business_id, phone]
       );
-      if (rows.length) return rows[0];
+      if (rows.length) {
+        // A returning customer may have typed a new name/email for this
+        // booking (changed email, corrected a typo) — keep the record
+        // current rather than silently booking them under stale contact
+        // info, which sends confirmations to the wrong address.
+        const existing = rows[0];
+        const nextName = full_name || existing.full_name;
+        const nextEmail = email || existing.email;
+        if (nextName !== existing.full_name || nextEmail !== existing.email) {
+          const { rows: updated } = await db.query(
+            'UPDATE customers SET full_name = $1, email = $2 WHERE id = $3 RETURNING *',
+            [nextName, nextEmail, existing.id]
+          );
+          return updated[0];
+        }
+        return existing;
+      }
     }
 
     const id = crypto.randomUUID();
