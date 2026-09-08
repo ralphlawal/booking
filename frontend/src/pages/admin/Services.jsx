@@ -5,6 +5,7 @@ import { servicesAPI, resourcesAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import { businessCurrencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
+import { Package, Scissors } from 'lucide-react';
 
 /* ── constants ───────────────────────────────────────────────────────────── */
 
@@ -423,9 +424,9 @@ export default function Services() {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="services-workspace space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="services-titlebar flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--bam-text)' }}>Services</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>
@@ -449,7 +450,7 @@ export default function Services() {
       {/* Resource hint if none created */}
       {!loading && resources.length === 0 && (
         <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}` }}>
-          <span className="text-2xl">📦</span>
+          <Package className="w-6 h-6 text-primary-500 flex-shrink-0" aria-hidden="true" />
           <div>
             <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>No resources created yet</p>
             <p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>
@@ -466,7 +467,7 @@ export default function Services() {
         </div>
       ) : services.length === 0 ? (
         <div className="card p-12 text-center">
-          <p className="text-4xl mb-3">✂️</p>
+          <Scissors className="w-10 h-10 mx-auto mb-3 text-primary-500" aria-hidden="true" />
           <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No services yet</p>
           <p className="text-sm mt-1 mb-5" style={{ color: 'var(--bam-text-muted)' }}>Add your first service to start accepting bookings</p>
           <button onClick={openCreate} className="btn-primary">Add Service</button>

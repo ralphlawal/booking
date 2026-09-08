@@ -3,6 +3,7 @@ import { ClipboardList, UserPlus, AlertTriangle, RefreshCw, Sparkles } from 'luc
 import { bookingsAPI, exportBookingsCsv, staffAPI, aiAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import NewBookingSheet from '../../components/admin/NewBookingSheet';
+import { copyText } from '../../services/nativeBridge';
 
 const POLL_INTERVAL = 60_000;
 
@@ -74,8 +75,9 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
   const price = parseFloat(booking.service_price || 0);
   const rescheduleRequest = getRescheduleRequest(booking);
 
-  const copyRef = () => {
-    navigator.clipboard.writeText(booking.reference_id).then(() => toast.success('Reference copied'));
+  const copyRef = async () => {
+    if (await copyText(booking.reference_id)) toast.success('Reference copied');
+    else toast.error('Could not copy reference');
   };
 
   return (
@@ -383,8 +385,8 @@ export default function Bookings() {
   }, [data.bookings, search]);
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      <div className="flex items-start justify-between gap-3">
+    <div className="bookings-workspace space-y-5 animate-fade-in">
+      <div className="bookings-titlebar flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Bookings</h1>
           <p className="text-gray-500 text-sm mt-0.5">Manage all your appointments</p>
@@ -392,7 +394,7 @@ export default function Bookings() {
         <div className="flex items-center gap-2 mt-1">
           <button
             onClick={() => setNewBookingOpen(true)}
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+            className="bookings-new-action flex items-center gap-1.5 text-sm px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
           >
             <UserPlus className="w-4 h-4" />
             <span className="hidden sm:inline">Walk-in</span>

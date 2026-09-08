@@ -30,8 +30,8 @@ export default function FavouritesPage() {
   };
 
   return (
-    <div className="app-page pb-consumer-nav">
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+    <div className="favourites-workspace app-page pb-consumer-nav">
+      <nav className="favourites-header sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <BackButton
             fallback="/customer/dashboard"

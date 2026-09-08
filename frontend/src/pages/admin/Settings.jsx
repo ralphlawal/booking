@@ -6,7 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import { compressImage } from '../../utils/compressImage';
 import { Users, Image, FileText, Tag, List, Plus, Trash2, Edit2, X, Check, Sparkles, Loader2 } from 'lucide-react';
-import { openExternalUrl } from '../../services/nativeBridge';
+import { copyText, openExternalUrl, publicWebUrl } from '../../services/nativeBridge';
 
 const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const INTERVALS = [15,30,45,60];
@@ -141,7 +141,10 @@ export default function Settings() {
   const onAddressInput = (val) => {
     setBizForm(p => ({ ...p, location: val }));
     clearTimeout(geocodeTimer.current);
-    if (val.trim().length < 3) { setAddressSuggestions([]); return; }
+    // Coordinates are also resolved server-side when the business profile is
+    // saved. Do not issue requests to Mapbox with an absent token in native
+    // builds; that previously left the address picker looking broken.
+    if (val.trim().length < 3 || !MAPBOX_TOKEN) { setAddressSuggestions([]); return; }
     geocodeTimer.current = setTimeout(async () => {
       try {
         const r = await fetch(
@@ -167,6 +170,10 @@ export default function Settings() {
   const geocodeAddress = async () => {
     const address = bizForm.location?.trim();
     if (!address) return toast.error('Enter an address first');
+    if (!MAPBOX_TOKEN) {
+      toast('Your address will be located when you save your business profile.');
+      return;
+    }
     setGeocoding(true);
     try {
       const r = await fetch(
@@ -266,9 +273,9 @@ export default function Settings() {
     }
   };
 
-  const bookingUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/book/${business?.slug}`
-    : `https://bookam.business/book/${business?.slug}`;
+  const bookingUrl = business?.slug
+    ? publicWebUrl(`/book/${business.slug}`)
+    : 'https://bookam.business';
 
   const embedCode = `<iframe\n  src="${bookingUrl}?embed=1"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.1)"\n  title="${business?.name} Booking"\n></iframe>`;
 
@@ -411,12 +418,12 @@ export default function Settings() {
   const openSetting = key => { if (INTERNAL_TABS.has(key)) { setTab(key); setSearchParams({ tab: key }); } else navigate(destination(key)); };
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      <div>
+    <div className="settings-workspace space-y-5 animate-fade-in">
+      <div className="settings-titlebar">
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-gray-500 text-sm mt-0.5">Organised controls for your business, team, payments, and account</p>
       </div>
-      <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--bam-border)', background: 'var(--bam-surface)' }}>
+      <div className="settings-directory rounded-2xl border p-3" style={{ borderColor: 'var(--bam-border)', background: 'var(--bam-surface)' }}>
         <input value={settingsSearch} onChange={e => setSettingsSearch(e.target.value)} className="input w-full mb-3" placeholder="Search settings…" />
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">{visibleGroups.map(group => <div key={group.label}><p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--bam-text-faint)' }}>{group.label}</p>{group.items.map(([key,label]) => <button key={`${group.label}-${label}`} onClick={() => openSetting(key)} className={`w-full text-left px-3 py-2 rounded-lg text-sm ${tab === key ? 'bg-primary-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200'}`}>{label}</button>)}</div>)}</div>
       </div>
@@ -671,7 +678,7 @@ export default function Settings() {
             <>
               <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-3 mb-4 flex items-center gap-2 border border-primary-100 dark:border-primary-800">
                 <code className="text-sm text-primary-700 dark:text-primary-300 flex-1 truncate">{bookingUrl}</code>
-                <button onClick={() => { navigator.clipboard.writeText(bookingUrl); toast.success('Copied!'); }}
+                <button onClick={async () => { if (await copyText(bookingUrl)) toast.success('Copied!'); else toast.error('Could not copy link'); }}
                   className="btn-secondary text-xs py-1.5 flex-shrink-0">Copy</button>
               </div>
               <div className="flex justify-center p-6 bg-white border border-gray-100 rounded-lg mb-4">
@@ -1201,7 +1208,7 @@ export default function Settings() {
             <div className="bg-gray-900 rounded-lg p-4 relative mb-3">
               <pre className="text-green-400 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap">{embedCode}</pre>
               <button
-                onClick={() => { navigator.clipboard.writeText(embedCode); toast.success('Embed code copied!'); }}
+                onClick={async () => { if (await copyText(embedCode)) toast.success('Embed code copied!'); else toast.error('Could not copy embed code'); }}
                 className="absolute top-3 right-3 text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors"
               >
                 Copy
@@ -1219,9 +1226,9 @@ export default function Settings() {
             <div className="bg-gray-900 rounded-lg p-4 relative mb-3">
               <pre className="text-green-400 text-xs leading-relaxed overflow-x-auto">{`<a href="${bookingUrl}" target="_blank"\n   style="display:inline-block;background:#5b3eea;color:white;\n          padding:12px 28px;border-radius:10px;font-weight:600;\n          text-decoration:none;font-family:sans-serif">\n  Book Now\n</a>`}</pre>
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(`<a href="${bookingUrl}" target="_blank" style="display:inline-block;background:#5b3eea;color:white;padding:12px 28px;border-radius:10px;font-weight:600;text-decoration:none;font-family:sans-serif">Book Now</a>`);
-                  toast.success('Button code copied!');
+                onClick={async () => {
+                  const copied = await copyText(`<a href="${bookingUrl}" target="_blank" style="display:inline-block;background:#5b3eea;color:white;padding:12px 28px;border-radius:10px;font-weight:600;text-decoration:none;font-family:sans-serif">Book Now</a>`);
+                  if (copied) toast.success('Button code copied!'); else toast.error('Could not copy button code');
                 }}
                 className="absolute top-3 right-3 text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors"
               >

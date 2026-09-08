@@ -856,10 +856,10 @@ export default function BookingPage() {
         }
       `}</style>
 
-      <div className="min-h-screen" style={{ background: 'var(--bp-bg)' }}>
+      <div className="booking-app-shell min-h-screen" style={{ background: 'var(--bp-bg)' }}>
 
         {/* ── Sticky header ── */}
-        <header className={`fixed top-0 inset-x-0 z-30 transition-all duration-300 ${scrolled ? 'shadow-sm' : ''}`}
+        <header className={`booking-app-header fixed top-0 inset-x-0 z-30 transition-all duration-300 ${scrolled ? 'shadow-sm' : ''}`}
           style={{ background: scrolled ? 'var(--bp-card)' : 'transparent', borderBottom: scrolled ? '1px solid var(--bp-border)' : 'none' }}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
             <a href="/" className="p-2 -ml-2 rounded-xl transition-colors" style={{ color: scrolled ? 'var(--bp-text)' : 'white' }}>
@@ -875,8 +875,8 @@ export default function BookingPage() {
               </div>
             )}
             <div className="flex items-center gap-2 ml-auto">
-              <button onClick={toggleFollow} className="p-2 rounded-xl transition-colors" style={{ color: scrolled ? 'var(--bp-text)' : 'white' }}>
-                {followed ? '❤️' : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>}
+              <button onClick={toggleFollow} className="p-2 rounded-xl transition-colors" style={{ color: scrolled ? 'var(--bp-text)' : 'white' }} aria-label={followed ? 'Remove from favourites' : 'Add to favourites'}>
+                <svg className={`w-5 h-5 ${followed ? 'fill-current' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
               </button>
               <button onClick={share} className="p-2 rounded-xl transition-colors" style={{ color: scrolled ? 'var(--bp-text)' : 'white' }}>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -886,7 +886,7 @@ export default function BookingPage() {
         </header>
 
         {/* ── Hero ── */}
-        <div className="relative" style={{ height: coverPhoto ? 340 : 220 }}>
+        <div className="booking-app-hero relative" style={{ height: coverPhoto ? 340 : 220 }}>
           {coverPhoto
             ? <img src={coverPhoto} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" />
             : <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, hsl(${(business.name.charCodeAt(0) * 37) % 360},60%,22%) 0%, hsl(${(business.name.charCodeAt(0) * 37 + 40) % 360},50%,30%) 100%)` }} />
@@ -1082,10 +1082,13 @@ export default function BookingPage() {
                         loading="lazy"
                       />
                     ) : (
-                      <div className="h-24 flex items-center justify-center gap-2 px-4 text-sm font-medium"
-                        style={{ background: 'var(--bp-chip)', color: 'var(--bp-muted)' }}>
-                        <span className="text-lg">📍</span>
-                        <span className="truncate">{business.location || 'Location shared after booking'}</span>
+                      <div className="h-28 flex items-end px-4 pb-4"
+                        style={{ background: 'radial-gradient(circle at 72% 22%, rgba(91,62,234,0.22), transparent 24%), var(--bp-chip)', color: 'var(--bp-muted)' }}>
+                        <span className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold shadow-sm"
+                          style={{ background: 'var(--bp-card)', color: 'var(--bp-text)' }}>
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                          {business.location || 'Open location'}
+                        </span>
                       </div>
                     )}
                     <div className="p-4 flex items-center justify-between gap-3" style={{ background: 'var(--bp-card)' }}>

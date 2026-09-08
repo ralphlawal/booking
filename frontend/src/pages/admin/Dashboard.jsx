@@ -567,16 +567,17 @@ export default function Dashboard() {
     <div className="page-shell animate-fade-in">
 
       {/* ── GREETING ─────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--bam-text)' }}>
-            {greetingWord()}, {business?.name || 'there'} 👋
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>
-            {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
+      <section className="dashboard-command-bar">
+        <div className="relative z-10">
+          <p className="dashboard-command-kicker">BookAm Business</p>
+          <h1>{greetingWord()}, {business?.name || 'there'}.</h1>
+          <p>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · Here is what needs your attention.</p>
         </div>
-      </div>
+        <div className="relative z-10 flex flex-wrap gap-2">
+          <Link to="/admin/bookings" className="dashboard-command-primary"><CalendarPlus className="w-4 h-4" /> New booking</Link>
+          <Link to="/admin/intelligence" className="dashboard-command-secondary"><Lightbulb className="w-4 h-4" /> Intelligence</Link>
+        </div>
+      </section>
 
       {/* ── SNAPSHOT ─────────────────────────────────────────────── */}
       <div>
@@ -680,7 +681,7 @@ export default function Dashboard() {
               className="rounded-2xl p-10 text-center border"
               style={{ background: 'var(--bam-surface)', borderColor: 'var(--bam-border)' }}
             >
-              <div className="text-4xl mb-3">✅</div>
+              <CalendarDays className="w-10 h-10 mx-auto mb-3 text-primary-600" aria-hidden="true" />
               <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No appointments today</p>
               <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>
                 Your schedule is clear — share your booking link to fill it.

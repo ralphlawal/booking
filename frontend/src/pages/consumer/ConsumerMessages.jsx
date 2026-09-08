@@ -24,7 +24,7 @@ function RoomRow({ room, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors ${
+      className={`consumer-message-row w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors ${
         active ? 'bg-primary-50 dark:bg-primary-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }`}
     >
@@ -90,9 +90,9 @@ export default function ConsumerMessages() {
   const showingChat = !!activeRoom;
 
   return (
-    <div className="flex flex-col bg-slate-50 dark:bg-gray-950 h-consumer-viewport">
+    <div className="consumer-messages-shell flex flex-col bg-slate-50 dark:bg-gray-950 h-consumer-viewport">
       {/* Nav — padding-top clears notch / Dynamic Island */}
-      <nav className="flex-shrink-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      <nav className="consumer-messages-header flex-shrink-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
           {/* Mobile: show back to list when in a chat */}
           {showingChat ? (
@@ -122,7 +122,7 @@ export default function ConsumerMessages() {
       <div className="flex-1 flex overflow-hidden min-h-0">
 
         {/* Room list — always visible on md+, hidden on mobile when chat open */}
-        <div className={`${showingChat ? 'hidden md:flex' : 'flex'} w-full md:w-72 flex-shrink-0 flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800`}>
+        <div className={`consumer-message-list ${showingChat ? 'hidden md:flex' : 'flex'} w-full md:w-72 flex-shrink-0 flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800`}>
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="p-4 space-y-3">

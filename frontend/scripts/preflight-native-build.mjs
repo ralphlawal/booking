@@ -27,5 +27,5 @@ if (missing.length) {
 
 console.log(`✓ native build preflight: ${REQUIRED.join(', ')} present`);
 if (!process.env.VITE_MAPBOX_TOKEN) {
-  console.warn('⚠ Mapbox token is not set; the app will use its map fallback until VITE_MAPBOX_TOKEN is configured.');
+  console.warn('⚠ Mapbox token is not set; discovery uses the built-in OpenStreetMap style. Add a token for Mapbox search and static-map imagery.');
 }

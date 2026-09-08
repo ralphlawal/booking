@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { CalendarDays, Rss, Search, MessageSquare, User } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
+import { nativeTapFeedback } from '../../services/nativeBridge';
 
 const NAV = [
   { to: '/customer/dashboard', icon: CalendarDays,  label: 'Bookings', gradient: 'from-violet-500 to-primary-600'  },
@@ -15,6 +16,7 @@ function NavItem({ to, icon: Icon, label, unreadCount, gradient }) {
   return (
     <NavLink
       to={to}
+      onClick={() => nativeTapFeedback()}
       className="flex-1 flex flex-col items-center justify-center py-1.5 gap-1 text-[10px] font-bold tap-highlight-none select-none min-h-[64px]"
     >
       {({ isActive }) => (

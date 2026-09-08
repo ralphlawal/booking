@@ -1,4 +1,4 @@
-import React, { Component, Suspense, lazy, useEffect } from 'react';
+import React, { Component, Suspense, lazy, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Toaster } from 'react-hot-toast';
@@ -44,7 +44,7 @@ import ReviewPage from './pages/public/ReviewPage';
 import OfflineNotice from './components/shared/OfflineNotice';
 import NativeWelcome from './pages/native/NativeWelcome';
 import { isNativeApp } from './config/platform';
-import { NATIVE_NAVIGATE_EVENT } from './services/nativeBridge';
+import { NATIVE_NAVIGATE_EVENT, navigateWithinApp } from './services/nativeBridge';
 import { rehydratePersistentStore, flushToNative, getPersistedItem } from './services/persistentStore';
 
 // Product areas are loaded when they are opened. This keeps public booking and
@@ -88,7 +88,7 @@ class ErrorBoundary extends Component {
           <div className="text-center max-w-sm">
             <p className="text-4xl mb-4">Something went wrong</p>
             <p className="text-gray-500 mb-6">An unexpected error occurred. Please try refreshing the page.</p>
-            <button onClick={() => { this.setState({ hasError: false }); window.location.href = '/'; }} className="btn-primary">
+            <button onClick={() => { this.setState({ hasError: false }); if (!navigateWithinApp('/')) window.location.assign('/'); }} className="btn-primary">
               Go to Home
             </button>
           </div>
@@ -150,10 +150,19 @@ const NativeEntry = () => {
 function NativeNavigationBridge() {
   const navigate = useNavigate();
   const location = useLocation();
+  const locationRef = useRef(location);
+
+  // Native listeners must be installed once. Keep the current location in a
+  // ref so the Android Back action always navigates from the screen the user
+  // is actually viewing without leaking a listener on each route change.
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
 
   useEffect(() => {
     const receiveNavigation = (event) => {
-      if (typeof event.detail === 'string' && event.detail !== `${location.pathname}${location.search}${location.hash}`) {
+      const current = locationRef.current;
+      if (typeof event.detail === 'string' && event.detail !== `${current.pathname}${current.search}${current.hash}`) {
         navigate(event.detail);
       }
     };
@@ -164,12 +173,14 @@ function NativeNavigationBridge() {
     let listener;
     let resumeListener;
     let stateListener;
+    let disposed = false;
     const addListener = async () => {
       // iOS can drop WKWebView localStorage while backgrounded; pull the auth
       // token back from native storage every time the app comes forward.
       resumeListener = await CapacitorApp.addListener('resume', () => {
         rehydratePersistentStore().catch(() => {});
       });
+      if (disposed) { resumeListener.remove(); return; }
       // ...and force the token into UserDefaults the moment we go to the
       // background (which is also when iOS flushes UserDefaults to disk), so a
       // force-quit afterwards can't lose it.
@@ -177,6 +188,7 @@ function NativeNavigationBridge() {
         if (isActive) rehydratePersistentStore().catch(() => {});
         else flushToNative();
       });
+      if (disposed) { stateListener.remove(); return; }
       listener = await CapacitorApp.addListener('backButton', () => {
         // Normal in-app history should always win. Push/deep links can start
         // without history, so send those users to the appropriate home rather
@@ -185,30 +197,33 @@ function NativeNavigationBridge() {
           navigate(-1);
           return;
         }
-        if (location.pathname.startsWith('/admin/') && location.pathname !== '/admin/dashboard') {
+        const pathname = locationRef.current.pathname;
+        if (pathname.startsWith('/admin/') && pathname !== '/admin/dashboard') {
           navigate('/admin/dashboard', { replace: true });
           return;
         }
-        if (location.pathname.startsWith('/customer/') && location.pathname !== '/customer/dashboard') {
+        if (pathname.startsWith('/customer/') && pathname !== '/customer/dashboard') {
           navigate('/customer/dashboard', { replace: true });
           return;
         }
-        if (location.pathname.startsWith('/profile/') || location.pathname.startsWith('/book/')) {
+        if (pathname.startsWith('/profile/') || pathname.startsWith('/book/')) {
           navigate('/explore', { replace: true });
           return;
         }
         CapacitorApp.exitApp();
       });
+      if (disposed) listener.remove();
     };
     addListener();
 
     return () => {
+      disposed = true;
       window.removeEventListener(NATIVE_NAVIGATE_EVENT, receiveNavigation);
       listener?.remove();
       resumeListener?.remove();
       stateListener?.remove();
     };
-  }, [location.hash, location.pathname, location.search, navigate]);
+  }, [navigate]);
 
   return null;
 }

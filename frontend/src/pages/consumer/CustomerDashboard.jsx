@@ -7,6 +7,7 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
+import { copyText } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 
 const STATUS_STYLES = {
@@ -57,8 +58,8 @@ function bookingDateKey(value) {
 function CopyRefButton({ refId }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
-    try { await navigator.clipboard.writeText(refId); setCopied(true); setTimeout(() => setCopied(false), 2000); }
-    catch { toast.error('Could not copy'); }
+    if (await copyText(refId)) { setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    else toast.error('Could not copy');
   };
   return (
     <button onClick={copy} className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-primary-600 transition-colors" title="Copy reference">
@@ -857,9 +858,9 @@ export default function CustomerDashboard() {
   if (authLoading || !consumer) return null;
 
   return (
-    <div className="app-page animate-fade-in">
+    <div className="customer-home-workspace app-page animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+      <nav className="customer-home-header sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />

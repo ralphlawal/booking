@@ -163,7 +163,6 @@ export default function ConsumerProfile() {
   }, [tab]);
 
   const detectLocation = () => {
-    if (!navigator.geolocation) return toast.error('Location not supported in this browser');
     setDetectingLoc(true);
     getCurrentPosition(
       async (pos) => {
@@ -315,9 +314,9 @@ export default function ConsumerProfile() {
   if (authLoading || !consumer) return null;
 
   return (
-    <div className="app-page animate-fade-in">
+    <div className="consumer-profile-workspace app-page animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <nav className="consumer-profile-header sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <BackButton fallback="/customer/dashboard">Back</BackButton>
           <Link to="/">

@@ -4,6 +4,7 @@ import { staffAPI, servicesAPI } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
 import { businessCurrencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
+import { UsersRound } from 'lucide-react';
 
 const SYM = businessCurrencySymbol();
 
@@ -504,9 +505,9 @@ export default function Staff() {
   const inactive = staff.filter(s => !s.is_active);
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="staff-workspace space-y-5 animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="staff-titlebar flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--bam-text)' }}>Staff</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>
@@ -524,7 +525,7 @@ export default function Staff() {
         </div>
       ) : staff.length === 0 ? (
         <div className="card p-12 text-center">
-          <p className="text-4xl mb-3">👩‍💼</p>
+          <UsersRound className="w-10 h-10 mx-auto mb-3 text-primary-500" aria-hidden="true" />
           <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No staff members yet</p>
           <p className="text-sm mt-1 mb-5" style={{ color: 'var(--bam-text-muted)' }}>Add your team to assign services and track performance</p>
           <button onClick={openCreate} className="btn-primary">Add Staff Member</button>

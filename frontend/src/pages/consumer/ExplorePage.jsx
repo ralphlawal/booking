@@ -14,6 +14,23 @@ import { getCurrentPosition } from '../../services/nativeBridge';
 
 const POPULAR_SERVICES = ['Haircut', 'Beard trim', 'Shave', 'Nails', 'Lashes', 'Massage', 'Tutoring', 'Cleaning'];
 
+// A map must remain useful in release builds even when a Mapbox token has not
+// been provisioned. Mapbox GL can render a standards-compliant raster style
+// without one; a paid provider token still upgrades this to the Mapbox style.
+// Attribution is deliberately retained for OpenStreetMap data.
+const OPEN_STREET_MAP_STYLE = {
+  version: 8,
+  sources: {
+    openstreetmap: {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'openstreetmap', type: 'raster', source: 'openstreetmap' }],
+};
+
 const CATEGORY_VISUALS = {
   hair: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=240&q=70',
   barber: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=240&q=70',
@@ -109,10 +126,6 @@ function MapView({ results, coords, onSwitchList, from }) {
   const [popup, setPopup] = useState(null);
   const withCoords = results.filter((business) => Number.isFinite(Number(business.latitude)) && Number.isFinite(Number(business.longitude)));
 
-  if (!MAPBOX_TOKEN) {
-    return <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-amber-900"><Map className="w-9 h-9 mx-auto mb-3 text-amber-600" /><p className="font-bold">Map is being set up</p><p className="mt-1 text-sm">You can still browse businesses and check live appointment times from each profile.</p><button onClick={onSwitchList} className="btn-primary mt-4 text-sm">View businesses</button></div>;
-  }
-
   if (!withCoords.length) {
     return (
       <div className="text-center py-14 text-gray-400">
@@ -132,11 +145,16 @@ function MapView({ results, coords, onSwitchList, from }) {
         <MapGL
           initialViewState={{ longitude: centerLng, latitude: centerLat, zoom: 12 }}
           style={{ width: '100%', height: '100%' }}
-          mapStyle="mapbox://styles/mapbox/streets-v12"
-          mapboxAccessToken={MAPBOX_TOKEN}
+          mapStyle={MAPBOX_TOKEN ? 'mapbox://styles/mapbox/streets-v12' : OPEN_STREET_MAP_STYLE}
+          mapboxAccessToken={MAPBOX_TOKEN || undefined}
           onClick={() => setPopup(null)}
         >
           <NavigationControl position="top-right" />
+          {coords && (
+            <Marker longitude={coords.lng} latitude={coords.lat} anchor="center">
+              <div className="w-4 h-4 rounded-full bg-sky-500 border-[3px] border-white shadow-lg ring-4 ring-sky-400/30" title="Your location" />
+            </Marker>
+          )}
           {withCoords.map(biz => (
             <Marker
               key={biz.id}
@@ -291,7 +309,7 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
+    <div className="consumer-app-page min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2 sm:gap-4">
@@ -317,9 +335,10 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="bg-white border-b border-gray-100 px-3 sm:px-6 py-6 sm:py-8">
+      <div className="consumer-discovery-hero bg-white border-b border-gray-100 px-3 sm:px-6 py-6 sm:py-8">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-950 mb-4 tracking-tight">Find services near you</h1>
+          <p className="consumer-eyebrow">BOOKAM DISCOVERY</p>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-950 mb-4 tracking-tight">Your next appointment, sorted.</h1>
           <form onSubmit={handleSearch} className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -337,7 +356,7 @@ export default function ExplorePage() {
               className="border border-gray-200 text-gray-600 font-semibold px-3.5 py-3 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <Navigation className="w-4 h-4" />
-              <span className="hidden sm:inline">{locating ? 'Locating…' : 'Near me'}</span>
+              <span className="hidden sm:inline">{locating ? 'Finding you…' : 'Near me'}</span>
             </button>
             <button type="submit" disabled={aiMatching} className="bg-primary-600 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-primary-700 transition-colors flex items-center gap-1.5 disabled:opacity-70">
               <Search className="w-4 h-4" />
@@ -405,7 +424,7 @@ export default function ExplorePage() {
         </div>
         <Link
           to="/match"
-          className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-primary-700 to-primary-950 text-white hover:opacity-95 transition-opacity shadow-primary"
+          className="consumer-smart-match flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-primary-700 to-primary-950 text-white hover:opacity-95 transition-opacity shadow-primary"
         >
           <Zap className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">

@@ -10,22 +10,22 @@
 ──────────────────────────────────────────────────────────────────────────── */
 :root {
   /* Surfaces */
-  --bam-bg:             #f4f6fb;
+  --bam-bg:             #f7f7f8;
   --bam-sidebar:        #ffffff;
   --bam-surface:        #ffffff;
-  --bam-surface-raised: #f8fafd;
-  --bam-surface-soft:   #eef1f8;
-  --bam-surface-hover:  #f0f2f8;
+  --bam-surface-raised: #ffffff;
+  --bam-surface-soft:   #f1f1f4;
+  --bam-surface-hover:  #ececf1;
 
   /* Borders */
-  --bam-border:         rgba(0, 0, 0, 0.08);
+  --bam-border:         rgba(18, 18, 27, 0.09);
   --bam-border-soft:    rgba(0, 0, 0, 0.05);
   --bam-border-medium:  rgba(0, 0, 0, 0.12);
 
   /* Text */
-  --bam-text:           #111827;
-  --bam-text-muted:     #6b7280;
-  --bam-text-faint:     #9ca3af;
+  --bam-text:           #17171f;
+  --bam-text-muted:     #686878;
+  --bam-text-faint:     #9b9baa;
 
   /* Safe areas */
   --safe-top:    env(safe-area-inset-top,    0px);
@@ -34,7 +34,7 @@
   --safe-right:  env(safe-area-inset-right,  0px);
 
   /* Layout measurements */
-  --radius: 0.625rem;
+  --radius: 0.875rem;
   --consumer-nav-height:  calc(78px + env(safe-area-inset-bottom, 0px));
   --consumer-nav-padding: calc(7rem + env(safe-area-inset-bottom, 0px));
   --consumer-cta-padding: calc(10.75rem + env(safe-area-inset-bottom, 0px));
@@ -440,6 +440,22 @@
     @apply px-3 mb-1 text-[10px] font-bold uppercase tracking-[0.12em];
     color: var(--bam-text-faint);
   }
+
+  /* Intelligence is a decision surface, not a report. */
+  .intelligence-page { max-width: 1280px; }
+  .intelligence-hero { position: relative; isolation: isolate; overflow: hidden; min-height: 176px; padding: clamp(1.5rem, 4vw, 2.5rem); border-radius: 1.75rem; background: radial-gradient(circle at 83% 12%, rgba(171,147,255,.85), transparent 23%), radial-gradient(circle at 70% 110%, rgba(76,50,205,.92), transparent 44%), linear-gradient(125deg,#17133d,#32227f 55%,#5c3eea); color: white; box-shadow: 0 22px 48px rgba(69,47,186,.25); }
+  .intelligence-hero h1 { margin-top: .75rem; font-size: clamp(1.75rem,4vw,2.5rem); line-height: 1.04; font-weight: 850; letter-spacing: -.045em; }
+  .intelligence-hero p { max-width: 36rem; margin-top: .8rem; color: rgba(255,255,255,.72); font-size: .925rem; line-height: 1.6; }
+  .intelligence-eyebrow { display:inline-flex; align-items:center; gap:.45rem; color:#dcd3ff; font-size:.68rem; line-height:1; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+  .intelligence-orb { position:absolute; right:clamp(1.5rem,6vw,4rem); bottom:-2.25rem; display:flex; align-items:center; justify-content:center; width:9.25rem; height:9.25rem; border:1px solid rgba(255,255,255,.3); border-radius:42% 58% 54% 46%; background:rgba(255,255,255,.12); box-shadow:inset 0 1px 1px rgba(255,255,255,.26); transform:rotate(-12deg); }
+  .intelligence-notice { display:flex; align-items:flex-start; gap:.75rem; padding:1rem 1.1rem; border:1px solid rgba(217,119,6,.23); border-radius:1rem; background:rgba(255,247,237,.78); color:#92400e; }.intelligence-notice b { display:block; font-size:.85rem; }.intelligence-notice p { margin-top:.2rem; font-size:.78rem; line-height:1.5; }.dark .intelligence-notice { background:rgba(120,53,15,.2); border-color:rgba(251,191,36,.18); color:#fcd34d; }
+  .intelligence-metric,.intelligence-list-card { border:1px solid var(--bam-border); border-radius:1.15rem; background:var(--bam-surface); box-shadow:0 7px 20px rgba(19,19,28,.035); }.intelligence-metric { padding:1rem; min-height:142px; overflow:hidden; position:relative; }.intelligence-metric:after { content:""; position:absolute; inset:auto -22px -24px auto; width:80px; height:80px; border-radius:50%; background:var(--metric-glow); opacity:.55; filter:blur(2px); }.intelligence-metric-violet { --metric-glow:#d8ccff; }.intelligence-metric-blue { --metric-glow:#c9e1ff; }.intelligence-metric-green { --metric-glow:#c5f5dc; }.intelligence-metric-rose { --metric-glow:#ffd0db; }.intelligence-metric-amber { --metric-glow:#fee6b4; }
+  .intelligence-label { color:var(--bam-text-faint); font-size:.64rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }.intelligence-icon,.intelligence-list-icon,.intelligence-recommendation-icon { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:.8rem; color:#5b3eea; background:#eeeaff; }.intelligence-icon { width:2.35rem; height:2.35rem; }.intelligence-list-icon { width:2rem; height:2rem; }.intelligence-list-card { padding:1rem; }
+  .intelligence-row { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.72rem .05rem; border-top:1px solid var(--bam-border-soft); }.intelligence-recommendation { display:flex; align-items:flex-start; gap:.75rem; min-height:88px; padding:1rem; border:1px solid var(--bam-border); border-radius:1.15rem; background:var(--bam-surface); box-shadow:0 5px 14px rgba(19,19,28,.025); }.intelligence-recommendation-icon { width:2rem; height:2rem; background:linear-gradient(135deg,#e7e0ff,#f5eaff); color:#6d4bf5; }.intelligence-action { display:inline-flex; width:2rem; height:2rem; align-items:center; justify-content:center; border-radius:50%; color:white; background:#5b3eea; transition:transform .16s ease,background .16s ease; }.intelligence-action:hover { transform:translateX(2px); background:#4a2fcd; }.dark .intelligence-icon,.dark .intelligence-list-icon { background:rgba(109,75,245,.18); color:#b7a6ff; }.dark .intelligence-recommendation-icon { background:rgba(109,75,245,.18); color:#c2b5ff; }
+
+  /* A focused opening state gives the business dashboard a clear job. */
+  .dashboard-command-bar { position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; gap:1.25rem; min-height:154px; padding:1.35rem; border:1px solid rgba(111,82,241,.2); border-radius:1.5rem; background:radial-gradient(circle at 93% 8%,rgba(183,165,255,.64),transparent 24%),linear-gradient(130deg,#f1efff,#fbfaff 52%,#f6f4ff); }
+  .dashboard-command-bar:after { content:""; position:absolute; width:12rem; height:12rem; right:-4rem; bottom:-9rem; border:1px solid rgba(91,62,234,.13); border-radius:50%; box-shadow:0 0 0 1.75rem rgba(91,62,234,.035),0 0 0 3.5rem rgba(91,62,234,.025); }.dashboard-command-kicker { color:#6d4bf5; font-size:.65rem; font-weight:850; letter-spacing:.13em; text-transform:uppercase; }.dashboard-command-bar h1 { margin-top:.45rem; font-size:clamp(1.45rem,3.5vw,2.1rem); font-weight:850; letter-spacing:-.04em; color:#1d1740; }.dashboard-command-bar p:not(.dashboard-command-kicker) { margin-top:.4rem; font-size:.82rem; color:#625a81; }.dashboard-command-primary,.dashboard-command-secondary { min-height:2.6rem; display:inline-flex; align-items:center; justify-content:center; gap:.45rem; padding:0 .85rem; border-radius:.85rem; font-size:.78rem; font-weight:750; transition:transform .16s ease,box-shadow .16s ease; }.dashboard-command-primary { color:white; background:#5b3eea; box-shadow:0 8px 18px rgba(91,62,234,.24); }.dashboard-command-secondary { color:#4b3a91; border:1px solid rgba(91,62,234,.18); background:rgba(255,255,255,.72); }.dashboard-command-primary:active,.dashboard-command-secondary:active { transform:scale(.97); }.dark .dashboard-command-bar { border-color:rgba(133,108,250,.2); background:radial-gradient(circle at 93% 8%,rgba(119,86,233,.3),transparent 24%),linear-gradient(130deg,#111033,#14112c 52%,#0d1230); }.dark .dashboard-command-bar h1 { color:#f2efff; }.dark .dashboard-command-bar p:not(.dashboard-command-kicker) { color:#aaa3ca; }.dark .dashboard-command-secondary { color:#c7bbff; background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.1); }
 }
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
@@ -649,3 +665,113 @@ header.sticky.top-0 {
   .responsive-table-cards td { padding: 0.25rem 0; text-align: right; }
   .responsive-table-cards td::before { content: attr(data-label); float: left; font-weight: 700; color: var(--bam-text-muted); }
 }
+
+/* ── Installed-app product layer ──────────────────────────────────────────
+   The browser product remains a responsive website. These rules are scoped
+   to Capacitor only, giving the installed app its own denser, tactile shell
+   without turning desktop pages into oversized phone screens. */
+.native-app {
+  background: #f5f7fc;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+.native-app.dark { background: #060b1c; }
+.native-app .consumer-app-page,
+.native-app .app-page {
+  background:
+    radial-gradient(circle at 90% -10%, rgba(124, 92, 255, 0.12), transparent 29rem),
+    var(--bam-bg);
+}
+.native-app .consumer-discovery-hero {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(123, 92, 255, 0.16), transparent 20rem),
+    var(--bam-surface);
+}
+.native-app .consumer-eyebrow {
+  margin: 0 0 0.35rem;
+  color: #6d4aff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+.native-app .card,
+.native-app .surface,
+.native-app .app-panel,
+.native-app .app-list-row {
+  border-radius: 1.125rem;
+}
+.native-app .card,
+.native-app .surface,
+.native-app .app-panel {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03), 0 12px 28px rgba(15, 23, 42, 0.055);
+}
+.native-app .btn-primary,
+.native-app .btn-secondary,
+.native-app .btn-danger {
+  min-height: 2.75rem;
+}
+.native-app .consumer-bottom-nav,
+.native-app .admin-bottom-nav {
+  isolation: isolate;
+}
+.native-app .consumer-bottom-nav::before,
+.native-app .admin-bottom-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(255,255,255,0.74), rgba(255,255,255,0.96));
+}
+.native-app.dark .consumer-bottom-nav::before,
+.native-app.dark .admin-bottom-nav::before {
+  background: linear-gradient(180deg, rgba(10,18,34,0.78), rgba(6,11,28,0.98));
+}
+.native-app .native-more-sheet {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+@media (max-width: 1023px) {
+  /* `min-width: 0` closes a common Flexbox escape hatch that caused horizontal
+     cut-offs on iPhone widths. The app scroll area stays the one scroll owner. */
+  .native-app .native-scroll > *,
+  .native-app .consumer-app-page > *,
+  .native-app .app-page > * { min-width: 0; }
+  .native-app .native-scroll { scroll-padding-bottom: calc(var(--admin-nav-height) + 1rem); }
+  .native-app .consumer-bottom-nav,
+  .native-app .admin-bottom-nav { min-height: var(--admin-nav-height); }
+  .native-app .consumer-bottom-nav a,
+  .native-app .admin-bottom-nav a,
+  .native-app .admin-bottom-nav button { touch-action: manipulation; }
+.native-app .consumer-smart-match { box-shadow: 0 14px 32px rgba(91, 62, 234, 0.22); }
+}
+
+/* Consumer discovery gets an editorial, app-first composition on devices. */
+.native-app .consumer-discovery-hero { border-bottom: 0; padding-top: 1.4rem; padding-bottom: 1rem; }
+.native-app .consumer-discovery-hero h1 { font-size: 1.7rem; letter-spacing: -.045em; line-height: 1.05; }
+.native-app .consumer-discovery-hero form { padding: .35rem; border: 1px solid rgba(20,20,35,.08); border-radius: 1rem; background: rgba(255,255,255,.76); box-shadow: 0 10px 24px rgba(25,20,65,.07); }
+.native-app .consumer-discovery-hero form input { border: 0; background: transparent; box-shadow: none; }.native-app .consumer-discovery-hero form input:focus { outline: none; }
+.native-app .consumer-discovery-hero form button { border-radius: .78rem; }.native-app .consumer-discovery-hero form button[type="submit"] { box-shadow: 0 8px 16px rgba(91,62,234,.24); }
+.native-app .consumer-discovery-hero + div { border-top: 0; background: transparent; }.native-app .consumer-discovery-hero + div button { border-radius: .85rem; }
+.native-app .consumer-smart-match { border: 1px solid rgba(255,255,255,.17); border-radius: 1.3rem; background: radial-gradient(circle at 88% 12%,rgba(185,165,255,.52),transparent 22%),linear-gradient(125deg,#1a1744,#4630a8 60%,#6844ed); }
+.native-app .consumer-app-page .group.bg-white { border-color: rgba(18,18,27,.08); box-shadow: 0 8px 20px rgba(20,20,37,.04); }.native-app .consumer-app-page .group.bg-white:active { transform: scale(.985); }
+.dark .native-app .consumer-discovery-hero form { border-color: rgba(255,255,255,.08); background: rgba(15,21,40,.7); }
+
+/* Conversations should read like a calm, focused inbox rather than a web panel. */
+.native-app .consumer-messages-shell { background: radial-gradient(circle at 90% -15%,rgba(119,93,246,.1),transparent 28rem),var(--bam-bg); }.native-app .consumer-messages-header { background:rgba(255,255,255,.78); }.native-app .consumer-message-list { background:transparent; }.native-app .consumer-message-row { margin:.25rem .5rem; width:calc(100% - 1rem); border:1px solid transparent; border-radius:1rem; }.native-app .consumer-message-row:hover { border-color:var(--bam-border); background:var(--bam-surface); }.native-app .consumer-message-row.bg-primary-50 { border-color:rgba(91,62,234,.18); background:linear-gradient(110deg,rgba(238,234,255,.9),rgba(255,255,255,.74)); }.dark .native-app .consumer-messages-header { background:rgba(12,21,40,.78); }.dark .native-app .consumer-message-row.bg-primary-900\/20 { background:rgba(91,62,234,.17); border-color:rgba(139,120,255,.2); }
+
+/* Operational screens: strong control hierarchy, quiet data canvas. */
+.native-app .calendar-workspace { background:var(--bam-bg)!important; }.native-app .calendar-workspace-header { margin:0 .5rem; padding:.85rem .75rem .7rem; border:1px solid var(--bam-border); border-radius:1.2rem; background:rgba(255,255,255,.78)!important; box-shadow:0 8px 22px rgba(20,20,35,.035); }.native-app .calendar-canvas { margin:.75rem .5rem!important; border-radius:1.2rem; box-shadow:0 12px 28px rgba(20,20,35,.045); }.native-app .calendar-create-fab { box-shadow:0 12px 26px rgba(91,62,234,.36); }.native-app .bookings-titlebar { padding:1.15rem; border:1px solid var(--bam-border); border-radius:1.25rem; background:linear-gradient(125deg,var(--bam-surface),var(--bam-surface-raised)); }.native-app .bookings-titlebar h1 { font-weight:850; letter-spacing:-.035em; }.native-app .bookings-new-action { min-height:2.55rem; padding-left:.9rem; padding-right:.9rem; border-radius:.85rem; box-shadow:0 8px 18px rgba(91,62,234,.22); }.native-app .bookings-workspace .card { box-shadow:0 8px 24px rgba(20,20,35,.04); }.native-app .customers-workspace > :first-child { padding:1.1rem; border:1px solid var(--bam-border); border-radius:1.25rem; background:linear-gradient(125deg,var(--bam-surface),var(--bam-surface-raised)); }.native-app .customers-workspace > :first-child h1 { font-weight:850; letter-spacing:-.035em; }.dark .native-app .calendar-workspace-header { background:rgba(12,21,40,.82)!important; }.dark .native-app .bookings-titlebar,.dark .native-app .customers-workspace > :first-child { background:linear-gradient(125deg,rgba(15,28,50,.95),rgba(12,21,40,.9)); }
+
+/* Setup pages use a consistent configuration directory, not disconnected forms. */
+.native-app .settings-titlebar,.native-app .services-titlebar,.native-app .staff-titlebar { padding:1.1rem; border:1px solid var(--bam-border); border-radius:1.25rem; background:linear-gradient(125deg,var(--bam-surface),var(--bam-surface-raised)); }.native-app .settings-titlebar h1,.native-app .services-titlebar h1,.native-app .staff-titlebar h1 { font-weight:850; letter-spacing:-.035em; }.native-app .settings-directory { box-shadow:0 10px 26px rgba(20,20,35,.035); }.native-app .settings-directory > div button { min-height:2.5rem; border-radius:.75rem; }.native-app .services-workspace .app-panel,.native-app .staff-workspace .rounded-2xl { box-shadow:0 8px 22px rgba(20,20,35,.035); }.dark .native-app .settings-titlebar,.dark .native-app .services-titlebar,.dark .native-app .staff-titlebar { background:linear-gradient(125deg,rgba(15,28,50,.95),rgba(12,21,40,.9)); }
+
+/* Customer journey: reduce the browser-like chrome and give discovery, profile,
+   and checkout a clear visual rhythm when BookAm runs as an installed app. */
+.native-app .customer-home-workspace { background:radial-gradient(circle at 100% -12%,rgba(112,82,246,.15),transparent 27rem),var(--bam-bg); }.native-app .customer-home-header,.native-app .business-profile-nav { background:rgba(255,255,255,.8)!important; backdrop-filter:blur(18px); }.native-app .customer-home-workspace .surface:first-of-type { border-radius:1.35rem; border-color:rgba(91,62,234,.12); background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(243,240,255,.93)); box-shadow:0 14px 30px rgba(42,32,104,.07); }.native-app .customer-home-workspace .surface:first-of-type h1 { letter-spacing:-.04em; }.native-app .consumer-business-profile { background:radial-gradient(circle at 100% -4%,rgba(112,82,246,.13),transparent 28rem),var(--bam-bg)!important; }.native-app .business-profile-identity { border-radius:1.35rem; border-color:rgba(18,18,27,.08); box-shadow:0 14px 30px rgba(20,20,35,.055); }.native-app .consumer-business-profile [class*="shadow-card"] { box-shadow:0 10px 24px rgba(20,20,35,.045); }.native-app .booking-app-shell { min-height:100dvh; }.native-app .booking-app-header { backdrop-filter:blur(16px); }.native-app .booking-app-hero { border-radius:0 0 1.5rem 1.5rem; overflow:hidden; }.dark .native-app .customer-home-header,.dark .native-app .business-profile-nav { background:rgba(8,16,34,.82)!important; }.dark .native-app .customer-home-workspace .surface:first-of-type { border-color:rgba(148,126,255,.16); background:linear-gradient(135deg,rgba(22,30,56,.96),rgba(29,23,70,.94)); }.dark .native-app .business-profile-identity { border-color:rgba(255,255,255,.08); }
+
+/* First-run flows should feel like a focused product introduction, not a form
+   dropped into a browser page. Their existing steps and validation remain unchanged. */
+.native-app .consumer-onboarding { background:radial-gradient(circle at 85% 6%,rgba(182,155,255,.38),transparent 20rem),linear-gradient(155deg,#24115c,#130a38 67%,#08051c)!important; }.native-app .consumer-onboarding-card { padding:.25rem; }.native-app .consumer-onboarding-card > div:last-child { border-radius:1.45rem; box-shadow:0 22px 56px rgba(0,0,0,.28); }.native-app .business-onboarding { background:radial-gradient(circle at 92% 0%,rgba(124,92,255,.16),transparent 24rem),var(--bam-bg)!important; }.native-app .business-onboarding-card > form,.native-app .business-onboarding-card > div:last-child { border-radius:1.4rem; box-shadow:0 16px 36px rgba(20,20,50,.08); }
+
+/* Secondary customer routes share the same dense, calm mobile language. */
+.native-app .consumer-profile-workspace,.native-app .smart-match-workspace,.native-app .favourites-workspace { background:radial-gradient(circle at 96% -8%,rgba(112,82,246,.11),transparent 25rem),var(--bam-bg); }.native-app .consumer-profile-header,.native-app .smart-match-header,.native-app .favourites-header { background:rgba(255,255,255,.8)!important; backdrop-filter:blur(18px); }.native-app .consumer-profile-workspace .app-panel,.native-app .smart-match-workspace .app-panel { border-radius:1.25rem; box-shadow:0 10px 24px rgba(20,20,35,.045); }.native-app .consumer-profile-workspace .border-b > button { min-height:2.8rem; }.native-app .smart-match-workspace .w-14.h-14 { border-radius:1.15rem; box-shadow:0 10px 22px rgba(91,62,234,.16); }.native-app .favourites-workspace .app-list-row { border-radius:1.15rem; box-shadow:0 8px 20px rgba(20,20,35,.04); }.native-app .favourites-workspace .app-list-row:active { transform:scale(.985); }.dark .native-app .consumer-profile-header,.dark .native-app .smart-match-header,.dark .native-app .favourites-header { background:rgba(8,16,34,.82)!important; }

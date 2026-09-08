@@ -150,7 +150,6 @@ export default function SmartMatchPage() {
   const set = (k) => (v) => setForm((p) => ({ ...p, [k]: v }));
 
   const getLocation = () => {
-    if (!navigator.geolocation) return;
     setLocating(true);
     getCurrentPosition(
       (pos) => {
@@ -158,7 +157,7 @@ export default function SmartMatchPage() {
         setLocating(false);
         toast.success('Location found!');
       },
-      () => { setLocating(false); toast.error('Could not get location'); },
+      (err) => { setLocating(false); toast.error(err?.code === 1 ? 'Location access is off — enable it in Settings to match nearby businesses.' : 'Could not get location. You can still search without it.'); },
       { timeout: 8000 }
     );
   };
@@ -194,9 +193,9 @@ export default function SmartMatchPage() {
   const SUGGESTIONS = ['Haircut', 'Nail treatment', 'Massage', 'Personal training', 'Photography', 'Tutoring'];
 
   return (
-    <div className="app-page animate-fade-in">
+    <div className="smart-match-workspace app-page animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <nav className="smart-match-header sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />

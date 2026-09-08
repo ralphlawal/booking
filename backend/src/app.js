@@ -367,8 +367,10 @@ app.post('/api/ai/personalise-message', authenticate, attachBusiness, aiCtrl.per
 // Web push
 app.get('/api/notifications/vapid-key', (req, res) => {
   const key = process.env.VAPID_PUBLIC_KEY;
-  if (!key) return res.status(503).json({ error: 'Push notifications not configured' });
-  res.json({ vapidPublicKey: key });
+  // Browser web-push is optional. A missing VAPID configuration must not be
+  // reported as an application outage: clients simply skip subscribing and
+  // continue using in-app/native notifications.
+  res.json({ vapidPublicKey: key || null, configured: Boolean(key) });
 });
 app.post('/api/notifications/push-subscribe', consumerAuth, async (req, res) => {
   try {

@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { bookingsAPI } from '../../services/api';
 import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
-import { openExternalLink, publicWebUrl } from '../../services/nativeBridge';
+import { copyText, nativeTapFeedback, openExternalLink, publicWebUrl } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 import VerifyRequired from '../shared/VerifyRequired';
 
@@ -125,12 +125,13 @@ export default function AdminLayout() {
     }
   };
 
-  const bookingUrl = business ? `${window.location.origin}/book/${business.slug}` : null;
+  const bookingUrl = business ? publicWebUrl(`/book/${business.slug}`) : null;
 
   const copyLink = useCallback(async () => {
     if (!bookingUrl) return;
     try {
-      await navigator.clipboard.writeText(bookingUrl);
+      const copiedToClipboard = await copyText(bookingUrl);
+      if (!copiedToClipboard) throw new Error('Clipboard unavailable');
       setCopied(true);
       toast.success('Booking link copied!');
       setTimeout(() => setCopied(false), 2000);
@@ -336,7 +337,7 @@ export default function AdminLayout() {
           {emailUnverified && (
             <div className="mb-4 sm:mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/60 rounded-xl px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
               <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
-                ⚠️ Your email address is not verified. Check your inbox for a verification link.
+                Your email address is not verified. Check your inbox for a verification link.
               </p>
               <button
                 onClick={handleResendVerif}
@@ -385,6 +386,7 @@ export default function AdminLayout() {
           <NavLink
             key={to}
             to={to}
+            onClick={() => { setMoreOpen(false); nativeTapFeedback(); }}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center py-2 min-h-[64px] gap-0.5 text-[10px] font-bold transition-colors relative tap-highlight-none ${
                 isActive
@@ -421,7 +423,7 @@ export default function AdminLayout() {
 
         {/* More button */}
         <button
-          onClick={() => setMoreOpen(v => !v)}
+          onClick={() => { nativeTapFeedback(); setMoreOpen(v => !v); }}
           className={`flex-1 flex flex-col items-center justify-center py-2 min-h-[64px] gap-0.5 text-[10px] font-bold transition-colors relative tap-highlight-none ${
             moreOpen
               ? 'text-gray-900 dark:text-white'
@@ -456,11 +458,12 @@ export default function AdminLayout() {
             {/* Sheet */}
             <motion.div
               key="more-sheet"
-              className="lg:hidden fixed left-0 right-0 z-50 rounded-t-3xl border-t overflow-hidden"
+              className="lg:hidden fixed left-0 right-0 z-50 rounded-t-3xl border-t overflow-y-auto native-more-sheet"
               style={{
                 background: isDark ? '#0c1528' : '#ffffff',
                 borderColor: 'var(--bam-border)',
                 bottom: `calc(var(--admin-nav-height) - env(safe-area-inset-bottom, 0px))`,
+                maxHeight: 'min(72dvh, 640px)',
                 boxShadow: isDark
                   ? '0 -8px 60px rgba(0,0,0,0.6)'
                   : '0 -8px 40px rgba(0,0,0,0.12)',
@@ -484,7 +487,7 @@ export default function AdminLayout() {
                     <button
                       key={to}
                       type="button"
-                      onClick={() => { setMoreOpen(false); navigate(to); }}
+                      onClick={() => { nativeTapFeedback(); setMoreOpen(false); navigate(to); }}
                       className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border text-xs font-semibold transition-all ${
                         location.pathname === to
                           ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white border-primary-600 shadow-primary-sm'

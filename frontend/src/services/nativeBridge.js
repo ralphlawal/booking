@@ -3,6 +3,7 @@ import { Browser } from '@capacitor/browser';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Geolocation } from '@capacitor/geolocation';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 const APP_ORIGINS = new Set([
   'https://bookam.business',
@@ -12,6 +13,14 @@ const APP_ORIGINS = new Set([
 export const NATIVE_NAVIGATE_EVENT = 'bookam:navigate';
 
 export const isNativePlatform = () => Capacitor.isNativePlatform();
+
+// Small, purposeful feedback makes app navigation feel native without adding
+// decorative animation to every interaction. It is intentionally best-effort
+// so a missing plugin can never block a tap.
+export function nativeTapFeedback(style = ImpactStyle.Light) {
+  if (!isNativePlatform()) return;
+  Haptics.impact({ style }).catch(() => {});
+}
 
 export function publicWebUrl(path = '/') {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -110,10 +119,94 @@ export async function shareContent({ title, text, url }) {
   throw new Error('Sharing is not available on this device');
 }
 
+/** A WebView-safe clipboard helper. WKWebView does not consistently expose
+ * navigator.clipboard, especially after a cold launch, so retain the proven
+ * selection fallback for short booking references and share links. */
+export async function copyText(value) {
+  if (!value) return false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch { /* fall through to the iOS selection fallback */ }
+
+  try {
+    const field = document.createElement('textarea');
+    field.value = value;
+    field.setAttribute('readonly', '');
+    field.style.cssText = 'position:fixed;opacity:0;pointer-events:none;top:0;left:0;';
+    document.body.appendChild(field);
+    field.select();
+    field.setSelectionRange(0, field.value.length);
+    const copied = document.execCommand('copy');
+    field.remove();
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
 // Drop-in replacement for navigator.geolocation.getCurrentPosition. On native
 // the WebView's own geolocation is unreliable / silently denied without the
 // @capacitor/geolocation plugin driving the OS runtime prompt, so route
 // through it and hand back a browser-shaped position object.
+const LOCATION_DENIED_MESSAGE = 'Location access is off. Turn it on for BookAm in your device Settings to see businesses near you.';
+
+function hasGrantedLocationPermission(permission = {}) {
+  return permission.location === 'granted' || permission.coarseLocation === 'granted';
+}
+
+/**
+ * Ask the operating system for a fresh location. Keeping this promise-based
+ * means screens can show an honest loading/error state without relying on the
+ * WKWebView geolocation shim (which is inconsistent after app resumes).
+ */
+export async function requestDeviceLocation(options = {}) {
+  const config = {
+    enableHighAccuracy: options.enableHighAccuracy ?? false,
+    timeout: options.timeout ?? 12000,
+    maximumAge: options.maximumAge ?? 300000,
+  };
+
+  if (!isNativePlatform()) {
+    if (!navigator.geolocation) {
+      const error = new Error('Location is unavailable in this browser.');
+      error.code = 2;
+      throw error;
+    }
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, (error) => reject(error), config);
+    });
+  }
+
+  try {
+    // Calling checkPermissions first prevents a repeated native prompt after a
+    // user has already declined access, and makes the Settings guidance exact.
+    let permission = await Geolocation.checkPermissions();
+    if (!hasGrantedLocationPermission(permission)) {
+      permission = await Geolocation.requestPermissions();
+    }
+    if (!hasGrantedLocationPermission(permission)) {
+      const error = new Error(LOCATION_DENIED_MESSAGE);
+      error.code = 1;
+      throw error;
+    }
+    return await Geolocation.getCurrentPosition(config);
+  } catch (originalError) {
+    const text = originalError?.message || '';
+    const error = originalError instanceof Error ? originalError : new Error(text || 'Could not get location');
+    if (error.code === 1 || /denied|not authorized|permission/i.test(text)) {
+      error.code = 1;
+      error.message = LOCATION_DENIED_MESSAGE;
+    } else if (!error.code) {
+      error.code = 2;
+      error.message = 'We could not find your location. Check your connection and try again.';
+    }
+    throw error;
+  }
+}
+
 export function getCurrentPosition(onSuccess, onError, options = {}) {
   if (!isNativePlatform()) {
     if (!navigator.geolocation) {
@@ -124,29 +217,5 @@ export function getCurrentPosition(onSuccess, onError, options = {}) {
     return;
   }
 
-  (async () => {
-    try {
-      const perm = await Geolocation.requestPermissions();
-      if (perm.location === 'denied' && perm.coarseLocation === 'denied') {
-        onError?.({ code: 1, message: 'Location permission denied. Please enable it in Settings > Privacy > Location Services.' });
-        return;
-      }
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: options.enableHighAccuracy ?? false,
-        timeout: options.timeout ?? 10000,
-        maximumAge: options.maximumAge ?? 0,
-      });
-      onSuccess?.({
-        coords: {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-        },
-        timestamp: pos.timestamp,
-      });
-    } catch (err) {
-      const denied = /denied|permission/i.test(err?.message || '');
-      onError?.({ code: denied ? 1 : 2, message: err?.message || 'Could not get location' });
-    }
-  })();
+  requestDeviceLocation(options).then(onSuccess).catch(onError);
 }
