@@ -6,7 +6,6 @@ import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import NewBookingSheet from '../../components/admin/NewBookingSheet';
 import { businessCurrencySymbol } from '../../utils/currency';
-import { UserRound } from 'lucide-react';
 
 /* ── constants ───────────────────────────────────────────────────────────── */
 
@@ -700,7 +699,7 @@ export default function Customers() {
     : null;
 
   return (
-    <div className="customers-workspace space-y-5 animate-fade-in" style={{ paddingBottom: 'env(safe-area-inset-bottom,0px)' }}>
+    <div className="space-y-5 animate-fade-in" style={{ paddingBottom: 'env(safe-area-inset-bottom,0px)' }}>
       {/* ── Header ────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -778,7 +777,7 @@ export default function Customers() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
-            <UserRound className="w-10 h-10 mx-auto mb-3 text-primary-500" aria-hidden="true" />
+            <p className="text-4xl mb-3">👤</p>
             <p className="font-semibold" style={{ color: 'var(--bam-text-muted)' }}>{search ? 'No matching customers' : 'No customers yet'}</p>
             {!search && <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Your customers will appear here after your first booking.</p>}
             {search && <button onClick={() => setSearch('')} className="text-sm text-primary-600 mt-1 hover:underline">Clear search</button>}

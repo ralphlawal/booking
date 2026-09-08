@@ -239,9 +239,9 @@ export default function BusinessProfile() {
   ].slice(0, 5);
 
   return (
-    <div className="consumer-business-profile min-h-screen bg-slate-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950">
       {/* Nav */}
-      <nav className="business-profile-nav sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2">
           <BackButton fallback="/explore" />
           <Link to="/">
@@ -288,7 +288,7 @@ export default function BusinessProfile() {
       <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 lg:py-8 pb-consumer-cta">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         {/* Business header */}
-        <div className="business-profile-identity bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg p-4 sm:p-6 lg:col-span-2 shadow-card">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-lg p-4 sm:p-6 lg:col-span-2 shadow-card">
           <div className="flex items-start gap-3 sm:gap-4">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center border border-gray-100 dark:border-gray-800">
               {business.logo_url ? (

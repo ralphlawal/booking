@@ -226,8 +226,8 @@ export default function Onboarding() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="business-onboarding app-page min-h-[100dvh] bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 flex items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <div className="business-onboarding-card w-full max-w-lg animate-fade-in">
+    <div className="app-page min-h-[100dvh] bg-gradient-to-b from-primary-50 to-white dark:from-gray-950 dark:to-gray-900 flex items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="w-full max-w-lg animate-fade-in">
 
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-5">

@@ -1,43 +1,53 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CalendarClock, ChartNoAxesCombined, ChevronRight, CircleDollarSign, Lightbulb, MessageSquareText, Scissors, Sparkles, TrendingDown, TrendingUp, UsersRound } from 'lucide-react';
 import { ErrorState, SkeletonList } from '../../components/shared/AsyncState';
 import { intelligenceAPI } from '../../services/api';
 import { businessCurrencySymbol } from '../../utils/currency';
 
 const SYM = businessCurrencySymbol();
-const EMPTY = { revenue_7d: 0, booking_trend: { current: 0, change_percent: null }, popular_services: [], highest_value_customers: [], staff_performance: [], customers_due: 0, cancellation_trends: { cancelled: 0, no_shows: 0 } };
-const ACTIONS = { open_availability: '/admin/settings', adjust_service: '/admin/services', message_customers: '/admin/messages', create_promotion: '/admin/growth' };
-const money = (value) => `${SYM}${Number(value || 0).toFixed(2)}`;
 
-function Metric({ label, value, detail, icon: Icon, tone = 'violet' }) {
-  return <article className={`intelligence-metric intelligence-metric-${tone}`}><div className="flex items-start justify-between gap-3"><div><p className="intelligence-label">{label}</p><p className="mt-2 text-2xl font-black tracking-tight" style={{ color: 'var(--bam-text)' }}>{value}</p></div><span className="intelligence-icon"><Icon className="w-5 h-5" strokeWidth={2.2} /></span></div><p className="mt-3 text-xs leading-5" style={{ color: 'var(--bam-text-muted)' }}>{detail}</p></article>;
-}
-
-function DataList({ title, eyebrow, icon: Icon, rows, empty, to }) {
-  return <section className="intelligence-list-card"><div className="flex items-start justify-between gap-3 mb-4"><div className="flex items-center gap-3 min-w-0"><span className="intelligence-list-icon"><Icon className="w-4 h-4" /></span><div className="min-w-0"><p className="intelligence-label">{eyebrow}</p><h2 className="font-bold mt-0.5" style={{ color: 'var(--bam-text)' }}>{title}</h2></div></div>{to && <Link to={to} className="text-xs font-bold text-primary-600 dark:text-primary-300 inline-flex items-center gap-1 whitespace-nowrap">View <ChevronRight className="w-3.5 h-3.5" /></Link>}</div>{rows.length ? <div className="space-y-1">{rows.map((row, index) => <div key={`${row.primary}-${index}`} className="intelligence-row"><div className="min-w-0"><p className="font-semibold text-sm truncate" style={{ color: 'var(--bam-text)' }}>{row.primary}</p><p className="text-xs mt-0.5 truncate" style={{ color: 'var(--bam-text-muted)' }}>{row.secondary}</p></div>{row.value && <span className="text-xs font-bold tab-nums" style={{ color: 'var(--bam-text)' }}>{row.value}</span>}</div>)}</div> : <p className="text-sm leading-6 py-3" style={{ color: 'var(--bam-text-muted)' }}>{empty}</p>}</section>;
-}
+const emptyInsights = {
+  revenue_7d: 0,
+  booking_trend: { current: 0, change_percent: null },
+  popular_services: [],
+  highest_value_customers: [],
+  staff_performance: [],
+  customers_due: 0,
+  cancellation_trends: { cancelled: 0, no_shows: 0 },
+};
 
 export default function Intelligence() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
-  const load = useCallback(async () => { setError(false); try { setData(await intelligenceAPI.overview()); } catch { setError(true); } }, []);
+
+  const load = useCallback(async () => {
+    setError(false);
+    try { setData(await intelligenceAPI.overview()); } catch { setError(true); }
+  }, []);
+
   useEffect(() => { load(); }, [load]);
-  if (!data && !error) return <div className="page-shell space-y-5"><div className="h-36 rounded-3xl animate-pulse" style={{ background: 'var(--bam-surface-soft)' }} /><SkeletonList rows={5} /></div>;
-  if (error) return <ErrorState title="Intelligence is unavailable right now." description="We couldn't load your live business data. Please try again." onRetry={load} />;
 
-  const insights = { ...EMPTY, ...(data.insights || {}) };
-  const trend = { ...EMPTY.booking_trend, ...(insights.booking_trend || {}) };
-  const cancellation = { ...EMPTY.cancellation_trends, ...(insights.cancellation_trends || {}) };
+  if (!data && !error) return <div className="space-y-5"><div className="h-16 w-72 animate-pulse rounded-2xl" style={{ background: 'var(--bam-surface)' }} /><SkeletonList rows={5} /></div>;
+  if (error) return <ErrorState title="Intelligence is unavailable right now." description="We couldn't load your business insights. Please try again." onRetry={load} />;
+
+  const insights = { ...emptyInsights, ...(data.insights || {}) };
+  const trend = { ...emptyInsights.booking_trend, ...(insights.booking_trend || {}) };
+  const cancellations = { ...emptyInsights.cancellation_trends, ...(insights.cancellation_trends || {}) };
   const recommendations = Array.isArray(data.recommendations) ? data.recommendations : [];
-  const trendValue = trend.change_percent == null ? 'Not enough data' : `${trend.change_percent > 0 ? '+' : ''}${trend.change_percent}%`;
-  const TrendIcon = Number(trend.change_percent) < 0 ? TrendingDown : TrendingUp;
 
-  return <div className="page-shell intelligence-page animate-fade-in">
-    <section className="intelligence-hero"><div className="relative z-10 max-w-2xl"><div className="intelligence-eyebrow"><Sparkles className="w-3.5 h-3.5" /> BookAm Intelligence</div><h1>See what your business needs next.</h1><p>Every insight below is calculated from your BookAm bookings, customers and services. No made-up statistics, ever.</p></div><div className="intelligence-orb" aria-hidden="true"><ChartNoAxesCombined className="w-8 h-8" /></div></section>
-    {!data.sufficient_data && <div className="intelligence-notice"><Lightbulb className="w-5 h-5 flex-shrink-0" /><div><b>Still learning your business</b><p>I don't have enough data to answer detailed questions yet. Keep booking through BookAm and these insights will become more specific.</p></div></div>}
-    <section className="grid grid-cols-1 min-[440px]:grid-cols-2 xl:grid-cols-4 gap-3"><Metric label="Revenue · 7 days" value={money(insights.revenue_7d)} detail="Completed business revenue in the last seven days." icon={CircleDollarSign} /><Metric label="Bookings this week" value={trend.current || 0} detail="Appointments recorded in your current weekly window." icon={CalendarClock} tone="blue" /><Metric label="Booking momentum" value={trendValue} detail="Compared with the previous matching period." icon={TrendIcon} tone={Number(trend.change_percent) < 0 ? 'rose' : 'green'} /><Metric label="Customers due" value={insights.customers_due || 0} detail="Customers ready for a timely rebooking message." icon={UsersRound} tone="amber" /></section>
-    <section><div className="flex items-end justify-between gap-3 mb-3"><div><p className="intelligence-label">Recommended next moves</p><h2 className="text-lg font-black mt-1" style={{ color: 'var(--bam-text)' }}>Do the useful thing now</h2></div><Link to="/admin/growth" className="hidden sm:inline-flex btn-secondary !py-2 !px-3 text-xs">Open growth tools <ArrowRight className="w-3.5 h-3.5" /></Link></div><div className="grid gap-3 lg:grid-cols-2">{recommendations.length ? recommendations.slice(0, 4).map((recommendation, index) => <article key={`${recommendation.text}-${index}`} className="intelligence-recommendation"><span className="intelligence-recommendation-icon"><Sparkles className="w-4 h-4" /></span><div className="min-w-0 flex-1"><p className="font-bold text-sm leading-6" style={{ color: 'var(--bam-text)' }}>{recommendation.text}</p><p className="mt-1 text-xs" style={{ color: 'var(--bam-text-muted)' }}>Based on your current BookAm data</p></div><Link to={ACTIONS[recommendation.action] || '/admin/growth'} className="intelligence-action" aria-label="Open recommended action"><ArrowRight className="w-4 h-4" /></Link></article>) : <div className="intelligence-recommendation lg:col-span-2"><span className="intelligence-recommendation-icon"><Sparkles className="w-4 h-4" /></span><div><p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>No recommendation yet</p><p className="mt-1 text-xs" style={{ color: 'var(--bam-text-muted)' }}>Your next recommendation appears once there is enough activity to support it.</p></div></div>}</div></section>
-    <section className="grid gap-3 lg:grid-cols-2"><DataList eyebrow="Revenue drivers" title="Popular services" icon={Scissors} to="/admin/services" rows={(insights.popular_services || []).map(item => ({ primary: item.name, secondary: `${item.bookings || 0} booking${item.bookings === 1 ? '' : 's'}`, value: money(item.revenue) }))} empty="I don't have enough service data to rank your services yet." /><DataList eyebrow="Customer value" title="Highest-value customers" icon={UsersRound} to="/admin/customers" rows={(insights.highest_value_customers || []).map(item => ({ primary: item.full_name, secondary: 'Lifetime value', value: money(item.lifetime_value) }))} empty="Customer value will appear here after completed bookings." /><DataList eyebrow="Team performance" title="Staff activity" icon={ChartNoAxesCombined} to="/admin/staff-report" rows={(insights.staff_performance || []).map(item => ({ primary: item.name, secondary: `${item.bookings || 0} booking${item.bookings === 1 ? '' : 's'} in the last 30 days` }))} empty="Staff activity will appear once appointments are assigned." /><DataList eyebrow="Retention health" title="Cancellations & no-shows" icon={MessageSquareText} to="/admin/bookings" rows={[{ primary: `${cancellation.cancelled || 0} cancellations`, secondary: 'Recorded in the last 30 days' }, { primary: `${cancellation.no_shows || 0} no-shows`, secondary: 'Recorded in the last 30 days' }]} empty="No attendance data yet." /></section>
+  return <div className="space-y-6 animate-fade-in">
+    <div><h1 className="text-2xl font-bold" style={{ color: 'var(--bam-text)' }}>BookAm Intelligence</h1><p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Recommendations grounded in your BookAm business data</p></div>
+    {!data.sufficient_data && <div className="p-4 rounded-2xl bg-amber-50 text-amber-800">I don't have enough data to answer detailed questions yet.</div>}
+    <div className="grid sm:grid-cols-3 gap-3"><Card label="Revenue (7 days)" value={`${SYM}${Number(insights.revenue_7d || 0).toFixed(2)}`} /><Card label="Bookings this week" value={trend.current || 0} /><Card label="Booking trend" value={trend.change_percent == null ? '—' : `${trend.change_percent}%`} /></div>
+    <section><h2 className="font-bold mb-3" style={{ color: 'var(--bam-text)' }}>Recommendations</h2><div className="space-y-2">{recommendations.map((recommendation, index) => <Recommendation key={index} recommendation={recommendation} />)}{!recommendations.length && <p style={{ color: 'var(--bam-text-muted)' }}>No data-backed recommendations yet.</p>}</div></section>
+    <section className="grid lg:grid-cols-2 gap-5"><List title="Popular services" rows={(insights.popular_services || []).map((item) => `${item.name} — ${SYM}${Number(item.revenue || 0).toFixed(2)} · ${item.bookings} bookings`)} /><List title="Highest-value customers" rows={(insights.highest_value_customers || []).map((item) => `${item.full_name} — ${SYM}${Number(item.lifetime_value || 0).toFixed(2)}`)} /><List title="Staff performance" rows={(insights.staff_performance || []).map((item) => `${item.name} — ${item.bookings} bookings (last 30 days)`)} /><List title="Retention & attendance" rows={[`${insights.customers_due || 0} customers due for an appointment`, `${cancellations.cancelled || 0} cancellations in 30 days`, `${cancellations.no_shows || 0} no-shows in 30 days`]} /></section>
   </div>;
 }
+
+function Recommendation({ recommendation }) {
+  const actionPath = recommendation.action === 'open_availability' ? '/admin/settings' : recommendation.action === 'adjust_service' ? '/admin/services' : recommendation.action === 'message_customers' ? '/admin/messages' : '/admin/bookings';
+  return <div className="p-4 rounded-2xl flex justify-between gap-3" style={{ background: 'var(--bam-surface)', border: '1px solid var(--bam-border)' }}><p>{recommendation.text}</p><Link className="text-sm font-bold text-primary-600 whitespace-nowrap" to={actionPath}>Act</Link></div>;
+}
+
+function Card({ label, value }) { return <div className="p-5 rounded-2xl" style={{ background: 'var(--bam-surface)', border: '1px solid var(--bam-border)' }}><p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{label}</p><p className="text-2xl font-bold mt-1" style={{ color: 'var(--bam-text)' }}>{value}</p></div>; }
+function List({ title, rows }) { return <div className="p-5 rounded-2xl" style={{ background: 'var(--bam-surface)', border: '1px solid var(--bam-border)' }}><h2 className="font-bold mb-3" style={{ color: 'var(--bam-text)' }}>{title}</h2>{rows.length ? rows.map((row, index) => <p key={index} className="py-2 text-sm border-b last:border-0" style={{ color: 'var(--bam-text-muted)', borderColor: 'var(--bam-border)' }}>{row}</p>) : <p className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>I don't have enough data to answer that yet.</p>}</div>; }

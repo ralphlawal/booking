@@ -847,7 +847,7 @@ export default function Calendar() {
 
   return (
     <div
-      className="calendar-workspace flex flex-col animate-fade-in"
+      className="flex flex-col animate-fade-in"
       style={{
         height: 'calc(100dvh - 64px - env(safe-area-inset-top, 0px))',
         background: 'var(--bam-bg)',
@@ -855,7 +855,7 @@ export default function Calendar() {
     >
       {/* ── Header ────────────────────────────────────────────────── */}
       <div
-        className="calendar-workspace-header flex-shrink-0 flex flex-col gap-2.5 px-3 sm:px-4 pt-3 pb-3 border-b"
+        className="flex-shrink-0 flex flex-col gap-2.5 px-3 sm:px-4 pt-3 pb-3 border-b"
         style={{ background: 'var(--bam-bg)', borderColor }}
       >
         {/* Row 1: Title + View toggle + New button */}
@@ -944,7 +944,7 @@ export default function Calendar() {
         </div>
       ) : (
         <div
-          className="calendar-canvas flex-1 overflow-hidden"
+          className="flex-1 overflow-hidden"
           style={{ background: 'var(--bam-surface)', border: `1px solid ${borderColor}`, margin: '0 0 0 0' }}
         >
           {view === 'day'   && <DayView   bookings={filteredBookings} focusDate={focusDate} onBookingClick={handleBookingClick} onSlotClick={handleSlotClick} isDark={isDark} borderColor={borderColor} />}
@@ -956,7 +956,7 @@ export default function Calendar() {
       {/* Mobile new booking FAB */}
       <button
         onClick={() => setNewBooking({ date: format(focusDate, 'yyyy-MM-dd'), time: '' })}
-        className="calendar-create-fab sm:hidden fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] right-4 z-30 w-14 h-14 bg-primary-600 text-white rounded-full flex items-center justify-center shadow-primary"
+        className="sm:hidden fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] right-4 z-30 w-14 h-14 bg-primary-600 text-white rounded-full flex items-center justify-center shadow-primary"
       >
         <PlusIcon className="w-6 h-6" />
       </button>

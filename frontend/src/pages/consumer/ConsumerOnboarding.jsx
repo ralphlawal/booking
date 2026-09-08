@@ -247,8 +247,8 @@ export default function ConsumerOnboarding() {
   const isLast = step === STEPS.length - 1;
 
   return (
-    <div className="consumer-onboarding app-page min-h-[100dvh] bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <div className="consumer-onboarding-card w-full max-w-sm animate-fade-in">
+    <div className="app-page min-h-[100dvh] bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-6">
           <img src={LOGO_BLUE_H} alt="BookAm" className="h-8 mx-auto brightness-0 invert" />

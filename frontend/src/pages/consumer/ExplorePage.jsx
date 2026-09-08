@@ -309,7 +309,7 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="consumer-app-page min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2 sm:gap-4">
@@ -335,10 +335,9 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="consumer-discovery-hero bg-white border-b border-gray-100 px-3 sm:px-6 py-6 sm:py-8">
+      <div className="bg-white border-b border-gray-100 px-3 sm:px-6 py-6 sm:py-8">
         <div className="max-w-3xl mx-auto">
-          <p className="consumer-eyebrow">BOOKAM DISCOVERY</p>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-950 mb-4 tracking-tight">Your next appointment, sorted.</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-950 mb-4 tracking-tight">Find services near you</h1>
           <form onSubmit={handleSearch} className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -356,7 +355,7 @@ export default function ExplorePage() {
               className="border border-gray-200 text-gray-600 font-semibold px-3.5 py-3 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <Navigation className="w-4 h-4" />
-              <span className="hidden sm:inline">{locating ? 'Finding you…' : 'Near me'}</span>
+              <span className="hidden sm:inline">{locating ? 'Locating…' : 'Near me'}</span>
             </button>
             <button type="submit" disabled={aiMatching} className="bg-primary-600 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-primary-700 transition-colors flex items-center gap-1.5 disabled:opacity-70">
               <Search className="w-4 h-4" />
@@ -424,7 +423,7 @@ export default function ExplorePage() {
         </div>
         <Link
           to="/match"
-          className="consumer-smart-match flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-primary-700 to-primary-950 text-white hover:opacity-95 transition-opacity shadow-primary"
+          className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-primary-700 to-primary-950 text-white hover:opacity-95 transition-opacity shadow-primary"
         >
           <Zap className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">
