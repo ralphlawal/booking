@@ -186,7 +186,7 @@ export default function ConsumerProfile() {
       },
       (err) => {
         setDetectingLoc(false);
-        if (err.code === 1) toast.error('Location access denied — please allow location in your browser settings');
+        if (err.code === 1) toast.error('Location access denied — please enable it in your device Settings');
         else toast.error('Could not detect location — please type it below');
       },
       { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
@@ -268,7 +268,7 @@ export default function ConsumerProfile() {
   const enablePush = async () => {
     const result = await requestBrowserNotifications();
     if (result === 'granted') toast.success('Push notifications enabled');
-    else if (result === 'denied') toast.error('Notifications blocked — enable them in browser settings');
+    else if (result === 'denied') toast.error('Notifications blocked — enable them in your device Settings');
     else toast.error('Push notifications are not supported on this browser');
   };
 

@@ -6,6 +6,13 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
+    // Allow Stripe's 3DS redirect flows to navigate the WebView temporarily.
+    // Without this, the WKWebView blocks Stripe's intermediate redirect pages
+    // and 3DS-required payments silently fail.
+    allowNavigation: [
+      '*.stripe.com',
+      '*.stripe.network',
+    ],
   },
   plugins: {
     SplashScreen: {

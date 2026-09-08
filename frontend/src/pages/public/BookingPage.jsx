@@ -9,7 +9,7 @@ import {
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { format, addDays, startOfToday, addMonths, isSameDay } from 'date-fns';
 import toast from 'react-hot-toast';
-import { openExternalLink, publicWebUrl, shareContent } from '../../services/nativeBridge';
+import { openExternalLink, publicWebUrl, shareContent, isNativePlatform } from '../../services/nativeBridge';
 import { currencySymbol } from '../../utils/currency';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -630,7 +630,7 @@ function BookingWizard({
               clientSecret,
               appearance: { theme: 'stripe', variables: { colorPrimary: '#6366f1', borderRadius: '12px', fontSizeBase: '15px' } },
             }}>
-              <PaymentForm onSuccess={piId => submit(piId)} submitting={submitting} setSubmitting={setSubmitting} amount={finalPrice} C={C} returnUrl={window.location.href} />
+              <PaymentForm onSuccess={piId => submit(piId)} submitting={submitting} setSubmitting={setSubmitting} amount={finalPrice} C={C} returnUrl={isNativePlatform() ? publicWebUrl(window.location.pathname + window.location.search) : window.location.href} />
             </Elements>
           </>
         )}
@@ -1118,6 +1118,7 @@ export default function BookingPage() {
                       facebook && { icon: '👥', label: 'Facebook', value: facebook, href: facebook.startsWith('http') ? facebook : `https://facebook.com/${facebook}` },
                     ].filter(Boolean).map(({ icon, label, value, href }) => (
                       <a key={label} href={href} target={href.startsWith('http') ? '_blank' : '_self'} rel="noopener noreferrer"
+                        onClick={href.startsWith('http') ? (event) => openExternalLink(event, href) : undefined}
                         className="flex items-center gap-3 px-5 py-4 transition-colors" style={{ color: 'var(--bp-text)' }}>
                         <span className="text-lg w-6 flex-shrink-0">{icon}</span>
                         <div className="flex-1 min-w-0">

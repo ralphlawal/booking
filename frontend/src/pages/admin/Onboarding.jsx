@@ -4,6 +4,7 @@ import { Check, X, Rocket, Plus } from 'lucide-react';
 import { businessAPI, servicesAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
+import { openExternalLink } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
@@ -454,7 +455,7 @@ export default function Onboarding() {
 
         <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-5">
           © {new Date().getFullYear()} BookAm Business · A{' '}
-          <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Ralph Lawal Group</a> product
+          <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" onClick={(e) => openExternalLink(e, 'https://www.ralphlawalgroup.com')} className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Ralph Lawal Group</a> product
         </p>
       </div>
     </div>

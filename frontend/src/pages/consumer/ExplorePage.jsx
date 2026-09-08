@@ -278,7 +278,7 @@ export default function ExplorePage() {
       },
       (err) => {
         setLocating(false);
-        if (err.code === 1) toast.error('Location access denied — please allow location in your browser settings');
+        if (err.code === 1) toast.error('Location access denied — please enable it in your device Settings');
         else toast.error('Could not get your location — please try again');
       },
       { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }

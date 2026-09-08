@@ -30,7 +30,7 @@ export async function openExternalUrl(url, { onClose } = {}) {
         onClose();
       });
     }
-    await Browser.open({ url, windowName: '_system' });
+    await Browser.open({ url });
     return;
   }
   window.open(url, '_blank', 'noopener,noreferrer');
@@ -128,7 +128,7 @@ export function getCurrentPosition(onSuccess, onError, options = {}) {
     try {
       const perm = await Geolocation.requestPermissions();
       if (perm.location === 'denied' && perm.coarseLocation === 'denied') {
-        onError?.({ code: 1, message: 'Location permission denied' });
+        onError?.({ code: 1, message: 'Location permission denied. Please enable it in Settings > Privacy > Location Services.' });
         return;
       }
       const pos = await Geolocation.getCurrentPosition({
