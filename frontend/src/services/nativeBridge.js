@@ -157,6 +157,17 @@ function hasGrantedLocationPermission(permission = {}) {
   return permission.location === 'granted' || permission.coarseLocation === 'granted';
 }
 
+function browserPosition(config) {
+  if (!navigator.geolocation) {
+    const error = new Error('Location is unavailable on this device. Update BookAm, then try again.');
+    error.code = 2;
+    return Promise.reject(error);
+  }
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, config);
+  });
+}
+
 /**
  * Ask the operating system for a fresh location. Keeping this promise-based
  * means screens can show an honest loading/error state without relying on the
@@ -170,22 +181,21 @@ export async function requestDeviceLocation(options = {}) {
   };
 
   if (!isNativePlatform()) {
-    if (!navigator.geolocation) {
-      const error = new Error('Location is unavailable in this browser.');
-      error.code = 2;
-      throw error;
-    }
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, (error) => reject(error), config);
-    });
+    return browserPosition(config);
   }
 
   try {
+    // Older locally-installed builds can contain the web bundle before a
+    // Capacitor sync linked the native plugin. A browser fallback gives those
+    // devices a real chance to request location instead of failing with the
+    // opaque “plugin is not implemented” error.
+    if (!Capacitor.isPluginAvailable('Geolocation')) return await browserPosition(config);
+
     // Calling checkPermissions first prevents a repeated native prompt after a
     // user has already declined access, and makes the Settings guidance exact.
     let permission = await Geolocation.checkPermissions();
     if (!hasGrantedLocationPermission(permission)) {
-      permission = await Geolocation.requestPermissions();
+      permission = await Geolocation.requestPermissions({ permissions: ['location'] });
     }
     if (!hasGrantedLocationPermission(permission)) {
       const error = new Error(LOCATION_DENIED_MESSAGE);
@@ -199,9 +209,14 @@ export async function requestDeviceLocation(options = {}) {
     if (error.code === 1 || /denied|not authorized|permission/i.test(text)) {
       error.code = 1;
       error.message = LOCATION_DENIED_MESSAGE;
+    } else if (error.code === 3 || /timeout|timed out/i.test(text)) {
+      error.code = 3;
+      error.message = 'Location is taking too long. Check your signal and try again.';
     } else if (!error.code) {
       error.code = 2;
-      error.message = 'We could not find your location. Check your connection and try again.';
+      error.message = /location services/i.test(text)
+        ? 'Location Services are turned off. Turn them on in your device Settings, then try again.'
+        : 'We could not find your location. Check your connection and try again.';
     }
     throw error;
   }
@@ -219,3 +234,4 @@ export function getCurrentPosition(onSuccess, onError, options = {}) {
 
   requestDeviceLocation(options).then(onSuccess).catch(onError);
 }
+

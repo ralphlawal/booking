@@ -89,13 +89,7 @@ export default function ConsumerOnboarding() {
       },
       (err) => {
         setDetectingLocation(false);
-        if (err.code === 1) {
-          toast.error('Location access denied — please type your city or postcode below');
-        } else if (err.code === 3) {
-          toast.error('Location timed out — please type your city or postcode below');
-        } else {
-          toast.error('Could not detect location — please type your city or postcode below');
-        }
+        toast.error(`${err?.message || 'Could not detect location'}. You can type your city or postcode below.`);
       },
       { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
     );

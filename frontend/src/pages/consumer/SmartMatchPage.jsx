@@ -157,7 +157,7 @@ export default function SmartMatchPage() {
         setLocating(false);
         toast.success('Location found!');
       },
-      (err) => { setLocating(false); toast.error(err?.code === 1 ? 'Location access is off — enable it in Settings to match nearby businesses.' : 'Could not get location. You can still search without it.'); },
+      (err) => { setLocating(false); toast.error(err?.message || 'Could not get location. You can still search without it.'); },
       { timeout: 8000 }
     );
   };

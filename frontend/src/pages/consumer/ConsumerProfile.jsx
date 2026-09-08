@@ -185,8 +185,7 @@ export default function ConsumerProfile() {
       },
       (err) => {
         setDetectingLoc(false);
-        if (err.code === 1) toast.error('Location access denied — please enable it in your device Settings');
-        else toast.error('Could not detect location — please type it below');
+        toast.error(`${err?.message || 'Could not detect location'}. You can type it below instead.`);
       },
       { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
     );

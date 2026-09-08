@@ -6,6 +6,7 @@ const Notification = require('../models/Notification');
 const generateReference = require('../utils/generateReference');
 const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendBusinessPaymentReleasedEmail, sendWaitlistNotification } = require('../services/emailService');
 const retentionSvc = require('../services/retentionService');
+const { notifyUser } = require('../services/pushService');
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -145,6 +146,12 @@ exports.create = async (req, res) => {
 
     if (customer_email) sendBookingConfirmation({ ...fullBooking, customer_email });
     if (req.business.email) sendOwnerNewBooking(fullBooking, req.business.email);
+
+    notifyUser('business', req.business.id, {
+      title: `New booking — ${fullBooking.service_name}`,
+      body: `${fullBooking.customer_name} on ${booking_date} at ${fullBooking.start_time?.slice(0, 5)}`,
+      data: { bookingId: fullBooking.id, screen: 'bookings' },
+    }).catch(() => {});
 
     if (consumer_id) {
       Notification.create({
@@ -304,6 +311,12 @@ exports.updateStatus = async (req, res) => {
         title: notifTitle,
         body: notifBody,
         link: `/customer/dashboard`,
+      }).catch(() => {});
+
+      notifyUser('consumer', fullBooking.consumer_id, {
+        title: notifTitle,
+        body: notifBody,
+        data: { bookingId: fullBooking.id, screen: 'dashboard' },
       }).catch(() => {});
     }
 
