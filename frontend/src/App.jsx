@@ -58,6 +58,7 @@ const ConsumerMessages = lazy(() => import('./pages/consumer/ConsumerMessages'))
 const ConsumerOnboarding = lazy(() => import('./pages/consumer/ConsumerOnboarding'));
 const FavouritesPage = lazy(() => import('./pages/consumer/FavouritesPage'));
 const FeedPage = lazy(() => import('./pages/consumer/FeedPage'));
+const ManageBookingPage = lazy(() => import('./pages/consumer/ManageBookingPage'));
 const AdminSupport = lazy(() => import('./pages/support/AdminSupport'));
 const AdminInbox = lazy(() => import('./pages/admin/AdminInbox'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
@@ -291,6 +292,7 @@ export default function App() {
             <Route path="/customer/messages" element={<ConsumerProtectedRoute><ConsumerMessages /></ConsumerProtectedRoute>} />
             <Route path="/customer/profile" element={<ConsumerProtectedRoute><ConsumerProfile /></ConsumerProtectedRoute>} />
             <Route path="/customer/favourites" element={<ConsumerProtectedRoute><FavouritesPage /></ConsumerProtectedRoute>} />
+            <Route path="/customer/booking/:ref" element={<ConsumerProtectedRoute><ManageBookingPage /></ConsumerProtectedRoute>} />
             <Route path="/admin-support" element={<AdminSupport />} />
 
             {/* Account type chooser */}

@@ -4,7 +4,7 @@
  */
 const db = require('../config/database');
 const crypto = require('crypto');
-const { sendEmail, baseTemplate, detailRow } = require('./emailService');
+const { sendEmail } = require('./emailService');
 const loyaltyCtrl = require('../controllers/loyaltyController');
 
 const FRONTEND = process.env.FRONTEND_URL || 'https://bookam.business';
