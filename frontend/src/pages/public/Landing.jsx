@@ -315,6 +315,72 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* App Download */}
+      <section className="py-16 sm:py-20 bg-primary-600">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div>
+              <span className="inline-block text-xs font-bold text-primary-200 uppercase tracking-widest mb-4">Now on mobile</span>
+              <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
+                Take BookAm<br />everywhere you go.
+              </h2>
+              <p className="text-primary-200 text-sm sm:text-base leading-relaxed max-w-md mb-8">
+                Book appointments, manage your schedule, and stay connected with your customers — right from your pocket.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {/* App Store */}
+                <a
+                  href="https://apps.apple.com/us/app/bookam/id6805586714"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-black hover:bg-gray-900 text-white px-5 py-3 rounded-xl transition-colors"
+                >
+                  <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                  <div>
+                    <div className="text-[10px] leading-none opacity-60 mb-0.5">Download on the</div>
+                    <div className="text-sm font-bold leading-tight">App Store</div>
+                  </div>
+                </a>
+                {/* Play Store coming soon */}
+                <div className="inline-flex items-center gap-3 bg-white/10 border border-white/20 text-white/40 px-5 py-3 rounded-xl cursor-not-allowed select-none">
+                  <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3.18 23.76c.3.17.64.24.99.19l13.2-7.62-2.84-2.84-11.35 10.27zM.54 1.6C.2 1.96 0 2.5 0 3.17v17.64c0 .67.2 1.21.55 1.57l.08.08 9.88-9.88v-.23L.62 1.52l-.08.08zM20.66 10.43l-2.81-1.62-3.17 3.17 3.17 3.17 2.84-1.64c.81-.47.81-1.23 0-1.7l-.03.02zM3.18.22L16.38 7.84l-2.84 2.84L2.19.41c.3-.19.66-.24.99-.19z"/>
+                  </svg>
+                  <div>
+                    <div className="text-[10px] leading-none mb-0.5">Coming soon on</div>
+                    <div className="text-sm font-bold leading-tight">Google Play</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Phone preview */}
+            <div className="hidden lg:flex justify-center">
+              <div className="relative w-[220px]">
+                <div className="w-full aspect-[9/19.5] bg-[#000] rounded-[36px] border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                  <div className="flex-1 bg-gradient-to-br from-primary-900 to-primary-700 flex items-center justify-center p-6">
+                    <div className="text-center">
+                      <div className="w-14 h-14 rounded-[16px] bg-primary-500 flex items-center justify-center font-black text-white text-2xl mx-auto mb-3 shadow-lg" style={{fontFamily:"'Plus Jakarta Sans',sans-serif"}}>B</div>
+                      <div className="text-white font-black text-2xl tracking-tight" style={{fontFamily:"'Plus Jakarta Sans',sans-serif"}}>BookAm</div>
+                      <div className="text-primary-300 text-xs mt-1">Book. Manage. Grow.</div>
+                    </div>
+                  </div>
+                  <div className="bg-[#111] px-4 py-3">
+                    <div className="flex gap-2">
+                      <div className="flex-1 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white text-xs font-bold">Find services</div>
+                      <div className="flex-1 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/60 text-xs font-bold">For business</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Glow */}
+                <div className="absolute -inset-4 bg-primary-500/20 rounded-full blur-2xl -z-10" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works — plain, numbered */}
       <section className="py-16 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-20">
