@@ -2,6 +2,7 @@ const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const Notification = require('../models/Notification');
+const { getTokens, sendPush } = require('../services/pushService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
 
@@ -32,6 +33,15 @@ exports.create = async (req, res) => {
         body: message.trim(),
         link: '/customer/dashboard',
       });
+
+      // Also fire real push notifications to all registered devices
+      const { rows: tokenRows } = await db.query(
+        `SELECT DISTINCT token FROM push_tokens`
+      );
+      const allTokens = tokenRows.map(r => r.token);
+      if (allTokens.length) {
+        sendPush(allTokens, { title: title.trim(), body: message.trim(), data: { screen: 'dashboard' } }).catch(() => {});
+      }
     }
     res.status(201).json({ ...rows[0], recipients });
   } catch (err) {
