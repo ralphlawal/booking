@@ -9,7 +9,6 @@ import { NotificationProvider } from './context/NotificationContext';
 import { LOGO_BLUE_ICON } from './config/logos';
 import LoadingScreen from './components/shared/LoadingScreen';
 import FloatingChatWidget from './components/shared/FloatingChatWidget';
-import BroadcastBanner from './components/shared/BroadcastBanner';
 import CookieConsent from './components/shared/CookieConsent';
 import BrowserNotificationPrompt from './components/shared/BrowserNotificationPrompt';
 import VerifyRequired from './components/shared/VerifyRequired';
@@ -247,8 +246,7 @@ export default function App() {
               error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
             }}
           />
-          <BroadcastBanner />
-          <OfflineNotice />
+<OfflineNotice />
           <FloatingChatWidget />
           <CookieConsent />
           <BrowserNotificationPrompt />
