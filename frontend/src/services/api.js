@@ -132,6 +132,7 @@ export const businessAPI = {
   requestVerification: () => api.post('/business/me/request-verification'),
   submitVerificationDetails: (data) => api.post('/business/me/verification-details', data),
   saveBankDetails: (data) => api.put('/business/me/bank-details', data),
+  notifyCustomers: (data) => api.post('/business/me/notify-customers', data),
 };
 
 export const stripeConnectAPI = {

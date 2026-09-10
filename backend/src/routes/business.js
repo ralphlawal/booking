@@ -17,6 +17,7 @@ router.get('/me/qr', authenticate, attachBusiness, ctrl.getQRCode);
 router.post('/me/request-verification', authenticate, attachBusiness, ctrl.requestVerification);
 router.post('/me/verification-details', authenticate, attachBusiness, ctrl.submitVerificationDetails);
 router.put('/me/bank-details', authenticate, attachBusiness, ctrl.saveBankDetails);
+router.post('/me/notify-customers', authenticate, attachBusiness, ctrl.notifyCustomers);
 
 // Stripe Connect — payout onboarding & dashboard
 router.post('/me/stripe-connect/onboard', authenticate, attachBusiness, connectCtrl.onboard);

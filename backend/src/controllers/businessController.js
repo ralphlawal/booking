@@ -251,6 +251,51 @@ exports.submitVerificationDetails = async (req, res) => {
 // POST /api/business/admin/geocode-backfill
 // One-time operation: geocodes all businesses that have location text but no coordinates.
 // Rate-limited to 1 request/second to respect Nominatim ToS.
+exports.notifyCustomers = async (req, res) => {
+  try {
+    const { title, message, segment = 'all' } = req.body;
+    if (!title?.trim() || !message?.trim()) return res.status(400).json({ error: 'title and message are required' });
+
+    // Segments: all | returning | new | vip | at_risk
+    const segmentClause = {
+      all:       '',
+      returning: 'AND c.visit_count > 1',
+      new:       'AND c.visit_count = 1',
+      vip:       'AND c.visit_count >= 5',
+      at_risk:   "AND c.last_visit_date < NOW() - INTERVAL '60 days'",
+    }[segment] || '';
+
+    const { rows: consumers } = await db.query(
+      `SELECT DISTINCT b.consumer_id
+       FROM bookings b
+       LEFT JOIN consumer_accounts c ON c.id = b.consumer_id
+       WHERE b.business_id = $1
+         AND b.consumer_id IS NOT NULL
+         AND b.status IN ('confirmed','completed')
+         ${segmentClause}`,
+      [req.business.id]
+    );
+
+    const { notifyUser } = require('../services/pushService');
+    let sent = 0;
+    await Promise.allSettled(
+      consumers.map(async ({ consumer_id }) => {
+        await notifyUser('consumer', consumer_id, {
+          title: title.trim(),
+          body: message.trim(),
+          data: { screen: 'dashboard' },
+        });
+        sent++;
+      })
+    );
+
+    res.json({ sent, total: consumers.length });
+  } catch (err) {
+    console.error('[business/notify-customers]', err.message);
+    res.status(500).json({ error: 'Failed to send notifications' });
+  }
+};
+
 exports.geocodeBackfill = async (req, res) => {
   const db = require('../config/database');
   try {

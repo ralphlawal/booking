@@ -36,8 +36,9 @@ const NAV_GROUPS = [
       { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
       { to: '/admin/operations',   icon: ChartIcon,      label: 'Operations' },
       { to: '/admin/intelligence', icon: GrowthIcon,     label: 'Intelligence' },
-      { to: '/admin/messages',     icon: MessageIcon,    label: 'Messages' },
-      { to: '/admin/staff-report', icon: ChartIcon,   label: 'Reports' },
+      { to: '/admin/messages',       icon: MessageIcon,    label: 'Messages' },
+      { to: '/admin/notifications',  icon: BellIcon,       label: 'Notify' },
+      { to: '/admin/staff-report',   icon: ChartIcon,      label: 'Reports' },
       { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
     ],
   },
@@ -61,8 +62,9 @@ const MORE_ITEMS = [
   { to: '/admin/growth',       icon: GrowthIcon,     label: 'Growth' },
   { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
   { to: '/admin/operations',   icon: ChartIcon,      label: 'Operations' },
-  { to: '/admin/intelligence', icon: GrowthIcon,     label: 'Intelligence' },
-  { to: '/admin/staff-report', icon: ChartIcon,      label: 'Reports' },
+  { to: '/admin/intelligence',   icon: GrowthIcon,     label: 'Intelligence' },
+  { to: '/admin/notifications',  icon: BellIcon,       label: 'Notify' },
+  { to: '/admin/staff-report',   icon: ChartIcon,      label: 'Reports' },
   { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
 ];
 
@@ -572,3 +574,4 @@ function StaffIcon({ className }) { return <svg className={className} fill="none
 function ResourceIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>; }
 function GrowthIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>; }
 function RetentionIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>; }
+function BellIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>; }

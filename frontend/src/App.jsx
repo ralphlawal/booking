@@ -76,6 +76,7 @@ const GrowthPage = lazy(() => import('./pages/admin/Growth'));
 const RetentionHub = lazy(() => import('./pages/admin/RetentionHub'));
 const Operations = lazy(() => import('./pages/admin/Operations'));
 const Intelligence = lazy(() => import('./pages/admin/Intelligence'));
+const NotificationsPage = lazy(() => import('./pages/admin/Notifications'));
 
 class ErrorBoundary extends Component {
   state = { hasError: false };
@@ -287,6 +288,7 @@ export default function App() {
               <Route path="retention" element={<RetentionHub />} />
               <Route path="operations" element={<Operations />} />
               <Route path="intelligence" element={<Intelligence />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 
             {/* Email verification */}
