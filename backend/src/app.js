@@ -271,6 +271,44 @@ app.get('/api/admin/push-debug', requireAdmin, async (req, res) => {
     tokens: rows.map(r => ({ type: r.user_type, len: r.token.length, prefix: r.token.slice(0, 12) + '...', updated: r.updated_at })),
   });
 });
+
+// POST /api/admin/push-test — sends a real push to the newest APNs token and returns the raw result
+app.post('/api/admin/push-test', requireAdmin, async (req, res) => {
+  const db = require('./config/database');
+  const { rows } = await db.query(
+    `SELECT token FROM push_tokens WHERE LENGTH(token) = 64 ORDER BY updated_at DESC LIMIT 1`
+  );
+  if (!rows.length) return res.json({ error: 'No APNs token found (64-char)' });
+  const token = rows[0].token;
+
+  const keyBase64 = process.env.APN_KEY_BASE64;
+  const keyId = process.env.APN_KEY_ID;
+  const teamId = process.env.APN_TEAM_ID;
+  if (!keyBase64 || !keyId || !teamId) return res.json({ error: 'APNs env vars missing' });
+
+  try {
+    const apn = require('apn');
+    const provider = new apn.Provider({
+      token: { key: Buffer.from(keyBase64, 'base64'), keyId, teamId },
+      production: process.env.NODE_ENV === 'production',
+    });
+    const note = new apn.Notification();
+    note.alert = { title: 'Test push', body: 'Direct APNs test from server' };
+    note.topic = 'business.bookam.app';
+    note.sound = 'default';
+    note.badge = 1;
+
+    const result = await provider.send(note, [token]);
+    provider.shutdown();
+    res.json({
+      token_prefix: token.slice(0, 12) + '...',
+      sent: result.sent.length,
+      failed: result.failed.map(f => ({ token: f.device?.slice(0, 12), error: f.error, response: f.response })),
+    });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
 const businessCtrl = require('./controllers/businessController');
 app.post('/api/admin/geocode-backfill', businessCtrl.geocodeBackfill);
 
