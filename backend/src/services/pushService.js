@@ -59,7 +59,7 @@ async function sendViaFcm(tokens, { title, body, data = {} }) {
     const accessToken = await auth.getAccessToken();
     const projectId   = serviceAccount.project_id;
 
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       tokens.map(token =>
         fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
           method: 'POST',
@@ -69,12 +69,18 @@ async function sendViaFcm(tokens, { title, body, data = {} }) {
               token,
               notification: { title, body },
               data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
+              apns: { payload: { aps: { sound: 'default', badge: 1 } } },
               android: { priority: 'high', notification: { sound: 'default' } },
             },
           }),
         }).then(r => r.json())
       )
     );
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') console.error(`[Push/FCM] token[${i}] rejected:`, r.reason);
+      else if (r.value?.error) console.error(`[Push/FCM] token[${i}] error:`, JSON.stringify(r.value.error));
+      else console.log(`[Push/FCM] token[${i}] ok:`, r.value?.name);
+    });
   } catch (err) {
     console.error('[Push/FCM] error:', err.message);
   }
