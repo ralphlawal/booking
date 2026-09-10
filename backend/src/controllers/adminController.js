@@ -9,13 +9,14 @@ exports.getStats = async (req, res) => {
     const weekFilter = process.env.DATABASE_URL
       ? "created_at > NOW() - INTERVAL '7 days'"
       : "datetime(created_at) > datetime('now', '-7 days')";
-    const [bizCount, consumerCount, bookingCount, revenueRow, pendingVerif, newThisWeek] = await Promise.all([
+    const [bizCount, consumerCount, bookingCount, revenueRow, pendingVerif, newThisWeek, pushTokenCount] = await Promise.all([
       db.query('SELECT COUNT(*) AS count FROM businesses WHERE is_active = TRUE'),
       db.query('SELECT COUNT(*) AS count FROM consumer_accounts'),
       db.query('SELECT COUNT(*) AS count FROM bookings'),
       db.query("SELECT COALESCE(SUM(s.price),0) AS total FROM bookings b JOIN services s ON s.id = b.service_id WHERE b.payment_status = 'paid'"),
       db.query("SELECT COUNT(*) AS count FROM businesses WHERE verification_status = 'pending'"),
       db.query(`SELECT COUNT(*) AS count FROM bookings WHERE ${weekFilter}`),
+      db.query('SELECT COUNT(*) AS count FROM push_tokens'),
     ]);
     res.json({
       businesses: parseInt(bizCount.rows[0].count),
@@ -24,6 +25,7 @@ exports.getStats = async (req, res) => {
       revenue: parseFloat(revenueRow.rows[0].total).toFixed(2),
       pending_verifications: parseInt(pendingVerif.rows[0].count),
       bookings_this_week: parseInt(newThisWeek.rows[0].count),
+      push_tokens: parseInt(pushTokenCount.rows[0].count),
     });
   } catch (err) {
     console.error('[admin/stats]', err.message);
