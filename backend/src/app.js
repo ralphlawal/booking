@@ -260,6 +260,17 @@ app.get('/api/admin/manual-payouts', adminCtrl.getManualPayouts);
 app.post('/api/admin/manual-payouts/:businessId/mark-paid', adminCtrl.markManualPaid);
 app.get('/api/admin/audit-logs', adminCtrl.getAuditLogs);
 app.post('/api/admin/reconcile-payments', paymentsCtrl.reconcile);
+app.get('/api/admin/push-debug', requireAdmin, async (req, res) => {
+  const db = require('./config/database');
+  const { rows } = await db.query('SELECT token, user_type, updated_at FROM push_tokens ORDER BY updated_at DESC LIMIT 20');
+  res.json({
+    apn_key_set: !!process.env.APN_KEY_BASE64,
+    apn_key_id: process.env.APN_KEY_ID || null,
+    apn_team_id: process.env.APN_TEAM_ID || null,
+    firebase_set: !!process.env.FIREBASE_SERVICE_ACCOUNT_JSON,
+    tokens: rows.map(r => ({ type: r.user_type, len: r.token.length, prefix: r.token.slice(0, 12) + '...', updated: r.updated_at })),
+  });
+});
 const businessCtrl = require('./controllers/businessController');
 app.post('/api/admin/geocode-backfill', businessCtrl.geocodeBackfill);
 
