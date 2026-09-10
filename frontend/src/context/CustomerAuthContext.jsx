@@ -79,6 +79,9 @@ export function CustomerAuthProvider({ children }) {
       if (data && active) {
           setConsumer(data);
           saveCache(data);
+          registerPushNotifications(
+            (fcmToken) => consumerAPI.registerPushToken(fcmToken, 'consumer').catch(() => {}),
+          ).catch(() => {});
       }
     } catch (err) {
         // Access token may have expired — try to restore it silently.

@@ -89,6 +89,9 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       setBusiness(data.business || null);
       saveAuthCache(data.user, data.business || null);
+      registerPushNotifications(
+        (fcmToken) => authAPI.registerPushToken(fcmToken, 'business').catch(() => {}),
+      ).catch(() => {});
     } catch (err) {
       // An access JWT may have expired — try to restore it silently with the
       // rotating refresh session.
