@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { LOGO_BLUE_ICON } from '../../config/logos';
 import { getCookieConsent } from '../../utils/cookieConsent';
 
@@ -10,6 +11,7 @@ const keyFor = (role, id) => `bookam_notify_prompt_${role}_${id || 'anon'}`;
 export default function BrowserNotificationPrompt() {
   const { user, business } = useAuth();
   const { consumer }       = useCustomerAuth();
+  const { requestBrowserNotifications } = useNotifications();
   const [visible, setVisible] = useState(false);
 
   const account = consumer
@@ -57,16 +59,22 @@ export default function BrowserNotificationPrompt() {
 
   const enable = async () => {
     if (!('Notification' in window)) return dismiss();
-    const permission = await window.Notification.requestPermission();
-    if (permission === 'granted') {
-      try {
-        new window.Notification(account.sampleTitle, {
-          body: account.sampleBody,
-          icon: LOGO_BLUE_ICON,
-          badge: LOGO_BLUE_ICON,
-          tag: `bookam-${account.role}-enabled`,
-        });
-      } catch {}
+    if (consumer) {
+      // For consumers: use the context method which handles permission + web push subscription
+      const permission = await requestBrowserNotifications();
+      if (permission === 'granted') {
+        try {
+          new window.Notification(account.sampleTitle, {
+            body: account.sampleBody,
+            icon: LOGO_BLUE_ICON,
+            badge: LOGO_BLUE_ICON,
+            tag: `bookam-${account.role}-enabled`,
+          });
+        } catch {}
+      }
+    } else {
+      // For business users: just request permission (native push handles delivery)
+      await window.Notification.requestPermission?.();
     }
     dismiss();
   };

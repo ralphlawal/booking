@@ -3,6 +3,7 @@ const Customer = require('../models/Customer');
 const ConsumerAccount = require('../models/ConsumerAccount');
 const Service = require('../models/Service');
 const Notification = require('../models/Notification');
+const BusinessNotification = require('../models/BusinessNotification');
 const generateReference = require('../utils/generateReference');
 const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendBusinessPaymentReleasedEmail, sendWaitlistNotification } = require('../services/emailService');
 const retentionSvc = require('../services/retentionService');
@@ -151,6 +152,13 @@ exports.create = async (req, res) => {
       title: `New booking — ${fullBooking.service_name}`,
       body: `${fullBooking.customer_name} on ${booking_date} at ${fullBooking.start_time?.slice(0, 5)}`,
       data: { bookingId: fullBooking.id, screen: 'bookings' },
+    }).catch(() => {});
+    BusinessNotification.create({
+      business_id: req.business.id,
+      type: 'booking_new',
+      title: `New booking — ${fullBooking.service_name}`,
+      body: `${fullBooking.customer_name} on ${booking_date} at ${fullBooking.start_time?.slice(0, 5)}`,
+      link: '/admin/bookings',
     }).catch(() => {});
 
     if (consumer_id) {

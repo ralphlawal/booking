@@ -1,12 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { bookingsAPI } from '../../services/api';
+import { bookingsAPI, businessAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
 import { copyText, nativeTapFeedback, openExternalLink, publicWebUrl } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 import VerifyRequired from '../shared/VerifyRequired';
+
+function fmtNotifTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const diffMs = now - d;
+  if (diffMs < 60000) return 'Just now';
+  if (diffMs < 3600000) return `${Math.floor(diffMs / 60000)}m ago`;
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
 
 /* ── Sidebar nav groups ──────────────────────────────────────────────────── */
 const NAV_GROUPS = [
@@ -76,6 +87,11 @@ export default function AdminLayout() {
   const [copied, setCopied]             = useState(false);
   const [emailUnverified, setEmailUnverified]   = useState(false);
   const [resendingVerif, setResendingVerif]     = useState(false);
+  const [notifCount, setNotifCount]     = useState(0);
+  const [notifOpen, setNotifOpen]       = useState(false);
+  const [notifItems, setNotifItems]     = useState([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const notifPanelRef                   = useRef(null);
 
   /* Close More sheet on route change */
   useEffect(() => { setMoreOpen(false); }, [location.pathname]);
@@ -112,6 +128,43 @@ export default function AdminLayout() {
   useEffect(() => {
     if (location.pathname.startsWith('/admin/bookings')) refreshPendingCount();
   }, [location.pathname, refreshPendingCount]);
+
+  /* Notification count polling */
+  const refreshNotifCount = useCallback(() => {
+    businessAPI.getNotificationCount()
+      .then(data => setNotifCount(data?.count ?? 0))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    refreshNotifCount();
+    const t = setInterval(() => { if (!document.hidden) refreshNotifCount(); }, 30000);
+    window.addEventListener('focus', refreshNotifCount);
+    return () => { clearInterval(t); window.removeEventListener('focus', refreshNotifCount); };
+  }, [refreshNotifCount]);
+
+  /* Click outside closes notification panel */
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handler = (e) => {
+      if (notifPanelRef.current && !notifPanelRef.current.contains(e.target)) setNotifOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [notifOpen]);
+
+  const openNotifPanel = useCallback(async () => {
+    if (notifOpen) { setNotifOpen(false); return; }
+    setNotifOpen(true);
+    setNotifLoading(true);
+    try {
+      const data = await businessAPI.getNotifications();
+      setNotifItems(Array.isArray(data) ? data : (data?.notifications ?? []));
+      setNotifCount(0);
+      businessAPI.markNotificationsRead().catch(() => {});
+    } catch {}
+    setNotifLoading(false);
+  }, [notifOpen]);
 
   const handleResendVerif = async () => {
     setResendingVerif(true);
@@ -285,7 +338,78 @@ export default function AdminLayout() {
             <div className="hidden lg:block" />
 
             {/* Right actions */}
-            <div className="flex items-center gap-1 ml-auto">
+            <div className="flex items-center gap-1 ml-auto" ref={notifPanelRef}>
+              {/* Notification bell */}
+              <div className="relative">
+                <button
+                  onClick={openNotifPanel}
+                  title="Notifications"
+                  className="relative p-2 rounded-xl transition-colors hover:bg-gray-100"
+                  style={{ color: notifOpen ? 'var(--bam-primary)' : 'var(--bam-text-muted)' }}
+                >
+                  <BellIcon className="w-5 h-5" />
+                  {notifCount > 0 && (
+                    <span className="absolute top-1 right-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none border-2 border-white">
+                      {notifCount > 99 ? '99+' : notifCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification dropdown panel */}
+                {notifOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-1 w-80 rounded-2xl border shadow-xl z-[200] overflow-hidden"
+                    style={{ background: 'var(--bam-surface)', borderColor: 'var(--bam-border)' }}
+                  >
+                    <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--bam-border)' }}>
+                      <p className="text-sm font-bold" style={{ color: 'var(--bam-text)' }}>Notifications</p>
+                      <button
+                        onClick={() => setNotifOpen(false)}
+                        className="text-xs font-medium"
+                        style={{ color: 'var(--bam-primary)' }}
+                      >
+                        Close
+                      </button>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      ) : notifItems.length === 0 ? (
+                        <div className="py-10 text-center">
+                          <BellIcon className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                          <p className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>No notifications yet</p>
+                        </div>
+                      ) : (
+                        notifItems.map((n) => (
+                          <button
+                            key={n.id}
+                            type="button"
+                            onClick={() => { setNotifOpen(false); if (n.link) navigate(n.link); }}
+                            className="w-full text-left px-4 py-3 border-b last:border-b-0 transition-colors hover:bg-gray-50 flex gap-3 items-start"
+                            style={{ borderColor: 'var(--bam-border)' }}
+                          >
+                            <div
+                              className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                              style={{ background: n.is_read ? 'var(--bam-border)' : 'var(--bam-primary)' }}
+                            >
+                              {n.type === 'booking_new' ? '📅' : n.type === 'message' ? '💬' : n.type === 'review' ? '⭐' : '🔔'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold truncate" style={{ color: 'var(--bam-text)' }}>{n.title}</p>
+                              {n.body && <p className="text-xs truncate mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>{n.body}</p>}
+                              <p className="text-[10px] mt-1" style={{ color: 'var(--bam-text-faint)' }}>{fmtNotifTime(n.created_at)}</p>
+                            </div>
+                            {!n.is_read && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: 'var(--bam-primary)' }} />}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {business && (
                 <>
                   <button

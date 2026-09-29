@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const Chat = require('../models/Chat');
 const Notification = require('../models/Notification');
+const BusinessNotification = require('../models/BusinessNotification');
 const db = require('../config/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bookam-jwt-secret-change-in-prod';
@@ -158,6 +159,23 @@ async function notifyRecipient({ room, sender_type, sender_name, content }) {
         }).catch(() => {});
       }
     }
+  }
+
+  // Consumer sends to business → in-app + push notification to business
+  if (sender_type === 'consumer' && room.business_id) {
+    const { notifyUser } = require('../services/pushService');
+    notifyUser('business', room.business_id, {
+      title: `New message from ${sender_name}`,
+      body: preview,
+      data: { url: '/admin/messages' },
+    }).catch(() => {});
+    BusinessNotification.create({
+      business_id: room.business_id,
+      type: 'message',
+      title: `New message from ${sender_name}`,
+      body: preview,
+      link: '/admin/messages',
+    }).catch(() => {});
   }
 
   // Admin replies to a business → email the business owner

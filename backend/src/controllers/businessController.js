@@ -1,5 +1,6 @@
 const https = require('https');
 const Business = require('../models/Business');
+const BusinessNotification = require('../models/BusinessNotification');
 const QRCode = require('qrcode');
 const { checkAutoVerify } = require('../utils/autoVerify');
 
@@ -293,6 +294,34 @@ exports.notifyCustomers = async (req, res) => {
   } catch (err) {
     console.error('[business/notify-customers]', err.message);
     res.status(500).json({ error: 'Failed to send notifications' });
+  }
+};
+
+exports.getNotifications = async (req, res) => {
+  try {
+    const notifications = await BusinessNotification.getForBusiness(req.business.id);
+    res.json(notifications);
+  } catch (err) {
+    console.error('[business/notifications]', err.message);
+    res.status(500).json({ error: 'Failed to load notifications' });
+  }
+};
+
+exports.getNotificationCount = async (req, res) => {
+  try {
+    const count = await BusinessNotification.unreadCount(req.business.id);
+    res.json({ count });
+  } catch (err) {
+    res.json({ count: 0 });
+  }
+};
+
+exports.markNotificationsRead = async (req, res) => {
+  try {
+    await BusinessNotification.markRead(req.business.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark read' });
   }
 };
 

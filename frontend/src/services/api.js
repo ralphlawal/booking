@@ -132,6 +132,9 @@ export const businessAPI = {
   submitVerificationDetails: (data) => api.post('/business/me/verification-details', data),
   saveBankDetails: (data) => api.put('/business/me/bank-details', data),
   notifyCustomers: (data) => api.post('/business/me/notify-customers', data),
+  getNotifications: () => api.get('/business/me/notifications'),
+  getNotificationCount: () => api.get('/business/me/notifications/count'),
+  markNotificationsRead: () => api.post('/business/me/notifications/read'),
 };
 
 export const stripeConnectAPI = {

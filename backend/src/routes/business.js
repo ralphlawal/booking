@@ -18,6 +18,9 @@ router.post('/me/request-verification', authenticate, attachBusiness, ctrl.reque
 router.post('/me/verification-details', authenticate, attachBusiness, ctrl.submitVerificationDetails);
 router.put('/me/bank-details', authenticate, attachBusiness, ctrl.saveBankDetails);
 router.post('/me/notify-customers', authenticate, attachBusiness, ctrl.notifyCustomers);
+router.get('/me/notifications', authenticate, attachBusiness, ctrl.getNotifications);
+router.post('/me/notifications/read', authenticate, attachBusiness, ctrl.markNotificationsRead);
+router.get('/me/notifications/count', authenticate, attachBusiness, ctrl.getNotificationCount);
 
 // Stripe Connect — payout onboarding & dashboard
 router.post('/me/stripe-connect/onboard', authenticate, attachBusiness, connectCtrl.onboard);
