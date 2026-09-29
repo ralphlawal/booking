@@ -218,14 +218,14 @@ export default function BusinessProfile() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-8 h-8 border-3 border-primary-600 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bam-bg)' }}>
+      <div className="w-8 h-8 border-[3px] border-primary-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (notFound) return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
-      <p className="text-xl font-bold text-gray-900">Business not found</p>
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4" style={{ background: 'var(--bam-bg)' }}>
+      <p className="text-xl font-bold" style={{ color: 'var(--bam-text)' }}>Business not found</p>
       <Link to="/explore" className="btn-primary text-sm">Browse services</Link>
     </div>
   );
@@ -239,31 +239,37 @@ export default function BusinessProfile() {
   ].slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" style={{ background: 'var(--bam-bg)' }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl" style={{ background: 'rgba(255,255,255,0.92)', borderBottom: '1px solid var(--bam-border)' }}>
         <div className="max-w-5xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2">
           <BackButton fallback="/explore" />
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain" />
+            <img src={LOGO_BLUE_H} alt="BookAm" className="h-6 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-1.5 min-w-0">
             <button
               onClick={handleFollow}
               disabled={followLoading}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-60 whitespace-nowrap ${
-                following
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50'
-              }`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-60 whitespace-nowrap"
+              style={following
+                ? { background: '#5B3FEA', color: '#fff' }
+                : { background: 'rgba(91,63,234,0.08)', color: '#5B3FEA' }
+              }
             >
               {following ? <UserCheck className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
               <span className="hidden min-[380px]:inline">{following ? 'Following' : 'Follow'}</span>
             </button>
-            <button onClick={handleShare} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <Share2 className="w-4 h-4 text-gray-500" />
+            <button onClick={handleShare} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--bam-text-muted)' }}
+              onMouseEnter={e => e.currentTarget.style.background='var(--bam-surface-soft)'}
+              onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+              <Share2 className="w-4 h-4" />
             </button>
-            <button onClick={handleSave} disabled={saved} className={`p-2 rounded-lg transition-colors ${saved ? 'text-red-500' : 'hover:bg-gray-100 text-gray-500'}`}>
+            <button onClick={handleSave} disabled={saved}
+              className="p-2 rounded-xl transition-colors"
+              style={{ color: saved ? '#ef4444' : 'var(--bam-text-muted)' }}
+              onMouseEnter={e => !saved && (e.currentTarget.style.background='var(--bam-surface-soft)')}
+              onMouseLeave={e => e.currentTarget.style.background='transparent'}>
               <Heart className={`w-4 h-4 ${saved ? 'fill-red-500' : ''}`} />
             </button>
           </div>
@@ -271,14 +277,14 @@ export default function BusinessProfile() {
       </nav>
 
       {heroPhotos.length > 0 && (
-        <div className="bg-white border-b border-gray-100">
+        <div style={{ background: '#fff', borderBottom: '1px solid var(--bam-border)' }}>
           <div className="max-w-5xl mx-auto grid grid-cols-4 sm:grid-cols-5 gap-0.5 h-44 sm:h-64 lg:h-80">
-            <div className="col-span-2 sm:col-span-3 row-span-2 overflow-hidden bg-gray-100">
-              <img src={heroPhotos[0]} alt="" className="h-full w-full object-cover" />
+            <div className="col-span-2 sm:col-span-3 row-span-2 overflow-hidden" style={{ background: 'var(--bam-surface-soft)' }}>
+              <img src={heroPhotos[0]} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-500" />
             </div>
             {heroPhotos.slice(1, 5).map((src, idx) => (
-              <div key={src + idx} className="overflow-hidden bg-gray-100">
-                <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
+              <div key={src + idx} className="overflow-hidden" style={{ background: 'var(--bam-surface-soft)' }}>
+                <img src={src} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy" />
               </div>
             ))}
           </div>
@@ -288,24 +294,24 @@ export default function BusinessProfile() {
       <div className="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 lg:py-8 pb-consumer-cta">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         {/* Business header */}
-        <div className="bg-white border border-gray-200/80 rounded-lg p-4 sm:p-6 lg:col-span-2 shadow-card">
+        <div className="rounded-2xl p-4 sm:p-6 lg:col-span-2" style={{ background: '#fff', border: '1px solid var(--bam-border)', boxShadow: '0 2px 16px rgba(91,63,234,0.06)' }}>
           <div className="flex items-start gap-3 sm:gap-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 flex items-center justify-center border border-gray-100">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: 'rgba(91,63,234,0.06)', border: '1px solid var(--bam-border)' }}>
               {business.logo_url ? (
                 <img src={business.logo_url} alt={business.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-3xl font-bold text-primary-600">
+                <span className="text-3xl font-bold" style={{ color: '#5B3FEA' }}>
                   {business.name?.[0]}
                 </span>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-4xl font-black text-slate-950 flex items-center gap-1.5 min-w-0 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-black flex items-center gap-1.5 min-w-0 tracking-tight" style={{ color: 'var(--bam-text)' }}>
                 <span className="truncate min-w-0">{business.name}</span>
                 {verified && <BadgeCheck title="Verified Business" className="w-5 h-5 text-blue-500 flex-shrink-0" />}
               </h1>
               {business.category && (
-                <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-600 mt-1">
+                <span className="inline-block text-xs px-2.5 py-0.5 rounded-full mt-1 font-semibold" style={{ background: 'rgba(91,63,234,0.08)', color: '#5B3FEA' }}>
                   {business.category}
                 </span>
               )}
@@ -316,14 +322,14 @@ export default function BusinessProfile() {
                     <Star key={s} className={`w-4 h-4 ${s <= Math.round(avgRating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
                   ))}
                 </div>
-                <span className="text-sm font-bold text-gray-800">
+                <span className="text-sm font-bold" style={{ color: 'var(--bam-text)' }}>
                   {avgRating > 0 ? avgRating.toFixed(1) : 'New'}
                 </span>
                 {totalReviews > 0 && (
-                  <span className="text-sm text-gray-400">({totalReviews} review{totalReviews !== 1 ? 's' : ''})</span>
+                  <span className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>({totalReviews} review{totalReviews !== 1 ? 's' : ''})</span>
                 )}
                 {followerCount > 0 && (
-                  <span className="flex items-center gap-1 text-sm text-gray-400">
+                  <span className="flex items-center gap-1 text-sm" style={{ color: 'var(--bam-text-muted)' }}>
                     <Users className="w-3.5 h-3.5" />{followerCount} follower{followerCount !== 1 ? 's' : ''}
                   </span>
                 )}
@@ -332,7 +338,7 @@ export default function BusinessProfile() {
           </div>
 
           {business.description && (
-            <p className="text-sm text-gray-600 mt-4 leading-relaxed">
+            <p className="text-sm mt-4 leading-relaxed" style={{ color: 'var(--bam-text-muted)' }}>
               {business.description}
             </p>
           )}
@@ -365,36 +371,37 @@ export default function BusinessProfile() {
           )}
 
           {/* Contact info */}
-          <div className="mt-5 grid gap-2.5 sm:grid-cols-2 min-w-0">
+          <div className="mt-5 grid gap-2 sm:grid-cols-2 min-w-0 pt-4" style={{ borderTop: '1px solid var(--bam-border)' }}>
             {business.location && (
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(event) => openExternalLink(event, `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.location)}`)}
-                className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors group"
+                className="flex items-center gap-2.5 text-sm transition-colors group"
+                style={{ color: 'var(--bam-text-muted)' }}
               >
-                <MapPin className="w-4 h-4 flex-shrink-0 text-primary-500" />
+                <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: '#5B3FEA' }} />
                 <span className="group-hover:underline break-words">{business.location}</span>
               </a>
             )}
             {business.phone && (
-              <a href={`tel:${business.phone}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors">
-                <Phone className="w-4 h-4 flex-shrink-0 text-primary-500" />
+              <a href={`tel:${business.phone}`} className="flex items-center gap-2.5 text-sm transition-colors" style={{ color: 'var(--bam-text-muted)' }}>
+                <Phone className="w-4 h-4 flex-shrink-0" style={{ color: '#5B3FEA' }} />
                 <span className="break-all">{business.phone}</span>
               </a>
             )}
             {business.email && (
-              <a href={`mailto:${business.email}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors">
-                <Mail className="w-4 h-4 flex-shrink-0 text-primary-500" />
+              <a href={`mailto:${business.email}`} className="flex items-center gap-2.5 text-sm transition-colors" style={{ color: 'var(--bam-text-muted)' }}>
+                <Mail className="w-4 h-4 flex-shrink-0" style={{ color: '#5B3FEA' }} />
                 <span className="break-all">{business.email}</span>
               </a>
             )}
             {hours && formatHours(hours) && (
-              <div className="flex items-start gap-2 text-sm">
-                <Clock className="w-4 h-4 flex-shrink-0 text-primary-500 mt-0.5" />
+              <div className="flex items-start gap-2.5 text-sm">
+                <Clock className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#5B3FEA' }} />
                 <div>
-                  <span className="text-gray-500">{formatHours(hours)}</span>
+                  <span style={{ color: 'var(--bam-text-muted)' }}>{formatHours(hours)}</span>
                   {isOpenNow(hours) !== null && (
                     <span className={`ml-2 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
                       isOpenNow(hours)
@@ -411,42 +418,45 @@ export default function BusinessProfile() {
         </div>
 
         {/* Services */}
-        <div className="bg-white border border-gray-200/80 rounded-lg p-4 sm:p-5 shadow-card">
+        <div className="rounded-2xl p-4 sm:p-5" style={{ background: '#fff', border: '1px solid var(--bam-border)', boxShadow: '0 2px 16px rgba(91,63,234,0.06)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-black text-xl text-slate-950 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-primary-500" />
+            <h2 className="font-black text-xl flex items-center gap-2" style={{ color: 'var(--bam-text)' }}>
+              <Calendar className="w-4 h-4" style={{ color: '#5B3FEA' }} />
               Services
             </h2>
             <AIChatBooking slug={slug} businessName={business.name} />
           </div>
           <div className="space-y-2">
             {services.length === 0 ? (
-              <p className="text-sm text-gray-400">No services listed yet</p>
+              <p className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>No services listed yet</p>
             ) : services.map(s => (
               <Link
                 key={s.id}
                 to={`/book/${slug}`}
                 state={{ prefill_service_id: s.id, from: location }}
-                className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3 rounded-lg bg-white hover:bg-primary-50 border border-gray-100 hover:border-primary-200 transition-all group"
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3.5 rounded-xl transition-all group"
+                style={{ background: 'var(--bam-surface-soft)', border: '1px solid var(--bam-border)' }}
+                onMouseEnter={e => { e.currentTarget.style.background='rgba(91,63,234,0.05)'; e.currentTarget.style.borderColor='rgba(91,63,234,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='var(--bam-surface-soft)'; e.currentTarget.style.borderColor='var(--bam-border)'; }}
               >
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-gray-900 truncate">{s.name}</p>
+                  <p className="font-semibold text-sm truncate" style={{ color: 'var(--bam-text)' }}>{s.name}</p>
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-                    <Clock className="w-3 h-3 text-gray-400" />
-                    <span className="text-xs text-gray-400">{s.duration_minutes} min</span>
+                    <Clock className="w-3 h-3" style={{ color: 'var(--bam-text-muted)' }} />
+                    <span className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{s.duration_minutes} min</span>
                     {Boolean(s.deposit_required) && Number(s.deposit_amount) > 0 && (
                       <span className="text-xs text-amber-600">
-                        · £{parseFloat(s.deposit_amount).toFixed(0)} deposit at appointment
+                        · £{parseFloat(s.deposit_amount).toFixed(0)} deposit
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-bold text-gray-900 text-sm whitespace-nowrap">
+                  <span className="font-bold text-sm whitespace-nowrap" style={{ color: 'var(--bam-text)' }}>
                     {parseFloat(s.price) > 0 ? `£${parseFloat(s.price).toFixed(0)}` : 'Free'}
                   </span>
-                  <span className="hidden sm:inline-flex bg-primary-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">Book</span>
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors sm:hidden" />
+                  <span className="hidden sm:inline-flex text-white text-xs font-bold px-3 py-1.5 rounded-lg" style={{ background: '#5B3FEA' }}>Book</span>
+                  <ChevronRight className="w-4 h-4 transition-colors sm:hidden" style={{ color: 'var(--bam-text-muted)' }} />
                 </div>
               </Link>
             ))}
@@ -456,8 +466,8 @@ export default function BusinessProfile() {
         {/* Posts */}
         {posts.length > 0 && (
           <div className="lg:col-span-2 space-y-3">
-            <h2 className="font-bold text-gray-900 flex items-center gap-2 px-1">
-              <Megaphone className="w-4 h-4 text-primary-500" />
+            <h2 className="font-bold flex items-center gap-2 px-1" style={{ color: 'var(--bam-text)' }}>
+              <Megaphone className="w-4 h-4" style={{ color: '#5B3FEA' }} />
               Posts
             </h2>
             {posts.map(post => {
@@ -501,15 +511,15 @@ export default function BusinessProfile() {
 
         {/* Photo Gallery */}
         {photos.length > 0 && (
-          <div className="card p-4 sm:p-5 lg:col-span-2">
-            <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Image className="w-4 h-4 text-primary-500" />
+          <div className="rounded-2xl p-4 sm:p-5 lg:col-span-2" style={{ background: '#fff', border: '1px solid var(--bam-border)', boxShadow: '0 2px 16px rgba(91,63,234,0.06)' }}>
+            <h2 className="font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--bam-text)' }}>
+              <Image className="w-4 h-4" style={{ color: '#5B3FEA' }} />
               Gallery
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
               {photos.map(p => (
-                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                  <img src={p.url} alt={p.caption || ''} className="w-full h-full object-cover" loading="lazy" />
+                <div key={p.id} className="aspect-square rounded-xl overflow-hidden" style={{ background: 'var(--bam-surface-soft)' }}>
+                  <img src={p.url} alt={p.caption || ''} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy" />
                 </div>
               ))}
             </div>
@@ -517,14 +527,14 @@ export default function BusinessProfile() {
         )}
 
         {/* Reviews */}
-        <div className="bg-white border border-gray-200/80 rounded-lg p-4 sm:p-5 lg:col-span-2 shadow-card">
+        <div className="rounded-2xl p-4 sm:p-5 lg:col-span-2" style={{ background: '#fff', border: '1px solid var(--bam-border)', boxShadow: '0 2px 16px rgba(91,63,234,0.06)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-gray-900 flex items-center gap-2">
+            <h2 className="font-bold flex items-center gap-2" style={{ color: 'var(--bam-text)' }}>
               <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
               Reviews
             </h2>
             {totalReviews > 0 && (
-              <span className="text-sm text-gray-400">{totalReviews} total</span>
+              <span className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>{totalReviews} total</span>
             )}
           </div>
 
@@ -622,15 +632,32 @@ export default function BusinessProfile() {
         </div>
 
         {/* Sticky book CTA — sits above the bottom nav (accounts for iOS safe area) */}
-        <div className="lg:hidden fixed left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-100 z-40 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]" style={{ bottom: 'var(--consumer-nav-height)' }}>
+        <div
+          className="lg:hidden fixed left-0 right-0 z-40 backdrop-blur-xl"
+          style={{
+            bottom: 'var(--consumer-nav-height)',
+            background: 'rgba(255,255,255,0.95)',
+            borderTop: '1px solid var(--bam-border)',
+            boxShadow: '0 -8px 32px rgba(91,63,234,0.08)',
+          }}
+        >
           <div className="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex gap-2">
-            <button onClick={handleMessage} className="flex items-center justify-center gap-2 py-3 px-3 text-sm font-semibold rounded-lg border border-primary-600 text-primary-600 hover:bg-primary-50 transition-all flex-shrink-0">
+            <button
+              onClick={handleMessage}
+              className="flex items-center justify-center gap-2 py-3 px-3.5 text-sm font-semibold rounded-xl transition-all flex-shrink-0"
+              style={{ border: '1.5px solid rgba(91,63,234,0.25)', color: '#5B3FEA', background: 'rgba(91,63,234,0.04)' }}
+            >
               <MessageSquare className="w-4 h-4" />
             </button>
             <AIChatBooking slug={slug} businessName={business.name} />
-            <Link to={`/book/${slug}`} state={{ from: location }} className="btn-primary flex items-center justify-center gap-2 py-3 text-sm flex-1">
+            <Link
+              to={`/book/${slug}`}
+              state={{ from: location }}
+              className="flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl flex-1 transition-all"
+              style={{ background: '#5B3FEA', color: '#fff', boxShadow: '0 4px 14px rgba(91,63,234,0.3)' }}
+            >
               <CheckCircle className="w-4 h-4" />
-              Book
+              Book Now
             </Link>
           </div>
         </div>
