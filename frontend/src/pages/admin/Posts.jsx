@@ -7,10 +7,10 @@ import {
 } from 'lucide-react';
 
 const TYPE_META = {
-  photo:        { label: 'Photo / Portfolio', icon: Image,      color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20' },
-  offer:        { label: 'Offer',             icon: Tag,        color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
-  availability: { label: 'Availability',      icon: Calendar,   color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' },
-  announcement: { label: 'Announcement',      icon: Megaphone,  color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' },
+  photo:        { label: 'Photo / Portfolio', icon: Image,      color: 'text-purple-600 bg-purple-50' },
+  offer:        { label: 'Offer',             icon: Tag,        color: 'text-amber-600 bg-amber-50' },
+  availability: { label: 'Availability',      icon: Calendar,   color: 'text-emerald-600 bg-emerald-50' },
+  announcement: { label: 'Announcement',      icon: Megaphone,  color: 'text-blue-600 bg-blue-50' },
 };
 
 const EMPTY = {
@@ -34,15 +34,15 @@ function PostCard({ post, onDelete }) {
           <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${meta.color}`}>
             {isVideo ? <Film className="w-3 h-3" /> : <Icon className="w-3 h-3" />}{isVideo ? 'Reel / Video' : meta.label}
           </span>
-          <button onClick={() => onDelete(post.id)} className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+          <button onClick={() => onDelete(post.id)} className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
-        {post.caption && <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{post.caption}</p>}
+        {post.caption && <p className="text-sm text-gray-700 line-clamp-2">{post.caption}</p>}
         {post.offer_text && (
           <div className="flex items-center gap-2 mt-1">
             <p className={`text-xs font-semibold ${post.is_expired ? 'text-gray-400 line-through' : 'text-amber-600'}`}>{post.offer_text}</p>
-            {post.is_expired && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500">Expired</span>}
+            {post.is_expired && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 text-red-500">Expired</span>}
           </div>
         )}
         {post.offer_expires_at && !post.is_expired && (
@@ -51,7 +51,7 @@ function PostCard({ post, onDelete }) {
           </p>
         )}
         {post.cta_label && (
-          <span className="mt-1.5 inline-block text-xs font-semibold text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-700 rounded-lg px-2 py-0.5">
+          <span className="mt-1.5 inline-block text-xs font-semibold text-primary-600 border border-primary-200 rounded-lg px-2 py-0.5">
             CTA: {post.cta_label}
           </span>
         )}
@@ -159,8 +159,8 @@ export default function Posts() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Posts</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Share updates, offers, and availability with customers</p>
+          <h1 className="text-xl font-bold text-gray-900">Posts</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Share updates, offers, and availability with customers</p>
         </div>
         <button onClick={() => setShowForm(v => !v)} className="btn-primary flex items-center gap-2">
           {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -170,7 +170,7 @@ export default function Posts() {
 
       {showForm && (
         <div className="app-panel p-5">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Create a post</h2>
+          <h2 className="font-semibold text-gray-900 mb-4">Create a post</h2>
           <form onSubmit={submit} className="space-y-4">
             {/* Type selector */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -182,8 +182,8 @@ export default function Posts() {
                     onClick={() => setForm(f => ({ ...f, type: key }))}
                     className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 text-xs font-bold transition-all ${
                       form.type === key
-                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
                     }`}
                   >
                     <Ic className="w-5 h-5" />{m.label}
@@ -209,7 +209,7 @@ export default function Posts() {
                 </div>
               ) : (
                 <button type="button" onClick={() => fileRef.current?.click()}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors">
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors">
                   <Image className="w-4 h-4" /> Add media
                 </button>
               )}
@@ -267,10 +267,10 @@ export default function Posts() {
         <div className="flex justify-center py-12"><div className="w-7 h-7 border-3 border-primary-600 border-t-transparent rounded-full animate-spin" /></div>
       ) : posts.length === 0 ? (
         <div className="app-panel p-10 text-center">
-          <div className="w-14 h-14 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-lg bg-primary-50 flex items-center justify-center mx-auto mb-4">
             <Megaphone className="w-7 h-7 text-primary-500" />
           </div>
-          <h3 className="font-bold text-gray-900 dark:text-white mb-1">No posts yet</h3>
+          <h3 className="font-bold text-gray-900 mb-1">No posts yet</h3>
           <p className="text-sm text-gray-400 max-w-xs mx-auto">Share your work, offers, and availability. Posts appear on your profile and in the customer discovery feed.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary mt-5 inline-flex items-center gap-2">
             <Plus className="w-4 h-4" /> Create your first post

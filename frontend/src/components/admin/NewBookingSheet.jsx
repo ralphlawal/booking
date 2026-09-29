@@ -502,7 +502,7 @@ function ServiceStep({ services, selected, onSelect, query, onQueryChange, isDar
                     </span>
                   )}
                   {s.price != null && (
-                    <span className="text-xs font-bold text-primary-600 dark:text-primary-400">{fmtPrice(s.price)}</span>
+                    <span className="text-xs font-bold text-primary-600">{fmtPrice(s.price)}</span>
                   )}
                 </div>
               </div>
@@ -573,7 +573,7 @@ function DateStep({ selected, onSelect, calMonth, calDays, onPrevMonth, onNextMo
       </div>
 
       {selected && (
-        <div className="p-3 rounded-xl text-sm font-semibold text-center text-primary-600 dark:text-primary-400"
+        <div className="p-3 rounded-xl text-sm font-semibold text-center text-primary-600"
           style={{ background: isDark ? 'rgba(91,62,234,0.1)' : '#f0f0ff' }}>
           {format(new Date(selected + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
         </div>
@@ -593,7 +593,7 @@ function TimeStep({ slots, selected, onSelect, loading, error, freeformValue, on
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-sm text-amber-800 dark:text-amber-300">
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-800">
           Could not load slots — enter a time manually below.
         </div>
       )}

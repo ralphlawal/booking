@@ -12,7 +12,7 @@ import { businessCurrencySymbol } from '../../utils/currency';
 function Toggle({ checked, onChange, disabled }) {
   return (
     <button type="button" onClick={() => !disabled && onChange(!checked)} disabled={disabled}
-      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-40 ${checked ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 disabled:opacity-40 ${checked ? 'bg-indigo-500' : 'bg-gray-300'}`}>
       <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
         style={{ transform: checked ? 'translateX(20px)' : 'translateX(2px)', left: 0 }} />
     </button>
@@ -27,7 +27,7 @@ function EmptyState({ icon, title, body, action }) {
   const Icon = icon;
   return (
     <div className="rounded-2xl p-12 text-center" style={{ background: 'var(--bam-surface)', border: '1px solid var(--bam-border)' }}>
-      <div className="mb-3 flex justify-center text-primary-600 dark:text-primary-400"><Icon className="w-9 h-9" strokeWidth={1.7} aria-hidden="true" /></div>
+      <div className="mb-3 flex justify-center text-primary-600"><Icon className="w-9 h-9" strokeWidth={1.7} aria-hidden="true" /></div>
       <p className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>{title}</p>
       {body && <p className="text-sm mt-1.5 mb-5" style={{ color: 'var(--bam-text-muted)' }}>{body}</p>}
       {action}
@@ -350,7 +350,7 @@ function MembershipsTab({ border, isDark }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-bold" style={{ color: 'var(--bam-text)' }}>{p.name}</p>
-                      {!p.is_active && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Inactive</span>}
+                      {!p.is_active && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Inactive</span>}
                       {!!p.priority_booking && <span className="text-[10px] px-2 py-0.5 rounded-full text-amber-600" style={{ background: 'rgba(245,158,11,.08)' }}>Priority booking</span>}
                     </div>
                     <p className="text-xl font-extrabold" style={{ color: '#6366f1' }}>
@@ -689,10 +689,10 @@ function GiftCardsTab({ border, isDark }) {
 
   const filtered = cards.filter(c => filter === 'all' || c.status === filter);
   const STATUS_BADGE = {
-    active:   'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600',
-    redeemed: 'bg-gray-100 dark:bg-gray-800 text-gray-500',
-    expired:  'bg-amber-50 dark:bg-amber-900/20 text-amber-600',
-    cancelled:'bg-red-50 dark:bg-red-900/20 text-red-500',
+    active:   'bg-emerald-50 text-emerald-600',
+    redeemed: 'bg-gray-100 text-gray-500',
+    expired:  'bg-amber-50 text-amber-600',
+    cancelled:'bg-red-50 text-red-500',
   };
 
   const totalActive = cards.filter(c => c.status === 'active').length;

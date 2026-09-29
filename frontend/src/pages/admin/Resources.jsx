@@ -121,13 +121,13 @@ function ResourceCard({ resource, onEdit, onDelete, border, isDark }) {
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{resource.name}</h3>
             {!resource.is_active && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Inactive</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Inactive</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs capitalize" style={{ color: 'var(--bam-text-muted)' }}>{resource.type}</span>
             {resource.quantity > 1 && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
                 ×{resource.quantity} units
               </span>
             )}
@@ -153,7 +153,7 @@ function ResourceCard({ resource, onEdit, onDelete, border, isDark }) {
             <EditIcon className="w-4 h-4" />
           </button>
           <button onClick={handleDelete}
-            className={`p-1.5 rounded-lg text-xs font-bold transition-all ${confirmDelete ? 'bg-red-100 dark:bg-red-900/30 text-red-600 px-2.5' : ''}`}
+            className={`p-1.5 rounded-lg text-xs font-bold transition-all ${confirmDelete ? 'bg-red-100 text-red-600 px-2.5' : ''}`}
             style={!confirmDelete ? { color: 'var(--bam-text-faint)' } : {}}
             onBlur={() => setTimeout(() => setConfirmDelete(false), 300)}>
             {confirmDelete ? 'Confirm?' : <TrashIcon className="w-4 h-4" />}
@@ -226,7 +226,7 @@ export default function Resources() {
 
       {/* Info banner */}
       <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.2)' }}>
-        <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary-600 dark:text-primary-400" strokeWidth={1.8} aria-hidden="true" />
+        <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary-600" strokeWidth={1.8} aria-hidden="true" />
         <div>
           <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>How resources work</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>
@@ -241,7 +241,7 @@ export default function Resources() {
         </div>
       ) : resources.length === 0 ? (
         <div className="card p-12 text-center">
-          <Package className="w-9 h-9 mx-auto mb-3 text-primary-600 dark:text-primary-400" strokeWidth={1.7} aria-hidden="true" />
+          <Package className="w-9 h-9 mx-auto mb-3 text-primary-600" strokeWidth={1.7} aria-hidden="true" />
           <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No resources yet</p>
           <p className="text-sm mt-1 mb-5" style={{ color: 'var(--bam-text-muted)' }}>
             Add your rooms, chairs, and equipment to start preventing double-booking
@@ -334,7 +334,7 @@ export default function Resources() {
 function Toggle({ checked, onChange }) {
   return (
     <button type="button" onClick={() => onChange(!checked)}
-      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'}`}>
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary-600' : 'bg-gray-300'}`}>
       <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
         style={{ transform: checked ? 'translateX(20px)' : 'translateX(2px)', left: 0 }} />
     </button>

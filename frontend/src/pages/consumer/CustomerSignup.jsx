@@ -96,7 +96,7 @@ export default function CustomerSignup() {
 
             {phase === 'otp' ? (
               <form onSubmit={submitOtp} className="space-y-3">
-                <p className="text-sm text-gray-500">Enter the 6-digit code we sent to <span className="font-semibold text-gray-700 dark:text-gray-200">{form.email}</span>.</p>
+                <p className="text-sm text-gray-500">Enter the 6-digit code we sent to <span className="font-semibold text-gray-700">{form.email}</span>.</p>
                 <input
                   className="input text-center text-2xl tracking-[0.5em] font-mono"
                   inputMode="numeric" maxLength={6} autoFocus placeholder="••••••"
@@ -107,7 +107,7 @@ export default function CustomerSignup() {
                   {loading ? <Spinner /> : 'Verify & continue →'}
                 </button>
                 <p className="text-center text-sm text-gray-500">
-                  Didn’t get it? <button type="button" onClick={resend} className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">Resend code</button>
+                  Didn’t get it? <button type="button" onClick={resend} className="text-primary-600 font-semibold hover:underline">Resend code</button>
                 </p>
               </form>
             ) : (
@@ -149,20 +149,20 @@ export default function CustomerSignup() {
 
             <p className="text-center text-xs leading-5 text-gray-400">
               By creating an account, you agree to BookAm’s{' '}
-              <Link to="/legal/terms" className="text-primary-600 dark:text-primary-400 hover:underline">Terms</Link>{' '}
+              <Link to="/legal/terms" className="text-primary-600 hover:underline">Terms</Link>{' '}
               and{' '}
-              <Link to="/legal/privacy" className="text-primary-600 dark:text-primary-400 hover:underline">Privacy Policy</Link>.
+              <Link to="/legal/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>.
             </p>
 
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-center text-sm text-gray-500">
               Already have an account?{' '}
-              <Link to="/customer/login" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
+              <Link to="/customer/login" className="text-primary-600 font-semibold hover:underline">
                 Sign in
               </Link>
             </p>
             <p className="text-center text-xs text-gray-400">
               Are you a business owner?{' '}
-              <Link to="/admin/register" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+              <Link to="/admin/register" className="text-gray-500 hover:text-gray-700">
                 Create a business account
               </Link>
             </p>

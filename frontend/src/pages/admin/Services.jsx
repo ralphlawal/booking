@@ -213,7 +213,7 @@ function ServiceForm({ initial, resources, onSave, onClose, isDark, border }) {
             {resources.filter(r => r.is_active).map(r => {
               const sel = (form.resource_ids || []).includes(r.id);
               return (
-                <label key={r.id} className={`flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${sel ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                <label key={r.id} className={`flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${sel ? 'border-primary-500 bg-primary-50' : ''}`}
                   style={!sel ? { border: `1px solid ${border}`, background: 'var(--bam-surface-soft)' } : {}}>
                   <input type="checkbox" className="w-4 h-4 accent-primary-600" checked={sel} onChange={() => toggleResource(r.id)} />
                   <div className="min-w-0">
@@ -261,28 +261,28 @@ function ServiceCard({ svc, onEdit, onDuplicate, onToggleActive, onToggleOnline,
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{svc.name}</h3>
             {!svc.is_active && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Archived</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Archived</span>
             )}
             {!!svc.is_active && !svc.online_booking_enabled && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">Staff only</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Staff only</span>
             )}
             {!!svc.is_active && svc.online_booking_enabled && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400">Online ✓</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Online ✓</span>
             )}
           </div>
           {svc.description && <p className="text-xs mb-2 line-clamp-2" style={{ color: 'var(--bam-text-muted)' }}>{svc.description}</p>}
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="font-bold text-base text-primary-600 dark:text-primary-400">{SYM}{parseFloat(svc.price || 0).toFixed(2)}</span>
+            <span className="font-bold text-base text-primary-600">{SYM}{parseFloat(svc.price || 0).toFixed(2)}</span>
             <span className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{svc.duration_minutes} min</span>
             {svc.buffer_time > 0 && <span className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>+{svc.buffer_time}m buffer</span>}
             {!!svc.deposit_required && svc.deposit_amount > 0 && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                 🔒 {SYM}{parseFloat(svc.deposit_amount).toFixed(0)} deposit
               </span>
             )}
             {parseInt(svc.max_group_size) > 1 && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
                 Up to {svc.max_group_size} people
               </span>
             )}
@@ -549,7 +549,7 @@ export default function Services() {
 function Toggle({ checked, onChange }) {
   return (
     <button type="button" onClick={() => onChange(!checked)}
-      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'}`}>
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary-600' : 'bg-gray-300'}`}>
       <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5.5 left-0' : 'left-0.5'}`} style={{ transform: checked ? 'translateX(20px)' : 'translateX(0)' }} />
     </button>
   );

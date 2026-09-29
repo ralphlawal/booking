@@ -26,7 +26,7 @@ function StarPicker({ value, onChange }) {
         >
           <Star
             className={`w-7 h-7 transition-colors ${
-              s <= (hovered || value) ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600'
+              s <= (hovered || value) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'
             }`}
           />
         </button>
@@ -59,8 +59,8 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[80] flex items-end sm:items-center justify-center p-4">
       <div className="mobile-safe-sheet w-full max-w-sm p-6 animate-slide-up">
-        <h2 className="font-bold text-lg text-gray-900 dark:text-white mb-1">Leave a review</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+        <h2 className="font-bold text-lg text-gray-900 mb-1">Leave a review</h2>
+        <p className="text-sm text-gray-500 mb-5">
           Rate your experience at <strong>{booking.business_name}</strong>
         </p>
         <form onSubmit={submit} className="space-y-4">
@@ -315,13 +315,13 @@ export default function ConsumerProfile() {
   return (
     <div className="app-page animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <BackButton fallback="/customer/dashboard">Back</BackButton>
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-6 w-auto object-contain" />
           </Link>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors px-1">
+          <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-red-600 transition-colors px-1">
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Sign out</span>
           </button>
@@ -350,12 +350,12 @@ export default function ConsumerProfile() {
             </button>
             <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleAvatarUpload} />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">{consumer.full_name}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{consumer.full_name}</h1>
           <p className="text-sm text-gray-400">{consumer.email}</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 mb-5">
+        <div className="flex border-b border-gray-200 mb-5">
           {[
             { id: 'profile',  label: 'Profile'   },
             { id: 'reviews',  label: 'Reviews'   },
@@ -368,8 +368,8 @@ export default function ConsumerProfile() {
               onClick={() => setTab(t.id)}
               className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 tab === t.id
-                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               {t.label}
@@ -381,19 +381,19 @@ export default function ConsumerProfile() {
           <div className="max-w-3xl mx-auto space-y-4">
           <div className="app-panel p-6">
             <div className="grid gap-3 sm:grid-cols-2 mb-5">
-              <div className="rounded-lg border border-primary-100 dark:border-primary-800 bg-primary-50/70 dark:bg-primary-900/20 p-4">
+              <div className="rounded-lg border border-primary-100 bg-primary-50/70 p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Users className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                  <p className="font-bold text-sm text-gray-900 dark:text-white">Family & friends</p>
+                  <Users className="w-4 h-4 text-primary-600" />
+                  <p className="font-bold text-sm text-gray-900">Family & friends</p>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Save people you book for often, then reuse their details faster.</p>
+                <p className="text-xs text-gray-500">Save people you book for often, then reuse their details faster.</p>
               </div>
-              <div className="rounded-lg border border-green-100 dark:border-green-800 bg-green-50/70 dark:bg-green-900/20 p-4">
+              <div className="rounded-lg border border-green-100 bg-green-50/70 p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <p className="font-bold text-sm text-gray-900 dark:text-white">Appointment updates</p>
+                  <Bell className="w-4 h-4 text-green-600" />
+                  <p className="font-bold text-sm text-gray-900">Appointment updates</p>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Keep reminders enabled so you never miss confirmations, changes, or messages.</p>
+                <p className="text-xs text-gray-500">Keep reminders enabled so you never miss confirmations, changes, or messages.</p>
               </div>
             </div>
             <form onSubmit={saveProfile} className="space-y-4">
@@ -413,7 +413,7 @@ export default function ConsumerProfile() {
                   <Mail className="w-3.5 h-3.5" /> Email
                 </label>
                 <input className="input opacity-60 cursor-not-allowed" value={consumer.email} disabled />
-                <button type="button" onClick={() => setTab('security')} className="text-xs text-primary-600 dark:text-primary-400 hover:underline mt-1 font-medium">
+                <button type="button" onClick={() => setTab('security')} className="text-xs text-primary-600 hover:underline mt-1 font-medium">
                   Change email →
                 </button>
               </div>
@@ -445,7 +445,7 @@ export default function ConsumerProfile() {
                     onClick={detectLocation}
                     disabled={detectingLoc}
                     title="Detect my location"
-                    className="flex-shrink-0 px-3 rounded-lg border border-gray-200 dark:border-gray-700 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
+                    className="flex-shrink-0 px-3 rounded-lg border border-gray-200 text-primary-600 hover:bg-primary-50 transition-colors disabled:opacity-50"
                   >
                     {detectingLoc
                       ? <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
@@ -466,8 +466,8 @@ export default function ConsumerProfile() {
           <div className="app-panel p-6">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h2 className="font-bold text-gray-900 dark:text-white">Family & friends</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Keep details handy for people you book services for.</p>
+                <h2 className="font-bold text-gray-900">Family & friends</h2>
+                <p className="text-xs text-gray-500">Keep details handy for people you book services for.</p>
               </div>
               <Users className="w-5 h-5 text-primary-500" />
             </div>
@@ -502,15 +502,15 @@ export default function ConsumerProfile() {
               ) : familyMembers.map(member => (
                 <div key={member.id} className="app-list-row p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{member.full_name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <p className="text-sm font-bold text-gray-900 truncate">{member.full_name}</p>
+                    <p className="text-xs text-gray-500 truncate">
                       {[member.relationship, member.phone].filter(Boolean).join(' · ') || 'Saved profile'}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => removeFamilyMember(member.id)}
-                    className="text-xs font-semibold text-red-500 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="text-xs font-semibold text-red-500 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50"
                   >
                     Remove
                   </button>
@@ -526,9 +526,9 @@ export default function ConsumerProfile() {
             <div className="app-panel p-6 max-w-3xl mx-auto">
               <div className="flex items-center gap-2 mb-1">
                 <Gift className="w-5 h-5 text-primary-600" />
-                <h2 className="font-bold text-gray-900 dark:text-white text-lg">Refer &amp; Earn</h2>
+                <h2 className="font-bold text-gray-900 text-lg">Refer &amp; Earn</h2>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              <p className="text-sm text-gray-500 mb-5">
                 Share your referral code with friends. Every time someone signs up using your code, you earn a credit — redeemable for discounts on future bookings.
               </p>
 
@@ -536,9 +536,9 @@ export default function ConsumerProfile() {
                 <div className="text-center py-4 text-gray-400 text-sm">Loading your referral code…</div>
               ) : (
                 <>
-                  <div className="bg-primary-50 dark:bg-primary-900/20 border-2 border-dashed border-primary-300 dark:border-primary-700 rounded-lg p-5 text-center mb-4">
-                    <p className="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-1">Your referral code</p>
-                    <p className="text-3xl font-black text-primary-700 dark:text-primary-300 tracking-widest font-mono">{referral.referral_code}</p>
+                  <div className="bg-primary-50 border-2 border-dashed border-primary-300 rounded-lg p-5 text-center mb-4">
+                    <p className="text-xs font-semibold text-primary-600 uppercase tracking-widest mb-1">Your referral code</p>
+                    <p className="text-3xl font-black text-primary-700 tracking-widest font-mono">{referral.referral_code}</p>
                   </div>
                   <div className="flex gap-2 mb-4">
                     <button
@@ -564,10 +564,10 @@ export default function ConsumerProfile() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <Users className="w-5 h-5 text-primary-600 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{referral.referrals?.length || 0} friend{referral.referrals?.length !== 1 ? 's' : ''} referred</p>
+                      <p className="text-sm font-semibold text-gray-900">{referral.referrals?.length || 0} friend{referral.referrals?.length !== 1 ? 's' : ''} referred</p>
                       <p className="text-xs text-gray-500">{referral.credits || 0} credit{referral.credits !== 1 ? 's' : ''} earned</p>
                     </div>
                   </div>
@@ -576,8 +576,8 @@ export default function ConsumerProfile() {
                     <div className="mt-4 space-y-1.5">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Referral history</p>
                       {referral.referrals.map((r, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                          <span className="text-gray-700 dark:text-gray-300">{r.referred_name}</span>
+                        <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 last:border-0">
+                          <span className="text-gray-700">{r.referred_name}</span>
                           <span className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                         </div>
                       ))}
@@ -588,8 +588,8 @@ export default function ConsumerProfile() {
             </div>
 
             <div className="app-panel p-4 border-l-4 border-l-amber-400 max-w-3xl mx-auto">
-              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">How credits work</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs font-semibold text-gray-700">How credits work</p>
+              <p className="text-xs text-gray-500 mt-1">
                 Credits are being rolled out gradually. Once live, each credit will give you a discount on a future booking. Credits never expire.
               </p>
             </div>
@@ -602,24 +602,24 @@ export default function ConsumerProfile() {
               <div className="text-center py-8 text-gray-400">Loading…</div>
             ) : bookings.length === 0 ? (
               <div className="app-panel p-8 text-center lg:col-span-2">
-                <Star className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
-                <h3 className="font-bold text-gray-900 dark:text-white mb-1">No completed bookings</h3>
+                <Star className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+                <h3 className="font-bold text-gray-900 mb-1">No completed bookings</h3>
                 <p className="text-sm text-gray-400">Reviews are available after your appointment is completed</p>
                 <Link to="/explore" className="btn-primary text-sm mt-4 inline-flex">Explore services</Link>
               </div>
             ) : bookings.map(b => (
               <div key={b.id} className="app-list-row p-4 flex items-center gap-4">
-                <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 flex items-center justify-center">
                   {b.logo_url
                     ? <img src={b.logo_url} alt={b.business_name} className="w-full h-full object-cover" />
                     : <span className="text-lg font-bold text-primary-600">{b.business_name?.[0]}</span>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-gray-900 dark:text-white">{b.business_name}</p>
+                  <p className="font-bold text-sm text-gray-900">{b.business_name}</p>
                   <p className="text-xs text-gray-400">{b.service_name} · {b.booking_date}</p>
                 </div>
                 {reviewedIds.has(b.id) ? (
-                  <span className="text-xs text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+                  <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
                     <Star className="w-3.5 h-3.5 fill-green-500" /> Reviewed
                   </span>
                 ) : (
@@ -640,9 +640,9 @@ export default function ConsumerProfile() {
             {/* Change email */}
             <div className="flex items-center gap-2 mb-4">
               <Mail className="w-4 h-4 text-gray-500" />
-              <h2 className="font-bold text-gray-900 dark:text-white">Change Email</h2>
+              <h2 className="font-bold text-gray-900">Change Email</h2>
             </div>
-            <p className="text-xs text-gray-400 mb-4">Current: <strong className="text-gray-600 dark:text-gray-300">{consumer.email}</strong></p>
+            <p className="text-xs text-gray-400 mb-4">Current: <strong className="text-gray-600">{consumer.email}</strong></p>
             <form onSubmit={handleChangeEmail} className="space-y-3 mb-6">
               <div>
                 <label className="label">New email address</label>
@@ -671,10 +671,10 @@ export default function ConsumerProfile() {
               </button>
             </form>
 
-            <div className="border-t border-gray-100 dark:border-gray-800 pt-6 mb-5">
+            <div className="border-t border-gray-100 pt-6 mb-5">
               <div className="flex items-center gap-2 mb-5">
                 <Lock className="w-4 h-4 text-gray-500" />
-                <h2 className="font-bold text-gray-900 dark:text-white">Change Password</h2>
+                <h2 className="font-bold text-gray-900">Change Password</h2>
               </div>
             </div>
             <form onSubmit={changePassword} className="space-y-4">
@@ -694,18 +694,18 @@ export default function ConsumerProfile() {
                 {pwSaving ? 'Updating…' : 'Update password'}
               </button>
             </form>
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Sign out</p>
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <p className="text-sm font-semibold text-gray-700 mb-1">Sign out</p>
               <p className="text-xs text-gray-400 mb-3">This will sign you out of your current session.</p>
-              <button onClick={handleLogout} className="text-sm text-red-600 dark:text-red-400 font-medium hover:underline">
+              <button onClick={handleLogout} className="text-sm text-red-600 font-medium hover:underline">
                 Sign out
               </button>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="flex items-center gap-2 mb-2">
                 <Trash2 className="w-4 h-4 text-red-500" />
-                <p className="text-sm font-semibold text-red-600 dark:text-red-400">Delete account</p>
+                <p className="text-sm font-semibold text-red-600">Delete account</p>
               </div>
               <p className="text-xs text-gray-400 mb-3">
                 This permanently deletes your account and all saved preferences. Your past booking records will remain visible to businesses. This cannot be undone.
@@ -720,7 +720,7 @@ export default function ConsumerProfile() {
                 <button
                   onClick={handleDeleteAccount}
                   disabled={deletingAccount || deleteConfirm !== consumer.email}
-                  className="text-sm px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="text-sm px-4 py-2 rounded-lg bg-red-50 text-red-600 font-semibold border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {deletingAccount ? 'Deleting…' : 'Delete my account'}
                 </button>
@@ -734,8 +734,8 @@ export default function ConsumerProfile() {
 
             {/* Appearance */}
             <div className="app-panel p-5">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
                   {theme === 'dark' ? <Moon className="w-4 h-4 text-indigo-500" /> : <Sun className="w-4 h-4 text-amber-500" />}
                 </span>
                 Appearance
@@ -744,81 +744,81 @@ export default function ConsumerProfile() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => { if (theme !== 'light') toggleTheme(); }}
-                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <Sun className={`w-6 h-6 ${theme === 'light' ? 'text-amber-500' : 'text-gray-400'}`} />
-                  <span className={`text-sm font-semibold ${theme === 'light' ? 'text-amber-700 dark:text-amber-400' : 'text-gray-500'}`}>Light</span>
+                  <span className={`text-sm font-semibold ${theme === 'light' ? 'text-amber-700' : 'text-gray-500'}`}>Light</span>
                 </button>
                 <button
                   onClick={() => { if (theme !== 'dark') toggleTheme(); }}
-                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <Moon className={`w-6 h-6 ${theme === 'dark' ? 'text-indigo-500' : 'text-gray-400'}`} />
-                  <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-500'}`}>Dark</span>
+                  <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-indigo-700' : 'text-gray-500'}`}>Dark</span>
                 </button>
               </div>
             </div>
 
             {/* Notifications */}
             <div className="app-panel p-5">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <Bell className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center">
+                  <Bell className="w-4 h-4 text-green-600" />
                 </span>
                 Notifications
               </h3>
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              <div className="divide-y divide-gray-100">
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Push / browser alerts</p>
+                    <p className="text-sm font-semibold text-gray-900">Push / browser alerts</p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {browserPermission === 'granted' ? 'Active — you\'ll get alerts for bookings & messages' : 'Enable to receive booking alerts on this device'}
                     </p>
                   </div>
                   {browserPermission === 'granted' ? (
-                    <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full">On</span>
+                    <span className="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">On</span>
                   ) : (
-                    <button onClick={enablePush} className="text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
+                    <button onClick={enablePush} className="text-xs font-bold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors">
                       Enable
                     </button>
                   )}
                 </div>
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Email notifications</p>
+                    <p className="text-sm font-semibold text-gray-900">Email notifications</p>
                     <p className="text-xs text-gray-400 mt-0.5">Confirmations, reminders, receipts & dispute updates</p>
                   </div>
-                  <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full">On</span>
+                  <span className="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">On</span>
                 </div>
                 <div className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Service confirmations</p>
+                    <p className="text-sm font-semibold text-gray-900">Service confirmations</p>
                     <p className="text-xs text-gray-400 mt-0.5">Email 2h after your appointment asking if you were attended to</p>
                   </div>
-                  <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full">On</span>
+                  <span className="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">On</span>
                 </div>
               </div>
             </div>
 
             {/* Trust & Safety */}
             <div className="app-panel p-5">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-primary-100 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-primary-600" />
                 </span>
                 Trust & Safety
               </h3>
-              <div className="divide-y divide-gray-100 dark:divide-gray-800 text-sm text-gray-600 dark:text-gray-400">
+              <div className="divide-y divide-gray-100 text-sm text-gray-600">
                 <div className="py-3">
-                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Confirming service</p>
+                  <p className="font-semibold text-gray-900 mb-1">Confirming service</p>
                   <p className="text-xs">After your appointment ends, tap <strong>"Confirm received"</strong> on the booking card (or click the link in the email we send you). This releases payment to the business.</p>
                 </div>
                 <div className="py-3">
-                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Raising a dispute</p>
+                  <p className="font-semibold text-gray-900 mb-1">Raising a dispute</p>
                   <p className="text-xs">If there is an issue with a booking, use <strong>"Report issue"</strong> and include clear details. BookAm will review the information and may contact you or the business.</p>
                 </div>
                 <div className="py-3">
-                  <p className="font-semibold text-gray-900 dark:text-white mb-1">Cancellation refunds</p>
+                  <p className="font-semibold text-gray-900 mb-1">Cancellation refunds</p>
                   <p className="text-xs">Cancellation and refund eligibility depend on the business’s stated policy and the booking. Review the policy before you confirm a booking.</p>
                 </div>
               </div>
@@ -826,24 +826,51 @@ export default function ConsumerProfile() {
 
             {/* Help & Support */}
             <div className="app-panel p-5">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <HelpCircle className="w-4 h-4 text-blue-600" />
                 </span>
                 Help & Support
               </h3>
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              <div className="divide-y divide-gray-100">
                 {[
                   { label: 'Contact support', href: 'mailto:hello@bookam.business' },
                   { label: 'Privacy policy', href: '/legal/privacy' },
                   { label: 'Terms of service', href: '/legal/terms' },
                   { label: 'Cookie policy', href: '/legal/cookies' },
                 ].map(({ label, href }) => (
-                  <a key={label} href={href} className="flex items-center justify-between py-2.5 px-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+                  <a key={label} href={href} className="flex items-center justify-between py-2.5 px-1 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span className="text-sm font-medium text-gray-700">{label}</span>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </a>
                 ))}
+              </div>
+            </div>
+
+            {/* Follow BookAm */}
+            <div className="app-panel p-5">
+              <h3 className="font-bold text-gray-900 mb-3">Follow BookAm</h3>
+              <div className="flex gap-3">
+                <a
+                  href="https://x.com/getbookam"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:border-primary-300 hover:bg-primary-50"
+                  style={{ borderColor: 'var(--bam-border)', color: 'var(--bam-text-muted)' }}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.402 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.265 5.634 5.899-5.634Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  @getbookam
+                </a>
+                <a
+                  href="https://instagram.com/getbookam"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:border-pink-300 hover:bg-pink-50"
+                  style={{ borderColor: 'var(--bam-border)', color: 'var(--bam-text-muted)' }}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                  @getbookam
+                </a>
               </div>
             </div>
 
@@ -851,7 +878,7 @@ export default function ConsumerProfile() {
             <div className="app-panel p-4">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold text-sm border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-red-50 text-red-600 font-semibold text-sm border border-red-200 hover:bg-red-100 transition-colors"
               >
                 <LogOut className="w-4 h-4" /> Sign out
               </button>

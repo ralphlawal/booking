@@ -529,7 +529,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
         {/* Header */}
         <div className="flex items-start justify-between px-5 py-4 flex-shrink-0 border-b" style={{ borderColor }}>
           <div>
-            <p className="font-mono text-xs font-bold text-primary-600 dark:text-primary-400">{booking.reference_id}</p>
+            <p className="font-mono text-xs font-bold text-primary-600">{booking.reference_id}</p>
             <h2 className="font-bold text-base mt-1" style={{ color: 'var(--bam-text)' }}>{booking.customer_name}</h2>
           </div>
           <div className="flex items-center gap-2">
@@ -569,7 +569,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
                   <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--bam-text-faint)' }}>Service</p>
                   <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>{booking.service_name}</p>
                 </div>
-                <p className="text-xl font-black text-primary-600 dark:text-primary-400">{sym}{price.toFixed(2)}</p>
+                <p className="text-xl font-black text-primary-600">{sym}{price.toFixed(2)}</p>
               </div>
 
               {/* Customer */}
@@ -585,7 +585,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
                   <div className="min-w-0">
                     <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>{booking.customer_name}</p>
                     {booking.customer_phone && (
-                      <a href={`tel:${booking.customer_phone}`} className="text-xs text-primary-600 dark:text-primary-400 hover:underline block">
+                      <a href={`tel:${booking.customer_phone}`} className="text-xs text-primary-600 hover:underline block">
                         {booking.customer_phone}
                       </a>
                     )}
@@ -596,7 +596,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
                     )}
                   </div>
                   {booking.consumer_no_show_count > 0 && (
-                    <span className="text-xs font-bold px-2 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 flex-shrink-0">
+                    <span className="text-xs font-bold px-2 py-1 rounded-lg bg-red-100 text-red-700 flex-shrink-0">
                       ⚠ {booking.consumer_no_show_count} no-show
                     </span>
                   )}
@@ -613,9 +613,9 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
 
               {/* Cancel reason */}
               {booking.cancelled_reason && (
-                <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
+                <div className="p-4 rounded-2xl bg-red-50 border border-red-200">
                   <p className="text-xs font-bold uppercase tracking-wide mb-1 text-red-500">Cancellation reason</p>
-                  <p className="text-sm text-red-700 dark:text-red-300">{booking.cancelled_reason}</p>
+                  <p className="text-sm text-red-700">{booking.cancelled_reason}</p>
                 </div>
               )}
 

@@ -149,8 +149,8 @@ function CustomerMomentum({ bookings, upcoming, prefs, loyalty, onRebook }) {
       <div className="app-panel p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3 mb-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400">For you</p>
-            <h2 className="font-bold text-gray-900 dark:text-white">Quick wins</h2>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary-600">For you</p>
+            <h2 className="font-bold text-gray-900">Quick wins</h2>
           </div>
           <Gift className="w-5 h-5 text-primary-500" />
         </div>
@@ -159,16 +159,16 @@ function CustomerMomentum({ bookings, upcoming, prefs, loyalty, onRebook }) {
             <Link to="/customer/messages" className="app-list-row p-3 flex items-center gap-3">
               <CalendarClock className="w-5 h-5 text-primary-500 flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">Next: {nextBooking.service_name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{fmtDate(nextBooking.booking_date)} at {nextBooking.start_time?.slice(0, 5)}</p>
+                <p className="text-sm font-bold text-gray-900 truncate">Next: {nextBooking.service_name}</p>
+                <p className="text-xs text-gray-500 truncate">{fmtDate(nextBooking.booking_date)} at {nextBooking.start_time?.slice(0, 5)}</p>
               </div>
             </Link>
           ) : (
             <Link to="/explore" className="app-list-row p-3 flex items-center gap-3">
               <Search className="w-5 h-5 text-primary-500 flex-shrink-0" />
               <div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">Find something available today</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Browse local services near you</p>
+                <p className="text-sm font-bold text-gray-900">Find something available today</p>
+                <p className="text-xs text-gray-500">Browse local services near you</p>
               </div>
             </Link>
           )}
@@ -177,16 +177,16 @@ function CustomerMomentum({ bookings, upcoming, prefs, loyalty, onRebook }) {
             <button key={getBusinessKey(item)} onClick={() => onRebook(item)} className="app-list-row p-3 flex items-center gap-3 w-full text-left">
               <Flame className="w-5 h-5 text-orange-500 flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">Book again with {item.business_name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.visits || item.total} booking{(item.visits || item.total) === 1 ? '' : 's'} so far</p>
+                <p className="text-sm font-bold text-gray-900 truncate">Book again with {item.business_name}</p>
+                <p className="text-xs text-gray-500 truncate">{item.visits || item.total} booking{(item.visits || item.total) === 1 ? '' : 's'} so far</p>
               </div>
             </button>
           )) : (
             <Link to="/match" className="app-list-row p-3 flex items-center gap-3">
               <Zap className="w-5 h-5 text-primary-500 flex-shrink-0" />
               <div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">Let Smart Match choose</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Fastest, best-rated, or best price</p>
+                <p className="text-sm font-bold text-gray-900">Let Smart Match choose</p>
+                <p className="text-xs text-gray-500">Fastest, best-rated, or best price</p>
               </div>
             </Link>
           )}
@@ -214,7 +214,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
   return (
     <div className="app-list-row p-4 h-full">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 flex items-center justify-center">
           {booking.logo_url ? (
             <img src={booking.logo_url} alt={booking.business_name} className="w-full h-full object-cover" />
           ) : (
@@ -224,14 +224,14 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 dark:text-white text-sm">{booking.business_name}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{booking.service_name}</p>
+              <h3 className="font-bold text-gray-900 text-sm">{booking.business_name}</h3>
+              <p className="text-xs text-gray-500">{booking.service_name}</p>
             </div>
             <span className={`badge ${STATUS_STYLES[booking.status] || 'badge-pending'} max-w-[9.5rem] justify-center text-center`}>
               {STATUS_LABELS[booking.status] || booking.status}
             </span>
           </div>
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
+          <div className="mt-2 text-xs text-gray-500 space-y-0.5">
             <p className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 flex-shrink-0" />{fmtDate(booking.booking_date)}</p>
             <p className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 flex-shrink-0" />{booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}</p>
             {booking.price > 0 && (
@@ -245,7 +245,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
             )}
             {booking.location && <p className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{booking.location}</p>}
             {!past && booking.business_phone && (
-              <a href={`tel:${booking.business_phone}`} className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 hover:underline">
+              <a href={`tel:${booking.business_phone}`} className="flex items-center gap-1.5 text-primary-600 hover:underline">
                 <Phone className="w-3.5 h-3.5 flex-shrink-0" />{booking.business_phone}
               </a>
             )}
@@ -254,12 +254,12 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
 
           {/* Trust status indicators */}
           {booking.service_confirmed && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-green-600 font-medium">
               <ShieldCheck className="w-3.5 h-3.5" /> Service confirmed
             </div>
           )}
           {booking.has_dispute && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 font-medium">
               <AlertTriangle className="w-3.5 h-3.5" />
               Dispute {booking.dispute_status === 'open' ? 'under review' : booking.dispute_status === 'resolved_refunded' ? '— refund issued' : '— resolved'}
             </div>
@@ -272,7 +272,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         {canConfirm && (
           <button
             onClick={() => onConfirmService(booking)}
-            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-semibold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-green-50 text-green-700 border border-green-200 font-semibold hover:bg-green-100 transition-colors"
           >
             <ShieldCheck className="w-3.5 h-3.5" /> Confirm received
           </button>
@@ -280,7 +280,7 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
         {canDispute && (
           <button
             onClick={() => onDispute(booking)}
-            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+            className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 text-sm px-3 py-2 rounded-lg bg-red-50 text-red-600 border border-red-200 font-semibold hover:bg-red-100 transition-colors"
           >
             <AlertTriangle className="w-3.5 h-3.5" /> Report issue
           </button>
@@ -308,13 +308,13 @@ function BookingCard({ booking, onRebook, onCancel, onReview, onConfirmService, 
               <>
                 <button
                   onClick={() => onReschedule(booking)}
-                  className="text-sm px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-1"
+                  className="text-sm px-3 py-2 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1"
                 >
                   <CalendarClock className="w-3.5 h-3.5" /> Reschedule
                 </button>
                 <button
                   onClick={() => onCancel(booking)}
-                  className="text-sm px-3 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -341,7 +341,7 @@ function StarPicker({ value, onChange }) {
           className="p-0.5 transition-transform hover:scale-110"
         >
           <Star
-            className={`w-7 h-7 transition-colors ${(hover || value) >= n ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
+            className={`w-7 h-7 transition-colors ${(hover || value) >= n ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`}
           />
         </button>
       ))}
@@ -373,20 +373,20 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
       <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
-          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Leave a review</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <h2 className="font-bold text-gray-900 text-lg">Leave a review</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+        <p className="text-sm text-gray-500 mb-4">
+          <strong className="text-gray-700">{booking.service_name}</strong> at {booking.business_name}
         </p>
         <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Your rating</p>
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Your rating</p>
           <StarPicker value={rating} onChange={setRating} />
         </div>
         <div className="mb-5">
-          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Comment (optional)</p>
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Comment (optional)</p>
           <textarea
             className="input resize-none text-sm"
             rows={3}
@@ -428,20 +428,20 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
       <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
-          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Cancel booking?</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <h2 className="font-bold text-gray-900 text-lg">Cancel booking?</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+        <p className="text-sm text-gray-500 mb-1">
+          <strong className="text-gray-700">{booking.service_name}</strong> at {booking.business_name}
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm text-gray-500 mb-4">
           {fmtDate(booking.booking_date)} · {booking.start_time?.slice(0, 5)}
         </p>
 
         {refundInfo ? (
-          <div className={`rounded-lg p-3 mb-5 text-sm ${refundInfo.color === 'green' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'}`}>
+          <div className={`rounded-lg p-3 mb-5 text-sm ${refundInfo.color === 'green' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
             <p className="font-bold">{refundInfo.label}: £{refundInfo.amount.toFixed(2)}</p>
             <p className="text-xs mt-0.5 opacity-80">
               {refundInfo.percent === 100
@@ -450,11 +450,11 @@ function CancelModal({ booking, onConfirm, onClose, cancelling }) {
             </p>
           </div>
         ) : isPaid && price > 0 ? (
-          <div className="rounded-lg p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg p-3 mb-5 text-xs bg-gray-50 text-gray-500">
             No refund — this booking cannot be refunded at this stage.
           </div>
         ) : (
-          <div className="rounded-lg p-3 mb-5 text-xs bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg p-3 mb-5 text-xs bg-gray-50 text-gray-500">
             No payment was taken for this booking.
           </div>
         )}
@@ -479,18 +479,18 @@ function ConfirmServiceModal({ booking, onConfirm, onClose, confirming }) {
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
       <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
-          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Confirm service received?</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <h2 className="font-bold text-gray-900 text-lg">Confirm service received?</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+        <p className="text-sm text-gray-500 mb-1">
+          <strong className="text-gray-700">{booking.service_name}</strong> at {booking.business_name}
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm text-gray-500 mb-4">
           {fmtDate(booking.booking_date)} · {booking.start_time?.slice(0, 5)}
         </p>
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-5 text-xs text-green-700 dark:text-green-400">
+        <div className="bg-green-50 rounded-lg p-3 mb-5 text-xs text-green-700">
           By confirming, you let us know the service was completed as expected. This helps us release payment to the business and keeps your booking history accurate.
         </div>
         <div className="flex gap-3">
@@ -540,17 +540,17 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
       <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-4">
-          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Raise a dispute</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <h2 className="font-bold text-gray-900 text-lg">Raise a dispute</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name} · {fmtDate(booking.booking_date)}
+        <p className="text-sm text-gray-500 mb-4">
+          <strong className="text-gray-700">{booking.service_name}</strong> at {booking.business_name} · {fmtDate(booking.booking_date)}
         </p>
         <div className="space-y-3 mb-5">
           <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Reason</label>
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Reason</label>
             <select
               className="input text-sm"
               value={reason}
@@ -561,7 +561,7 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Additional details (optional)</label>
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Additional details (optional)</label>
             <textarea
               className="input resize-none text-sm"
               rows={3}
@@ -572,7 +572,7 @@ function DisputeModal({ booking, consumer, onClose, onSubmitted }) {
             />
           </div>
         </div>
-        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 mb-5 text-xs text-amber-700 dark:text-amber-400">
+        <div className="bg-amber-50 rounded-lg p-3 mb-5 text-xs text-amber-700">
           Our team will review your dispute within 48 hours. If valid, a full refund will be issued to your original payment method.
         </div>
         <div className="flex gap-3">
@@ -613,29 +613,29 @@ function RescheduleModal({ booking, onClose }) {
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-black/50 animate-fade-in" onClick={onClose}>
       <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="font-bold text-gray-900 dark:text-white text-lg">Request Reschedule</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+          <h2 className="font-bold text-gray-900 text-lg">Request Reschedule</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
         <form onSubmit={submit} className="p-5 space-y-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            <strong className="text-gray-700 dark:text-gray-300">{booking.service_name}</strong> at {booking.business_name}
+          <p className="text-sm text-gray-500">
+            <strong className="text-gray-700">{booking.service_name}</strong> at {booking.business_name}
           </p>
           <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Preferred date *</label>
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Preferred date *</label>
             <input type="date" className="input text-sm" required value={form.preferred_date} onChange={set('preferred_date')} min={new Date().toISOString().split('T')[0]} />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Preferred time (optional)</label>
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Preferred time (optional)</label>
             <input type="time" className="input text-sm" value={form.preferred_time} onChange={set('preferred_time')} />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-1 block">Message (optional)</label>
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Message (optional)</label>
             <textarea className="input resize-none text-sm" rows={2} placeholder="Any specific preferences or notes…" value={form.message} onChange={set('message')} maxLength={300} />
           </div>
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-xs text-blue-700 dark:text-blue-400">
+          <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
             This sends a request to the business — they'll confirm the new time directly with you.
           </div>
           <div className="flex gap-3">
@@ -655,7 +655,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
   return (
     <div className="app-panel p-4">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+        <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-primary-50 flex items-center justify-center">
           {pref.logo_url ? (
             <img src={pref.logo_url} alt={pref.business_name} className="w-full h-full object-cover" />
           ) : (
@@ -663,9 +663,9 @@ function PreferenceCard({ pref, onRemove, onBook }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm">{pref.business_name}</h3>
+          <h3 className="font-bold text-gray-900 text-sm">{pref.business_name}</h3>
           {pref.service_name && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500">
               Usual: {pref.service_name}
               {pref.price > 0 && ` · £${parseFloat(pref.price).toFixed(0)}`}
             </p>
@@ -682,7 +682,7 @@ function PreferenceCard({ pref, onRemove, onBook }) {
         </button>
         <button
           onClick={() => onRemove(pref.business_id)}
-          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-500 transition-colors"
+          className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -860,10 +860,10 @@ export default function CustomerDashboard() {
   return (
     <div className="app-page animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-1">
 
@@ -871,7 +871,7 @@ export default function CustomerDashboard() {
             <div className="relative" ref={notifRef}>
               <button
                 onClick={openNotifications}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative"
                 title="Notifications"
               >
                 <Bell className="w-4 h-4 text-gray-500" />
@@ -880,13 +880,13 @@ export default function CustomerDashboard() {
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-                    <p className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</p>
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="font-semibold text-sm text-gray-900">Notifications</p>
                     {browserPermission !== 'granted' && (
                       <button
                         onClick={enableBrowserNotifications}
-                        className="mt-2 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+                        className="mt-2 text-xs font-semibold text-primary-600 hover:underline"
                       >
                         Enable phone/browser alerts
                       </button>
@@ -895,12 +895,12 @@ export default function CustomerDashboard() {
                   {notifications.length === 0 ? (
                     <div className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet</div>
                   ) : (
-                    <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-80 overflow-y-auto">
+                    <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
                       {notifications.map(n => (
-                        <div key={n.id} className={`px-4 py-3 ${!n.is_read ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{n.title}</p>
-                          {n.body && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{n.body}</p>}
-                          <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
+                        <div key={n.id} className={`px-4 py-3 ${!n.is_read ? 'bg-primary-50' : ''}`}>
+                          <p className="text-sm font-semibold text-gray-900">{n.title}</p>
+                          {n.body && <p className="text-xs text-gray-500 mt-0.5">{n.body}</p>}
+                          <p className="text-xs text-gray-300 mt-1">
                             {new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
@@ -913,7 +913,7 @@ export default function CustomerDashboard() {
 
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'dark'
@@ -921,12 +921,12 @@ export default function CustomerDashboard() {
                 : <Moon className="w-4 h-4 text-gray-500" />
               }
             </button>
-            <Link to="/customer/profile" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Profile settings">
+            <Link to="/customer/profile" className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Profile settings">
               <Settings className="w-4 h-4 text-gray-500" />
             </Link>
             <button
               onClick={() => { logout(); navigate('/'); }}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-red-500"
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />
@@ -943,10 +943,10 @@ export default function CustomerDashboard() {
           </div>
           <div className="min-w-0">
             <p className="page-kicker">Customer home</p>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">Hi, {consumer.full_name?.split(' ')[0]}</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 truncate no-underline max-w-[58vw] sm:max-w-none">{consumer.email}</p>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Hi, {consumer.full_name?.split(' ')[0]}</h1>
+            <p className="text-sm text-gray-500 truncate no-underline max-w-[58vw] sm:max-w-none">{consumer.email}</p>
             {bookings.length > 0 && (
-              <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mt-0.5">
+              <p className="text-xs text-primary-600 font-medium mt-0.5">
                 {bookings.length} booking{bookings.length !== 1 ? 's' : ''} total
               </p>
             )}
@@ -955,17 +955,17 @@ export default function CustomerDashboard() {
 
         {/* Email verification banner */}
         {!consumer.email_verified && (
-          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
+          <div className="mb-5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-              <p className="text-xs text-amber-800 dark:text-amber-300 font-medium truncate">
+              <Mail className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <p className="text-xs text-amber-800 font-medium truncate">
                 Please verify your email address — check your inbox.
               </p>
             </div>
             <button
               onClick={handleResendVerification}
               disabled={resending}
-              className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline whitespace-nowrap disabled:opacity-50"
+              className="text-xs font-semibold text-amber-700 hover:underline whitespace-nowrap disabled:opacity-50"
             >
               {resending ? 'Sending…' : 'Resend →'}
             </button>
@@ -1007,29 +1007,29 @@ export default function CustomerDashboard() {
 
         {/* "Confirm attendance" nudge — shown whenever there are past unconfirmed bookings */}
         {!loading && needsConfirmation.length > 0 && (
-          <div className="mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 sm:p-4">
+          <div className="mb-5 bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4">
             <div className="flex items-start gap-2.5 sm:gap-3">
-              <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <ShieldCheck className="w-4 h-4 text-amber-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm sm:text-base font-bold text-amber-800 dark:text-amber-300">
+                <p className="text-sm sm:text-base font-bold text-amber-800">
                   {needsConfirmation.length === 1 ? '1 booking needs your confirmation' : `${needsConfirmation.length} bookings need your confirmation`}
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 mb-2">
+                <p className="text-xs text-amber-700 mt-0.5 mb-2">
                   Please confirm whether the service was completed so we can finalise your booking and release payment to the business.
                 </p>
                 <div className="flex flex-col gap-2">
                   {needsConfirmation.map(b => (
-                    <div key={b.id} className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2 bg-white dark:bg-gray-900 rounded-lg p-3 border border-amber-100 dark:border-amber-800">
+                    <div key={b.id} className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2 bg-white rounded-lg p-3 border border-amber-100">
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-gray-800 dark:text-white truncate">{b.service_name} · {b.business_name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{fmtDate(b.booking_date)}</p>
+                        <p className="text-xs font-semibold text-gray-800 truncate">{b.service_name} · {b.business_name}</p>
+                        <p className="text-xs text-gray-500">{fmtDate(b.booking_date)}</p>
                       </div>
                       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-shrink-0">
                         <button
                           onClick={() => setDisputeTarget(b)}
-                          className="min-h-10 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          className="min-h-10 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
                         >
                           Didn't show
                         </button>
@@ -1051,29 +1051,29 @@ export default function CustomerDashboard() {
         {/* Quick actions */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 mb-5 sm:mb-6">
           <Link to="/match" className="app-list-row p-3 sm:p-4 flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-5 h-5 text-primary-600" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-sm text-gray-900 dark:text-white">Smart Match</p>
+              <p className="font-bold text-sm text-gray-900">Smart Match</p>
               <p className="text-xs text-gray-400">Best available</p>
             </div>
           </Link>
           <Link to="/explore" className="app-list-row p-3 sm:p-4 flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
-              <Search className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+              <Search className="w-5 h-5 text-indigo-600" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-sm text-gray-900 dark:text-white">Explore</p>
+              <p className="font-bold text-sm text-gray-900">Explore</p>
               <p className="text-xs text-gray-400">Browse services</p>
             </div>
           </Link>
           <Link to="/customer/messages" className="app-list-row p-3 sm:p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center flex-shrink-0">
-              <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+              <MessageSquare className="w-5 h-5 text-green-600" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-sm text-gray-900 dark:text-white">Messages</p>
+              <p className="font-bold text-sm text-gray-900">Messages</p>
               <p className="text-xs text-gray-400">Chat &amp; support</p>
             </div>
           </Link>
@@ -1088,12 +1088,12 @@ export default function CustomerDashboard() {
               className={`flex-1 min-w-0 py-2.5 px-2 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
                 tab === t.id
                   ? 'bg-primary-600 text-white shadow-primary'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
               {t.label}
               {t.count > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${tab === t.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${tab === t.id ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
                   {t.count}
                 </span>
               )}
@@ -1106,36 +1106,36 @@ export default function CustomerDashboard() {
             {[1, 2, 3].map((i) => (
               <div key={i} className="card p-4 animate-pulse" style={{ animationDelay: `${i * 80}ms` }}>
                 <div className="flex gap-3">
-                  <div className="w-11 h-11 rounded-lg bg-gray-200 dark:bg-gray-800 flex-shrink-0" />
+                  <div className="w-11 h-11 rounded-lg bg-gray-200 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded-full w-1/2" />
-                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-1/3" />
-                    <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full w-2/5" />
+                    <div className="h-4 bg-gray-200 rounded-full w-1/2" />
+                    <div className="h-3 bg-gray-100 rounded-full w-1/3" />
+                    <div className="h-3 bg-gray-100 rounded-full w-2/5" />
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-lg flex-1" />
-                  <div className="h-9 bg-gray-100 dark:bg-gray-800 rounded-lg w-24" />
+                  <div className="h-9 bg-gray-100 rounded-lg flex-1" />
+                  <div className="h-9 bg-gray-100 rounded-lg w-24" />
                 </div>
               </div>
             ))}
           </div>
         ) : bookingsError ? (
           <div className="text-center py-12">
-            <div className="w-14 h-14 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 rounded-lg bg-amber-50 flex items-center justify-center mx-auto mb-3">
               <AlertTriangle className="w-7 h-7 text-amber-400" />
             </div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Could not load your bookings</h3>
+            <h3 className="font-bold text-gray-900 mb-1">Could not load your bookings</h3>
             <p className="text-sm text-gray-500 mb-4">The server may be starting up — please try again in a moment.</p>
             <button onClick={loadData} className="btn-primary text-sm">Try again</button>
           </div>
         ) : tab === 'upcoming' ? (
           upcoming.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-14 h-14 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-lg bg-primary-50 flex items-center justify-center mx-auto mb-3">
                 <Calendar className="w-7 h-7 text-primary-400" />
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">No upcoming bookings</h3>
+              <h3 className="font-bold text-gray-900 mb-1">No upcoming bookings</h3>
               <p className="text-sm text-gray-500 mb-4">Book a service to get started</p>
               <Link to="/explore" className="btn-primary text-sm">Explore services</Link>
             </div>
@@ -1151,10 +1151,10 @@ export default function CustomerDashboard() {
         ) : tab === 'past' ? (
           past.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-14 h-14 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-lg bg-indigo-50 flex items-center justify-center mx-auto mb-3">
                 <Sparkles className="w-7 h-7 text-indigo-400" />
               </div>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">No past bookings yet</p>
+              <p className="text-gray-500 text-sm">No past bookings yet</p>
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
@@ -1168,10 +1168,10 @@ export default function CustomerDashboard() {
         ) : (
           prefs.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-14 h-14 rounded-lg bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-lg bg-rose-50 flex items-center justify-center mx-auto mb-3">
                 <Heart className="w-7 h-7 text-rose-400" />
               </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">No favourites yet</h3>
+              <h3 className="font-bold text-gray-900 mb-1">No favourites yet</h3>
               <p className="text-sm text-gray-500 mb-4">Businesses you book will appear here for one-tap rebooking</p>
               <Link to="/explore" className="btn-primary text-sm">Find services</Link>
             </div>

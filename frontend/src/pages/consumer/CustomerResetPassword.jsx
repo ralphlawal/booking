@@ -36,7 +36,7 @@ export default function CustomerResetPassword() {
     <div className="app-page bg-gradient-to-b from-primary-700 to-primary-950 flex items-center justify-center p-4">
       <div className="app-panel p-8 text-center max-w-sm w-full">
         <div className="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center mx-auto mb-4"><LinkIcon className="w-6 h-6 text-primary-400" /></div>
-        <p className="font-bold text-gray-900 dark:text-white mb-2">Invalid reset link</p>
+        <p className="font-bold text-gray-900 mb-2">Invalid reset link</p>
         <p className="text-sm text-gray-500 mb-5">
           This link is missing or has already been used. Request a new one.
         </p>

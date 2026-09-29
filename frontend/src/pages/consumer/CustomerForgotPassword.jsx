@@ -45,8 +45,8 @@ export default function CustomerForgotPassword() {
                   <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <p className="font-semibold text-gray-900 dark:text-white mb-1">Email sent!</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              <p className="font-semibold text-gray-900 mb-1">Email sent!</p>
+              <p className="text-sm text-gray-500 mb-5">
                 If <strong>{email}</strong> has an account, you'll get a reset link within a minute.
                 Check your spam folder too.
               </p>
@@ -82,8 +82,8 @@ export default function CustomerForgotPassword() {
               <button type="submit" disabled={loading} className="btn-primary w-full">
                 {loading ? <Spinner /> : 'Send reset link'}
               </button>
-              <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-                <Link to="/customer/login" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
+              <p className="text-center text-sm text-gray-500">
+                <Link to="/customer/login" className="text-primary-600 font-semibold hover:underline">
                   ← Back to sign in
                 </Link>
               </p>

@@ -128,28 +128,28 @@ export default function StaffReport() {
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+              <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   {['Staff member', 'Bookings', 'Revenue', 'Commission rate', 'Commission owed', ''].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody className="divide-y divide-gray-100">
                 {rows.map(row => (
                   <React.Fragment key={row.id}>
-                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900 dark:text-white">{row.name}</p>
+                        <p className="font-semibold text-gray-900">{row.name}</p>
                         {row.role && <p className="text-xs text-gray-400">{row.role}</p>}
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900 dark:text-white">{row.completed_bookings}</p>
+                        <p className="font-semibold text-gray-900">{row.completed_bookings}</p>
                         {parseInt(row.cancelled_bookings) > 0 && (
                           <p className="text-xs text-gray-400">{row.cancelled_bookings} cancelled</p>
                         )}
                       </td>
-                      <td className="px-4 py-3 font-bold text-primary-700 dark:text-primary-400">
+                      <td className="px-4 py-3 font-bold text-primary-700">
                         £{parseFloat(row.revenue).toFixed(2)}
                       </td>
                       <td className="px-4 py-3">
@@ -168,7 +168,7 @@ export default function StaffReport() {
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-700 dark:text-gray-300">
+                          <span className="text-gray-700">
                             {row.commission_type === 'percent' && `${row.commission_value}%`}
                             {row.commission_type === 'flat' && `£${parseFloat(row.commission_value).toFixed(2)}/booking`}
                             {row.commission_type === 'none' && <span className="text-gray-400">—</span>}
@@ -199,10 +199,10 @@ export default function StaffReport() {
                   </React.Fragment>
                 ))}
               </tbody>
-              <tfoot className="bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+              <tfoot className="bg-gray-50 border-t border-gray-100">
                 <tr>
-                  <td className="px-4 py-3 font-bold text-gray-700 dark:text-gray-300" colSpan={2}>Total</td>
-                  <td className="px-4 py-3 font-bold text-primary-700 dark:text-primary-400">£{totalRevenue.toFixed(2)}</td>
+                  <td className="px-4 py-3 font-bold text-gray-700" colSpan={2}>Total</td>
+                  <td className="px-4 py-3 font-bold text-primary-700">£{totalRevenue.toFixed(2)}</td>
                   <td className="px-4 py-3" />
                   <td className="px-4 py-3 font-bold text-amber-600">
                     {totalCommission > 0 ? `£${totalCommission.toFixed(2)}` : '—'}

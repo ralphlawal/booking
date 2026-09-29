@@ -133,8 +133,8 @@ function SnapshotCard({ label, value, sub, icon, accent, loading, trend }) {
         {trend != null && (
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
             trend >= 0
-              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-              : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+              ? 'bg-emerald-100 text-emerald-700'
+              : 'bg-red-100 text-red-700'
           }`}>
             {trend >= 0 ? '▲' : '▼'} {Math.abs(trend)}%
           </span>
@@ -188,9 +188,9 @@ function BookingCard({ booking, staffMap, onAction, loadingAction }) {
   }
 
   const TONE = {
-    primary: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border-primary-200 dark:border-primary-700/50',
-    emerald: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700/50',
-    red:     'bg-red-100    dark:bg-red-900/30    text-red-700    dark:text-red-400    border-red-200    dark:border-red-700/50',
+    primary: 'bg-primary-100 text-primary-700 border-primary-200',
+    emerald: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    red:     'bg-red-100       text-red-700       border-red-200   ',
   };
 
   return (
@@ -314,11 +314,11 @@ function InsightRow({ icon, text, tone = 'default' }) {
   const Icon = icon;
   const TONES = {
     default: 'bg-[--bam-surface-soft] text-[--bam-text-muted]',
-    green:   'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400',
-    amber:   'bg-amber-50   dark:bg-amber-900/20   text-amber-700   dark:text-amber-400',
-    blue:    'bg-blue-50    dark:bg-blue-900/20    text-blue-700    dark:text-blue-400',
-    violet:  'bg-violet-50  dark:bg-violet-900/20  text-violet-700  dark:text-violet-400',
-    red:     'bg-red-50     dark:bg-red-900/20     text-red-700     dark:text-red-400',
+    green:   'bg-emerald-50 text-emerald-700',
+    amber:   'bg-amber-50     text-amber-700  ',
+    blue:    'bg-blue-50       text-blue-700   ',
+    violet:  'bg-violet-50   text-violet-700 ',
+    red:     'bg-red-50         text-red-700    ',
   };
   return (
     <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium ${TONES[tone]}`}>
@@ -666,7 +666,7 @@ export default function Dashboard() {
             <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>
               Today's Schedule
             </h2>
-            <Link to="/admin/bookings" className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline">
+            <Link to="/admin/bookings" className="text-xs font-semibold text-primary-600 hover:underline">
               View all →
             </Link>
           </div>
@@ -786,19 +786,19 @@ export default function Dashboard() {
                 }}
               >
                 <div className="flex items-start gap-3">
-                  <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0 text-violet-600 dark:text-violet-300" aria-hidden="true" />
+                  <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0 text-violet-600" aria-hidden="true" />
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-violet-800 dark:text-violet-300">
+                    <p className="text-sm font-bold text-violet-800">
                       {gapSuggestion.gaps?.length
                         ? `${gapSuggestion.gaps.length} open day${gapSuggestion.gaps.length > 1 ? 's' : ''} this week`
                         : 'Tip from BookAm Intelligence'}
                     </p>
-                    <p className="text-xs leading-relaxed mt-1 text-violet-700 dark:text-violet-400">
+                    <p className="text-xs leading-relaxed mt-1 text-violet-700">
                       {plainRecommendation(gapSuggestion.suggestion)}
                     </p>
                     <div className="flex gap-2 mt-3">
                       <Link to="/admin/posts"
-                        className="text-xs font-semibold text-violet-700 dark:text-violet-300 bg-violet-100/80 dark:bg-violet-900/30 px-3 py-1.5 rounded-lg hover:bg-violet-200/80 dark:hover:bg-violet-900/50 transition-colors">
+                        className="text-xs font-semibold text-violet-700 bg-violet-100/80 px-3 py-1.5 rounded-lg hover:bg-violet-200/80 transition-colors">
                         Create promo →
                       </Link>
                     </div>
@@ -819,20 +819,20 @@ export default function Dashboard() {
                 }}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                  <p className="text-xs font-bold text-amber-800">
                     Profile {profilePct}% complete
                   </p>
                   <Link
                     to="/admin/settings"
-                    className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline"
+                    className="text-xs font-semibold text-amber-700 hover:underline"
                   >
                     Finish →
                   </Link>
                 </div>
-                <div className="h-1.5 rounded-full bg-amber-200 dark:bg-amber-800 overflow-hidden mb-2">
+                <div className="h-1.5 rounded-full bg-amber-200 overflow-hidden mb-2">
                   <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${profilePct}%` }} />
                 </div>
-                <p className="text-xs text-amber-700 dark:text-amber-500">
+                <p className="text-xs text-amber-700">
                   Missing: {profileMissing.join(', ')}
                 </p>
               </div>
@@ -937,14 +937,14 @@ export default function Dashboard() {
 function ChecklistRow({ done, label, linkTo, linkLabel }) {
   return (
     <div className="flex items-center gap-2.5">
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${done ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${done ? 'bg-emerald-500' : 'bg-gray-200'}`}>
         {done && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><polyline points="20 6 9 17 4 12" /></svg>}
       </div>
       <span className={`text-xs flex-1 ${done ? 'line-through' : ''}`} style={{ color: done ? 'var(--bam-text-faint)' : 'var(--bam-text-muted)' }}>
         {label}
       </span>
       {!done && linkTo && (
-        <Link to={linkTo} className="text-xs text-primary-600 dark:text-primary-400 font-semibold hover:underline flex-shrink-0">
+        <Link to={linkTo} className="text-xs text-primary-600 font-semibold hover:underline flex-shrink-0">
           {linkLabel} →
         </Link>
       )}

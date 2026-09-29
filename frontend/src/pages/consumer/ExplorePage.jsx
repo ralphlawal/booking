@@ -51,7 +51,7 @@ function StarRating({ rating }) {
   return (
     <span className="flex items-center gap-1 text-xs">
       <Star className={`w-3.5 h-3.5 ${r > 0 ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
-      <span className={r > 0 ? 'text-gray-600 dark:text-gray-400 font-medium' : 'text-gray-400'}>
+      <span className={r > 0 ? 'text-gray-600 font-medium' : 'text-gray-400'}>
         {r > 0 ? r.toFixed(1) : 'New'}
       </span>
     </span>
@@ -64,9 +64,9 @@ function BusinessCard({ biz, from }) {
     <Link
       to={`/profile/${biz.slug}`}
       state={{ from }}
-      className="group bg-white dark:bg-gray-900 rounded-lg border border-gray-200/90 dark:border-gray-800 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-xl flex flex-col min-w-0"
+      className="group bg-white rounded-lg border border-gray-200/90 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-xl flex flex-col min-w-0"
     >
-      <div className="h-40 sm:h-44 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative">
+      <div className="h-40 sm:h-44 bg-gray-100 flex items-center justify-center relative">
         {biz.logo_url ? (
           <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover" />
         ) : (
@@ -86,12 +86,12 @@ function BusinessCard({ biz, from }) {
       </div>
       <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1">
         <div className="flex items-start justify-between gap-2 min-w-0">
-          <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight flex items-center gap-1 min-w-0">
+          <h3 className="font-bold text-gray-900 text-sm leading-tight flex items-center gap-1 min-w-0">
             <span className="truncate min-w-0">{biz.name}</span>
             {verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
           </h3>
           {biz.category && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 whitespace-nowrap flex-shrink min-w-0 max-w-[45%] truncate font-semibold">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 whitespace-nowrap flex-shrink min-w-0 max-w-[45%] truncate font-semibold">
               {biz.category}
             </span>
           )}
@@ -103,13 +103,13 @@ function BusinessCard({ biz, from }) {
           </p>
         )}
         {biz.description && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed">
             {biz.description}
           </p>
         )}
         <div className="mt-auto pt-3 flex items-center justify-between gap-2 min-w-0">
           {biz.min_price != null ? (
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate min-w-0">
+            <span className="text-sm font-semibold text-gray-800 truncate min-w-0">
               From £{parseFloat(biz.min_price).toFixed(0)}
             </span>
           ) : <span />}
@@ -141,7 +141,7 @@ function MapView({ results, coords, onSwitchList, from }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm" style={{ height: 'min(58vh, 520px)', minHeight: 300 }}>
+      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm" style={{ height: 'min(58vh, 520px)', minHeight: 300 }}>
         <MapGL
           initialViewState={{ longitude: centerLng, latitude: centerLat, zoom: 12 }}
           style={{ width: '100%', height: '100%' }}
@@ -308,18 +308,18 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 animate-fade-in">
+    <div className="min-h-screen bg-slate-50 animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2 sm:gap-4">
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Link to="/feed" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-600 transition-colors">
+            <Link to="/feed" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-primary-600 transition-colors">
               <Rss className="w-4 h-4" /> Feed
             </Link>
-            <Link to="/match" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary-600 dark:text-primary-400">
+            <Link to="/match" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-primary-600">
               <Zap className="w-4 h-4" /> Smart Match
             </Link>
             {consumer ? (
@@ -387,7 +387,7 @@ export default function ExplorePage() {
       </div>
 
       {/* Category filter */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 overflow-x-auto scrollbar-hide">
+      <div className="bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-2 px-3 sm:px-6 py-3 min-w-max mx-auto max-w-6xl">
           {topCategories.map((c) => (
             <button
@@ -396,7 +396,7 @@ export default function ExplorePage() {
               className={`text-sm px-4 py-1.5 rounded-full font-medium whitespace-nowrap transition-all ${
                 category === c.value
                   ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               {c.label}
@@ -413,7 +413,7 @@ export default function ExplorePage() {
               <button
                 key={service}
                 onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', service); return n; })}
-                className="rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-800 hover:border-primary-300"
+                className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-800 border border-gray-200 hover:border-primary-300"
               >
                 {service}
               </button>
@@ -441,11 +441,11 @@ export default function ExplorePage() {
           <div className="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="card p-0 overflow-hidden animate-pulse" style={{ animationDelay: `${i * 60}ms` }}>
-                <div className="h-28 bg-gray-200 dark:bg-gray-800" />
+                <div className="h-28 bg-gray-200" />
                 <div className="p-4 space-y-2.5">
-                  <div className="h-3.5 bg-gray-200 dark:bg-gray-800 rounded-full w-3/4" />
-                  <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full w-1/2" />
-                  <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full w-2/3" />
+                  <div className="h-3.5 bg-gray-200 rounded-full w-3/4" />
+                  <div className="h-2.5 bg-gray-100 rounded-full w-1/2" />
+                  <div className="h-2.5 bg-gray-100 rounded-full w-2/3" />
                 </div>
               </div>
             ))}
@@ -453,14 +453,14 @@ export default function ExplorePage() {
         ) : searchError ? (
           <div className="text-center py-16">
             <div className="w-14 h-14 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-4"><AlertTriangle className="w-7 h-7 text-red-400" /></div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Something went wrong</h3>
+            <h3 className="font-bold text-gray-900 mb-1">Something went wrong</h3>
             <p className="text-gray-500 text-sm mb-4">Could not load results — please try again</p>
             <button onClick={() => doSearch()} className="btn-primary text-sm">Retry</button>
           </div>
         ) : results.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-14 h-14 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4"><Search className="w-7 h-7 text-gray-400" /></div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">No results found</h3>
+            <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4"><Search className="w-7 h-7 text-gray-400" /></div>
+            <h3 className="font-bold text-gray-900 mb-1">No results found</h3>
             <p className="text-gray-500 text-sm">Try a different search or browse all categories</p>
             <button onClick={() => { setSearchParams({}); doSearch({ q: '', category: 'all' }); }} className="btn-primary mt-4 text-sm">
               Browse all
@@ -469,20 +469,20 @@ export default function ExplorePage() {
         ) : (
           <>
             <div className="flex items-center justify-between gap-3 mb-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500">
                 {results.length} result{results.length !== 1 ? 's' : ''} {coords ? 'near you' : 'found'}
               </p>
-              <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+              <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-400'}`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                   title="List view"
                 >
                   <List className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('map')}
-                  className={`p-2 rounded-lg transition-colors ${viewMode === 'map' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-400'}`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'map' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400'}`}
                   title="Map view"
                 >
                   <Map className="w-4 h-4" />

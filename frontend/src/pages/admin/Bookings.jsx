@@ -84,21 +84,21 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
     <div className="fixed inset-0 z-[80] flex justify-end bg-black/40 animate-fade-in">
       <div
         ref={ref}
-        className="w-full max-w-md bg-white dark:bg-gray-900 h-full overflow-y-auto shadow-2xl"
+        className="w-full max-w-md bg-white h-full overflow-y-auto shadow-2xl"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-5 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
           <div>
             <button
               onClick={copyRef}
-              className="font-mono text-sm font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1.5 hover:underline"
+              className="font-mono text-sm font-bold text-primary-600 flex items-center gap-1.5 hover:underline"
             >
               {booking.reference_id}
               <CopyIcon />
             </button>
             <p className="text-xs text-gray-400 mt-0.5">Booking details</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <XIcon />
           </button>
         </div>
@@ -113,13 +113,13 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
           </div>
 
           {rescheduleRequest?.pending && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-              <p className="text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300">Customer requested reschedule</p>
-              <p className="mt-1 text-sm font-semibold text-blue-950 dark:text-blue-100">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-blue-700">Customer requested reschedule</p>
+              <p className="mt-1 text-sm font-semibold text-blue-950">
                 {rescheduleRequest.date}{rescheduleRequest.time ? ` at ${rescheduleRequest.time}` : ''}
               </p>
               {rescheduleRequest.message && (
-                <p className="mt-1 text-sm text-blue-800 dark:text-blue-200">{rescheduleRequest.message}</p>
+                <p className="mt-1 text-sm text-blue-800">{rescheduleRequest.message}</p>
               )}
               <button
                 onClick={() => { onClose(); onOpenReschedule(booking); }}
@@ -134,13 +134,13 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
           <div className="app-panel p-4 space-y-2">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Customer</p>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center font-bold text-primary-700 dark:text-primary-400">
+              <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center font-bold text-primary-700">
                 {booking.customer_name?.[0]?.toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white">{booking.customer_name}</p>
+                <p className="font-semibold text-gray-900">{booking.customer_name}</p>
                 {booking.customer_phone && (
-                  <a href={`tel:${booking.customer_phone}`} className="text-xs text-primary-600 dark:text-primary-400 hover:underline">
+                  <a href={`tel:${booking.customer_phone}`} className="text-xs text-primary-600 hover:underline">
                     {booking.customer_phone}
                   </a>
                 )}
@@ -148,7 +148,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
               {booking.consumer_no_show_count > 0 && (
                 <span
                   title={`${booking.consumer_no_show_count} no-show${booking.consumer_no_show_count !== 1 ? 's' : ''} recorded on this account`}
-                  className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-md ${booking.consumer_no_show_count >= 3 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}
+                  className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-md ${booking.consumer_no_show_count >= 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}
                 >
                   <AlertTriangle className="w-3 h-3" />
                   {booking.consumer_no_show_count} no-show{booking.consumer_no_show_count !== 1 ? 's' : ''}
@@ -167,7 +167,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Service</p>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">{booking.service_name}</p>
+                <p className="font-semibold text-gray-900">{booking.service_name}</p>
                 <p className="text-xs text-gray-400 mt-1">
                   {booking.duration_minutes ?? '—'} min
                   {parseInt(booking.participant_count) > 1 && (
@@ -177,7 +177,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
                   )}
                 </p>
               </div>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">£{price.toFixed(2)}</p>
+              <p className="text-lg font-bold text-gray-900">£{price.toFixed(2)}</p>
             </div>
           </div>
 
@@ -187,7 +187,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
             <div className="flex items-center gap-3">
               <CalIcon />
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">{booking.booking_date}</p>
+                <p className="font-semibold text-gray-900">{booking.booking_date}</p>
                 <p className="text-sm text-gray-500">
                   {booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}
                 </p>
@@ -199,7 +199,7 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
           {booking.notes && (
             <div className="app-panel p-4">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Notes</p>
-              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{booking.notes}</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{booking.notes}</p>
             </div>
           )}
 
@@ -219,17 +219,17 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
                 </button>
               </div>
               {booking.staff_name && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Currently: <span className="font-semibold text-gray-900 dark:text-white">{booking.staff_name}</span></p>
+                <p className="text-sm text-gray-600 mb-2">Currently: <span className="font-semibold text-gray-900">{booking.staff_name}</span></p>
               )}
               {reassignSuggestion && (
                 reassignSuggestion.suggestion ? (
-                  <div className="mt-2 p-3 bg-violet-50 dark:bg-violet-900/20 rounded-lg space-y-2">
-                    <p className="text-xs font-semibold text-violet-800 dark:text-violet-300">Best available staff</p>
+                  <div className="mt-2 p-3 bg-violet-50 rounded-lg space-y-2">
+                    <p className="text-xs font-semibold text-violet-800">Best available staff</p>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-bold text-gray-900 dark:text-white">{reassignSuggestion.suggestion.name}</p>
+                        <p className="text-sm font-bold text-gray-900">{reassignSuggestion.suggestion.name}</p>
                         {reassignSuggestion.suggestion.role && <p className="text-xs text-gray-500">{reassignSuggestion.suggestion.role}</p>}
-                        <p className="text-xs text-violet-600 dark:text-violet-400 mt-0.5">{reassignSuggestion.suggestion.bookings_today} booking{reassignSuggestion.suggestion.bookings_today !== 1 ? 's' : ''} today</p>
+                        <p className="text-xs text-violet-600 mt-0.5">{reassignSuggestion.suggestion.bookings_today} booking{reassignSuggestion.suggestion.bookings_today !== 1 ? 's' : ''} today</p>
                       </div>
                       <button onClick={() => applyReassign(reassignSuggestion.suggestion.id)} className="btn-primary text-xs py-1.5 px-3">
                         Reassign
@@ -248,9 +248,9 @@ function BookingDrawer({ booking, onClose, onOpenStatus, onOpenReschedule }) {
 
           {/* Cancellation reason */}
           {booking.cancelled_reason && (
-            <div className="app-panel p-4 border border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10">
+            <div className="app-panel p-4 border border-red-100 bg-red-50">
               <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">Cancellation reason</p>
-              <p className="text-sm text-red-700 dark:text-red-300">{booking.cancelled_reason}</p>
+              <p className="text-sm text-red-700">{booking.cancelled_reason}</p>
             </div>
           )}
 
@@ -402,7 +402,7 @@ export default function Bookings() {
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300 disabled:opacity-50"
+            className="flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-gray-600 disabled:opacity-50"
           >
             <DownloadIcon />
             <span className="hidden sm:inline">Export CSV</span>
@@ -439,7 +439,7 @@ export default function Bookings() {
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
             placeholder="Search customer, reference…"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -451,12 +451,12 @@ export default function Bookings() {
           )}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-max">
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-max">
             {STATUSES.map(s => (
               <button
                 key={s}
                 onClick={() => handleFilterChange(s)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filter === s ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filter === s ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 {s}
               </button>
@@ -467,7 +467,7 @@ export default function Bookings() {
 
       {search && (
         <p className="text-sm text-gray-500">
-          {filtered.length} result{filtered.length !== 1 ? 's' : ''} for "<span className="font-medium text-gray-700 dark:text-gray-300">{search}</span>"
+          {filtered.length} result{filtered.length !== 1 ? 's' : ''} for "<span className="font-medium text-gray-700">{search}</span>"
         </p>
       )}
 
@@ -475,12 +475,12 @@ export default function Bookings() {
       <div className="card overflow-hidden">
         {loading ? (
           <div className="p-5 space-y-3">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />)}
+            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />)}
           </div>
         ) : loadError ? (
           <div className="p-12 text-center text-gray-400">
             <ClipboardList className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-            <p className="font-medium text-gray-500 dark:text-gray-400">Couldn't load bookings</p>
+            <p className="font-medium text-gray-500">Couldn't load bookings</p>
             <button onClick={() => load()} className="mt-2 text-sm text-primary-600 hover:underline">Try again</button>
           </div>
         ) : filtered.length === 0 ? (
@@ -495,35 +495,35 @@ export default function Bookings() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-gray-100 dark:border-gray-800">
+                <thead className="border-b border-gray-100">
                   <tr className="text-left">
                     {['Reference', 'Customer', 'Service', 'Date & Time', 'Status', 'Actions'].map(h => (
                       <th key={h} className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                <tbody className="divide-y divide-gray-50">
                   {filtered.map(b => (
                     <tr
                       key={b.id}
                       onClick={() => setDrawer(b)}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
                     >
-                      <td className="px-4 py-3 font-mono text-xs text-primary-700 dark:text-primary-400 font-bold">{b.reference_id}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-primary-700 font-bold">{b.reference_id}</td>
                       <td className="px-4 py-3">
-                        <p className="font-medium dark:text-white">{b.customer_name}</p>
+                        <p className="font-medium">{b.customer_name}</p>
                         <p className="text-xs text-gray-400">{b.customer_phone}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="dark:text-gray-300">{b.service_name}</p>
+                        <p className="text-sm font-medium text-gray-800">{b.service_name}</p>
                         <p className="text-xs text-gray-400">£{parseFloat(b.service_price || 0).toFixed(2)}</p>
                         {getRescheduleRequest(b)?.pending && (
-                          <span className="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 ring-1 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800">
+                          <span className="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 ring-1 ring-blue-200">
                             Reschedule requested
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap dark:text-gray-300">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <p>{b.booking_date}</p>
                         <p className="text-xs text-gray-400">{b.start_time?.slice(0, 5)} – {b.end_time?.slice(0, 5)}</p>
                       </td>
@@ -532,14 +532,14 @@ export default function Bookings() {
                         <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => openStatus(b)}
-                            className="text-xs px-2.5 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-lg transition-colors"
+                            className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-primary-50 hover:text-primary-700 rounded-lg transition-colors"
                           >
                             Status
                           </button>
                           {b.status !== 'cancelled' && b.status !== 'completed' && (
                             <button
                               onClick={() => openReschedule(b)}
-                              className="text-xs px-2.5 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors"
+                              className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors"
                             >
                               Reschedule
                             </button>
@@ -553,38 +553,38 @@ export default function Bookings() {
             </div>
 
             {/* Mobile cards */}
-            <div className="md:hidden divide-y divide-gray-50 dark:divide-gray-800">
+            <div className="md:hidden divide-y divide-gray-50">
               {filtered.map(b => (
                 <div key={b.id} className="p-4" onClick={() => setDrawer(b)}>
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 dark:text-primary-400 flex-shrink-0">
+                      <div className="w-9 h-9 bg-primary-100 rounded-full flex items-center justify-center text-sm font-bold text-primary-700 flex-shrink-0">
                         {b.customer_name?.[0]?.toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{b.customer_name}</p>
+                        <p className="font-semibold text-sm text-gray-900">{b.customer_name}</p>
                         <p className="text-xs text-gray-400">{b.customer_phone}</p>
                       </div>
                     </div>
                     <span className={`${STATUS_COLORS[b.status]} flex-shrink-0`}>{b.status}</span>
                   </div>
                   <div className="ml-11 space-y-1">
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <p className="text-sm text-gray-700">
                       {b.service_name} · <span className="font-semibold">£{parseFloat(b.service_price || 0).toFixed(2)}</span>
                     </p>
                     {getRescheduleRequest(b)?.pending && (
-                      <p className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 ring-1 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800">
+                      <p className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700 ring-1 ring-blue-200">
                         Reschedule requested
                       </p>
                     )}
                     <p className="text-xs text-gray-400">{b.booking_date} · {b.start_time?.slice(0, 5)} – {b.end_time?.slice(0, 5)}</p>
-                    <p className="text-xs font-mono text-primary-600 dark:text-primary-400">{b.reference_id}</p>
+                    <p className="text-xs font-mono text-primary-600">{b.reference_id}</p>
                     <div className="flex gap-2 pt-1" onClick={e => e.stopPropagation()}>
-                      <button onClick={() => openStatus(b)} className="text-xs px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-primary-50 hover:text-primary-700 rounded-lg transition-colors font-medium">
+                      <button onClick={() => openStatus(b)} className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-primary-50 hover:text-primary-700 rounded-lg transition-colors font-medium">
                         Update Status
                       </button>
                       {b.status !== 'cancelled' && b.status !== 'completed' && (
-                        <button onClick={() => openReschedule(b)} className="text-xs px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors font-medium">
+                        <button onClick={() => openReschedule(b)} className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors font-medium">
                           Reschedule
                         </button>
                       )}
@@ -607,14 +607,14 @@ export default function Bookings() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1 || loading}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
             >
               ← Prev
             </button>
             <button
               onClick={() => setPage(p => p + 1)}
               disabled={page * PAGE_SIZE >= data.total || loading}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
             >
               Next →
             </button>
@@ -635,10 +635,10 @@ export default function Bookings() {
       {/* Status modal */}
       {modal === 'status' && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center overflow-y-auto p-3 sm:p-4 bg-black/50 animate-fade-in" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
-              <h2 className="font-semibold dark:text-white">Update Status</h2>
-              <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon /></button>
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="font-semibold">Update Status</h2>
+              <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 rounded-lg"><XIcon /></button>
             </div>
             <form onSubmit={saveStatus} className="p-5 space-y-4 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               <div>
@@ -657,7 +657,7 @@ export default function Bookings() {
               </div>
               {statusForm.status === 'cancelled' && (
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none p-3 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none p-3 rounded-lg border border-amber-200 bg-amber-50">
                     <input
                       type="checkbox"
                       className="w-4 h-4 accent-amber-500"
@@ -665,8 +665,8 @@ export default function Bookings() {
                       onChange={e => setStatusForm(p => ({ ...p, no_show: e.target.checked, cancelled_reason: e.target.checked ? 'No-show' : '' }))}
                     />
                     <div>
-                      <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Mark as no-show</p>
-                      <p className="text-xs text-amber-600 dark:text-amber-400">Records a no-show on the customer's profile</p>
+                      <p className="text-sm font-semibold text-amber-800">Mark as no-show</p>
+                      <p className="text-xs text-amber-600">Records a no-show on the customer's profile</p>
                     </div>
                   </label>
                   {!statusForm.no_show && (
@@ -694,10 +694,10 @@ export default function Bookings() {
       {/* Reschedule modal */}
       {modal === 'reschedule' && (
         <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center overflow-y-auto p-3 sm:p-4 bg-black/50 animate-fade-in" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
-              <h2 className="font-semibold dark:text-white">Reschedule Booking</h2>
-              <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"><XIcon /></button>
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm animate-slide-up max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom,0px))] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="font-semibold">Reschedule Booking</h2>
+              <button onClick={closeModal} className="p-1.5 hover:bg-gray-100 rounded-lg"><XIcon /></button>
             </div>
             <form onSubmit={saveReschedule} className="p-5 space-y-4 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               <p className="text-sm text-gray-500">{selected?.reference_id} · {selected?.customer_name} · {selected?.service_name}</p>

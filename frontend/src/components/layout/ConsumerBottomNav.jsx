@@ -31,16 +31,16 @@ function NavItem({ to, icon: Icon, label, unreadCount, gradient }) {
             }}
           >
             <Icon
-              className={`w-5 h-5 transition-all duration-300 ${isActive ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}
+              className={`w-5 h-5 transition-all duration-300 ${isActive ? 'text-white' : 'text-gray-400'}`}
               strokeWidth={isActive ? 2.5 : 2}
             />
             {label === 'Chat' && unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none border-2 border-white dark:border-gray-950">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none border-2 border-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </div>
-          <span className={`leading-none transition-all duration-200 ${isActive ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-400 dark:text-gray-500'}`}>
+          <span className={`leading-none transition-all duration-200 ${isActive ? 'text-gray-900 font-bold' : 'text-gray-400'}`}>
             {label}
           </span>
         </>
@@ -56,8 +56,15 @@ export default function ConsumerBottomNav() {
     <>
       {/* Mobile: frosted glass bottom bar */}
       <nav
-        className="consumer-bottom-nav lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-gray-200/60 dark:border-gray-800/70 shadow-nav"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }}
+        className="consumer-bottom-nav lg:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl border-t"
+        style={{
+          background: 'rgba(255,255,255,0.97)',
+          borderColor: 'var(--bam-border)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingLeft:   'env(safe-area-inset-left, 0px)',
+          paddingRight:  'env(safe-area-inset-right, 0px)',
+          boxShadow: '0 -4px 24px rgba(91,63,234,0.07)',
+        }}
       >
         <div className="max-w-md mx-auto px-1 flex">
           {NAV.map(({ to, icon, label, gradient }) => (
@@ -66,8 +73,14 @@ export default function ConsumerBottomNav() {
         </div>
       </nav>
 
-      {/* Desktop: frosted glass left sidebar */}
-      <nav className="hidden lg:flex fixed left-0 top-14 bottom-0 w-16 z-40 flex-col items-center py-4 gap-0.5 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-r border-gray-200/60 dark:border-gray-800/70">
+      {/* Desktop: left sidebar */}
+      <nav
+        className="hidden lg:flex fixed left-0 top-14 bottom-0 w-16 z-40 flex-col items-center py-4 gap-0.5 backdrop-blur-xl border-r"
+        style={{
+          background: 'rgba(255,255,255,0.97)',
+          borderColor: 'var(--bam-border)',
+        }}
+      >
         {NAV.map(({ to, icon: Icon, label, gradient }) => (
           <NavLink
             key={to}
@@ -78,7 +91,7 @@ export default function ConsumerBottomNav() {
               <>
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                    isActive ? `bg-gradient-to-br ${gradient}` : 'hover:bg-gray-100 dark:hover:bg-gray-800/80'
+                    isActive ? `bg-gradient-to-br ${gradient}` : 'hover:bg-gray-100'
                   }`}
                   style={{
                     transform: isActive ? 'scale(1.1)' : 'scale(1)',
@@ -86,11 +99,11 @@ export default function ConsumerBottomNav() {
                   }}
                 >
                   <Icon
-                    className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}
+                    className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400'}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
                 </div>
-                <span className={`leading-none transition-colors duration-200 ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                <span className={`leading-none transition-colors duration-200 ${isActive ? 'text-gray-900' : 'text-gray-400'}`}>
                   {label}
                 </span>
               </>

@@ -17,9 +17,9 @@ function fmtDate(ts) {
 }
 
 const BUBBLE = {
-  admin:    'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900',
+  admin:    'bg-gray-900 text-white',
   business: 'bg-primary-600 text-white',
-  consumer: 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white',
+  consumer: 'bg-gray-100 text-gray-900',
 };
 
 export default function ChatWindow({ roomId, currentSenderType, fetchMessages, sendMessage, title, subtitle }) {
@@ -102,11 +102,11 @@ export default function ChatWindow({ roomId, currentSenderType, fetchMessages, s
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+    <div className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100">
       {/* Header */}
       {(title || subtitle) && (
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
-          {title && <p className="font-bold text-sm text-gray-900 dark:text-white">{title}</p>}
+        <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
+          {title && <p className="font-bold text-sm text-gray-900">{title}</p>}
           {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
         </div>
       )}
@@ -125,9 +125,9 @@ export default function ChatWindow({ roomId, currentSenderType, fetchMessages, s
           grouped.map(group => (
             <div key={group.label}>
               <div className="flex items-center gap-3 my-3">
-                <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+                <div className="flex-1 h-px bg-gray-100" />
                 <span className="text-xs text-gray-400">{group.label}</span>
-                <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
+                <div className="flex-1 h-px bg-gray-100" />
               </div>
               {group.msgs.map((msg) => {
                 const mine = msg.sender_type === currentSenderType;
@@ -154,9 +154,9 @@ export default function ChatWindow({ roomId, currentSenderType, fetchMessages, s
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="flex gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+      <form onSubmit={handleSend} className="flex gap-2 px-4 py-3 border-t border-gray-100 flex-shrink-0">
         <input
-          className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary-500"
+          className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Type a message…"
           value={input}
           onChange={e => setInput(e.target.value)}

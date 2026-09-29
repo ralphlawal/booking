@@ -23,10 +23,10 @@ function fmtDate(d) {
 
 function StatusBadge({ status }) {
   const styles = {
-    pending:   'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
-    confirmed: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
-    cancelled: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-    completed: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
+    pending:   'bg-amber-100 text-amber-700',
+    confirmed: 'bg-emerald-100 text-emerald-700',
+    cancelled: 'bg-red-100 text-red-600',
+    completed: 'bg-primary-100 text-primary-700',
   };
   const labels = { pending: 'Awaiting confirmation', confirmed: 'Confirmed', cancelled: 'Cancelled', completed: 'Completed' };
   return (
@@ -86,8 +86,8 @@ function ReschedulePanel({ booking, onClose, onDone }) {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-gray-900 dark:text-white text-lg">Choose new date</h2>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <h2 className="font-bold text-gray-900 text-lg">Choose new date</h2>
+        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
           <X className="w-4 h-4 text-gray-500" />
         </button>
       </div>
@@ -95,13 +95,13 @@ function ReschedulePanel({ booking, onClose, onDone }) {
       {/* Week mini-calendar */}
       <div className="app-panel p-4">
         <div className="flex items-center justify-between mb-3">
-          <button onClick={() => setWeekStart(w => addDays(w, -7))} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <button onClick={() => setWeekStart(w => addDays(w, -7))} className="p-1.5 rounded-lg hover:bg-gray-100">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-bold text-gray-700">
             {format(weekStart, 'd MMM')} – {format(endOfWeek(weekStart, { weekStartsOn: 1 }), 'd MMM yyyy')}
           </span>
-          <button onClick={() => setWeekStart(w => addDays(w, 7))} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <button onClick={() => setWeekStart(w => addDays(w, 7))} className="p-1.5 rounded-lg hover:bg-gray-100">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -119,10 +119,10 @@ function ReschedulePanel({ booking, onClose, onDone }) {
                 disabled={isPast}
                 onClick={() => pickDate(day)}
                 className={`aspect-square rounded-lg text-sm font-semibold transition-all flex items-center justify-center
-                  ${isPast ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' :
+                  ${isPast ? 'text-gray-300 cursor-not-allowed' :
                     isSel ? 'bg-primary-600 text-white' :
-                    isNow ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 font-bold' :
-                    'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'}`}
+                    isNow ? 'bg-primary-50 text-primary-700 font-bold' :
+                    'hover:bg-gray-100 text-gray-700'}`}
               >
                 {format(day, 'd')}
               </button>
@@ -134,7 +134,7 @@ function ReschedulePanel({ booking, onClose, onDone }) {
       {/* Time slots */}
       {selectedDate && (
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+          <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
             Available times — {format(selectedDate, 'EEEE d MMM')}
           </p>
           {loadingSlots ? (
@@ -142,7 +142,7 @@ function ReschedulePanel({ booking, onClose, onDone }) {
               <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : slots.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">No slots available on this day</p>
+            <p className="text-sm text-gray-500 py-4 text-center">No slots available on this day</p>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {slots.map(slot => (
@@ -152,7 +152,7 @@ function ReschedulePanel({ booking, onClose, onDone }) {
                   className={`py-2 rounded-lg text-sm font-semibold border transition-all
                     ${selectedSlot === slot
                       ? 'bg-primary-600 border-primary-600 text-white'
-                      : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-primary-400 hover:text-primary-600'}`}
+                      : 'border-gray-200 text-gray-700 hover:border-primary-400 hover:text-primary-600'}`}
                 >
                   {slot}
                 </button>
@@ -164,7 +164,7 @@ function ReschedulePanel({ booking, onClose, onDone }) {
 
       {/* Message */}
       <div>
-        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 block">
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">
           Message to business (optional)
         </label>
         <textarea className="input resize-none text-sm" rows={2}
@@ -172,7 +172,7 @@ function ReschedulePanel({ booking, onClose, onDone }) {
           value={message} onChange={e => setMessage(e.target.value)} maxLength={300} />
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-xs text-blue-700 dark:text-blue-400">
+      <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
         This sends a request to the business — they'll confirm the new time directly with you.
       </div>
 
@@ -223,30 +223,30 @@ function CancelPanel({ booking, onClose, onDone }) {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-gray-900 dark:text-white text-lg">Cancel booking?</h2>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <h2 className="font-bold text-gray-900 text-lg">Cancel booking?</h2>
+        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
           <X className="w-4 h-4 text-gray-500" />
         </button>
       </div>
 
       <div className="app-panel p-4 space-y-1">
-        <p className="font-bold text-gray-900 dark:text-white">{booking.service_name}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">at {booking.business_name}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{fmtDate(booking.booking_date)} · {booking.start_time?.slice(0,5)}</p>
+        <p className="font-bold text-gray-900">{booking.service_name}</p>
+        <p className="text-sm text-gray-500">at {booking.business_name}</p>
+        <p className="text-sm text-gray-500">{fmtDate(booking.booking_date)} · {booking.start_time?.slice(0,5)}</p>
       </div>
 
       {refundInfo && (
         <div className={`rounded-lg p-3 text-sm font-semibold ${
           refundInfo.color === 'emerald'
-            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
-            : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
+            ? 'bg-emerald-50 text-emerald-700'
+            : 'bg-amber-50 text-amber-700'
         }`}>
           {refundInfo.label} applies. Refund will go to your original payment method.
         </div>
       )}
 
       {!refundInfo && isPaid && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-sm text-gray-500 dark:text-gray-400">
+        <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-500">
           The appointment has already passed. No refund will be issued.
         </div>
       )}
@@ -292,7 +292,7 @@ export default function ManageBookingPage() {
   if (error || !booking) return (
     <div className="app-page pb-consumer-nav flex flex-col items-center justify-center gap-4 px-6">
       <AlertTriangle className="w-10 h-10 text-amber-400" />
-      <p className="font-bold text-gray-900 dark:text-white text-center">{error || 'Booking not found'}</p>
+      <p className="font-bold text-gray-900 text-center">{error || 'Booking not found'}</p>
       <Link to="/customer/dashboard" className="btn-primary">Back to dashboard</Link>
       <ConsumerBottomNav />
     </div>
@@ -316,12 +316,12 @@ export default function ManageBookingPage() {
   return (
     <div className="app-page pb-consumer-nav">
       {/* Header */}
-      <nav className="sticky top-0 z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
+      <nav className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-gray-100">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-            <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+          <button onClick={() => navigate(-1)} className="p-2 -ml-1 rounded-lg hover:bg-gray-100 transition-colors">
+            <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
-          <h1 className="font-bold text-gray-900 dark:text-white">Manage Booking</h1>
+          <h1 className="font-bold text-gray-900">Manage Booking</h1>
         </div>
       </nav>
 
@@ -329,7 +329,7 @@ export default function ManageBookingPage() {
         {/* Booking summary */}
         <div className="app-panel p-5 space-y-4">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-primary-50 flex items-center justify-center">
               {booking.logo_url ? (
                 <img src={booking.logo_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -338,41 +338,41 @@ export default function ManageBookingPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 flex-wrap">
-                <h2 className="font-bold text-gray-900 dark:text-white">{booking.business_name}</h2>
+                <h2 className="font-bold text-gray-900">{booking.business_name}</h2>
                 <StatusBadge status={booking.status} />
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{booking.service_name}</p>
+              <p className="text-sm text-gray-500 mt-0.5">{booking.service_name}</p>
             </div>
           </div>
 
           <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2.5 text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2.5 text-gray-600">
               <Calendar className="w-4 h-4 flex-shrink-0 text-gray-400" />
               {fmtDate(booking.booking_date)}
             </div>
-            <div className="flex items-center gap-2.5 text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2.5 text-gray-600">
               <Clock className="w-4 h-4 flex-shrink-0 text-gray-400" />
               {booking.start_time?.slice(0, 5)} – {booking.end_time?.slice(0, 5)}
               {booking.duration_minutes && ` (${booking.duration_minutes} min)`}
             </div>
             {booking.location && (
-              <div className="flex items-center gap-2.5 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2.5 text-gray-600">
                 <MapPin className="w-4 h-4 flex-shrink-0 text-gray-400" />
                 {booking.location}
               </div>
             )}
             {booking.price > 0 && (
-              <div className="flex items-center gap-2.5 text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2.5 text-gray-600">
                 <PoundSterling className="w-4 h-4 flex-shrink-0 text-gray-400" />
                 £{parseFloat(booking.price).toFixed(2)}
                 {booking.payment_status === 'paid' && (
-                  <span className="text-[11px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full">Paid</span>
+                  <span className="text-[11px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Paid</span>
                 )}
               </div>
             )}
           </div>
 
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 flex items-center gap-1.5">
+          <div className="pt-2 border-t border-gray-100 text-xs text-gray-400 flex items-center gap-1.5">
             Ref: <span className="font-mono">{booking.reference_id}</span>
           </div>
         </div>
@@ -396,7 +396,7 @@ export default function ManageBookingPage() {
             {consumer && canReschedule && (
               <button
                 onClick={() => setPanel('reschedule')}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-blue-200 text-blue-700 font-semibold hover:bg-blue-50 transition-all"
               >
                 <CalendarClock className="w-5 h-5" />
                 Reschedule appointment
@@ -406,7 +406,7 @@ export default function ManageBookingPage() {
             {consumer && canCancel && (
               <button
                 onClick={() => setPanel('cancel')}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-red-200 text-red-600 font-semibold hover:bg-red-50 transition-all"
               >
                 <X className="w-5 h-5" />
                 Cancel booking
@@ -427,7 +427,7 @@ export default function ManageBookingPage() {
             {booking.slug && (
               <Link
                 to={`/profile/${booking.slug}`}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition-all"
               >
                 <Building2 className="w-5 h-5" />
                 View business
@@ -447,7 +447,7 @@ export default function ManageBookingPage() {
 
         {booking.status === 'cancelled' && (
           <div className="app-panel p-4 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">This booking has been cancelled.</p>
+            <p className="text-sm text-gray-500">This booking has been cancelled.</p>
             {booking.slug && (
               <Link to={`/book/${booking.slug}`} state={{ prefill_service_id: booking.service_id }}
                 className="btn-primary mt-3 inline-flex items-center gap-2">

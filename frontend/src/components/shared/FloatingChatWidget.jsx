@@ -135,7 +135,7 @@ export default function FloatingChatWidget() {
     <>
       {/* Panel */}
       {open && (
-        <div className={`fixed ${hasBottomNav ? 'bottom-[calc(8rem+env(safe-area-inset-bottom,0px))]' : 'bottom-20'} right-4 sm:right-5 z-40 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden animate-slide-up`}
+        <div className={`fixed ${hasBottomNav ? 'bottom-[calc(8rem+env(safe-area-inset-bottom,0px))]' : 'bottom-20'} right-4 sm:right-5 z-40 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-slide-up`}
           style={{ height: '420px', maxHeight: 'calc(100dvh - 120px)' }}>
 
           {/* Header */}
@@ -155,18 +155,18 @@ export default function FloatingChatWidget() {
           {!loggedIn ? (
             /* Not logged in — prompt to sign in */
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center">
                 <MessageSquare className="w-7 h-7 text-primary-600" />
               </div>
               <div>
-                <p className="font-bold text-gray-900 dark:text-white">Chat with us</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to start a support conversation</p>
+                <p className="font-bold text-gray-900">Chat with us</p>
+                <p className="text-sm text-gray-500 mt-1">Sign in to start a support conversation</p>
               </div>
               <div className="w-full space-y-2">
-                <Link to="/customer/login" state={{ from: { pathname, search: '', hash: '' } }} className="flex items-center justify-between w-full px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-xl text-sm font-semibold text-primary-700 dark:text-primary-300 hover:bg-primary-100 transition-colors">
+                <Link to="/customer/login" state={{ from: { pathname, search: '', hash: '' } }} className="flex items-center justify-between w-full px-4 py-2.5 bg-primary-50 rounded-xl text-sm font-semibold text-primary-700 hover:bg-primary-100 transition-colors">
                   <span>Customer sign in</span><ChevronRight className="w-4 h-4" />
                 </Link>
-                <Link to="/admin/login" state={{ from: { pathname, search: '', hash: '' } }} className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 transition-colors">
+                <Link to="/admin/login" state={{ from: { pathname, search: '', hash: '' } }} className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
                   <span>Business sign in</span><ChevronRight className="w-4 h-4" />
                 </Link>
                 <a href="mailto:hello@bookam.business" className="block text-center text-xs text-gray-400 hover:text-gray-600 mt-2">
@@ -184,10 +184,10 @@ export default function FloatingChatWidget() {
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 min-h-0">
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center gap-2 py-6">
-                    <div className="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
                       <Headphones className="w-5 h-5 text-primary-500" />
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">How can we help?</p>
+                    <p className="text-sm text-gray-600 font-medium">How can we help?</p>
                     <p className="text-xs text-gray-400">Send a message and we'll get back to you</p>
                   </div>
                 ) : (
@@ -199,7 +199,7 @@ export default function FloatingChatWidget() {
                           <div className={`px-3 py-2 rounded-2xl text-sm leading-relaxed ${
                             mine
                               ? 'bg-primary-600 text-white rounded-tr-sm'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-sm'
+                              : 'bg-gray-100 text-gray-900 rounded-tl-sm'
                           }`}>
                             {msg.content}
                           </div>
@@ -215,9 +215,9 @@ export default function FloatingChatWidget() {
               </div>
 
               {/* Input */}
-              <form onSubmit={send} className="flex gap-2 px-3 py-3 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+              <form onSubmit={send} className="flex gap-2 px-3 py-3 border-t border-gray-100 flex-shrink-0">
                 <input
-                  className="flex-1 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary-500"
+                  className="flex-1 px-3 py-2 rounded-xl bg-gray-100 text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Type your message…"
                   value={input}
                   onChange={e => setInput(e.target.value)}

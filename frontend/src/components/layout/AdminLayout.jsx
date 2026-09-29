@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { bookingsAPI } from '../../services/api';
-import { LOGO_BLUE_H, LOGO_WHITE_H } from '../../config/logos';
+import { LOGO_BLUE_H } from '../../config/logos';
 import { copyText, nativeTapFeedback, openExternalLink, publicWebUrl } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 import VerifyRequired from '../shared/VerifyRequired';
@@ -32,14 +31,14 @@ const NAV_GROUPS = [
   {
     label: 'Tools',
     items: [
-      { to: '/admin/growth',       icon: GrowthIcon,     label: 'Growth' },
-      { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
-      { to: '/admin/operations',   icon: ChartIcon,      label: 'Operations' },
-      { to: '/admin/intelligence', icon: GrowthIcon,     label: 'Intelligence' },
-      { to: '/admin/messages',       icon: MessageIcon,    label: 'Messages' },
-      { to: '/admin/notifications',  icon: BellIcon,       label: 'Notify' },
-      { to: '/admin/staff-report',   icon: ChartIcon,      label: 'Reports' },
-      { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
+      { to: '/admin/growth',       icon: GrowthIcon,    label: 'Growth' },
+      { to: '/admin/retention',    icon: RetentionIcon, label: 'Retention' },
+      { to: '/admin/operations',   icon: ChartIcon,     label: 'Operations' },
+      { to: '/admin/intelligence', icon: GrowthIcon,    label: 'Intelligence' },
+      { to: '/admin/messages',     icon: MessageIcon,   label: 'Messages' },
+      { to: '/admin/notifications',icon: BellIcon,      label: 'Notify' },
+      { to: '/admin/staff-report', icon: ChartIcon,     label: 'Reports' },
+      { to: '/admin/settings',     icon: SettingsIcon,  label: 'Settings' },
     ],
   },
 ];
@@ -49,7 +48,7 @@ const BOTTOM_NAV = [
   { to: '/admin/dashboard', icon: GridIcon,         label: 'Home' },
   { to: '/admin/bookings',  icon: CalendarCheckIcon, label: 'Bookings', badge: true },
   { to: '/admin/calendar',  icon: CalendarIcon,      label: 'Calendar' },
-  { to: '/admin/messages',  icon: MessageIcon,        label: 'Messages' },
+  { to: '/admin/messages',  icon: MessageIcon,       label: 'Messages' },
 ];
 
 /* ── "More" sheet items ──────────────────────────────────────────────────── */
@@ -59,25 +58,24 @@ const MORE_ITEMS = [
   { to: '/admin/resources',    icon: ResourceIcon, label: 'Resources' },
   { to: '/admin/customers',    icon: UsersIcon,    label: 'Customers' },
   { to: '/admin/posts',        icon: PostsIcon,    label: 'Posts' },
-  { to: '/admin/growth',       icon: GrowthIcon,     label: 'Growth' },
-  { to: '/admin/retention',    icon: RetentionIcon,  label: 'Retention' },
-  { to: '/admin/operations',   icon: ChartIcon,      label: 'Operations' },
-  { to: '/admin/intelligence',   icon: GrowthIcon,     label: 'Intelligence' },
-  { to: '/admin/notifications',  icon: BellIcon,       label: 'Notify' },
-  { to: '/admin/staff-report',   icon: ChartIcon,      label: 'Reports' },
+  { to: '/admin/growth',       icon: GrowthIcon,   label: 'Growth' },
+  { to: '/admin/retention',    icon: RetentionIcon,label: 'Retention' },
+  { to: '/admin/operations',   icon: ChartIcon,    label: 'Operations' },
+  { to: '/admin/intelligence', icon: GrowthIcon,   label: 'Intelligence' },
+  { to: '/admin/notifications',icon: BellIcon,     label: 'Notify' },
+  { to: '/admin/staff-report', icon: ChartIcon,    label: 'Reports' },
   { to: '/admin/settings',     icon: SettingsIcon, label: 'Settings' },
 ];
 
 export default function AdminLayout() {
   const { user, business, loading, logout, resendVerificationEmail } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const [moreOpen, setMoreOpen]     = useState(false);
+  const [moreOpen, setMoreOpen]         = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
-  const [copied, setCopied]         = useState(false);
-  const [emailUnverified, setEmailUnverified] = useState(false);
-  const [resendingVerif, setResendingVerif]   = useState(false);
+  const [copied, setCopied]             = useState(false);
+  const [emailUnverified, setEmailUnverified]   = useState(false);
+  const [resendingVerif, setResendingVerif]     = useState(false);
 
   /* Close More sheet on route change */
   useEffect(() => { setMoreOpen(false); }, [location.pathname]);
@@ -132,8 +130,8 @@ export default function AdminLayout() {
   const copyLink = useCallback(async () => {
     if (!bookingUrl) return;
     try {
-      const copiedToClipboard = await copyText(bookingUrl);
-      if (!copiedToClipboard) throw new Error('Clipboard unavailable');
+      const ok = await copyText(bookingUrl);
+      if (!ok) throw new Error();
       setCopied(true);
       toast.success('Booking link copied!');
       setTimeout(() => setCopied(false), 2000);
@@ -145,15 +143,13 @@ export default function AdminLayout() {
     navigate('/admin/login');
   };
 
-  const isDark  = theme === 'dark';
-  const logoSrc = isDark ? LOGO_WHITE_H : LOGO_BLUE_H;
   const canGoBack = location.pathname !== '/admin/dashboard';
   const goBack = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate('/admin/dashboard');
   };
 
-  /* Shared nav-link builder for sidebar */
+  /* Sidebar nav-link builder */
   const sidebarLink = ({ to, icon: Icon, label, badge }) => (
     <NavLink
       key={to}
@@ -162,7 +158,7 @@ export default function AdminLayout() {
         `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
           isActive
             ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-primary-sm'
-            : 'text-navy-500 dark:text-[#7a90ba] hover:bg-[--bam-surface-hover] dark:hover:bg-navy-750/60 hover:text-gray-900 dark:hover:text-[--bam-text]'
+            : 'text-[--bam-text-muted] hover:bg-[--bam-surface-hover] hover:text-[--bam-text]'
         }`
       }
     >
@@ -181,17 +177,15 @@ export default function AdminLayout() {
   );
 
   return (
-    <div
-      className="flex h-dvh overflow-hidden"
-      style={{ background: 'var(--bam-bg)' }}
-    >
+    <div className="flex h-dvh overflow-hidden" style={{ background: 'var(--bam-bg)' }}>
+
       {/* ── Desktop sidebar (lg+) ─────────────────────────────────────────── */}
       <aside
         className="hidden lg:flex flex-col w-60 xl:w-64 flex-shrink-0 border-r"
         style={{
           background: 'var(--bam-sidebar)',
           borderColor: 'var(--bam-border)',
-          boxShadow: isDark ? '4px 0 40px rgba(0,0,0,0.5)' : '4px 0 24px rgba(0,0,0,0.06)',
+          boxShadow: '4px 0 24px rgba(91,63,234,0.06)',
         }}
       >
         {/* Logo */}
@@ -203,23 +197,20 @@ export default function AdminLayout() {
             borderColor: 'var(--bam-border)',
           }}
         >
-          <img src={logoSrc} alt="BookAm Business" className="h-9 w-auto object-contain" />
+          <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain" />
         </div>
 
         {/* Booking page quick-link */}
         {business && (
           <div
             className="mx-3 mt-3 p-3 rounded-xl border"
-            style={{
-              background: isDark ? 'rgba(91,62,234,0.1)' : '#f0f0ff',
-              borderColor: isDark ? 'rgba(91,62,234,0.25)' : '#cdc9fe',
-            }}
+            style={{ background: '#f0f0ff', borderColor: '#cdc9fe' }}
           >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-primary-500 dark:text-primary-400">Your booking page</p>
-            <p className="text-sm font-bold text-primary-800 dark:text-primary-300 truncate mt-0.5">/book/{business.slug}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary-500">Your booking page</p>
+            <p className="text-sm font-bold text-primary-800 truncate mt-0.5">/book/{business.slug}</p>
             <button
               onClick={copyLink}
-              className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-100/70 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg py-1.5 transition-colors"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary-600 bg-primary-100/70 hover:bg-primary-100 rounded-lg py-1.5 transition-colors"
             >
               {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
               {copied ? 'Copied!' : 'Copy booking link'}
@@ -240,12 +231,9 @@ export default function AdminLayout() {
         </nav>
 
         {/* User footer */}
-        <div
-          className="border-t p-4 flex-shrink-0"
-          style={{ borderColor: 'var(--bam-border)' }}
-        >
+        <div className="border-t p-4 flex-shrink-0" style={{ borderColor: 'var(--bam-border)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+            <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
               {user?.full_name?.[0]?.toUpperCase() ?? '?'}
             </div>
             <div className="flex-1 min-w-0">
@@ -255,7 +243,7 @@ export default function AdminLayout() {
             <button
               onClick={handleLogout}
               title="Sign out"
-              className="p-1.5 rounded-lg transition-colors text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex-shrink-0"
+              className="p-1.5 rounded-lg transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50 flex-shrink-0"
             >
               <LogoutIcon className="w-4 h-4" />
             </button>
@@ -270,62 +258,59 @@ export default function AdminLayout() {
         <header
           className="flex-shrink-0 backdrop-blur-xl border-b"
           style={{
-            background: isDark ? 'rgba(7,13,32,0.95)' : 'rgba(255,255,255,0.95)',
+            background: 'rgba(255,255,255,0.95)',
             borderColor: 'var(--bam-border)',
             paddingTop: 'env(safe-area-inset-top, 0px)',
-            boxShadow: isDark
-              ? '0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.3)'
-              : '0 1px 0 rgba(0,0,0,0.06)',
+            boxShadow: '0 1px 0 rgba(91,63,234,0.06)',
           }}
         >
           <div className="min-h-14 lg:min-h-16 flex items-center justify-between px-3 sm:px-4 lg:px-6 py-2 lg:py-0">
             {canGoBack && (
-              <button onClick={goBack} className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center" style={{ color: 'var(--bam-text-muted)' }} aria-label="Go back">
+              <button
+                onClick={goBack}
+                className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-colors hover:bg-gray-100"
+                style={{ color: 'var(--bam-text-muted)' }}
+                aria-label="Go back"
+              >
                 <BackIcon className="w-5 h-5" />
               </button>
             )}
-            {/* Mobile: logo (centered) */}
+
+            {/* Mobile: logo centered */}
             <div className="lg:hidden absolute left-1/2 -translate-x-1/2 pointer-events-none max-w-[42vw]">
-              <img src={logoSrc} alt="BookAm Business" className="h-7 sm:h-8 w-auto object-contain" />
+              <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 sm:h-8 w-auto object-contain" />
             </div>
-            {/* Desktop: push right */}
+
+            {/* Desktop: spacer */}
             <div className="hidden lg:block" />
 
             {/* Right actions */}
             <div className="flex items-center gap-1 ml-auto">
-              <button
-                onClick={toggleTheme}
-                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                className="p-2 rounded-xl transition-colors"
-                style={{ color: 'var(--bam-text-muted)' }}
-              >
-                {isDark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-              </button>
-
               {business && (
                 <>
                   <button
                     onClick={copyLink}
                     title="Copy booking link"
-                    className="lg:hidden p-2 rounded-xl transition-colors"
+                    className="lg:hidden p-2 rounded-xl transition-colors hover:bg-gray-100"
                     style={{ color: 'var(--bam-text-muted)' }}
                   >
-                    {copied ? <CheckIcon className="w-5 h-5 text-green-500" /> : <CopyIcon className="w-5 h-5" />}
+                    {copied
+                      ? <CheckIcon className="w-5 h-5 text-green-500" />
+                      : <CopyIcon className="w-5 h-5" />
+                    }
                   </button>
                   <a
                     href={publicWebUrl(`/book/${business.slug}`)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(event) => openExternalLink(event, publicWebUrl(`/book/${business.slug}`))}
+                    onClick={(e) => openExternalLink(e, publicWebUrl(`/book/${business.slug}`))}
                     className="btn-secondary text-xs hidden sm:flex gap-1.5 !py-1.5"
                   >
                     <ExternalLinkIcon className="w-3.5 h-3.5" />
-                    View Booking Page
+                    View Page
                   </a>
                 </>
               )}
-
-              {/* Mobile: theme toggle is above; no hamburger */}
             </div>
           </div>
         </header>
@@ -334,17 +319,22 @@ export default function AdminLayout() {
         <main
           className="native-scroll flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 lg:pb-6 pb-admin-nav"
           data-native-scroll="true"
-          style={{ background: 'var(--bam-bg)', color: 'var(--bam-text)', paddingLeft: 'max(0.75rem, env(safe-area-inset-left, 0px))', paddingRight: 'max(0.75rem, env(safe-area-inset-right, 0px))' }}
+          style={{
+            background: 'var(--bam-bg)',
+            color: 'var(--bam-text)',
+            paddingLeft:  'max(0.75rem, env(safe-area-inset-left, 0px))',
+            paddingRight: 'max(0.75rem, env(safe-area-inset-right, 0px))',
+          }}
         >
           {emailUnverified && (
-            <div className="mb-4 sm:mb-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/60 rounded-xl px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-              <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
+            <div className="mb-4 sm:mb-5 bg-amber-50 border border-amber-200 rounded-xl px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+              <p className="text-xs text-amber-800 font-medium">
                 Your email address is not verified. Check your inbox for a verification link.
               </p>
               <button
                 onClick={handleResendVerif}
                 disabled={resendingVerif}
-                className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline whitespace-nowrap disabled:opacity-50 flex-shrink-0 self-start sm:self-auto"
+                className="text-xs font-semibold text-amber-700 hover:underline whitespace-nowrap disabled:opacity-50 flex-shrink-0 self-start sm:self-auto"
               >
                 {resendingVerif ? 'Sending…' : 'Resend →'}
               </button>
@@ -373,17 +363,14 @@ export default function AdminLayout() {
       <nav
         className="admin-bottom-nav lg:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t"
         style={{
-          background: isDark ? 'rgba(6,11,28,0.97)' : 'rgba(255,255,255,0.97)',
+          background: 'rgba(255,255,255,0.97)',
           borderColor: 'var(--bam-border)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          paddingLeft: 'env(safe-area-inset-left, 0px)',
-          paddingRight: 'env(safe-area-inset-right, 0px)',
-          boxShadow: isDark
-            ? '0 -1px 0 rgba(255,255,255,0.06), 0 -8px 32px rgba(0,0,0,0.45)'
-            : '0 -4px 24px rgba(0,0,0,0.07)',
+          paddingLeft:   'env(safe-area-inset-left, 0px)',
+          paddingRight:  'env(safe-area-inset-right, 0px)',
+          boxShadow: '0 -4px 24px rgba(91,63,234,0.07)',
         }}
       >
-        {/* 4 primary routes */}
         {BOTTOM_NAV.map(({ to, icon: Icon, label, badge }) => (
           <NavLink
             key={to}
@@ -391,9 +378,7 @@ export default function AdminLayout() {
             onClick={() => { setMoreOpen(false); nativeTapFeedback(); }}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center py-2 min-h-[64px] gap-0.5 text-[10px] font-bold transition-colors relative tap-highlight-none ${
-                isActive
-                  ? 'text-gray-900 dark:text-white'
-                  : 'text-gray-400 dark:text-[#3d5070]'
+                isActive ? 'text-gray-900' : 'text-gray-400'
               }`
             }
           >
@@ -409,10 +394,7 @@ export default function AdminLayout() {
                 >
                   <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
                   {badge && pendingCount > 0 && !isActive && (
-                    <span
-                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none border-2"
-                      style={{ borderColor: isDark ? '#060b1c' : '#fff' }}
-                    >
+                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none border-2 border-white">
                       {pendingCount > 9 ? '9+' : pendingCount}
                     </span>
                   )}
@@ -427,9 +409,7 @@ export default function AdminLayout() {
         <button
           onClick={() => { nativeTapFeedback(); setMoreOpen(v => !v); }}
           className={`flex-1 flex flex-col items-center justify-center py-2 min-h-[64px] gap-0.5 text-[10px] font-bold transition-colors relative tap-highlight-none ${
-            moreOpen
-              ? 'text-gray-900 dark:text-white'
-              : 'text-gray-400 dark:text-[#3d5070]'
+            moreOpen ? 'text-gray-900' : 'text-gray-400'
           }`}
         >
           {moreOpen && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary-500 rounded-full" />}
@@ -446,107 +426,86 @@ export default function AdminLayout() {
 
       {/* ── More bottom sheet ─────────────────────────────────────────────── */}
       {moreOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="more-backdrop"
-              className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setMoreOpen(false)}
-            />
+        <>
+          <motion.div
+            key="more-backdrop"
+            className="lg:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setMoreOpen(false)}
+          />
 
-            {/* Sheet */}
-            <motion.div
-              key="more-sheet"
-              className="lg:hidden fixed left-0 right-0 z-50 rounded-t-3xl border-t overflow-y-auto native-more-sheet"
-              style={{
-                background: isDark ? '#0c1528' : '#ffffff',
-                borderColor: 'var(--bam-border)',
-                bottom: `calc(var(--admin-nav-height) - env(safe-area-inset-bottom, 0px))`,
-                maxHeight: 'min(72dvh, 640px)',
-                boxShadow: isDark
-                  ? '0 -8px 60px rgba(0,0,0,0.6)'
-                  : '0 -8px 40px rgba(0,0,0,0.12)',
-              }}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
-            >
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-2">
-                <div
-                  className="w-10 h-1 rounded-full"
-                  style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)' }}
-                />
+          <motion.div
+            key="more-sheet"
+            className="lg:hidden fixed left-0 right-0 z-50 rounded-t-3xl border-t overflow-y-auto native-more-sheet"
+            style={{
+              background: '#ffffff',
+              borderColor: 'var(--bam-border)',
+              bottom: `calc(var(--admin-nav-height) - env(safe-area-inset-bottom, 0px))`,
+              maxHeight: 'min(72dvh, 640px)',
+              boxShadow: '0 -8px 40px rgba(91,63,234,0.12)',
+            }}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
+          >
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1 rounded-full bg-gray-200" />
+            </div>
+
+            <div className="px-4 pb-4">
+              {/* Nav grid */}
+              <div className="grid grid-cols-3 gap-2.5 mb-5">
+                {MORE_ITEMS.map(({ to, icon: Icon, label }) => (
+                  <button
+                    key={to}
+                    type="button"
+                    onClick={() => { nativeTapFeedback(); setMoreOpen(false); navigate(to); }}
+                    className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border text-xs font-semibold transition-all ${
+                      location.pathname === to
+                        ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white border-primary-600 shadow-primary-sm'
+                        : 'border-[--bam-border] text-[--bam-text-muted]'
+                    }`}
+                    style={location.pathname === to ? {} : { background: 'var(--bam-surface-soft)' }}
+                  >
+                    <Icon className={`w-5 h-5 ${location.pathname === to ? 'text-white' : 'text-[--bam-text-muted]'}`} />
+                    {label}
+                  </button>
+                ))}
               </div>
 
-              <div className="px-4 pb-4">
-                {/* Nav grid */}
-                <div className="grid grid-cols-3 gap-2.5 mb-5">
-                  {MORE_ITEMS.map(({ to, icon: Icon, label }) => (
-                    <button
-                      key={to}
-                      type="button"
-                      onClick={() => { nativeTapFeedback(); setMoreOpen(false); navigate(to); }}
-                      className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl border text-xs font-semibold transition-all ${
-                        location.pathname === to
-                          ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white border-primary-600 shadow-primary-sm'
-                          : 'border-[--bam-border] text-[--bam-text-muted]'
-                      }`}
-                      style={location.pathname === to ? {} : { background: 'var(--bam-surface-soft)' }}
-                    >
-                      <Icon className={`w-5 h-5 ${location.pathname === to ? 'text-white' : 'text-[--bam-text-muted]'}`} />
-                      {label}
-                    </button>
-                  ))}
-                </div>
+              <div className="divider mb-4" />
 
-                {/* Divider */}
-                <div className="divider mb-4" />
-
-                {/* Utility row */}
-                <div className="flex items-center gap-2.5">
-                  {business && (
-                    <button
-                      onClick={() => { copyLink(); setMoreOpen(false); }}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border transition-all"
-                      style={{
-                        background: 'var(--bam-surface-soft)',
-                        borderColor: 'var(--bam-border)',
-                        color: 'var(--bam-text-muted)',
-                      }}
-                    >
-                      {copied ? <CheckIcon className="w-4 h-4 text-green-500" /> : <CopyIcon className="w-4 h-4" />}
-                      {copied ? 'Copied!' : 'Copy link'}
-                    </button>
-                  )}
-
+              {/* Utility row */}
+              <div className="flex items-center gap-2.5">
+                {business && (
                   <button
-                    onClick={() => { toggleTheme(); setMoreOpen(false); }}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold border transition-all"
+                    onClick={() => { copyLink(); setMoreOpen(false); }}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border transition-all"
                     style={{
                       background: 'var(--bam-surface-soft)',
                       borderColor: 'var(--bam-border)',
                       color: 'var(--bam-text-muted)',
                     }}
                   >
-                    {isDark ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
-                    {isDark ? 'Light' : 'Dark'}
+                    {copied ? <CheckIcon className="w-4 h-4 text-green-500" /> : <CopyIcon className="w-4 h-4" />}
+                    {copied ? 'Copied!' : 'Copy link'}
                   </button>
+                )}
 
-                  <button
-                    onClick={() => { setMoreOpen(false); handleLogout(); }}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 transition-all"
-                  >
-                    <LogoutIcon className="w-4 h-4" />
-                    Sign out
-                  </button>
-                </div>
+                <button
+                  onClick={() => { setMoreOpen(false); handleLogout(); }}
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold bg-red-50 text-red-600 border border-red-100 transition-all hover:bg-red-100"
+                >
+                  <LogoutIcon className="w-4 h-4" />
+                  Sign out
+                </button>
               </div>
-            </motion.div>
-          </>
+            </div>
+          </motion.div>
+        </>
       )}
     </div>
   );
@@ -563,8 +522,6 @@ function SettingsIcon({ className }) { return <svg className={className} fill="n
 function LogoutIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>; }
 function CopyIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>; }
 function CheckIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>; }
-function MoonIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>; }
-function SunIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>; }
 function PostsIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>; }
 function MessageIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>; }
 function ChartIcon({ className }) { return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>; }

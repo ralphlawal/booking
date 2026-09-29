@@ -105,7 +105,7 @@ export default function CustomerLogin() {
               </div>
 
               <div className="flex items-center justify-end">
-                <Link to="/customer/forgot-password" className="text-xs text-primary-600 dark:text-primary-400 hover:underline">
+                <Link to="/customer/forgot-password" className="text-xs text-primary-600 hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -115,22 +115,22 @@ export default function CustomerLogin() {
               </button>
             </form>
 
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-center text-sm text-gray-500">
               New to BookAm?{' '}
-              <Link to="/customer/signup" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
+              <Link to="/customer/signup" className="text-primary-600 font-semibold hover:underline">
                 Create account
               </Link>
             </p>
             <p className="text-center text-xs text-gray-400">
               Are you a business owner?{' '}
-              <Link to="/admin/login" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+              <Link to="/admin/login" className="text-gray-500 hover:text-gray-700">
                 Go to business sign in
               </Link>
             </p>
             <p className="text-center text-xs text-gray-400 pt-1">
-              <Link to="/legal/terms" className="hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2">Terms</Link>
+              <Link to="/legal/terms" className="hover:text-gray-600 underline underline-offset-2">Terms</Link>
               <span className="px-2">·</span>
-              <Link to="/legal/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 underline underline-offset-2">Privacy</Link>
+              <Link to="/legal/privacy" className="hover:text-gray-600 underline underline-offset-2">Privacy</Link>
             </p>
           </div>
         </div>

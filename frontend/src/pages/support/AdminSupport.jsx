@@ -17,9 +17,9 @@ function fmtTime(ts) {
 }
 
 const TYPE_LABELS = {
-  business_customer: { label: 'Business ↔ Customer', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' },
-  admin_business:    { label: 'You ↔ Business',       color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' },
-  admin_consumer:    { label: 'You ↔ Customer',        color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' },
+  business_customer: { label: 'Business ↔ Customer', color: 'bg-blue-100 text-blue-700' },
+  admin_business:    { label: 'You ↔ Business',       color: 'bg-purple-100 text-purple-700' },
+  admin_consumer:    { label: 'You ↔ Customer',        color: 'bg-indigo-100 text-indigo-700' },
 };
 
 function RoomRow({ room, active, onClick }) {
@@ -28,16 +28,16 @@ function RoomRow({ room, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors ${
-        active ? 'bg-primary-50 dark:bg-primary-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-gray-50 last:border-0 transition-colors ${
+        active ? 'bg-primary-50' : 'hover:bg-gray-50'
       }`}
     >
-      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 text-sm font-bold text-gray-600 dark:text-gray-300">
+      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-sm font-bold text-gray-600">
         {(names[0] || '?').toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{names || 'Conversation'}</p>
+          <p className="font-semibold text-sm text-gray-900 truncate">{names || 'Conversation'}</p>
           <span className="text-[10px] text-gray-400 flex-shrink-0">{fmtTime(room.last_message_at)}</span>
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
@@ -80,10 +80,10 @@ function NewChatModal({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-sm p-6 animate-slide-up">
+      <div className="bg-white rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-sm p-6 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900 dark:text-white">New Conversation</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
+          <h3 className="font-bold text-gray-900">New Conversation</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-400" /></button>
         </div>
         <div className="mb-4">
           <label className="label">Chat with</label>
@@ -94,7 +94,7 @@ function NewChatModal({ onClose, onCreated }) {
         </div>
         <div className="mb-5">
           <label className="label">{type === 'admin_business' ? 'Select business' : 'Select customer'}</label>
-          {loading ? <div className="input animate-pulse h-10 bg-gray-100 dark:bg-gray-800" /> : (
+          {loading ? <div className="input animate-pulse h-10 bg-gray-100" /> : (
             <select className="input" value={selectedId} onChange={e => setSelectedId(e.target.value)}>
               <option value="">Choose…</option>
               {list.map(u => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
@@ -184,17 +184,17 @@ function DisputesPanel() {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-bold text-gray-900 dark:text-white">
+        <h2 className="font-bold text-gray-900">
           Disputes <span className="ml-1 text-sm font-normal text-gray-400">({open.length} open)</span>
         </h2>
-        <button onClick={() => load()} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <button onClick={() => load()} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {disputes.length === 0 && (
         <div className="text-center py-16 text-gray-400">
-          <CheckCircle className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+          <CheckCircle className="w-12 h-12 mx-auto mb-3 text-gray-200" />
           <p className="font-medium">No disputes</p>
           <p className="text-sm mt-1">All clear — no customer disputes raised.</p>
         </div>
@@ -204,18 +204,18 @@ function DisputesPanel() {
         <div className="space-y-3">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Open disputes</p>
           {open.map(d => (
-            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-lg border border-red-200 dark:border-red-800 p-4 shadow-sm">
+            <div key={d.id} className="bg-white rounded-lg border border-red-200 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
-                  <p className="font-bold text-sm text-gray-900 dark:text-white">{d.customer_name || d.customer_email || 'Customer'}</p>
+                  <p className="font-bold text-sm text-gray-900">{d.customer_name || d.customer_email || 'Customer'}</p>
                   <p className="text-xs text-gray-500">{d.service_name} · {d.business_name}</p>
                   <p className="text-xs text-gray-400 font-mono mt-0.5">{d.reference_id}</p>
                 </div>
-                <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded-full font-semibold">Open</span>
+                <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">Open</span>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-3">
-                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Reason: {d.reason}</p>
-                {d.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{d.description}</p>}
+              <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                <p className="text-xs font-semibold text-gray-600">Reason: {d.reason}</p>
+                {d.description && <p className="text-xs text-gray-500 mt-1">{d.description}</p>}
               </div>
               <div className="mb-3">
                 <p className="text-xs text-gray-500 mb-1">Service: <strong>£{parseFloat(d.price || 0).toFixed(2)}</strong> · Payment: <span className={d.payment_status === 'paid' ? 'text-green-600' : 'text-gray-400'}>{d.payment_status || 'unpaid'}</span></p>
@@ -232,7 +232,7 @@ function DisputesPanel() {
                 <button
                   onClick={() => resolve(d.id, 'reject')}
                   disabled={!!resolving}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   <XCircle className="w-4 h-4" /> {resolving === d.id + 'reject' ? 'Rejecting…' : 'Reject'}
                 </button>
@@ -255,10 +255,10 @@ function DisputesPanel() {
         <div className="space-y-2">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-4">Resolved</p>
           {closed.map(d => (
-            <div key={d.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-3 opacity-60">
+            <div key={d.id} className="bg-white rounded-lg border border-gray-100 p-3 opacity-60">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{d.customer_name || d.customer_email}</p>
+                  <p className="text-sm font-semibold text-gray-700">{d.customer_name || d.customer_email}</p>
                   <p className="text-xs text-gray-400">{d.reason}</p>
                 </div>
                 <span className={`text-xs px-2 py-1 rounded-full font-semibold ${d.status === 'resolved_refunded' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
@@ -309,8 +309,8 @@ function BroadcastsPanel() {
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-2xl mx-auto w-full space-y-6">
       {/* Compose */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-5">
-        <p className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-lg border border-gray-100 p-5">
+        <p className="font-bold text-gray-900 mb-4 flex items-center gap-2">
           <Bell className="w-4 h-4 text-primary-600" /> Send notification to all users
         </p>
         <form onSubmit={send} className="space-y-3">
@@ -339,7 +339,7 @@ function BroadcastsPanel() {
               {sending ? 'Sending…' : 'Broadcast'}
             </button>
           </div>
-          <label className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <label className="flex items-start gap-2 text-xs text-gray-500">
             <input
               type="checkbox"
               className="mt-0.5 w-4 h-4 rounded accent-primary-600"
@@ -361,18 +361,18 @@ function BroadcastsPanel() {
         ) : (
           <div className="space-y-2">
             {broadcasts.map(b => (
-              <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-lg border p-3 flex items-start gap-3 ${b.is_active ? 'border-gray-100 dark:border-gray-800' : 'border-gray-50 dark:border-gray-900 opacity-50'}`}>
+              <div key={b.id} className={`bg-white rounded-lg border p-3 flex items-start gap-3 ${b.is_active ? 'border-gray-100' : 'border-gray-50 opacity-50'}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${b.type === 'warning' ? 'bg-amber-100 text-amber-700' : b.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-primary-100 text-primary-700'}`}>{b.type}</span>
                     {!b.is_active && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 text-gray-500">Inactive</span>}
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{b.title}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{b.message}</p>
+                  <p className="text-sm font-semibold text-gray-900">{b.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{b.message}</p>
                   <p className="text-[10px] text-gray-400 mt-1">{new Date(b.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
                 {b.is_active && (
-                  <button onClick={() => deactivate(b.id)} className="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                  <button onClick={() => deactivate(b.id)} className="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -393,25 +393,25 @@ function StatsPanel() {
   useEffect(() => { load().finally(() => setLoading(false)); }, []);
 
   const cards = stats ? [
-    { label: 'Businesses', value: stats.businesses, color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300', icon: <Building2 className="w-5 h-5" /> },
-    { label: 'Customers', value: stats.consumers, color: 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300', icon: <Users className="w-5 h-5" /> },
-    { label: 'Total Bookings', value: stats.bookings, color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300', icon: <CheckCircle className="w-5 h-5" /> },
-    { label: 'Bookings This Week', value: stats.bookings_this_week, color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300', icon: <BarChart2 className="w-5 h-5" /> },
-    { label: 'Revenue (paid)', value: `£${stats.revenue}`, color: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300', icon: <CheckCircle className="w-5 h-5" /> },
-    { label: 'Pending Verifications', value: stats.pending_verifications, color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300', icon: <AlertTriangle className="w-5 h-5" /> },
+    { label: 'Businesses', value: stats.businesses, color: 'bg-blue-50 text-blue-700', icon: <Building2 className="w-5 h-5" /> },
+    { label: 'Customers', value: stats.consumers, color: 'bg-purple-50 text-purple-700', icon: <Users className="w-5 h-5" /> },
+    { label: 'Total Bookings', value: stats.bookings, color: 'bg-emerald-50 text-emerald-700', icon: <CheckCircle className="w-5 h-5" /> },
+    { label: 'Bookings This Week', value: stats.bookings_this_week, color: 'bg-orange-50 text-orange-700', icon: <BarChart2 className="w-5 h-5" /> },
+    { label: 'Revenue (paid)', value: `£${stats.revenue}`, color: 'bg-green-50 text-green-700', icon: <CheckCircle className="w-5 h-5" /> },
+    { label: 'Pending Verifications', value: stats.pending_verifications, color: 'bg-amber-50 text-amber-700', icon: <AlertTriangle className="w-5 h-5" /> },
   ] : [];
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="font-bold text-gray-900 dark:text-white text-lg">Platform Overview</h2>
-        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <h2 className="font-bold text-gray-900 text-lg">Platform Overview</h2>
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+          {[...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-lg bg-gray-100 animate-pulse" />)}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -484,17 +484,17 @@ function BusinessesPanel({ onStartChat }) {
   });
 
   const verifyBadge = (b) => {
-    if (b.is_verified) return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Verified</span>;
-    if (b.verification_status === 'pending') return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Pending</span>;
-    if (b.verification_status === 'rejected') return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">Rejected</span>;
-    return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">Unverified</span>;
+    if (b.is_verified) return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-green-100 text-green-700">Verified</span>;
+    if (b.verification_status === 'pending') return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-100 text-amber-700">Pending</span>;
+    if (b.verification_status === 'rejected') return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-red-100 text-red-600">Rejected</span>;
+    return <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 text-gray-500">Unverified</span>;
   };
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-gray-900 dark:text-white">Businesses <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
-        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <h2 className="font-bold text-gray-900">Businesses <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -506,7 +506,7 @@ function BusinessesPanel({ onStartChat }) {
             : null;
           return (
             <button key={f.id} onClick={() => setFilter(f.id)}
-              className={`text-xs px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1.5 ${filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+              className={`text-xs px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1.5 ${filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
               {f.label}
               {pendingVerifCount > 0 && (
                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none ${filter === f.id ? 'bg-white/30 text-white' : 'bg-amber-500 text-white'}`}>
@@ -519,17 +519,17 @@ function BusinessesPanel({ onStartChat }) {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-24 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-24 rounded-lg bg-gray-100 animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400"><Building2 className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No businesses</p></div>
+        <div className="text-center py-16 text-gray-400"><Building2 className="w-10 h-10 mx-auto mb-3 text-gray-200" /><p>No businesses</p></div>
       ) : (
         <div className="space-y-3">
           {filtered.map(b => (
-            <div key={b.id} className={`bg-white dark:bg-gray-900 rounded-xl border p-4 shadow-sm transition-all ${!b.is_active ? 'opacity-50 border-gray-100 dark:border-gray-800' : b.verification_status === 'pending' ? 'border-amber-300 dark:border-amber-700 shadow-amber-100/60 dark:shadow-none shadow-md' : 'border-gray-100 dark:border-gray-800'}`}>
+            <div key={b.id} className={`bg-white rounded-xl border p-4 shadow-sm transition-all ${!b.is_active ? 'opacity-50 border-gray-100' : b.verification_status === 'pending' ? 'border-amber-300 shadow-amber-100/60 shadow-md' : 'border-gray-100'}`}>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                    <p className="font-bold text-sm text-gray-900 dark:text-white">{b.name}</p>
+                    <p className="font-bold text-sm text-gray-900">{b.name}</p>
                     {verifyBadge(b)}
                     {!b.is_active && <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase bg-red-100 text-red-600">Suspended</span>}
                   </div>
@@ -541,14 +541,14 @@ function BusinessesPanel({ onStartChat }) {
               </div>
 
               {b.verification_status === 'pending' && b.verification_details && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-3 text-xs space-y-0.5 border border-amber-200 dark:border-amber-800">
-                  <p className="font-bold text-amber-800 dark:text-amber-300 mb-1.5 flex items-center gap-1.5">
+                <div className="bg-amber-50 rounded-xl p-3 mb-3 text-xs space-y-0.5 border border-amber-200">
+                  <p className="font-bold text-amber-800 mb-1.5 flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5" /> Verification request
                   </p>
-                  {b.verification_details.legal_name && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Legal name:</span> {b.verification_details.legal_name}</p>}
-                  {b.verification_details.company_reg_number && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Reg no:</span> {b.verification_details.company_reg_number}</p>}
-                  {b.verification_details.sole_trader && <p className="text-amber-700 dark:text-amber-400">Sole trader declaration</p>}
-                  {b.verification_details.business_address && <p className="text-amber-700 dark:text-amber-400"><span className="font-medium">Address:</span> {b.verification_details.business_address}</p>}
+                  {b.verification_details.legal_name && <p className="text-amber-700"><span className="font-medium">Legal name:</span> {b.verification_details.legal_name}</p>}
+                  {b.verification_details.company_reg_number && <p className="text-amber-700"><span className="font-medium">Reg no:</span> {b.verification_details.company_reg_number}</p>}
+                  {b.verification_details.sole_trader && <p className="text-amber-700">Sole trader declaration</p>}
+                  {b.verification_details.business_address && <p className="text-amber-700"><span className="font-medium">Address:</span> {b.verification_details.business_address}</p>}
                 </div>
               )}
 
@@ -565,7 +565,7 @@ function BusinessesPanel({ onStartChat }) {
                     <button
                       onClick={() => reject(b.id, b.name)}
                       disabled={!!acting}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold hover:bg-red-100 transition-colors disabled:opacity-50"
                     >
                       <ShieldX className="w-3.5 h-3.5" /> {acting === b.id + 'reject' ? 'Rejecting…' : 'Reject'}
                     </button>
@@ -575,7 +575,7 @@ function BusinessesPanel({ onStartChat }) {
                   <button
                     onClick={() => verify(b.id, b.name)}
                     disabled={!!acting}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-semibold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-green-200 bg-green-50 text-green-700 text-xs font-semibold hover:bg-green-100 transition-colors disabled:opacity-50"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" /> Force verify
                   </button>
@@ -583,20 +583,20 @@ function BusinessesPanel({ onStartChat }) {
                 <button
                   onClick={() => toggleSuspend(b)}
                   disabled={!!acting}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors disabled:opacity-50 ${b.is_active ? 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors disabled:opacity-50 ${b.is_active ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50'}`}
                 >
                   {b.is_active ? <Ban className="w-3.5 h-3.5" /> : <ToggleRight className="w-3.5 h-3.5" />}
                   {acting === b.id + 'suspend' ? 'Updating…' : b.is_active ? 'Suspend' : 'Reactivate'}
                 </button>
                 <button
                   onClick={() => setEditTarget(b)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors"
                 >
                   <Edit2 className="w-3.5 h-3.5" /> Edit
                 </button>
                 <button
                   onClick={() => onStartChat?.({ type: 'admin_business', business_id: b.id, subject: 'Business Support' })}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 text-xs font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary-200 text-primary-700 text-xs font-semibold hover:bg-primary-50 transition-colors"
                 >
                   <MessageSquare className="w-3.5 h-3.5" /> Message
                 </button>
@@ -637,12 +637,12 @@ function FinancialPanel() {
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full space-y-5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary-600" /> Financial Report</h2>
+        <h2 className="font-bold text-gray-900 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary-600" /> Financial Report</h2>
         <div className="flex gap-1.5 flex-wrap items-center">
           <ReconcileButton />
           {[7, 30, 90].map(d => (
             <button key={d} onClick={() => { setPeriod(d); load(d); }}
-              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${period === d ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${period === d ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
               {d}d
             </button>
           ))}
@@ -650,46 +650,46 @@ function FinancialPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-gray-100 animate-pulse" />)}</div>
       ) : !data ? (
         <p className="text-center text-gray-400 py-12">No data available</p>
       ) : (
         <>
           {/* Summary totals */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-              <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide mb-1">Total Revenue</p>
-              <p className="text-2xl font-black text-green-800 dark:text-green-300">{fmt(data.revenue_by_day?.reduce((s, r) => s + parseFloat(r.revenue || 0), 0))}</p>
-              <p className="text-xs text-green-600 dark:text-green-500 mt-1">Last {period} days</p>
+            <div className="bg-green-50 rounded-lg p-4">
+              <p className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-1">Total Revenue</p>
+              <p className="text-2xl font-black text-green-800">{fmt(data.revenue_by_day?.reduce((s, r) => s + parseFloat(r.revenue || 0), 0))}</p>
+              <p className="text-xs text-green-600 mt-1">Last {period} days</p>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-1">Paid Bookings</p>
-              <p className="text-2xl font-black text-blue-800 dark:text-blue-300">{data.revenue_by_day?.reduce((s, r) => s + parseInt(r.paid_bookings || 0), 0) || 0}</p>
-              <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">Last {period} days</p>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Paid Bookings</p>
+              <p className="text-2xl font-black text-blue-800">{data.revenue_by_day?.reduce((s, r) => s + parseInt(r.paid_bookings || 0), 0) || 0}</p>
+              <p className="text-xs text-blue-600 mt-1">Last {period} days</p>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-800">
+            <div className="bg-white rounded-lg p-4 border border-gray-100">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Booked Value</p>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">{fmt(summary.booked_value)}</p>
+              <p className="text-2xl font-black text-gray-900">{fmt(summary.booked_value)}</p>
               <p className="text-xs text-gray-400 mt-1">Paid + unpaid services</p>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-100 dark:border-gray-800">
+            <div className="bg-white rounded-lg p-4 border border-gray-100">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Payment Status</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{parseInt(summary.paid || 0)} paid · {parseInt(summary.unpaid || 0)} unpaid</p>
+              <p className="text-sm font-bold text-gray-900">{parseInt(summary.paid || 0)} paid · {parseInt(summary.unpaid || 0)} unpaid</p>
               <p className="text-xs text-gray-400 mt-1">{parseInt(summary.refunded || 0)} refunded · {parseInt(summary.other || 0)} other</p>
             </div>
           </div>
 
           {/* Revenue by day */}
           {data.revenue_by_day?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white rounded-lg border border-gray-100 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Revenue by day</p>
               <div className="space-y-1.5 max-h-60 overflow-y-auto">
                 {[...data.revenue_by_day].reverse().map(r => (
-                  <div key={r.day} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  <div key={r.day} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 last:border-0">
                     <span className="text-gray-500 text-xs">{new Date(r.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                     <div className="flex items-center gap-4">
                       <span className="text-xs text-gray-400">{r.paid_bookings} paid</span>
-                      <span className="font-bold text-gray-900 dark:text-white">{fmt(r.revenue)}</span>
+                      <span className="font-bold text-gray-900">{fmt(r.revenue)}</span>
                     </div>
                   </div>
                 ))}
@@ -699,15 +699,15 @@ function FinancialPanel() {
 
           {/* Top businesses */}
           {data.top_businesses?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white rounded-lg border border-gray-100 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top businesses by revenue</p>
               <div className="space-y-2">
                 {data.top_businesses.map((b, i) => (
                   <div key={b.business_id} className="flex items-center gap-3">
                     <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
-                    <p className="flex-1 text-sm font-semibold text-gray-900 dark:text-white truncate">{b.name}</p>
+                    <p className="flex-1 text-sm font-semibold text-gray-900 truncate">{b.name}</p>
                     <span className="text-xs text-gray-400">{b.paid_bookings} bookings</span>
-                    <span className="text-sm font-bold text-green-700 dark:text-green-400">{fmt(b.revenue)}</span>
+                    <span className="text-sm font-bold text-green-700">{fmt(b.revenue)}</span>
                   </div>
                 ))}
               </div>
@@ -716,15 +716,15 @@ function FinancialPanel() {
 
           {/* Top services */}
           {data.top_services?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white rounded-lg border border-gray-100 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Top services</p>
               <div className="space-y-2">
                 {data.top_services.map((s, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
-                    <p className="flex-1 text-sm font-semibold text-gray-900 dark:text-white truncate">{s.service_name}</p>
+                    <p className="flex-1 text-sm font-semibold text-gray-900 truncate">{s.service_name}</p>
                     <span className="text-xs text-gray-400">{s.bookings} bookings</span>
-                    <span className="text-sm font-bold text-green-700 dark:text-green-400">{fmt(s.revenue)}</span>
+                    <span className="text-sm font-bold text-green-700">{fmt(s.revenue)}</span>
                   </div>
                 ))}
               </div>
@@ -733,16 +733,16 @@ function FinancialPanel() {
 
           {/* Recent transactions */}
           {data.recent_payments?.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
+            <div className="bg-white rounded-lg border border-gray-100 p-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent transactions</p>
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {data.recent_payments.map(p => (
-                  <div key={p.id} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  <div key={p.id} className="flex items-center justify-between text-sm py-1 border-b border-gray-50 last:border-0">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{p.business_name}</p>
+                      <p className="text-xs font-semibold text-gray-900 truncate">{p.business_name}</p>
                       <p className="text-[10px] text-gray-400">{p.service_name} · {new Date(p.booking_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · {p.payment_status || 'unpaid'}</p>
                     </div>
-                    <span className={`font-bold ml-3 ${p.payment_status === 'paid' ? 'text-green-700 dark:text-green-400' : p.payment_status === 'refunded' ? 'text-amber-700 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}`}>{fmt(p.price)}</span>
+                    <span className={`font-bold ml-3 ${p.payment_status === 'paid' ? 'text-green-700' : p.payment_status === 'refunded' ? 'text-amber-700' : 'text-gray-500'}`}>{fmt(p.price)}</span>
                   </div>
                 ))}
               </div>
@@ -785,20 +785,20 @@ function PlatformBookingsPanel() {
 
   const fmt = (v) => `£${parseFloat(v || 0).toFixed(2)}`;
   const statusTone = {
-    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    confirmed: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    cancelled: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    pending: 'bg-amber-100 text-amber-700',
+    confirmed: 'bg-blue-100 text-blue-700',
+    completed: 'bg-green-100 text-green-700',
+    cancelled: 'bg-red-100 text-red-700',
   };
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-bold text-gray-900 dark:text-white">All Bookings <span className="text-sm font-normal text-gray-400">({bookings.length})</span></h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Search and correct booking/payment status across the whole platform.</p>
+          <h2 className="font-bold text-gray-900">All Bookings <span className="text-sm font-normal text-gray-400">({bookings.length})</span></h2>
+          <p className="text-xs text-gray-500 mt-0.5">Search and correct booking/payment status across the whole platform.</p>
         </div>
-        <button onClick={load} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <button onClick={load} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -829,19 +829,19 @@ function PlatformBookingsPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-28 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-28 rounded-lg bg-gray-100 animate-pulse" />)}</div>
       ) : bookings.length === 0 ? (
-        <div className="text-center py-16 text-gray-400"><CalendarCheck className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No bookings found</p></div>
+        <div className="text-center py-16 text-gray-400"><CalendarCheck className="w-10 h-10 mx-auto mb-3 text-gray-200" /><p>No bookings found</p></div>
       ) : (
         <div className="space-y-3">
           {bookings.map(b => (
-            <div key={b.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4 shadow-sm">
+            <div key={b.id} className="bg-white rounded-lg border border-gray-100 p-4 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-bold text-sm text-gray-900 dark:text-white">{b.business_name}</p>
+                    <p className="font-bold text-sm text-gray-900">{b.business_name}</p>
                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${statusTone[b.status] || 'bg-gray-100 text-gray-500'}`}>{b.status}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">{b.payment_status || 'unpaid'}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 text-gray-500">{b.payment_status || 'unpaid'}</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">{b.service_name} · {fmt(b.service_price)} · {b.customer_name || 'Customer'}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{b.booking_date} · {b.start_time} - {b.end_time} · {b.customer_email || 'no email'}</p>
@@ -906,8 +906,8 @@ function AuditPanel() {
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-4xl mx-auto w-full space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><History className="w-5 h-5 text-primary-600" /> Audit Trail</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Sensitive admin changes are recorded here for launch safety.</p>
+          <h2 className="font-bold text-gray-900 flex items-center gap-2"><History className="w-5 h-5 text-primary-600" /> Audit Trail</h2>
+          <p className="text-xs text-gray-500 mt-1">Sensitive admin changes are recorded here for launch safety.</p>
         </div>
         <button onClick={load} className="btn-secondary text-xs flex items-center gap-1.5">
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -915,17 +915,17 @@ function AuditPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(8)].map((_, i) => <div key={i} className="h-16 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(8)].map((_, i) => <div key={i} className="h-16 rounded-lg bg-gray-100 animate-pulse" />)}</div>
       ) : logs.length === 0 ? (
-        <div className="text-center py-16 text-gray-400"><History className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No audit activity yet</p></div>
+        <div className="text-center py-16 text-gray-400"><History className="w-10 h-10 mx-auto mb-3 text-gray-200" /><p>No audit activity yet</p></div>
       ) : (
         <div className="space-y-2">
           {logs.map(log => (
-            <div key={log.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 p-4">
+            <div key={log.id} className="bg-white rounded-lg border border-gray-100 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-bold text-sm text-gray-900 dark:text-white">{log.action}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{log.target_type || 'platform'}{log.target_id ? ` · ${log.target_id}` : ''}</p>
+                  <p className="font-bold text-sm text-gray-900">{log.action}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{log.target_type || 'platform'}{log.target_id ? ` · ${log.target_id}` : ''}</p>
                   {log.details && Object.keys(log.details).length > 0 && (
                     <p className="text-[11px] text-gray-400 mt-1 truncate">{JSON.stringify(log.details)}</p>
                   )}
@@ -958,9 +958,9 @@ function LaunchReadinessPanel() {
   useEffect(() => { load(); }, []);
 
   const tone = {
-    ready: 'border-green-100 dark:border-green-900/50 bg-green-50 dark:bg-green-900/15 text-green-700 dark:text-green-300',
-    warning: 'border-amber-100 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/15 text-amber-700 dark:text-amber-300',
-    blocked: 'border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-900/15 text-red-700 dark:text-red-300',
+    ready: 'border-green-100 bg-green-50 text-green-700',
+    warning: 'border-amber-100 bg-amber-50 text-amber-700',
+    blocked: 'border-red-100 bg-red-50 text-red-700',
   };
   const icon = {
     ready: <CheckCircle className="w-4 h-4" />,
@@ -972,10 +972,10 @@ function LaunchReadinessPanel() {
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto w-full space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h2 className="font-bold text-gray-900 flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-primary-600" /> Launch Readiness
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Critical checks for payments, security, email, payouts, disputes, and marketplace data.</p>
+          <p className="text-sm text-gray-500 mt-1">Critical checks for payments, security, email, payouts, disputes, and marketplace data.</p>
         </div>
         <button onClick={load} className="btn-secondary text-xs flex items-center gap-1.5">
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -983,7 +983,7 @@ function LaunchReadinessPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-gray-100 animate-pulse" />)}</div>
       ) : !data ? (
         <p className="text-center text-gray-400 py-12">No readiness data available</p>
       ) : (
@@ -1050,10 +1050,10 @@ function EditBusinessModal({ business, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-md p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-md p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900 dark:text-white">Edit Business</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
+          <h3 className="font-bold text-gray-900">Edit Business</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-400" /></button>
         </div>
         <form onSubmit={save} className="space-y-3">
           {[['name','Name *'], ['description','Description'], ['category','Category'], ['location','Location'], ['phone','Phone'], ['email','Email']].map(([k, label]) => (
@@ -1106,8 +1106,8 @@ function UsersPanel({ onStartChat }) {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-gray-900 dark:text-white">Customers <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
-        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+        <h2 className="font-bold text-gray-900">Customers <span className="text-sm font-normal text-gray-400">({filtered.length})</span></h2>
+        <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -1120,22 +1120,22 @@ function UsersPanel({ onStartChat }) {
       />
 
       {loading ? (
-        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-16 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-16 rounded-lg bg-gray-100 animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400"><Users className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" /><p>No customers found</p></div>
+        <div className="text-center py-16 text-gray-400"><Users className="w-10 h-10 mx-auto mb-3 text-gray-200" /><p>No customers found</p></div>
       ) : (
         <div className="space-y-2">
           {filtered.map(c => (
-            <div key={c.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary-600 dark:text-primary-400">
+            <div key={c.id} className="bg-white rounded-lg border border-gray-100 px-4 py-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary-600">
                 {(c.full_name?.[0] || c.email[0]).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{c.full_name || '—'}</p>
+                <p className="font-semibold text-sm text-gray-900 truncate">{c.full_name || '—'}</p>
                 <p className="text-xs text-gray-400 truncate">{c.email}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{parseInt(c.total_bookings)} bookings</p>
+                <p className="text-xs font-semibold text-gray-700">{parseInt(c.total_bookings)} bookings</p>
                 <p className="text-[10px] text-gray-400">{new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                 <div className="flex items-center gap-1 justify-end mt-0.5">
                   {c.email_verified ? <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-green-100 text-green-700">Verified</span> : <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-gray-100 text-gray-500">Unverified</span>}
@@ -1143,14 +1143,14 @@ function UsersPanel({ onStartChat }) {
               </div>
               <button
                 onClick={() => onStartChat?.({ type: 'admin_consumer', consumer_id: c.id, subject: 'Customer Support' })}
-                className="p-2 rounded-lg border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0"
+                className="p-2 rounded-lg border border-primary-200 text-primary-700 hover:bg-primary-50 transition-colors flex-shrink-0"
                 title="Message customer"
               >
                 <MessageSquare className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setNotifyTarget(c)}
-                className="p-2 rounded-lg border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors flex-shrink-0"
+                className="p-2 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors flex-shrink-0"
                 title="Send notification"
               >
                 <Bell className="w-4 h-4" />
@@ -1158,7 +1158,7 @@ function UsersPanel({ onStartChat }) {
               <button
                 onClick={() => updateConsumer(c, { email_verified: !c.email_verified })}
                 disabled={acting === c.id}
-                className={`p-2 rounded-lg border transition-colors flex-shrink-0 ${c.email_verified ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'}`}
+                className={`p-2 rounded-lg border transition-colors flex-shrink-0 ${c.email_verified ? 'border-gray-200 text-gray-400 hover:bg-gray-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
                 title={c.email_verified ? 'Mark email unverified' : 'Force verify email'}
               >
                 <ShieldCheck className="w-4 h-4" />
@@ -1166,7 +1166,7 @@ function UsersPanel({ onStartChat }) {
               <button
                 onClick={() => updateConsumer(c, { onboarding_complete: !c.onboarding_complete })}
                 disabled={acting === c.id}
-                className={`p-2 rounded-lg border transition-colors flex-shrink-0 ${c.onboarding_complete ? 'border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' : 'border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                className={`p-2 rounded-lg border transition-colors flex-shrink-0 ${c.onboarding_complete ? 'border-gray-200 text-gray-400 hover:bg-gray-50' : 'border-blue-200 text-blue-700 hover:bg-blue-50'}`}
                 title={c.onboarding_complete ? 'Require onboarding again' : 'Mark onboarding complete'}
               >
                 <Check className="w-4 h-4" />
@@ -1209,13 +1209,13 @@ function NotifyConsumerModal({ consumer, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-md p-6 animate-slide-up">
+      <div className="bg-white rounded-t-2xl sm:rounded-lg shadow-2xl w-full sm:max-w-md p-6 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-bold text-gray-900 dark:text-white">Notify Customer</h3>
+            <h3 className="font-bold text-gray-900">Notify Customer</h3>
             <p className="text-xs text-gray-400 mt-0.5">{consumer.full_name || consumer.email}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4 text-gray-400" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-400" /></button>
         </div>
         <form onSubmit={submit} className="space-y-3">
           <input className="input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
@@ -1249,7 +1249,7 @@ function ReconcileButton() {
       onClick={run}
       disabled={running}
       title="Check Stripe for any payments that were missed by the webhook and sync their status"
-      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 font-semibold"
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50 font-semibold"
     >
       <RefreshCw className={`w-3.5 h-3.5 ${running ? 'animate-spin' : ''}`} />
       {running ? 'Syncing…' : 'Reconcile'}
@@ -1275,7 +1275,7 @@ function AutoReleaseButton() {
       onClick={run}
       disabled={running}
       title="Auto-release payments for bookings >72h old with no customer confirmation"
-      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50 font-semibold"
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-primary-200 text-primary-700 hover:bg-primary-50 transition-colors disabled:opacity-50 font-semibold"
     >
       <Zap className="w-3.5 h-3.5" />
       {running ? 'Running…' : 'Auto-release'}
@@ -1292,9 +1292,9 @@ function CopyField({ label, value }) {
     setTimeout(() => setCopied(false), 1800);
   };
   return (
-    <div className="flex items-center justify-between gap-2 py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+    <div className="flex items-center justify-between gap-2 py-1 border-b border-gray-50 last:border-0">
       <span className="text-[11px] text-gray-400 w-28 flex-shrink-0">{label}</span>
-      <span className="text-[12px] font-mono font-semibold text-gray-800 dark:text-gray-200 flex-1 truncate">{value}</span>
+      <span className="text-[12px] font-mono font-semibold text-gray-800 flex-1 truncate">{value}</span>
       <button onClick={copy} className="p-1 rounded text-gray-300 hover:text-primary-600 transition-colors flex-shrink-0">
         {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
       </button>
@@ -1339,35 +1339,35 @@ function PayoutsPanel() {
     const open = expanded === b.id;
     const pending = parseFloat(b.pending_payout);
     return (
-      <div className={`bg-white dark:bg-gray-900 rounded-lg border shadow-sm overflow-hidden ${pending > 0 ? 'border-amber-200 dark:border-amber-800' : 'border-gray-100 dark:border-gray-800 opacity-70'}`}>
+      <div className={`bg-white rounded-lg border shadow-sm overflow-hidden ${pending > 0 ? 'border-amber-200' : 'border-gray-100 opacity-70'}`}>
         <button className="w-full flex items-start gap-3 p-4 text-left" onClick={() => setExpanded(open ? null : b.id)}>
-          <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 font-bold text-primary-600 dark:text-primary-400 text-sm">
+          <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 font-bold text-primary-600 text-sm">
             {(b.name?.[0] || '?').toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-bold text-sm text-gray-900 dark:text-white">{b.name}</p>
+                <p className="font-bold text-sm text-gray-900">{b.name}</p>
                 <p className="text-xs text-gray-400 truncate">{b.email}</p>
               </div>
               <div className="text-right flex-shrink-0">
                 {pending > 0 ? (
-                  <p className="text-base font-black text-amber-600 dark:text-amber-400">{fmt(pending, b.bank_currency)}</p>
+                  <p className="text-base font-black text-amber-600">{fmt(pending, b.bank_currency)}</p>
                 ) : (
-                  <p className="text-xs font-semibold text-green-600 dark:text-green-400">All paid</p>
+                  <p className="text-xs font-semibold text-green-600">All paid</p>
                 )}
                 <p className="text-[10px] text-gray-400">{b.pending_booking_count} booking{b.pending_booking_count === 1 ? '' : 's'} pending</p>
               </div>
             </div>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">{b.bank_country || '?'}</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 dark:bg-gray-800 text-gray-500">{(b.bank_currency || 'GBP').toUpperCase()}</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 text-gray-500">{b.bank_country || '?'}</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-100 text-gray-500">{(b.bank_currency || 'GBP').toUpperCase()}</span>
               {b.stripe_onboarding_complete ? (
-                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Stripe active</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-green-100 text-green-700">Stripe active</span>
               ) : b.stripe_account_id ? (
-                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">Stripe pending</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-100 text-blue-700">Stripe pending</span>
               ) : (
-                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Manual bank</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-100 text-amber-700">Manual bank</span>
               )}
               <span className="text-[10px] text-gray-400 ml-auto">{open ? '▲' : '▼'}</span>
             </div>
@@ -1375,7 +1375,7 @@ function PayoutsPanel() {
         </button>
 
         {open && (
-          <div className="px-4 pb-4 border-t border-gray-50 dark:border-gray-800 pt-3 space-y-1">
+          <div className="px-4 pb-4 border-t border-gray-50 pt-3 space-y-1">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Bank details — send payment manually</p>
             <CopyField label="Account holder" value={b.bank_holder_name} />
             <CopyField label="Bank name"      value={b.bank_name} />
@@ -1391,9 +1391,9 @@ function PayoutsPanel() {
             )}
             {pending > 0 && (
               <div className="pt-3">
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 mb-3 text-xs">
-                  <p className="font-bold text-amber-800 dark:text-amber-300">Amount to transfer: {fmt(pending, b.bank_currency)}</p>
-                  <p className="text-amber-700 dark:text-amber-400 mt-0.5">
+                <div className="bg-amber-50 rounded-lg p-3 mb-3 text-xs">
+                  <p className="font-bold text-amber-800">Amount to transfer: {fmt(pending, b.bank_currency)}</p>
+                  <p className="text-amber-700 mt-0.5">
                     {b.pending_booking_count} confirmed booking{b.pending_booking_count === 1 ? '' : 's'} awaiting payout.
                     Transfer this amount to the account above, then click "Mark as paid."
                   </p>
@@ -1418,24 +1418,24 @@ function PayoutsPanel() {
     <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-2xl mx-auto w-full space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h2 className="font-bold text-gray-900 flex items-center gap-2">
             <Banknote className="w-5 h-5 text-primary-600" /> Manual Payouts
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Businesses that submitted bank details for manual transfer.</p>
+          <p className="text-sm text-gray-500 mt-0.5">Businesses that submitted bank details for manual transfer.</p>
         </div>
         <div className="flex items-center gap-2">
           <AutoReleaseButton />
-          <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+          <button onClick={() => { setLoading(true); load().finally(() => setLoading(false)); }} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-28 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-28 rounded-lg bg-gray-100 animate-pulse" />)}</div>
       ) : businesses.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <Banknote className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+          <Banknote className="w-12 h-12 mx-auto mb-3 text-gray-200" />
           <p className="font-medium">No manual bank details yet</p>
           <p className="text-sm mt-1">Businesses in unsupported Stripe countries will appear here.</p>
         </div>
@@ -1522,39 +1522,39 @@ export default function AdminSupport() {
   const showingChat = !!activeRoom;
 
   return (
-    <div className="flex flex-col bg-slate-50 dark:bg-gray-950" style={{ height: '100dvh' }}>
+    <div className="flex flex-col bg-slate-50" style={{ height: '100dvh' }}>
       {/* Header — padding-top clears notch / Dynamic Island */}
-      <header className="flex-shrink-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      <header className="flex-shrink-0 bg-white/95 backdrop-blur-xl border-b border-gray-100" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="px-4 h-auto min-h-16 py-2 flex items-center gap-3">
           {/* Mobile back button when in chat */}
           {showingChat ? (
             <button
               onClick={() => setActiveRoom(null)}
-              className="md:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500"
+              className="md:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
           ) : (
-            <Headphones className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <Headphones className="w-5 h-5 text-primary-600" />
           )}
 
-          <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain dark:brightness-0 dark:invert" />
+          <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain" />
 
           {showingChat ? (
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{chatTitle}</p>
+              <p className="font-bold text-sm text-gray-900 truncate">{chatTitle}</p>
               <p className="text-xs text-gray-400">{TYPE_LABELS[activeRoomData?.type]?.label}</p>
             </div>
           ) : (
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400">Platform command</p>
-              <p className="font-bold text-sm text-gray-900 dark:text-white">Support Panel</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-primary-600">Platform command</p>
+              <p className="font-bold text-sm text-gray-900">Support Panel</p>
             </div>
           )}
 
           <div className="ml-auto flex items-center gap-2 min-w-0">
             {/* Tab switcher */}
-            <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 overflow-x-auto scrollbar-hide max-w-[calc(100vw-9rem)] md:max-w-none">
+            <div className="flex gap-0.5 bg-gray-100 rounded-lg p-1 overflow-x-auto scrollbar-hide max-w-[calc(100vw-9rem)] md:max-w-none">
               {[
                 { id: 'messages', icon: <MessageSquare className="w-3 h-3" />, label: 'Messages' },
                 { id: 'disputes', icon: <AlertTriangle className="w-3 h-3" />, label: 'Disputes' },
@@ -1569,7 +1569,7 @@ export default function AdminSupport() {
                 { id: 'readiness', icon: <ShieldCheck className="w-3 h-3" />, label: 'Launch' },
               ].map(t => (
                 <button key={t.id} onClick={() => setMainTab(t.id)}
-                  className={`text-xs px-2.5 py-1.5 rounded-md font-semibold transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${mainTab === t.id ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>
+                  className={`text-xs px-2.5 py-1.5 rounded-md font-semibold transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${mainTab === t.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                   {t.icon} <span className="hidden sm:inline">{t.label}</span>
                 </button>
               ))}
@@ -1585,7 +1585,7 @@ export default function AdminSupport() {
             )}
             <button
               onClick={() => { localStorage.removeItem(TOKEN_KEY); setAuthed(false); setActiveRoom(null); }}
-              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 transition-colors"
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />
@@ -1656,15 +1656,15 @@ export default function AdminSupport() {
 
       {mainTab === 'messages' && <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Room list — full width mobile (hidden when chat open), fixed sidebar desktop */}
-        <div className={`${showingChat ? 'hidden md:flex' : 'flex'} md:flex-col w-full md:w-80 flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex-col`}>
+        <div className={`${showingChat ? 'hidden md:flex' : 'flex'} md:flex-col w-full md:w-80 flex-shrink-0 bg-white border-r border-gray-100 flex-col`}>
           {/* Filter bar */}
-          <div className="flex gap-1.5 p-3 border-b border-gray-100 dark:border-gray-800 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-1.5 p-3 border-b border-gray-100 overflow-x-auto scrollbar-hide">
             {filters.map(f => (
               <button
                 key={f.id}
                 onClick={() => setFilter(f.id)}
                 className={`text-xs px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors ${
-                  filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                  filter === f.id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-500'
                 }`}
               >
                 {f.label}
@@ -1673,7 +1673,7 @@ export default function AdminSupport() {
           </div>
 
           {/* Room count */}
-          <div className="px-4 py-2 border-b border-gray-50 dark:border-gray-800">
+          <div className="px-4 py-2 border-b border-gray-50">
             <p className="text-xs text-gray-400">{filtered.length} conversation{filtered.length !== 1 ? 's' : ''}</p>
           </div>
 
@@ -1682,19 +1682,19 @@ export default function AdminSupport() {
               <div className="p-4 space-y-3">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="flex items-center gap-3 animate-pulse">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 bg-gray-100 dark:bg-gray-800 rounded w-2/3" />
-                      <div className="h-2.5 bg-gray-50 dark:bg-gray-700 rounded w-1/2" />
+                      <div className="h-3.5 bg-gray-100 rounded w-2/3" />
+                      <div className="h-2.5 bg-gray-50 rounded w-1/2" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filtered.length === 0 ? (
               <div className="p-10 text-center text-gray-400">
-                <MessageSquare className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+                <MessageSquare className="w-10 h-10 mx-auto mb-3 text-gray-200" />
                 <p className="text-sm font-medium">No conversations yet</p>
-                <button onClick={() => setShowNew(true)} className="mt-3 text-xs text-primary-600 dark:text-primary-400 font-semibold">
+                <button onClick={() => setShowNew(true)} className="mt-3 text-xs text-primary-600 font-semibold">
                   Start one →
                 </button>
               </div>
@@ -1723,9 +1723,9 @@ export default function AdminSupport() {
               subtitle={null}
             />
           ) : (
-            <div className="flex-1 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col items-center justify-center text-center p-8 text-gray-400">
-              <Headphones className="w-16 h-16 mb-4 text-gray-200 dark:text-gray-700" />
-              <p className="font-bold text-gray-700 dark:text-gray-200 text-lg">Support Panel</p>
+            <div className="flex-1 rounded-lg border border-gray-100 bg-white flex flex-col items-center justify-center text-center p-8 text-gray-400">
+              <Headphones className="w-16 h-16 mb-4 text-gray-200" />
+              <p className="font-bold text-gray-700 text-lg">Support Panel</p>
               <p className="text-sm mt-1 text-gray-400">Select a conversation from the list, or start a new one.</p>
               <button onClick={() => setShowNew(true)} className="mt-5 btn-primary text-sm">
                 <Plus className="w-4 h-4" /> New Conversation

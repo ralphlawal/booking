@@ -156,7 +156,7 @@ export default function ConsumerOnboarding() {
             type="button"
             onClick={detectLocation}
             disabled={detectingLocation}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 border-dashed border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400 font-semibold text-sm hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 border-dashed border-primary-300 text-primary-600 font-semibold text-sm hover:bg-primary-50 transition-colors disabled:opacity-50"
           >
             {detectingLocation ? (
               <><div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" /> Detecting…</>
@@ -165,7 +165,7 @@ export default function ConsumerOnboarding() {
             )}
           </button>
           {coords && locationText && (
-            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg px-4 py-2.5">
+            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 rounded-lg px-4 py-2.5">
               <Check className="w-4 h-4 flex-shrink-0" />
               Location detected: <strong className="ml-1">{locationText}</strong>
             </div>
@@ -190,12 +190,12 @@ export default function ConsumerOnboarding() {
                 onClick={() => toggleCategory(cat.id)}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all duration-150 text-center ${
                   isSelected
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 shadow-md shadow-primary-100'
-                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300'
+                    ? 'border-primary-500 bg-primary-50 shadow-md shadow-primary-100'
+                    : 'border-gray-100 bg-white hover:border-gray-300'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isSelected ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'}`} />
-                <span className={`text-[11px] font-bold leading-tight ${isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-gray-600 dark:text-gray-400'}`}>
+                <Icon className={`w-5 h-5 ${isSelected ? 'text-primary-600' : 'text-gray-500'}`} />
+                <span className={`text-[11px] font-bold leading-tight ${isSelected ? 'text-primary-700' : 'text-gray-600'}`}>
                   {cat.label}
                 </span>
                 {isSelected && <Check className="w-3 h-3 text-primary-500" />}
@@ -217,17 +217,17 @@ export default function ConsumerOnboarding() {
             { icon: <MessageSquare className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Message businesses directly', desc: 'Chat with businesses before and after your appointment.' },
             { icon: <Shield className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" />, title: 'Booking support when you need it', desc: 'View booking details, contact the business, and reach BookAm support if you need help.' },
           ].map(item => (
-            <div key={item.title} className="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div key={item.title} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
               {item.icon}
               <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+                <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
               </div>
             </div>
           ))}
-          <div className="mt-1 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 rounded-lg">
-            <p className="text-xs font-semibold text-primary-800 dark:text-primary-200">Early Access</p>
-            <p className="text-xs text-primary-600 dark:text-primary-400 mt-0.5">
+          <div className="mt-1 p-3 bg-primary-50 border border-primary-100 rounded-lg">
+            <p className="text-xs font-semibold text-primary-800">Early Access</p>
+            <p className="text-xs text-primary-600 mt-0.5">
               BookAm is in active development. We are building new features every week — payments, reviews, loyalty rewards, and more. Thank you for being part of this journey.
             </p>
           </div>
@@ -264,11 +264,11 @@ export default function ConsumerOnboarding() {
         <div className="app-panel p-6">
           {/* Icon + heading */}
           <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-lg bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-lg bg-primary-50 flex items-center justify-center mx-auto mb-4">
               {current.icon}
             </div>
-            <h1 className="text-xl font-black text-gray-900 dark:text-white">{current.title}</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{current.subtitle}</p>
+            <h1 className="text-xl font-black text-gray-900">{current.title}</h1>
+            <p className="text-sm text-gray-500 mt-1">{current.subtitle}</p>
           </div>
 
           {current.content}
@@ -292,7 +292,7 @@ export default function ConsumerOnboarding() {
               <button
                 onClick={saveAndFinish}
                 disabled={saving}
-                className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-center py-2 transition-colors"
+                className="text-sm text-gray-400 hover:text-gray-600 text-center py-2 transition-colors"
               >
                 Skip this step
               </button>
@@ -309,5 +309,5 @@ export default function ConsumerOnboarding() {
 }
 
 function Feature({ icon, text }) {
-  return <div className="flex items-center gap-3 rounded-xl bg-primary-50 dark:bg-primary-900/30 p-3 text-sm font-semibold text-gray-800 dark:text-gray-100"><span className="text-primary-600 dark:text-primary-300">{icon}</span>{text}</div>;
+  return <div className="flex items-center gap-3 rounded-xl bg-primary-50 p-3 text-sm font-semibold text-gray-800"><span className="text-primary-600">{icon}</span>{text}</div>;
 }

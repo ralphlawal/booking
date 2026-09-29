@@ -390,7 +390,7 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors -mb-px ${tab === t ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent'}`}
+              className={`px-4 py-3 text-sm font-semibold border-b-2 transition-colors -mb-px ${tab === t ? 'border-primary-600 text-primary-600' : 'border-transparent'}`}
               style={{ color: tab === t ? undefined : 'var(--bam-text-muted)' }}
             >
               {l}
@@ -487,7 +487,7 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
                   <button
                     onClick={generateMessage}
                     disabled={genAi}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 disabled:opacity-50"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 disabled:opacity-50"
                   >
                     {genAi ? <SmallSpinner dark /> : <SparkleIcon className="w-3.5 h-3.5" />}
                     {genAi ? 'Generating…' : 'Generate'}
@@ -498,7 +498,7 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
                     <p className="text-sm leading-relaxed" style={{ color: 'var(--bam-text-muted)' }}>{aiMsg}</p>
                     <button
                       onClick={() => { navigator.clipboard.writeText(aiMsg); toast.success('Copied!'); }}
-                      className="mt-2 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline"
+                      className="mt-2 text-xs font-semibold text-violet-600 hover:underline"
                     >
                       Copy message
                     </button>

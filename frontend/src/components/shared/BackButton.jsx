@@ -12,7 +12,7 @@ function normalizeTarget(target) {
 export default function BackButton({
   fallback = '/',
   children = 'Back',
-  className = 'flex items-center gap-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors',
+  className = 'flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors',
   iconClassName = 'w-4 h-4',
   replace = true,
   ...props

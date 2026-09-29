@@ -62,36 +62,36 @@ export default function LegalPage() {
   const content = PAGES[page] || PAGES.terms;
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
+    <main className="min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="flex items-center justify-between gap-4 mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-primary-600">
             <ArrowLeft className="w-4 h-4" /> Home
           </Link>
-          <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-8 w-auto object-contain dark:brightness-0 dark:invert" />
+          <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-8 w-auto object-contain" />
         </div>
 
-        <section className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 sm:p-8 shadow-sm">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-bold mb-4">
+        <section className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-8 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-bold mb-4">
             <ShieldCheck className="w-3.5 h-3.5" /> BookAm Policy
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight">{content.title}</h1>
           <p className="text-sm text-gray-400 mt-2">Last updated: {content.updated}</p>
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed mt-5">{content.intro}</p>
+          <p className="text-gray-600 leading-relaxed mt-5">{content.intro}</p>
 
           <div className="mt-8 space-y-6">
             {content.sections.map(([title, text]) => (
               <div key={title}>
                 <h2 className="text-lg font-bold mb-2">{title}</h2>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed">{text}</p>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{text}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 rounded-2xl bg-gray-50 dark:bg-gray-800/70 p-4 border border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="mt-8 rounded-2xl bg-gray-50 p-4 border border-gray-100">
+            <p className="text-sm text-gray-600">
               Need help? Email{' '}
-              <a href="mailto:hello@bookam.business" className="font-semibold text-primary-600 dark:text-primary-400 inline-flex items-center gap-1">
+              <a href="mailto:hello@bookam.business" className="font-semibold text-primary-600 inline-flex items-center gap-1">
                 <Mail className="w-3.5 h-3.5" /> hello@bookam.business
               </a>
             </p>

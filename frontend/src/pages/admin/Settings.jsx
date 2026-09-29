@@ -425,7 +425,7 @@ export default function Settings() {
       </div>
       <div className="settings-directory rounded-2xl border p-3" style={{ borderColor: 'var(--bam-border)', background: 'var(--bam-surface)' }}>
         <input value={settingsSearch} onChange={e => setSettingsSearch(e.target.value)} className="input w-full mb-3" placeholder="Search settings…" />
-        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">{visibleGroups.map(group => <div key={group.label}><p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--bam-text-faint)' }}>{group.label}</p>{group.items.map(([key,label]) => <button key={`${group.label}-${label}`} onClick={() => openSetting(key)} className={`w-full text-left px-3 py-2 rounded-lg text-sm ${tab === key ? 'bg-primary-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200'}`}>{label}</button>)}</div>)}</div>
+        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">{visibleGroups.map(group => <div key={group.label}><p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--bam-text-faint)' }}>{group.label}</p>{group.items.map(([key,label]) => <button key={`${group.label}-${label}`} onClick={() => openSetting(key)} className={`w-full text-left px-3 py-2 rounded-lg text-sm ${tab === key ? 'bg-primary-600 text-white' : 'hover:bg-gray-100 text-gray-700'}`}>{label}</button>)}</div>)}</div>
       </div>
 
       {/* Business Info */}
@@ -511,12 +511,12 @@ export default function Settings() {
                 autoComplete="off"
               />
               {addressSuggestions.length > 0 && (
-                <ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
                   {addressSuggestions.map((f) => (
                     <li key={f.id}>
                       <button
                         type="button"
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-gray-800"
                         onMouseDown={() => selectAddressSuggestion(f)}
                       >
                         {f.place_name}
@@ -646,21 +646,21 @@ export default function Settings() {
             </form>
           </div>
           <div className="card overflow-hidden">
-            <div className="p-4 border-b border-gray-100 dark:border-gray-800 font-semibold dark:text-white">Blocked Dates</div>
+            <div className="p-4 border-b border-gray-100 font-semibold">Blocked Dates</div>
             {blocked.length === 0 ? (
-              <div className="p-8 text-center text-gray-400 dark:text-gray-500 text-sm">No blocked dates</div>
+              <div className="p-8 text-center text-gray-400 text-sm">No blocked dates</div>
             ) : (
-              <div className="divide-y divide-gray-50 dark:divide-gray-800">
+              <div className="divide-y divide-gray-50">
                 {blocked.map(b => (
                   <div key={b.id} className="flex items-center justify-between px-4 py-3">
                     <div>
-                      <p className="font-medium text-sm dark:text-white">{b.blocked_date}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="font-medium text-sm">{b.blocked_date}</p>
+                      <p className="text-xs text-gray-500">
                         {b.is_full_day ? 'Full day' : `${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}`}
                         {b.reason && ` · ${b.reason}`}
                       </p>
                     </div>
-                    <button onClick={() => removeBlock(b.id)} className="text-xs text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 px-2.5 py-1.5 rounded-lg transition-colors">Remove</button>
+                    <button onClick={() => removeBlock(b.id)} className="text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors">Remove</button>
                   </div>
                 ))}
               </div>
@@ -676,8 +676,8 @@ export default function Settings() {
           <p className="text-sm text-gray-500 mb-4">Share this link anywhere — Instagram bio, WhatsApp, email.</p>
           {business && (
             <>
-              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-3 mb-4 flex items-center gap-2 border border-primary-100 dark:border-primary-800">
-                <code className="text-sm text-primary-700 dark:text-primary-300 flex-1 truncate">{bookingUrl}</code>
+              <div className="bg-primary-50 rounded-lg p-3 mb-4 flex items-center gap-2 border border-primary-100">
+                <code className="text-sm text-primary-700 flex-1 truncate">{bookingUrl}</code>
                 <button onClick={async () => { if (await copyText(bookingUrl)) toast.success('Copied!'); else toast.error('Could not copy link'); }}
                   className="btn-secondary text-xs py-1.5 flex-shrink-0">Copy</button>
               </div>
@@ -707,23 +707,23 @@ export default function Settings() {
         <div className="max-w-2xl animate-slide-up space-y-5">
           {/* Email verification */}
           <div className="app-panel p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email Verification</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Verify your email address to keep your account secure.</p>
+            <h3 className="font-semibold text-gray-900 mb-1">Email Verification</h3>
+            <p className="text-sm text-gray-500 mb-4">Verify your email address to keep your account secure.</p>
             {user?.email_verified ? (
-              <div className="flex items-center gap-2.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg px-4 py-3">
-                <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12"/></svg>
+              <div className="flex items-center gap-2.5 bg-green-50 border border-green-100 rounded-lg px-4 py-3">
+                <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="20 6 9 17 4 12"/></svg>
                 <div>
-                  <p className="text-sm font-semibold text-green-800 dark:text-green-300">Email verified</p>
-                  <p className="text-xs text-green-600 dark:text-green-400">{user.email}</p>
+                  <p className="text-sm font-semibold text-green-800">Email verified</p>
+                  <p className="text-xs text-green-600">{user.email}</p>
                 </div>
               </div>
             ) : user?.email ? (
               <div>
-                <div className="flex items-center gap-2.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-lg px-4 py-3 mb-3">
-                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <div className="flex items-center gap-2.5 bg-yellow-50 border border-yellow-100 rounded-lg px-4 py-3 mb-3">
+                  <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                   <div>
-                    <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">Email not verified</p>
-                    <p className="text-xs text-yellow-700 dark:text-yellow-400">{user.email}</p>
+                    <p className="text-sm font-semibold text-yellow-800">Email not verified</p>
+                    <p className="text-xs text-yellow-700">{user.email}</p>
                   </div>
                 </div>
                 <button onClick={handleResendVerification} disabled={verifyLoading} className="btn-secondary text-sm disabled:opacity-50">
@@ -731,14 +731,14 @@ export default function Settings() {
                 </button>
               </div>
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Signed in with phone number — no email verification needed.</p>
+              <p className="text-sm text-gray-500">Signed in with phone number — no email verification needed.</p>
             )}
           </div>
 
           {/* Change password */}
           <div className="app-panel p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Change Password</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Enter your current password and choose a new one.</p>
+            <h3 className="font-semibold text-gray-900 mb-1">Change Password</h3>
+            <p className="text-sm text-gray-500 mb-4">Enter your current password and choose a new one.</p>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
                 <label className="label">Current Password</label>
@@ -759,24 +759,51 @@ export default function Settings() {
           </div>
 
           <div className="app-panel p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Privacy & legal</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Review how BookAm handles account and booking data.</p>
+            <h3 className="font-semibold text-gray-900 mb-1">Privacy & legal</h3>
+            <p className="text-sm text-gray-500 mb-3">Review how BookAm handles account and booking data.</p>
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-              <a href="/legal/privacy" className="font-medium text-primary-600 dark:text-primary-400 hover:underline">Privacy policy</a>
-              <a href="/legal/terms" className="font-medium text-primary-600 dark:text-primary-400 hover:underline">Terms of service</a>
-              <a href="/legal/refunds" className="font-medium text-primary-600 dark:text-primary-400 hover:underline">Refunds & cancellations</a>
+              <a href="/legal/privacy" className="font-medium text-primary-600 hover:underline">Privacy policy</a>
+              <a href="/legal/terms" className="font-medium text-primary-600 hover:underline">Terms of service</a>
+              <a href="/legal/refunds" className="font-medium text-primary-600 hover:underline">Refunds & cancellations</a>
+            </div>
+          </div>
+
+          <div className="app-panel p-6">
+            <h3 className="font-semibold text-gray-900 mb-1">Follow BookAm</h3>
+            <p className="text-sm text-gray-500 mb-4">Stay updated with new features, tips, and announcements.</p>
+            <div className="flex gap-3">
+              <a
+                href="https://x.com/getbookam"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:border-primary-300 hover:bg-primary-50"
+                style={{ borderColor: 'var(--bam-border)', color: 'var(--bam-text-muted)' }}
+              >
+                <XIcon className="w-4 h-4 flex-shrink-0" />
+                @getbookam
+              </a>
+              <a
+                href="https://instagram.com/getbookam"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:border-pink-300 hover:bg-pink-50"
+                style={{ borderColor: 'var(--bam-border)', color: 'var(--bam-text-muted)' }}
+              >
+                <InstagramIcon className="w-4 h-4 flex-shrink-0" />
+                @getbookam
+              </a>
             </div>
           </div>
 
           {/* Danger Zone — Delete Account */}
-          <div className="rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-900/10 p-6">
-            <h3 className="font-semibold text-red-700 dark:text-red-400 mb-1">Danger Zone</h3>
-            <p className="text-sm text-red-600/80 dark:text-red-400/70 mb-4">
+          <div className="rounded-lg border border-red-200 bg-red-50/50 p-6">
+            <h3 className="font-semibold text-red-700 mb-1">Danger Zone</h3>
+            <p className="text-sm text-red-600/80 mb-4">
               Permanently delete your account, business, all services, and all booking data. <strong>This cannot be undone.</strong>
             </p>
             <button
               onClick={() => setDeleteModal(true)}
-              className="text-sm px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium"
+              className="text-sm px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
             >
               Delete my account
             </button>
@@ -790,11 +817,11 @@ export default function Settings() {
         {(() => {
           const stripeSupported = STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB');
           return stripeSupported ? null : (
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 flex items-start gap-3">
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
               <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <div>
-                <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Automatic payouts not available in your country</p>
-                <p className="text-xs text-amber-600 dark:text-amber-500 mt-0.5">
+                <p className="text-sm font-bold text-amber-700">Automatic payouts not available in your country</p>
+                <p className="text-xs text-amber-600 mt-0.5">
                   Stripe Connect doesn't support your bank country yet. Add your bank details below — we'll transfer your earnings manually within 3–5 business days of each confirmed booking.
                 </p>
               </div>
@@ -805,13 +832,13 @@ export default function Settings() {
           {/* Stripe Connect card — only shown for supported countries */}
           {STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB') && <div className="app-panel p-6">
             <div className="flex items-start gap-4 mb-5">
-              <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
                 {/* Stripe-ish logo placeholder */}
                 <svg viewBox="0 0 24 24" className="w-6 h-6 text-primary-600" fill="currentColor"><path d="M13.479 9.883c-1.626-.604-2.512-1.067-2.512-1.803 0-.622.498-1.034 1.336-1.034 1.65 0 3.3.596 4.45 1.127l.658-3.957C16.25 3.714 14.596 3 12.47 3 9.536 3 7.48 4.718 7.48 7.333c0 2.595 2.092 3.83 3.826 4.5 1.756.683 2.316 1.18 2.316 1.873 0 .708-.598 1.148-1.562 1.148-1.424 0-3.39-.626-4.793-1.48L6.6 17.432c1.3.769 3.28 1.268 5.27 1.268 3.08 0 5.13-1.693 5.13-4.352-.002-2.71-2.063-3.86-3.521-4.465z"/></svg>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Stripe Payouts</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                <h3 className="font-bold text-gray-900">Stripe Payouts</h3>
+                <p className="text-sm text-gray-500 mt-0.5">
                   Connect your bank account via Stripe. Money is automatically transferred to you after each customer confirms a service was received.
                 </p>
               </div>
@@ -824,13 +851,13 @@ export default function Settings() {
               </div>
             ) : connectStatus?.status === 'active' ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-100">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-green-700 dark:text-green-400">Connected — Payouts active</p>
-                    <p className="text-xs text-green-600 dark:text-green-500">Your bank account receives automatic transfers after each confirmed service.</p>
+                    <p className="text-sm font-bold text-green-700">Connected — Payouts active</p>
+                    <p className="text-xs text-green-600">Your bank account receives automatic transfers after each confirmed service.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -845,13 +872,13 @@ export default function Settings() {
               </div>
             ) : connectStatus?.status === 'pending_verification' ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800">
-                  <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                  <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Verification pending</p>
-                    <p className="text-xs text-amber-600 dark:text-amber-500">Stripe is reviewing your details. Payouts will activate once verified (usually within 1–2 business days).</p>
+                    <p className="text-sm font-bold text-amber-700">Verification pending</p>
+                    <p className="text-xs text-amber-600">Stripe is reviewing your details. Payouts will activate once verified (usually within 1–2 business days).</p>
                   </div>
                 </div>
                 <button onClick={handleStripeOnboard} disabled={connectWorking} className="btn-secondary text-sm disabled:opacity-50">
@@ -860,13 +887,13 @@ export default function Settings() {
               </div>
             ) : connectStatus?.status === 'pending' ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-blue-700 dark:text-blue-400">Onboarding started</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-500">You haven't completed the Stripe setup yet. Continue below to add your bank details.</p>
+                    <p className="text-sm font-bold text-blue-700">Onboarding started</p>
+                    <p className="text-xs text-blue-600">You haven't completed the Stripe setup yet. Continue below to add your bank details.</p>
                   </div>
                 </div>
                 <button onClick={handleStripeOnboard} disabled={connectWorking} className="btn-primary text-sm disabled:opacity-50">
@@ -881,9 +908,9 @@ export default function Settings() {
                     { step: '2', label: 'Add bank details on Stripe', sub: 'Secure & encrypted' },
                     { step: '3', label: 'Receive payouts automatically', sub: 'After each confirmation' },
                   ].map(({ step, label, sub }) => (
-                    <div key={step} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                      <div className="w-7 h-7 bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded-full flex items-center justify-center text-xs font-bold mx-auto mb-2">{step}</div>
-                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{label}</p>
+                    <div key={step} className="bg-gray-50 rounded-lg p-3">
+                      <div className="w-7 h-7 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-bold mx-auto mb-2">{step}</div>
+                      <p className="text-xs font-semibold text-gray-700">{label}</p>
                       <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>
                     </div>
                   ))}
@@ -903,11 +930,11 @@ export default function Settings() {
           {/* Manual bank details — collapsible for Stripe countries, expanded for unsupported */}
           {STRIPE_CONNECT_COUNTRIES.has(bankForm.bank_country || 'GB') ? (
           <details className="card overflow-hidden">
-            <summary className="p-5 cursor-pointer font-semibold text-gray-700 dark:text-gray-300 text-sm select-none list-none flex items-center justify-between">
+            <summary className="p-5 cursor-pointer font-semibold text-gray-700 text-sm select-none list-none flex items-center justify-between">
               Manual bank details (optional reference)
               <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><polyline points="6 9 12 15 18 9"/></svg>
             </summary>
-            <div className="px-5 pb-5 border-t border-gray-100 dark:border-gray-800 pt-4">
+            <div className="px-5 pb-5 border-t border-gray-100 pt-4">
               <p className="text-xs text-gray-400 mb-4">Only needed if you want to receive manual bank transfers. Stripe Connect above is the recommended payout method.</p>
               <form onSubmit={saveBankDetails} className="space-y-4">
                 <div>
@@ -971,8 +998,8 @@ export default function Settings() {
           </details>
           ) : (
           <div className="app-panel p-6">
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Your Bank Details</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <h3 className="font-bold text-gray-900 mb-1">Your Bank Details</h3>
+            <p className="text-sm text-gray-500 mb-4">
               We'll use these to send your earnings manually after each confirmed booking.
             </p>
             <form onSubmit={saveBankDetails} className="space-y-4">
@@ -1038,32 +1065,32 @@ export default function Settings() {
         <div className="max-w-2xl animate-slide-up space-y-5">
           {business?.is_verified || business?.verification_status === 'verified' ? (
             <div className="app-panel p-6 flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
+              <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Business Verified</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                <h3 className="font-bold text-gray-900">Business Verified</h3>
+                <p className="text-sm text-gray-500 mt-0.5">
                   Your business has been verified and displays a verified badge to customers.
                 </p>
               </div>
             </div>
           ) : business?.verification_status === 'pending' ? (
             <div className="app-panel p-6 flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Review In Progress</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                <h3 className="font-bold text-gray-900">Review In Progress</h3>
+                <p className="text-sm text-gray-500 mt-0.5">
                   We received your details and will verify your business within 2 working days.
                 </p>
               </div>
             </div>
           ) : (
             <div className="app-panel p-6">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Business Verification</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              <h3 className="font-semibold text-gray-900 mb-1">Business Verification</h3>
+              <p className="text-sm text-gray-500 mb-5">
                 Verified businesses get a badge and rank higher in search. If your profile is complete and details match, you may be verified automatically.
               </p>
 
@@ -1084,14 +1111,14 @@ export default function Settings() {
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Profile requirements</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {checks.map(item => (
-                          <div key={item.label} className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 border ${item.done ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/15'}`}>
+                          <div key={item.label} className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 border ${item.done ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
                             <span className={`text-base flex-shrink-0 ${item.done ? 'text-green-600' : 'text-red-400'}`}>{item.done ? '✓' : '✗'}</span>
-                            <p className={`text-xs font-medium ${item.done ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{item.label}</p>
+                            <p className={`text-xs font-medium ${item.done ? 'text-green-700' : 'text-red-600'}`}>{item.label}</p>
                           </div>
                         ))}
                       </div>
                       {!allDone && (
-                        <p className="text-xs text-red-600 dark:text-red-400 mt-3 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+                        <p className="text-xs text-red-600 mt-3 bg-red-50 rounded-lg px-3 py-2">
                           Complete the items above first — go to your <button onClick={() => setTab('business')} className="underline font-semibold">Business</button> tab or the <button onClick={() => navigate('/admin/services')} className="underline font-semibold">Services</button> page.
                         </p>
                       )}
@@ -1107,7 +1134,7 @@ export default function Settings() {
                         <input type="checkbox" id="sole_trader" className="w-4 h-4 rounded accent-primary-600"
                           checked={verForm.sole_trader}
                           onChange={e => setVerForm(p => ({ ...p, sole_trader: e.target.checked, company_reg_number: e.target.checked ? '' : p.company_reg_number }))} />
-                        <label htmlFor="sole_trader" className="text-sm text-gray-700 dark:text-gray-300 font-medium cursor-pointer">
+                        <label htmlFor="sole_trader" className="text-sm text-gray-700 font-medium cursor-pointer">
                           I am a sole trader (no company registration)
                         </label>
                       </div>
@@ -1138,10 +1165,10 @@ export default function Settings() {
                         </select>
                       </div>
                       {!allDone && (
-                        <div className="rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3">
+                        <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">
                           <p className="text-xs font-semibold text-gray-500 mb-1">Still needed before you can submit:</p>
                           <ul className="space-y-0.5">
-                            {missing.map(m => <li key={m} className="text-xs text-red-600 dark:text-red-400">• {m}</li>)}
+                            {missing.map(m => <li key={m} className="text-xs text-red-600">• {m}</li>)}
                           </ul>
                         </div>
                       )}
@@ -1162,18 +1189,18 @@ export default function Settings() {
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 animate-fade-in">
           <div className="mobile-safe-sheet w-full max-w-sm animate-slide-up">
             <div className="p-6">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
               </div>
-              <h2 className="font-bold text-lg text-gray-900 dark:text-white mb-1">Delete account?</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              <h2 className="font-bold text-lg text-gray-900 mb-1">Delete account?</h2>
+              <p className="text-sm text-gray-500 mb-5">
                 This will permanently delete your account, business profile, all services, and all booking records. There is no going back.
               </p>
               <form onSubmit={handleDeleteAccount} className="space-y-4">
                 <div>
                   <label className="label">Confirm your password</label>
                   <input
-                    className="input border-red-200 dark:border-red-800 focus:ring-red-400"
+                    className="input border-red-200 focus:ring-red-400"
                     type="password"
                     required
                     autoFocus
@@ -1272,14 +1299,14 @@ function VerificationCard({ business }) {
 
   if (business.is_verified) {
     return (
-      <div className="app-panel p-5 max-w-2xl border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+      <div className="app-panel p-5 max-w-2xl border-blue-200 bg-blue-50">
         <div className="flex items-center gap-3">
           <svg className="w-8 h-8 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
             <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
           </svg>
           <div>
-            <p className="font-bold text-blue-900 dark:text-blue-100">Verified Business</p>
-            <p className="text-sm text-blue-700 dark:text-blue-300">Your business has been verified and displays a badge to customers.</p>
+            <p className="font-bold text-blue-900">Verified Business</p>
+            <p className="text-sm text-blue-700">Your business has been verified and displays a badge to customers.</p>
           </div>
         </div>
       </div>
@@ -1303,14 +1330,14 @@ function VerificationCard({ business }) {
   return (
     <div className="app-panel p-5 max-w-2xl">
       <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
           <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
             <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
           </svg>
         </div>
         <div className="flex-1">
-          <p className="font-semibold text-gray-900 dark:text-white text-sm">Get Verified</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">
+          <p className="font-semibold text-gray-900 text-sm">Get Verified</p>
+          <p className="text-xs text-gray-500 mt-0.5 mb-3">
             Verified businesses show a blue badge on their profile and in search results, building trust with customers.
           </p>
           {requested ? (
@@ -1320,7 +1347,7 @@ function VerificationCard({ business }) {
               type="button"
               onClick={handleRequest}
               disabled={loading}
-              className="text-sm font-semibold px-4 py-2 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="text-sm font-semibold px-4 py-2 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {loading ? <span className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /> : null}
               {loading ? 'Submitting…' : 'Request verification'}
@@ -1333,6 +1360,9 @@ function VerificationCard({ business }) {
 }
 
 function Spinner() { return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />; }
+
+function XIcon({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.402 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.265 5.634 5.899-5.634Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>; }
+function InstagramIcon({ className }) { return <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>; }
 
 function AiDescriptionButton({ onGenerated }) {
   const [loading, setLoading] = useState(false);
@@ -1399,23 +1429,23 @@ export function StaffTab({ staff, setStaff }) {
   return (
     <div className="max-w-2xl animate-slide-up space-y-4">
       <div className="flex items-center justify-between">
-        <div><h3 className="font-bold text-gray-900 dark:text-white">Team Members</h3><p className="text-sm text-gray-500">Add staff so customers can book with a specific person</p></div>
+        <div><h3 className="font-bold text-gray-900">Team Members</h3><p className="text-sm text-gray-500">Add staff so customers can book with a specific person</p></div>
         <button onClick={() => open(null)} className="btn-primary text-sm flex items-center gap-1.5"><Plus className="w-4 h-4"/>Add Staff</button>
       </div>
       {staff.length === 0 ? (
-        <div className="app-panel p-8 text-center"><Users className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No staff members yet</p></div>
+        <div className="app-panel p-8 text-center"><Users className="w-10 h-10 text-gray-200 mx-auto mb-3"/><p className="text-gray-400 text-sm">No staff members yet</p></div>
       ) : staff.map(s => (
         <div key={s.id} className="app-panel p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0 text-lg font-bold text-primary-600 dark:text-primary-400">{s.name[0]}</div>
+          <div className="w-12 h-12 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0 text-lg font-bold text-primary-600">{s.name[0]}</div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 dark:text-white text-sm">{s.name}</p>
+            <p className="font-semibold text-gray-900 text-sm">{s.name}</p>
             {s.role && <p className="text-xs text-gray-400">{s.role}</p>}
             <p className={`text-xs mt-0.5 font-medium ${s.is_active ? 'text-green-600':'text-gray-400'}`}>{s.is_active ? 'Active':'Inactive'}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => toggleActive(s)} className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">{s.is_active?'Deactivate':'Activate'}</button>
-            <button onClick={() => open(s)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><Edit2 className="w-4 h-4"/></button>
-            <button onClick={() => remove(s.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
+            <button onClick={() => toggleActive(s)} className="text-xs px-2 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">{s.is_active?'Deactivate':'Activate'}</button>
+            <button onClick={() => open(s)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400"><Edit2 className="w-4 h-4"/></button>
+            <button onClick={() => remove(s.id)} className="p-2 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
           </div>
         </div>
       ))}
@@ -1433,15 +1463,15 @@ export function StaffTab({ staff, setStaff }) {
             <div>
               <label className="label">Working Days</label>
               <div className="flex flex-wrap gap-1.5 mt-1">
-                {DAYS.map(d => <button key={d} type="button" onClick={()=>toggle(d)} className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize transition-all ${form.working_days.includes(d)?'bg-primary-600 text-white':'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200'}`}>{d.slice(0,3)}</button>)}
+                {DAYS.map(d => <button key={d} type="button" onClick={()=>toggle(d)} className={`px-2.5 py-1 rounded-lg text-xs font-medium capitalize transition-all ${form.working_days.includes(d)?'bg-primary-600 text-white':'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{d.slice(0,3)}</button>)}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="label">From</label><input className="input" type="time" value={form.opening_time} onChange={e=>setForm(p=>({...p,opening_time:e.target.value}))}/></div>
               <div><label className="label">To</label><input className="input" type="time" value={form.closing_time} onChange={e=>setForm(p=>({...p,closing_time:e.target.value}))}/></div>
             </div>
-            <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 space-y-3">
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Commission</p>
+            <div className="border border-gray-100 rounded-lg p-4 space-y-3">
+              <p className="text-sm font-semibold text-gray-700">Commission</p>
               <div>
                 <label className="label">Type</label>
                 <select className="input text-sm" value={form.commission_type||'none'} onChange={e=>setForm(p=>({...p,commission_type:e.target.value}))}>
@@ -1493,21 +1523,21 @@ export function PhotosTab({ photos, setPhotos }) {
   return (
     <div className="max-w-2xl animate-slide-up space-y-4">
       <div className="flex items-center justify-between">
-        <div><h3 className="font-bold text-gray-900 dark:text-white">Photo Gallery</h3><p className="text-sm text-gray-500">Show your work — photos appear on your public profile</p></div>
+        <div><h3 className="font-bold text-gray-900">Photo Gallery</h3><p className="text-sm text-gray-500">Show your work — photos appear on your public profile</p></div>
         <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="btn-primary text-sm flex items-center gap-1.5">
           {uploading?<Spinner/>:<Plus className="w-4 h-4"/>}{uploading?'Uploading…':'Add Photo'}
         </button>
         <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleUpload}/>
       </div>
       {photos.length === 0 ? (
-        <div className="app-panel p-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary-300 transition-colors" onClick={()=>inputRef.current?.click()}>
-          <Image className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/>
+        <div className="app-panel p-8 text-center border-2 border-dashed border-gray-200 cursor-pointer hover:border-primary-300 transition-colors" onClick={()=>inputRef.current?.click()}>
+          <Image className="w-10 h-10 text-gray-200 mx-auto mb-3"/>
           <p className="text-gray-400 text-sm">Click to upload your first photo</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {photos.map(p => (
-            <div key={p.id} className="relative group rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 aspect-square">
+            <div key={p.id} className="relative group rounded-lg overflow-hidden bg-gray-100 aspect-square">
               <img src={p.url} alt={p.caption||''} className="w-full h-full object-cover"/>
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <button onClick={()=>remove(p.id)} className="p-2 bg-red-500 rounded-lg text-white"><Trash2 className="w-4 h-4"/></button>
@@ -1515,7 +1545,7 @@ export function PhotosTab({ photos, setPhotos }) {
               {p.caption && <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 p-2"><p className="text-white text-xs truncate">{p.caption}</p></div>}
             </div>
           ))}
-          <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="aspect-square rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-primary-300 transition-colors flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-primary-500">
+          <button onClick={()=>inputRef.current?.click()} disabled={uploading} className="aspect-square rounded-lg border-2 border-dashed border-gray-200 hover:border-primary-300 transition-colors flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-primary-500">
             {uploading?<Spinner/>:<Plus className="w-6 h-6"/>}
             <span className="text-xs font-medium">Add</span>
           </button>
@@ -1549,13 +1579,13 @@ export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setInt
 
   return (
     <div className="max-w-2xl animate-slide-up space-y-4">
-      <div><h3 className="font-bold text-gray-900 dark:text-white">Pre-Booking Intake Form</h3><p className="text-sm text-gray-500">Collect information from customers before their appointment</p></div>
+      <div><h3 className="font-bold text-gray-900">Pre-Booking Intake Form</h3><p className="text-sm text-gray-500">Collect information from customers before their appointment</p></div>
       <div className="app-panel p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div><label className="label">Form Title</label><input className="input" value={intakeTitle} onChange={e=>setIntakeTitle(e.target.value)} placeholder="Pre-appointment form"/></div>
           <div className="flex items-center gap-2 mt-5">
             <span className="text-sm text-gray-500">Active</span>
-            <button type="button" onClick={()=>setIntakeActive(p=>!p)} className={`relative w-11 h-6 rounded-full transition-colors ${intakeActive?'bg-primary-600':'bg-gray-200 dark:bg-gray-700'}`}>
+            <button type="button" onClick={()=>setIntakeActive(p=>!p)} className={`relative w-11 h-6 rounded-full transition-colors ${intakeActive?'bg-primary-600':'bg-gray-200'}`}>
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${intakeActive?'left-5.5 translate-x-0.5':'left-0.5'}`}/>
             </button>
           </div>
@@ -1563,17 +1593,17 @@ export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setInt
         <div className="space-y-2">
           {intakeQuestions.length === 0 && <p className="text-sm text-gray-400 py-2">No questions yet — add one below</p>}
           {intakeQuestions.map((q,i) => (
-            <div key={q.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div key={q.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{i+1}. {q.label}</p>
+                <p className="text-sm font-medium text-gray-900">{i+1}. {q.label}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{q.type}{q.required?' · required':''}</p>
               </div>
               <button onClick={()=>removeQ(q.id)} className="text-gray-300 hover:text-red-500 transition-colors"><X className="w-4 h-4"/></button>
             </div>
           ))}
         </div>
-        <div className="border-t border-gray-100 dark:border-gray-800 pt-4 space-y-2">
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add Question</p>
+        <div className="border-t border-gray-100 pt-4 space-y-2">
+          <p className="text-sm font-semibold text-gray-700">Add Question</p>
           <input className="input" placeholder="Question text e.g. Do you have any allergies?" value={newQ.label} onChange={e=>setNewQ(p=>({...p,label:e.target.value}))}/>
           <div className="grid grid-cols-2 gap-2">
             <select className="input" value={newQ.type} onChange={e=>setNewQ(p=>({...p,type:e.target.value}))}>
@@ -1582,7 +1612,7 @@ export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setInt
               <option value="select">Multiple choice</option>
               <option value="checkbox">Yes/No checkbox</option>
             </select>
-            <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm cursor-pointer">
+            <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm cursor-pointer">
               <input type="checkbox" checked={newQ.required} onChange={e=>setNewQ(p=>({...p,required:e.target.checked}))} className="rounded"/>
               Required
             </label>
@@ -1628,7 +1658,7 @@ export function PromoTab({ promos, setPromos }) {
 
   return (
     <div className="max-w-2xl animate-slide-up space-y-4">
-      <div><h3 className="font-bold text-gray-900 dark:text-white">Promo Codes</h3><p className="text-sm text-gray-500">Create discount codes for your customers</p></div>
+      <div><h3 className="font-bold text-gray-900">Promo Codes</h3><p className="text-sm text-gray-500">Create discount codes for your customers</p></div>
       <div className="app-panel p-5">
         <form onSubmit={create} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -1655,14 +1685,14 @@ export function PromoTab({ promos, setPromos }) {
             <div key={p.id} className="app-panel p-4 flex items-center gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-gray-900 dark:text-white">{p.code}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.is_active?'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400':'bg-gray-100 text-gray-400 dark:bg-gray-800'}`}>{p.is_active?'Active':'Off'}</span>
+                  <span className="font-mono font-bold text-gray-900">{p.code}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.is_active?'bg-green-100 text-green-700':'bg-gray-100 text-gray-400'}`}>{p.is_active?'Active':'Off'}</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">{p.type==='percent'?`${p.value}% off`:`£${parseFloat(p.value).toFixed(2)} off`} · {p.uses_count||0} uses{p.max_uses?` / ${p.max_uses}`:''}</p>
                 {p.valid_until && <p className="text-xs text-gray-400">Expires {p.valid_until}</p>}
               </div>
-              <button onClick={()=>toggle(p)} className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 transition-colors">{p.is_active?'Disable':'Enable'}</button>
-              <button onClick={()=>remove(p.id)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
+              <button onClick={()=>toggle(p)} className="text-xs px-2 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">{p.is_active?'Disable':'Enable'}</button>
+              <button onClick={()=>remove(p.id)} className="p-2 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
             </div>
           ))}
         </div>
@@ -1686,30 +1716,30 @@ export function WaitlistTab({ waitlist, setWaitlist }) {
     catch(err) { toast.error(err.message); }
   };
 
-  const STATUS_COLOR = { waiting:'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', notified:'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', cancelled:'bg-gray-100 text-gray-400 dark:bg-gray-800' };
+  const STATUS_COLOR = { waiting:'bg-amber-100 text-amber-700', notified:'bg-blue-100 text-blue-700', cancelled:'bg-gray-100 text-gray-400' };
 
   return (
     <div className="max-w-2xl animate-slide-up space-y-4">
-      <div><h3 className="font-bold text-gray-900 dark:text-white">Waitlist</h3><p className="text-sm text-gray-500">Customers who want to be notified when a slot opens up</p></div>
+      <div><h3 className="font-bold text-gray-900">Waitlist</h3><p className="text-sm text-gray-500">Customers who want to be notified when a slot opens up</p></div>
       {waitlist.length === 0 ? (
-        <div className="app-panel p-8 text-center"><List className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3"/><p className="text-gray-400 text-sm">No one on the waitlist yet</p></div>
+        <div className="app-panel p-8 text-center"><List className="w-10 h-10 text-gray-200 mx-auto mb-3"/><p className="text-gray-400 text-sm">No one on the waitlist yet</p></div>
       ) : (
         <div className="space-y-2">
           {waitlist.map(w => (
             <div key={w.id} className="app-panel p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2"><p className="font-semibold text-sm text-gray-900 dark:text-white">{w.consumer_name}</p><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[w.status]}`}>{w.status}</span></div>
+                  <div className="flex items-center gap-2"><p className="font-semibold text-sm text-gray-900">{w.consumer_name}</p><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[w.status]}`}>{w.status}</span></div>
                   <p className="text-xs text-gray-400 mt-0.5">{w.consumer_email}{w.consumer_phone?` · ${w.consumer_phone}`:''}</p>
                   {w.service_name && <p className="text-xs text-gray-500 mt-0.5">Service: {w.service_name}</p>}
                   {w.requested_date && <p className="text-xs text-gray-400">Preferred: {w.requested_date}{w.preferred_time?` at ${w.preferred_time}`:''}</p>}
                   <p className="text-xs text-gray-300 mt-0.5">{new Date(w.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {w.status === 'waiting' && <button onClick={()=>update(w.id,'notified')} className="text-xs px-2 py-1 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 hover:bg-blue-100 transition-colors font-medium">Mark notified</button>}
-                  <a href={`tel:${w.consumer_phone}`} className={`text-xs px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-600 hover:bg-gray-100 transition-colors ${!w.consumer_phone?'opacity-40 pointer-events-none':''}`}>Call</a>
-                  <a href={`mailto:${w.consumer_email}`} className="text-xs px-2 py-1 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 hover:bg-primary-100 transition-colors">Email</a>
-                  <button onClick={()=>remove(w.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500"><X className="w-4 h-4"/></button>
+                  {w.status === 'waiting' && <button onClick={()=>update(w.id,'notified')} className="text-xs px-2 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-medium">Mark notified</button>}
+                  <a href={`tel:${w.consumer_phone}`} className={`text-xs px-2 py-1 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors ${!w.consumer_phone?'opacity-40 pointer-events-none':''}`}>Call</a>
+                  <a href={`mailto:${w.consumer_email}`} className="text-xs px-2 py-1 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors">Email</a>
+                  <button onClick={()=>remove(w.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"><X className="w-4 h-4"/></button>
                 </div>
               </div>
             </div>

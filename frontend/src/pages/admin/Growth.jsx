@@ -68,7 +68,7 @@ function InsightCard({ insight, integrations, onAction, border }) {
       borderLeftColor: PRIORITY_COLOR[insight.priority] || 'var(--bam-border)',
     }}>
       <div className="flex items-start gap-3">
-        <InsightIcon className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary-600 dark:text-primary-400" strokeWidth={1.8} aria-hidden="true" />
+        <InsightIcon className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary-600" strokeWidth={1.8} aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{insight.title}</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>{insight.description}</p>
@@ -147,8 +147,8 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
                     onChange={set('channel')} disabled={ch.soon || !configured} />
                   <ChannelIcon className="w-5 h-5" strokeWidth={1.8} aria-hidden="true" />
                   <span className="text-xs font-bold" style={{ color: sel ? '#6366f1' : 'var(--bam-text-muted)' }}>{ch.label}</span>
-                  {ch.soon && <span className="text-[9px] bg-gray-200 dark:bg-gray-700 px-1.5 rounded-full text-gray-500">Soon</span>}
-                  {!ch.soon && !configured && <span className="text-[9px] bg-amber-100 dark:bg-amber-900/30 px-1.5 rounded-full text-amber-600">Not set up</span>}
+                  {ch.soon && <span className="text-[9px] bg-gray-200 px-1.5 rounded-full text-gray-500">Soon</span>}
+                  {!ch.soon && !configured && <span className="text-[9px] bg-amber-100 px-1.5 rounded-full text-amber-600">Not set up</span>}
                 </label>
               );
             })}
@@ -313,10 +313,10 @@ function OverviewTab({ integrations, onCreateCampaign, border }) {
                   <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{ch.label}</p>
                 </div>
                 {ch.soon
-                  ? <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500">Coming soon</span>
+                  ? <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-gray-100 text-gray-500">Coming soon</span>
                   : ok
-                    ? <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600">● Connected</span>
-                    : <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-amber-50 dark:bg-amber-900/20 text-amber-600">○ Not configured</span>
+                    ? <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-50 text-emerald-600">● Connected</span>
+                    : <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-amber-50 text-amber-600">○ Not configured</span>
                 }
                 {!ch.soon && !ok && (
                   <p className="text-[10px] mt-1.5" style={{ color: 'var(--bam-text-faint)' }}>
@@ -371,11 +371,11 @@ function CampaignsTab({ integrations, prefill, border, isDark }) {
   };
 
   const STATUS_BADGE = {
-    draft:     { label: 'Draft',     cls: 'bg-gray-100 dark:bg-gray-800 text-gray-500' },
-    sending:   { label: 'Sending…',  cls: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 animate-pulse' },
-    sent:      { label: 'Sent',      cls: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600' },
-    failed:    { label: 'Failed',    cls: 'bg-red-50 dark:bg-red-900/20 text-red-600' },
-    scheduled: { label: 'Scheduled', cls: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' },
+    draft:     { label: 'Draft',     cls: 'bg-gray-100 text-gray-500' },
+    sending:   { label: 'Sending…',  cls: 'bg-blue-50 text-blue-600 animate-pulse' },
+    sent:      { label: 'Sent',      cls: 'bg-emerald-50 text-emerald-600' },
+    failed:    { label: 'Failed',    cls: 'bg-red-50 text-red-600' },
+    scheduled: { label: 'Scheduled', cls: 'bg-amber-50 text-amber-600' },
   };
 
   return (
@@ -687,7 +687,7 @@ function PromotionsTab({ border, isDark }) {
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(99,102,241,.1)', color: '#6366f1' }}>
                       {p.type === 'percent' ? `${p.value}% off` : `${SYM}${parseFloat(p.value).toFixed(2)} off`}
                     </span>
-                    {!p.is_active && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">Inactive</span>}
+                    {!p.is_active && <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Inactive</span>}
                   </div>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
                     <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>
@@ -758,7 +758,7 @@ function ReviewsTab({ border }) {
           <div className="flex items-center gap-6">
             <div className="text-center flex-shrink-0">
               <p className="text-5xl font-extrabold leading-none" style={{ color: 'var(--bam-text)' }}>{avg.toFixed(1)}</p>
-              <div className="flex justify-center mt-1">{[1,2,3,4,5].map(i => <span key={i} className={`text-lg ${i <= Math.round(avg) ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'}`}>★</span>)}</div>
+              <div className="flex justify-center mt-1">{[1,2,3,4,5].map(i => <span key={i} className={`text-lg ${i <= Math.round(avg) ? 'text-amber-400' : 'text-gray-300'}`}>★</span>)}</div>
               <p className="text-xs mt-1" style={{ color: 'var(--bam-text-faint)' }}>{total} review{total !== 1 ? 's' : ''}</p>
             </div>
             <div className="flex-1 space-y-1.5">
@@ -826,7 +826,7 @@ function ReviewsTab({ border }) {
                       <p className="text-xs flex-shrink-0" style={{ color: 'var(--bam-text-faint)' }}>{format(d, 'MMM d, yyyy')}</p>
                     </div>
                     <div className="flex gap-0.5 mb-2">
-                      {[1,2,3,4,5].map(i => <span key={i} className={`text-sm ${i <= r.rating ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'}`}>★</span>)}
+                      {[1,2,3,4,5].map(i => <span key={i} className={`text-sm ${i <= r.rating ? 'text-amber-400' : 'text-gray-300'}`}>★</span>)}
                     </div>
                     {r.comment && <p className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>{r.comment}</p>}
                     {r.reply_text ? (
@@ -984,7 +984,7 @@ export default function Growth() {
 function Toggle({ checked, onChange, disabled }) {
   return (
     <button type="button" onClick={() => !disabled && onChange(!checked)} disabled={disabled}
-      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'} disabled:opacity-40`}>
+      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${checked ? 'bg-primary-600' : 'bg-gray-300'} disabled:opacity-40`}>
       <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
         style={{ transform: checked ? 'translateX(20px)' : 'translateX(2px)', left: 0 }} />
     </button>
