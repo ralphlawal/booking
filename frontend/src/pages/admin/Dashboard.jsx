@@ -7,7 +7,6 @@ import {
 } from 'recharts';
 import { bookingsAPI, servicesAPI, availabilityAPI, staffAPI, aiAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { openExternalLink, publicWebUrl } from '../../services/nativeBridge';
 import { currencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
@@ -328,15 +327,13 @@ function InsightRow({ icon, text, tone = 'default' }) {
   );
 }
 
-function TrendChart({ data, period, isDark }) {
+function TrendChart({ data, period }) {
   if (!data?.length) return (
     <div className="h-40 flex items-center justify-center text-xs" style={{ color: 'var(--bam-text-faint)' }}>
       No data yet
     </div>
   );
   const stroke = '#5b3eea';
-  const fill   = isDark ? 'rgba(91,62,234,0.12)' : 'rgba(91,62,234,0.10)';
-  const revenueColor = '#10b981';
 
   return (
     <ResponsiveContainer width="100%" height={160}>
@@ -347,31 +344,23 @@ function TrendChart({ data, period, isDark }) {
             <stop offset="95%" stopColor={stroke} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid
-          strokeDasharray="3 3"
-          stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'}
-          vertical={false}
-        />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
         <XAxis
           dataKey="date"
-          tick={{ fontSize: 10, fill: isDark ? '#3d5070' : '#94a3b8' }}
+          tick={{ fontSize: 10, fill: '#94a3b8' }}
           tickLine={false} axisLine={false}
           interval={period === 'Month' ? 6 : 1}
         />
-        <YAxis
-          tick={{ fontSize: 10, fill: isDark ? '#3d5070' : '#94a3b8' }}
-          tickLine={false} axisLine={false}
-          allowDecimals={false}
-        />
+        <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} allowDecimals={false} />
         <Tooltip
           contentStyle={{
-            background:   isDark ? '#0f1c32' : '#fff',
-            border:       `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+            background: '#fff',
+            border: '1px solid rgba(0,0,0,0.08)',
             borderRadius: 10,
-            fontSize:     12,
-            color:        isDark ? '#e4eaf8' : '#111827',
+            fontSize: 12,
+            color: '#111827',
           }}
-          cursor={{ stroke: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', strokeWidth: 1 }}
+          cursor={{ stroke: 'rgba(0,0,0,0.06)', strokeWidth: 1 }}
         />
         <Area
           type="monotone" dataKey="Bookings" stroke={stroke} strokeWidth={2}
@@ -386,9 +375,7 @@ function TrendChart({ data, period, isDark }) {
 
 export default function Dashboard() {
   const { user, business } = useAuth();
-  const { theme } = useTheme();
   const navigate = useNavigate();
-  const isDark = theme === 'dark';
 
   /* state */
   const [period, setPeriod]           = useState('Today');
@@ -780,10 +767,7 @@ export default function Dashboard() {
               </div>
               <div
                 className="rounded-2xl p-4 border"
-                style={{
-                  background: isDark ? 'rgba(91,62,234,0.08)' : '#f5f3ff',
-                  borderColor: isDark ? 'rgba(91,62,234,0.2)' : '#ede9fe',
-                }}
+                style={{ background: '#f5f3ff', borderColor: '#ede9fe' }}
               >
                 <div className="flex items-start gap-3">
                   <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0 text-violet-600" aria-hidden="true" />
@@ -813,10 +797,7 @@ export default function Dashboard() {
             <section>
               <div
                 className="rounded-2xl p-4 border"
-                style={{
-                  background: isDark ? 'rgba(245,158,11,0.06)' : '#fffbeb',
-                  borderColor: isDark ? 'rgba(245,158,11,0.2)' : '#fde68a',
-                }}
+                style={{ background: '#fffbeb', borderColor: '#fde68a' }}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <p className="text-xs font-bold text-amber-800">
@@ -882,7 +863,7 @@ export default function Dashboard() {
           {loadingAnalytics ? (
             <Skeleton className="h-40 rounded-xl" />
           ) : (
-            <TrendChart data={chartData} period={period} isDark={isDark} />
+            <TrendChart data={chartData} period={period} />
           )}
         </div>
       </section>

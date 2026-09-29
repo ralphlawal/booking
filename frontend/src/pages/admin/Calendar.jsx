@@ -7,7 +7,6 @@ import {
 } from 'date-fns';
 import { bookingsAPI, staffAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import NewBookingSheet from '../../components/admin/NewBookingSheet';
 import { currencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
@@ -80,7 +79,7 @@ function layoutBookings(list) {
 
 /* ── AppointmentBlock ────────────────────────────────────────────────────── */
 
-function AppointmentBlock({ booking, onClick, isDark, containerWidth }) {
+function AppointmentBlock({ booking, onClick, containerWidth }) {
   const meta = STATUS_META[booking.status] || STATUS_META.confirmed;
   const top    = timeToY(booking.start_time);
   const height = durationToH(booking.duration_minutes);
@@ -99,47 +98,23 @@ function AppointmentBlock({ booking, onClick, isDark, containerWidth }) {
       onClick={() => onClick(booking)}
       className="absolute text-left rounded-lg border overflow-hidden transition-all tap-highlight-none"
       style={{
-        top:        `${top}px`,
-        height:     `${height}px`,
-        left,
-        width,
-        marginLeft,
-        background: isDark ? meta.bgDark : meta.bg,
-        borderColor: isDark ? meta.borderDark : meta.border,
+        top, height: `${height}px`, left, width, marginLeft,
+        background:   meta.bg,
+        borderColor:  meta.border,
         borderLeftWidth: 3,
       }}
     >
       <div className={`flex flex-col ${compact ? 'px-1.5 py-0.5' : 'px-2 py-1.5'}`}>
-        <p
-          className="font-bold leading-tight truncate"
-          style={{
-            color:    isDark ? meta.textDark : meta.text,
-            fontSize: compact ? 9 : 11,
-          }}
-        >
+        <p className="font-bold leading-tight truncate" style={{ color: meta.text, fontSize: compact ? 9 : 11 }}>
           {booking.customer_name}
         </p>
         {!compact && (
-          <p
-            className="truncate leading-tight mt-0.5"
-            style={{
-              color:    isDark ? meta.textDark : meta.text,
-              opacity:  0.8,
-              fontSize: 10,
-            }}
-          >
+          <p className="truncate leading-tight mt-0.5" style={{ color: meta.text, opacity: 0.8, fontSize: 10 }}>
             {booking.service_name}
           </p>
         )}
         {!compact && (
-          <p
-            className="truncate leading-tight"
-            style={{
-              color:    isDark ? meta.textDark : meta.text,
-              opacity:  0.6,
-              fontSize: 9,
-            }}
-          >
+          <p className="truncate leading-tight" style={{ color: meta.text, opacity: 0.6, fontSize: 9 }}>
             {fmtTime(booking.start_time)}{booking.end_time ? ` – ${fmtTime(booking.end_time)}` : ''}
           </p>
         )}
@@ -177,7 +152,7 @@ function CurrentTimeLine() {
 
 /* ── Hour grid lines ─────────────────────────────────────────────────────── */
 
-function HourLines({ isDark }) {
+function HourLines() {
   return (
     <>
       {HOURS.map(h => (
@@ -186,7 +161,7 @@ function HourLines({ isDark }) {
           className="absolute left-0 right-0 border-t"
           style={{
             top:         `${(h - GRID_START) * HOUR_H}px`,
-            borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+            borderColor: 'rgba(0,0,0,0.05)',
           }}
         />
       ))}
@@ -196,7 +171,7 @@ function HourLines({ isDark }) {
 
 /* ── DAY VIEW ────────────────────────────────────────────────────────────── */
 
-function DayView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, borderColor }) {
+function DayView({ bookings, focusDate, onBookingClick, onSlotClick, borderColor }) {
   const scrollRef = useRef(null);
   const dayStr = format(focusDate, 'yyyy-MM-dd');
   const dayBookings = useMemo(() =>
@@ -251,7 +226,7 @@ function DayView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, bor
 
           {/* Day column */}
           <div className="flex-1 relative border-l" style={{ borderColor }}>
-            <HourLines isDark={isDark} />
+            <HourLines />
             {isToday(focusDate) && <CurrentTimeLine />}
 
             {/* Click to create */}
@@ -265,7 +240,7 @@ function DayView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, bor
             ))}
 
             {dayBookings.map(b => (
-              <AppointmentBlock key={b.id} booking={b} onClick={onBookingClick} isDark={isDark} />
+              <AppointmentBlock key={b.id} booking={b} onClick={onBookingClick} />
             ))}
           </div>
         </div>
@@ -276,7 +251,7 @@ function DayView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, bor
 
 /* ── WEEK VIEW ───────────────────────────────────────────────────────────── */
 
-function WeekView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, borderColor }) {
+function WeekView({ bookings, focusDate, onBookingClick, onSlotClick$2 borderColor }) {
   const scrollRef = useRef(null);
   const weekStart = startOfWeek(focusDate, { weekStartsOn: 1 });
   const weekDays  = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -353,10 +328,10 @@ function WeekView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, bo
                 className="flex-1 min-w-0 relative border-l"
                 style={{
                   borderColor,
-                  background: todayFlag ? (isDark ? 'rgba(91,62,234,0.03)' : 'rgba(91,62,234,0.015)') : undefined,
+                  background: todayFlag ? ('rgba(91,62,234,0.015)') : undefined,
                 }}
               >
-                <HourLines isDark={isDark} />
+                <HourLines />
                 {todayFlag && <CurrentTimeLine />}
 
                 {/* Click to create slots */}
@@ -370,7 +345,7 @@ function WeekView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, bo
                 ))}
 
                 {dayBkgs.map(b => (
-                  <AppointmentBlock key={b.id} booking={b} onClick={onBookingClick} isDark={isDark} />
+                  <AppointmentBlock key={b.id} booking={b} onClick={onBookingClick} />
                 ))}
               </div>
             );
@@ -383,7 +358,7 @@ function WeekView({ bookings, focusDate, onBookingClick, onSlotClick, isDark, bo
 
 /* ── MONTH VIEW ──────────────────────────────────────────────────────────── */
 
-function MonthView({ bookings, focusDate, onBookingClick, onDayClick, isDark, borderColor }) {
+function MonthView({ bookings, focusDate, onBookingClick, onDayClick$2 borderColor }) {
   const monthStart = startOfMonth(focusDate);
   const monthEnd   = endOfMonth(focusDate);
   const calStart   = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -423,7 +398,7 @@ function MonthView({ bookings, focusDate, onBookingClick, onDayClick, isDark, bo
               className="border-b border-r p-1.5 cursor-pointer hover:bg-[--bam-surface-hover] transition-colors overflow-hidden"
               style={{
                 borderColor,
-                background: todayFlag ? (isDark ? 'rgba(91,62,234,0.06)' : 'rgba(91,62,234,0.03)') : undefined,
+                background: todayFlag ? ('rgba(91,62,234,0.03)') : undefined,
                 opacity: inMonth ? 1 : 0.4,
               }}
             >
@@ -441,9 +416,9 @@ function MonthView({ bookings, focusDate, onBookingClick, onDayClick, isDark, bo
                       onClick={e => { e.stopPropagation(); onBookingClick(b); }}
                       className="rounded px-1.5 py-0.5 text-[10px] font-semibold truncate cursor-pointer hover:opacity-80 transition-opacity"
                       style={{
-                        background:  isDark ? meta.bgDark   : meta.bg,
-                        color:       isDark ? meta.textDark : meta.text,
-                        borderLeft:  `2px solid ${isDark ? meta.borderDark : meta.border}`,
+                        background:  meta.bg,
+                        color:       meta.text,
+                        borderLeft:  `2px solid ${meta.border}`,
                       }}
                     >
                       {fmtTime(b.start_time)} {b.customer_name}
@@ -466,7 +441,7 @@ function MonthView({ bookings, focusDate, onBookingClick, onDayClick, isDark, bo
 
 /* ── Booking Detail Sheet ────────────────────────────────────────────────── */
 
-function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }) {
+function BookingDetailSheet({ booking, onClose, onUpdated$2 borderColor }) {
   const [saving, setSaving]   = useState(false);
   const [mode, setMode]       = useState('view'); // 'view' | 'status' | 'reschedule'
   const [newStatus, setStatus] = useState(booking.status);
@@ -515,7 +490,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
       <motion.div
         key="detail-sheet"
         className="fixed inset-x-0 bottom-0 z-[91] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[400px] sm:rounded-2xl flex flex-col overflow-hidden"
-        style={{ background: isDark ? '#0c1528' : '#fff', border: `1px solid ${borderColor}`, maxHeight: '90dvh', boxShadow: '0 -8px 60px rgba(0,0,0,0.4)' }}
+        style={{ background: '#fff', border: `1px solid ${borderColor}`, maxHeight: '90dvh', boxShadow: '0 -8px 60px rgba(0,0,0,0.4)' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -535,7 +510,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
           <div className="flex items-center gap-2">
             <span
               className="px-3 py-1 rounded-full text-xs font-bold"
-              style={{ background: isDark ? meta.bgDark : meta.bg, color: isDark ? meta.textDark : meta.text }}
+              style={{ background: meta.bg, color: meta.text }}
             >
               {meta.label}
             </span>
@@ -760,9 +735,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, isDark, borderColor }
 
 export default function Calendar() {
   const { business } = useAuth();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const borderColor = 'rgba(0,0,0,0.07)';
 
   const [view, setView]               = useState('week');
   const [focusDate, setFocusDate]     = useState(new Date());
@@ -931,7 +904,7 @@ export default function Calendar() {
       <div className="flex-shrink-0 flex items-center gap-4 px-4 py-1.5 overflow-x-auto scrollbar-hide border-b" style={{ borderColor }}>
         {Object.entries(STATUS_META).map(([k, v]) => (
           <div key={k} className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ background: isDark ? v.borderDark : v.border }} />
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: v.border }} />
             <span className="text-[10px] font-semibold" style={{ color: 'var(--bam-text-faint)' }}>{v.label}</span>
           </div>
         ))}
@@ -947,9 +920,9 @@ export default function Calendar() {
           className="flex-1 overflow-hidden"
           style={{ background: 'var(--bam-surface)', border: `1px solid ${borderColor}`, margin: '0 0 0 0' }}
         >
-          {view === 'day'   && <DayView   bookings={filteredBookings} focusDate={focusDate} onBookingClick={handleBookingClick} onSlotClick={handleSlotClick} isDark={isDark} borderColor={borderColor} />}
-          {view === 'week'  && <WeekView  bookings={filteredBookings} focusDate={focusDate} onBookingClick={handleBookingClick} onSlotClick={handleSlotClick} isDark={isDark} borderColor={borderColor} />}
-          {view === 'month' && <MonthView bookings={filteredBookings} focusDate={focusDate} onBookingClick={handleBookingClick} onDayClick={handleDayClick}  isDark={isDark} borderColor={borderColor} />}
+          {view === 'day'   && <DayView   bookings={filteredBookings} focusDate={focusDate} onBookingClick={handleBookingClick} onSlotClick={handleSlotClick} borderColor={borderColor} />}
+          {view === 'week'  && <WeekView  bookings={filteredBookings} focusDate={focusDate} onBookingClick={handleBookingClick} onSlotClick={handleSlotClick} borderColor={borderColor} />}
+          {view === 'month' && <MonthView bookings={filteredBookings} focusDate={focusDate} onBookingClick={handleBookingClick} onDayClick={handleDayClick}  borderColor={borderColor} />}
         </div>
       )}
 
@@ -967,7 +940,7 @@ export default function Calendar() {
           booking={selectedBooking}
           onClose={() => setSelBkg(null)}
           onUpdated={loadData}
-          isDark={isDark}
+         
           borderColor={borderColor}
         />
       )}

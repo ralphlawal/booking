@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, Save, Star, LogOut, Lock, Trash2, MapPin, Navigation, Gift, Copy, Check as CheckIcon, Users, Camera, Sun, Moon, Bell, HelpCircle, ChevronRight, Shield } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { consumerAPI, reviewsAPI, referralAPI } from '../../services/api';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -92,7 +91,6 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
 
 export default function ConsumerProfile() {
   const { consumer, update, logout, loading: authLoading } = useCustomerAuth();
-  const { theme, toggleTheme } = useTheme();
   const { browserPermission, requestBrowserNotifications } = useNotifications();
   const navigate = useNavigate();
 
@@ -734,28 +732,15 @@ export default function ConsumerProfile() {
 
             {/* Appearance */}
             <div className="app-panel p-5">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <span className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-                  {theme === 'dark' ? <Moon className="w-4 h-4 text-indigo-500" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                  <Sun className="w-4 h-4 text-amber-500" />
                 </span>
                 Appearance
               </h3>
-              <p className="text-xs text-gray-400 mb-3">Choose how BookAm looks on this device.</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => { if (theme !== 'light') toggleTheme(); }}
-                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-gray-300'}`}
-                >
-                  <Sun className={`w-6 h-6 ${theme === 'light' ? 'text-amber-500' : 'text-gray-400'}`} />
-                  <span className={`text-sm font-semibold ${theme === 'light' ? 'text-amber-700' : 'text-gray-500'}`}>Light</span>
-                </button>
-                <button
-                  onClick={() => { if (theme !== 'dark') toggleTheme(); }}
-                  className={`flex flex-col items-center gap-2 py-4 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'}`}
-                >
-                  <Moon className={`w-6 h-6 ${theme === 'dark' ? 'text-indigo-500' : 'text-gray-400'}`} />
-                  <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-indigo-700' : 'text-gray-500'}`}>Dark</span>
-                </button>
+              <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+                <Sun className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                <p className="text-sm text-amber-800 font-medium">Light mode — clean and crisp</p>
               </div>
             </div>
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { growthAPI, promoAPI, reviewReplyAPI } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
 import { businessCurrencySymbol } from '../../utils/currency';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -59,7 +58,7 @@ function StatCard({ label, value, sub, trend, color }) {
   );
 }
 
-function InsightCard({ insight, integrations, onAction, border }) {
+function InsightCard({ insight, integrations, onAction$2}) {
   const InsightIcon = insightIcons[insight.icon] || Sparkles;
   return (
     <div className="rounded-2xl p-4 border-l-4" style={{
@@ -85,7 +84,7 @@ function InsightCard({ insight, integrations, onAction, border }) {
 
 /* ── Campaign Form ───────────────────────────────────────────────────────── */
 
-function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultMessage, border, isDark }) {
+function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultMessage, border$2}) {
   const [form, setForm] = useState({
     name: '', channel: 'email', audience: defaultAudience || 'all',
     subject: '', message: defaultMessage || '',
@@ -119,7 +118,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
 
   return (
     <form onSubmit={submit} className="flex flex-col" style={{ maxHeight: '90dvh' }}>
-      <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: border }}>
+      <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: "var(--bam-border)" }}>
         <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>New Campaign</h2>
         <button type="button" onClick={onClose} style={{ color: 'var(--bam-text-muted)' }}>
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -142,7 +141,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
               const sel = form.channel === ch.value;
               return (
                 <label key={ch.value} className={`relative flex flex-col items-center gap-1 p-3 rounded-xl cursor-pointer transition-all border text-center ${ch.soon || !configured ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  style={{ background: sel ? 'rgba(99,102,241,.1)' : 'var(--bam-surface-soft)', borderColor: sel ? 'rgba(99,102,241,.4)' : border }}>
+                  style={{ background: sel ? 'rgba(99,102,241,.1)' : 'var(--bam-surface-soft)', borderColor: sel ? 'rgba(99,102,241,.4)' : "var(--bam-border)" }}>
                   <input type="radio" name="channel" value={ch.value} className="sr-only" checked={sel}
                     onChange={set('channel')} disabled={ch.soon || !configured} />
                   <ChannelIcon className="w-5 h-5" strokeWidth={1.8} aria-hidden="true" />
@@ -199,7 +198,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
             {['none','promo_code','free_service'].map(t => (
               <button key={t} type="button" onClick={() => setForm(p => ({ ...p, offer_type: t }))}
                 className={`flex-1 py-1.5 rounded-xl text-xs font-bold capitalize transition-all border ${form.offer_type === t ? 'text-white border-transparent' : ''}`}
-                style={form.offer_type === t ? { background: '#6366f1' } : { borderColor: border, color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+                style={form.offer_type === t ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
                 {t === 'promo_code' ? 'Promo code' : t === 'free_service' ? 'Free service' : 'None'}
               </button>
             ))}
@@ -230,7 +229,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
         </label>
       </div>
 
-      <div className="p-5 border-t flex gap-3 flex-shrink-0" style={{ borderColor: border }}>
+      <div className="p-5 border-t flex gap-3 flex-shrink-0" style={{ borderColor: "var(--bam-border)" }}>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
         <button type="submit" disabled={saving || (!channelOk && !selectedChannel?.soon)} className="btn-primary flex-1 disabled:opacity-40">
           {saving ? <Spinner /> : form.send_now ? `Send to ${audienceCount ?? '…'} people` : 'Save Draft'}
@@ -242,7 +241,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
 
 /* ── Tab: Overview ───────────────────────────────────────────────────────── */
 
-function OverviewTab({ integrations, onCreateCampaign, border }) {
+function OverviewTab({ integrations, onCreateCampaign$2}) {
   const [intel, setIntel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -292,7 +291,7 @@ function OverviewTab({ integrations, onCreateCampaign, border }) {
         ) : (
           <div className="space-y-3">
             {(intel?.insights || []).map(insight => (
-              <InsightCard key={insight.type} insight={insight} integrations={integrations} border={border}
+              <InsightCard key={insight.type} insight={insight} integrations={integrations}
                 onAction={ins => onCreateCampaign({ audience: ins.audience, message: ins.suggestedMessage })} />
             ))}
           </div>
@@ -334,7 +333,7 @@ function OverviewTab({ integrations, onCreateCampaign, border }) {
 
 /* ── Tab: Campaigns ──────────────────────────────────────────────────────── */
 
-function CampaignsTab({ integrations, prefill, border, isDark }) {
+function CampaignsTab({ integrations, prefill, border$2}) {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(!!prefill);
@@ -456,7 +455,7 @@ function CampaignsTab({ integrations, prefill, border, isDark }) {
               onClick={() => setShowForm(false)} />
             <motion.div key="cf-sheet"
               className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[500px] sm:rounded-2xl overflow-hidden"
-              style={{ background: isDark ? '#0c1528' : '#fff', border: `1px solid ${border}`, display: 'flex', flexDirection: 'column' }}
+              style={{ background: '#fff', border: `1px solid ${border}`, display: 'flex', flexDirection: 'column' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
               onClick={e => e.stopPropagation()}>
@@ -466,8 +465,8 @@ function CampaignsTab({ integrations, prefill, border, isDark }) {
                 integrations={integrations}
                 defaultAudience={preData?.audience}
                 defaultMessage={preData?.message}
-                border={border}
-                isDark={isDark}
+
+               
               />
             </motion.div>
           </>
@@ -479,7 +478,7 @@ function CampaignsTab({ integrations, prefill, border, isDark }) {
 
 /* ── Tab: Automations ────────────────────────────────────────────────────── */
 
-function AutomationsTab({ integrations, border, isDark }) {
+function AutomationsTab({ integrations, border$2}) {
   const [automations, setAutomations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(null);
@@ -563,7 +562,7 @@ function AutomationsTab({ integrations, border, isDark }) {
 
 /* ── Tab: Promotions ─────────────────────────────────────────────────────── */
 
-function PromotionsTab({ border, isDark }) {
+function PromotionsTab({ border$2}) {
   const [promos, setPromos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -633,7 +632,7 @@ function PromotionsTab({ border, isDark }) {
                 </div>
                 <div>
                   <label className="label">Type</label>
-                  <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: border }}>
+                  <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "var(--bam-border)" }}>
                     {['percent', 'fixed'].map(t => (
                       <button key={t} type="button" onClick={() => setForm(p => ({ ...p, type: t }))}
                         className={`flex-1 py-2.5 text-xs font-bold capitalize transition-all ${form.type === t ? 'text-white' : ''}`}
@@ -679,7 +678,7 @@ function PromotionsTab({ border, isDark }) {
         <div className="space-y-2">
           {promos.map(p => (
             <div key={p.id} className={`rounded-2xl p-4 border transition-all ${!p.is_active ? 'opacity-50' : ''}`}
-              style={{ background: 'var(--bam-surface)', borderColor: border }}>
+              style={{ background: 'var(--bam-surface)', borderColor: "var(--bam-border)" }}>
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -713,7 +712,7 @@ function PromotionsTab({ border, isDark }) {
 
 /* ── Tab: Reviews ────────────────────────────────────────────────────────── */
 
-function ReviewsTab({ border }) {
+function ReviewsTab({ }) {
   const [data, setData] = useState({ stats: null, reviews: [] });
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState(null);
@@ -793,7 +792,7 @@ function ReviewsTab({ border }) {
           {[['all','All'],['needs_reply','Needs reply'],['5','5★'],['4','4★'],['3','3★'],['2','2★'],['1','1★']].map(([v,l]) => (
             <button key={v} onClick={() => setFilter(v)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all border`}
-              style={filter === v ? { background: '#6366f1', color: '#fff', borderColor: '#6366f1' } : { borderColor: border, color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+              style={filter === v ? { background: '#6366f1', color: '#fff', borderColor: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
               {l}
             </button>
           ))}
@@ -864,7 +863,7 @@ function ReviewsTab({ border }) {
 
 /* ── Tab: Loyalty ────────────────────────────────────────────────────────── */
 
-function LoyaltyTab({ border }) {
+function LoyaltyTab({ }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -925,9 +924,7 @@ function LoyaltyTab({ border }) {
 /* ── Main Growth page ────────────────────────────────────────────────────── */
 
 export default function Growth() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const border = 'rgba(0,0,0,0.07)';
 
   const [searchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
@@ -955,7 +952,7 @@ export default function Growth() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 overflow-x-auto pb-1 border-b" style={{ borderColor: border }}>
+      <div className="flex gap-1 overflow-x-auto pb-1 border-b" style={{ borderColor: "var(--bam-border)" }}>
         {TABS.map(tab => (
           <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (tab.id !== 'campaigns') setCampaignPrefill(null); }}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${activeTab === tab.id ? 'border-primary-500 text-primary-600' : 'border-transparent'}`}
@@ -968,12 +965,12 @@ export default function Growth() {
 
       {/* Tab content */}
       <div className="pb-8">
-        {activeTab === 'overview'    && <OverviewTab integrations={integrations} onCreateCampaign={handleInsightAction} border={border} />}
-        {activeTab === 'campaigns'   && <CampaignsTab integrations={integrations} prefill={campaignPrefill} border={border} isDark={isDark} />}
-        {activeTab === 'automations' && <AutomationsTab integrations={integrations} border={border} isDark={isDark} />}
-        {activeTab === 'promotions'  && <PromotionsTab border={border} isDark={isDark} />}
-        {activeTab === 'reviews'     && <ReviewsTab border={border} />}
-        {activeTab === 'loyalty'     && <LoyaltyTab border={border} />}
+        {activeTab === 'overview'    && <OverviewTab integrations={integrations} onCreateCampaign={handleInsightAction} />}
+        {activeTab === 'campaigns'   && <CampaignsTab integrations={integrations} prefill={campaignPrefill} />}
+        {activeTab === 'automations' && <AutomationsTab integrations={integrations} />}
+        {activeTab === 'promotions'  && <PromotionsTab />}
+        {activeTab === 'reviews'     && <ReviewsTab />}
+        {activeTab === 'loyalty'     && <LoyaltyTab />}
       </div>
     </div>
   );

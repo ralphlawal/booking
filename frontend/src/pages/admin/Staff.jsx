@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staffAPI, servicesAPI } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
 import { businessCurrencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
@@ -33,7 +32,8 @@ const EMPTY = {
 
 /* ── StaffForm ───────────────────────────────────────────────────────────── */
 
-function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
+function StaffForm({ initial, services, onSave, onClose
+}) {
   const [form, setForm] = useState({ ...EMPTY, ...initial });
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
@@ -94,7 +94,7 @@ function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
   return (
     <form onSubmit={submit} className="flex flex-col" style={{ maxHeight: 'calc(100dvh - 80px)' }}>
       {/* Tabs */}
-      <div className="flex border-b flex-shrink-0 overflow-x-auto" style={{ borderColor: border }}>
+      <div className="flex border-b flex-shrink-0 overflow-x-auto" style={{ borderColor: "var(--bam-border)" }}>
         {tabs.map(t => (
           <button key={t} type="button" onClick={() => setActiveTab(t)}
             className={`px-4 py-3 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors border-b-2 ${activeTab === t ? 'border-primary-500 text-primary-600' : 'border-transparent'}`}
@@ -228,7 +228,7 @@ function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
                   const sel = (form.service_ids || []).includes(svc.id);
                   return (
                     <label key={svc.id} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all"
-                      style={{ background: sel ? 'var(--bam-primary-soft, rgba(99,102,241,0.08))' : 'var(--bam-surface-soft)', border: `1px solid ${sel ? 'rgba(99,102,241,0.3)' : border}` }}>
+                      style={{ background: sel ? 'var(--bam-primary-soft, rgba(99,102,241,0.08))' : 'var(--bam-surface-soft)', border: `1px solid ${sel ? 'rgba(99,102,241,0.3)' : "var(--bam-border)"}` }}>
                       <input type="checkbox" className="w-4 h-4 accent-primary-600 flex-shrink-0" checked={sel} onChange={() => toggleService(svc.id)} />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold truncate" style={{ color: 'var(--bam-text)' }}>{svc.name}</p>
@@ -250,7 +250,7 @@ function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
               <div className="space-y-2">
                 {PERMISSIONS.map(p => (
                   <label key={p.value} className="flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all"
-                    style={{ background: form.permissions === p.value ? 'var(--bam-primary-soft, rgba(99,102,241,0.08))' : 'var(--bam-surface-soft)', border: `1px solid ${form.permissions === p.value ? 'rgba(99,102,241,0.3)' : border}` }}>
+                    style={{ background: form.permissions === p.value ? 'var(--bam-primary-soft, rgba(99,102,241,0.08))' : 'var(--bam-surface-soft)', border: `1px solid ${form.permissions === p.value ? 'rgba(99,102,241,0.3)' : "var(--bam-border)"}` }}>
                     <input type="radio" name="permissions" value={p.value} checked={form.permissions === p.value} onChange={set('permissions')} className="mt-0.5 accent-primary-600" />
                     <div>
                       <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{p.label}</p>
@@ -286,7 +286,7 @@ function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
       </div>
 
       {/* Footer */}
-      <div className="flex gap-3 p-5 border-t flex-shrink-0" style={{ borderColor: border }}>
+      <div className="flex gap-3 p-5 border-t flex-shrink-0" style={{ borderColor: "var(--bam-border)" }}>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
         <button type="submit" disabled={saving} className="btn-primary flex-1">
           {saving ? <Spinner /> : form.id ? 'Save Changes' : 'Add Staff'}
@@ -298,7 +298,8 @@ function StaffForm({ initial, services, onSave, onClose, isDark, border }) {
 
 /* ── StaffCard ───────────────────────────────────────────────────────────── */
 
-function StaffCard({ member, onEdit, onSelect, isSelected, isDark, border }) {
+function StaffCard({ member, onEdit, onSelect, isSelected
+}) {
   const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   const permColor = { owner: '#7c3aed', manager: '#2563eb', reception: '#d97706', staff: '#059669' };
 
@@ -348,7 +349,7 @@ function StaffCard({ member, onEdit, onSelect, isSelected, isDark, border }) {
 
 /* ── PerformancePanel ────────────────────────────────────────────────────── */
 
-function PerformancePanel({ member, border }) {
+function PerformancePanel({ member$2}) {
   const [rows, setRows] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -387,7 +388,7 @@ function PerformancePanel({ member, border }) {
   return (
     <div className="p-5 space-y-4 overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-3 border-b" style={{ borderColor: border }}>
+      <div className="flex items-center gap-3 pb-3 border-b" style={{ borderColor: "var(--bam-border)" }}>
         <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white"
           style={{ background: `hsl(${(member.name.charCodeAt(0) * 37) % 360}, 65%, 45%)` }}>
           {member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
@@ -421,7 +422,7 @@ function PerformancePanel({ member, border }) {
         <div className="flex flex-wrap gap-1.5">
           {DAYS.map(d => (
             <span key={d} className="text-xs px-2.5 py-1 rounded-full font-semibold"
-              style={{ background: (member.working_days || []).includes(d) ? 'var(--bam-primary, #6366f1)' : 'transparent', color: (member.working_days || []).includes(d) ? '#fff' : 'var(--bam-text-faint)', border: `1px solid ${(member.working_days || []).includes(d) ? 'transparent' : border}` }}>
+              style={{ background: (member.working_days || []).includes(d) ? 'var(--bam-primary, #6366f1)' : 'transparent', color: (member.working_days || []).includes(d) ? '#fff' : 'var(--bam-text-faint)', border: `1px solid ${(member.working_days || []).includes(d) ? 'transparent' : "var(--bam-border)"}` }}>
               {d}
             </span>
           ))}
@@ -441,7 +442,7 @@ function PerformancePanel({ member, border }) {
           </div>
         )}
         {(member.time_off || []).length > 0 && (
-          <div className="mt-2 border-t pt-2 space-y-1" style={{ borderColor: border }}>
+          <div className="mt-2 border-t pt-2 space-y-1" style={{ borderColor: "var(--bam-border)" }}>
             <p className="text-xs font-semibold" style={{ color: 'var(--bam-text-faint)' }}>Upcoming time off</p>
             {(member.time_off || []).map((t, i) => (
               <p key={i} className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>
@@ -458,9 +459,7 @@ function PerformancePanel({ member, border }) {
 /* ── Main page ───────────────────────────────────────────────────────────── */
 
 export default function Staff() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const border = 'rgba(0,0,0,0.07)';
 
   const [staff, setStaff]       = useState([]);
   const [services, setServices] = useState([]);
@@ -535,17 +534,17 @@ export default function Staff() {
           <div className="space-y-3">
             {active.map(m => (
               <StaffCard key={m.id} member={m} onEdit={openEdit} onSelect={setSelected}
-                isSelected={selected?.id === m.id} isDark={isDark} border={border} />
+                isSelected={selected?.id === m.id} />
             ))}
             {inactive.length > 0 && (
               <>
                 <div className="flex items-center gap-3 mt-4">
                   <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--bam-text-faint)' }}>Inactive</h3>
-                  <div className="flex-1 h-px" style={{ background: border }} />
+                  <div className="flex-1 h-px" style={{ background: "var(--bam-border)" }} />
                 </div>
                 {inactive.map(m => (
                   <StaffCard key={m.id} member={m} onEdit={openEdit} onSelect={setSelected}
-                    isSelected={selected?.id === m.id} isDark={isDark} border={border} />
+                    isSelected={selected?.id === m.id} />
                 ))}
               </>
             )}
@@ -553,10 +552,10 @@ export default function Staff() {
 
           {/* Performance panel */}
           <div className="rounded-2xl overflow-hidden lg:sticky lg:top-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}`, minHeight: 400 }}>
-            <div className="px-5 py-4 border-b" style={{ borderColor: border }}>
+            <div className="px-5 py-4 border-b" style={{ borderColor: "var(--bam-border)" }}>
               <h2 className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>Performance</h2>
             </div>
-            <PerformancePanel member={selected} border={border} />
+            <PerformancePanel member={selected} />
           </div>
         </div>
       )}
@@ -570,14 +569,14 @@ export default function Staff() {
               onClick={closeModal} />
             <motion.div key="staff-sheet"
               className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[480px] sm:rounded-2xl flex flex-col overflow-hidden"
-              style={{ background: isDark ? '#0c1528' : '#fff', border: `1px solid ${border}` }}
+              style={{ background: '#fff', border: `1px solid ${border}` }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
               onClick={e => e.stopPropagation()}>
               <div className="flex justify-center pt-3 pb-1 sm:hidden">
                 <div className="w-10 h-1 rounded-full" style={{ background: 'var(--bam-border-medium)' }} />
               </div>
-              <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: border }}>
+              <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: "var(--bam-border)" }}>
                 <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>
                   {modal === 'create' ? 'New Staff Member' : `Edit: ${modal.name}`}
                 </h2>
@@ -590,8 +589,8 @@ export default function Staff() {
                 services={services}
                 onSave={handleSave}
                 onClose={closeModal}
-                isDark={isDark}
-                border={border}
+               
+
               />
             </motion.div>
           </>

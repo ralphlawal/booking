@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { servicesAPI, resourcesAPI } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
 import { businessCurrencySymbol } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
@@ -40,7 +39,8 @@ function groupByCategory(services) {
 
 /* ── ServiceForm ─────────────────────────────────────────────────────────── */
 
-function ServiceForm({ initial, resources, onSave, onClose, isDark, border }) {
+function ServiceForm({ initial, resources, onSave, onClose
+}) {
   const [form, setForm] = useState({ ...EMPTY, ...initial });
   const [saving, setSaving] = useState(false);
   const [addonInput, setAddonInput] = useState('');
@@ -135,7 +135,7 @@ function ServiceForm({ initial, resources, onSave, onClose, isDark, border }) {
           <Toggle checked={!!form.online_booking_enabled} onChange={v => setForm(p => ({ ...p, online_booking_enabled: v }))} />
         </label>
         {form.id && (
-          <label className="flex items-center justify-between cursor-pointer border-t pt-3" style={{ borderColor: border }}>
+          <label className="flex items-center justify-between cursor-pointer border-t pt-3" style={{ borderColor: "var(--bam-border)" }}>
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--bam-text)' }}>Active</p>
               <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>Inactive services are hidden everywhere</p>
@@ -155,7 +155,7 @@ function ServiceForm({ initial, resources, onSave, onClose, isDark, border }) {
           <Toggle checked={!!form.deposit_required} onChange={v => setForm(p => ({ ...p, deposit_required: v }))} />
         </label>
         {form.deposit_required && (
-          <div className="pt-2 border-t" style={{ borderColor: border }}>
+          <div className="pt-2 border-t" style={{ borderColor: "var(--bam-border)" }}>
             <label className="label">Deposit amount ({SYM})</label>
             <input className="input" type="number" min="0" step="0.01" placeholder="e.g. 10.00" value={form.deposit_amount || ''} onChange={set('deposit_amount')} />
           </div>
@@ -228,7 +228,7 @@ function ServiceForm({ initial, resources, onSave, onClose, isDark, border }) {
       )}
 
       {/* Actions */}
-      <div className="flex gap-3 pt-2 border-t" style={{ borderColor: border }}>
+      <div className="flex gap-3 pt-2 border-t" style={{ borderColor: "var(--bam-border)" }}>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
         <button type="submit" disabled={saving} className="btn-primary flex-1">
           {saving ? <Spinner /> : form.id ? 'Save Changes' : 'Create Service'}
@@ -240,7 +240,8 @@ function ServiceForm({ initial, resources, onSave, onClose, isDark, border }) {
 
 /* ── ServiceCard ─────────────────────────────────────────────────────────── */
 
-function ServiceCard({ svc, onEdit, onDuplicate, onToggleActive, onToggleOnline, onMoveUp, onMoveDown, isFirst, isLast, isDark, border }) {
+function ServiceCard({ svc, onEdit, onDuplicate, onToggleActive, onToggleOnline, onMoveUp, onMoveDown, isFirst, isLast
+}) {
   return (
     <div className={`rounded-2xl p-4 border transition-all ${!svc.is_active ? 'opacity-50' : ''}`}
       style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
@@ -338,9 +339,7 @@ function ServiceCard({ svc, onEdit, onDuplicate, onToggleActive, onToggleOnline,
 /* ── Main page ───────────────────────────────────────────────────────────── */
 
 export default function Services() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const border = 'rgba(0,0,0,0.07)';
 
   const [services, setServices]   = useState([]);
   const [resources, setResources] = useState([]);
@@ -477,13 +476,13 @@ export default function Services() {
             <div key={category}>
               <div className="flex items-center gap-3 mb-3">
                 <h2 className="font-bold text-sm uppercase tracking-widest" style={{ color: 'var(--bam-text-faint)' }}>{category}</h2>
-                <div className="flex-1 h-px" style={{ background: border }} />
+                <div className="flex-1 h-px" style={{ background: "var(--bam-border)" }} />
                 <span className="text-xs font-semibold" style={{ color: 'var(--bam-text-faint)' }}>{svcs.length}</span>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 {svcs.map((svc, i) => (
                   <ServiceCard
-                    key={svc.id} svc={svc} isDark={isDark} border={border}
+                    key={svc.id} svc={svc}
                     onEdit={openEdit}
                     onDuplicate={handleDuplicate}
                     onToggleActive={handleToggleActive}
@@ -513,7 +512,7 @@ export default function Services() {
             <motion.div
               key="svc-sheet"
               className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[480px] sm:rounded-2xl flex flex-col overflow-hidden"
-              style={{ background: isDark ? '#0c1528' : '#fff', border: `1px solid ${border}`, maxHeight: '95dvh' }}
+              style={{ background: '#fff', border: `1px solid ${border}`, maxHeight: '95dvh' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
               onClick={e => e.stopPropagation()}
@@ -521,7 +520,7 @@ export default function Services() {
               <div className="flex justify-center pt-3 pb-1 sm:hidden">
                 <div className="w-10 h-1 rounded-full" style={{ background: 'var(--bam-border-medium)' }} />
               </div>
-              <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: border }}>
+              <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: "var(--bam-border)" }}>
                 <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>
                   {modal === 'create' ? 'New Service' : `Edit: ${modal.name}`}
                 </h2>
@@ -534,8 +533,8 @@ export default function Services() {
                 resources={resources}
                 onSave={handleSave}
                 onClose={closeModal}
-                isDark={isDark}
-                border={border}
+               
+
               />
             </motion.div>
           </>

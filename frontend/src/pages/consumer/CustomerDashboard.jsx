@@ -4,7 +4,6 @@ import { Settings, Zap, Search, LogOut, X, Bell, Copy, Check, Building2, Calenda
 import { consumerAPI, reviewsAPI } from '../../services/api';
 import { useNotifications } from '../../context/NotificationContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import { copyText } from '../../services/nativeBridge';
@@ -693,7 +692,6 @@ function PreferenceCard({ pref, onRemove, onBook }) {
 
 export default function CustomerDashboard() {
   const { consumer, loading: authLoading, logout } = useCustomerAuth();
-  const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, browserPermission, requestBrowserNotifications, markAllRead, setNotifications } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
@@ -911,16 +909,6 @@ export default function CustomerDashboard() {
               )}
             </div>
 
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark'
-                ? <Sun className="w-4 h-4 text-amber-400" />
-                : <Moon className="w-4 h-4 text-gray-500" />
-              }
-            </button>
             <Link to="/customer/profile" className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Profile settings">
               <Settings className="w-4 h-4 text-gray-500" />
             </Link>

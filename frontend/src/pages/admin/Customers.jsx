@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO, isValid } from 'date-fns';
 import { customersAPI, aiAPI } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import NewBookingSheet from '../../components/admin/NewBookingSheet';
 import { businessCurrencySymbol } from '../../utils/currency';
@@ -122,9 +121,9 @@ const INSIGHT_TONE = {
 
 /* ── SegmentBadge ─────────────────────────────────────────────────────────── */
 
-function SegmentBadge({ segment, isDark, size = 'sm' }) {
+function SegmentBadge({ segment, size = 'sm' }) {
   const meta = SEGMENTS[segment] || SEGMENTS.returning;
-  const bg   = isDark ? meta.dark || meta.bg : meta.bg;
+  const bg = meta.bg;
   return (
     <span
       className={`inline-flex items-center rounded-full font-bold ${size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1 text-xs'}`}
@@ -228,7 +227,7 @@ function AddCustomerSheet({ open, onClose, onCreated }) {
 
 /* ── CustomerProfile ─────────────────────────────────────────────────────── */
 
-function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook }) {
+function CustomerProfile({ customer, segment, onClose, onUpdated, onBook }) {
   const [bookings, setBookings]   = useState([]);
   const [loadingB, setLoadingB]   = useState(true);
   const [notes, setNotes]         = useState(customer.notes || '');
@@ -236,7 +235,7 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
   const [tab, setTab]             = useState('overview');
   const [aiMsg, setAiMsg]         = useState(null);
   const [genAi, setGenAi]         = useState(false);
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const border = 'rgba(0,0,0,0.07)';
 
   useEffect(() => {
     setNotes(customer.notes || '');
@@ -307,20 +306,20 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
       <motion.div
         key="profile-panel"
         className="fixed inset-y-0 right-0 z-[91] flex flex-col overflow-hidden w-full sm:max-w-[440px]"
-        style={{ background: isDark ? '#0c1528' : '#fff', borderLeft: `1px solid ${border}`, boxShadow: '-8px 0 60px rgba(0,0,0,0.3)' }}
+        style={{ background: '#fff', borderLeft: `1px solid ${border}`, boxShadow: '-8px 0 60px rgba(0,0,0,0.3)' }}
         initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 0.9 }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex-shrink-0 border-b p-5" style={{ borderColor: border }}>
+        <div className="flex-shrink-0 border-b p-5" style={{ borderColor: "var(--bam-border)" }}>
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               <CustomerAvatar name={customer.full_name} size={14} />
               <div>
                 <h2 className="font-bold text-xl leading-tight" style={{ color: 'var(--bam-text)' }}>{customer.full_name}</h2>
                 <div className="flex items-center gap-2 mt-1">
-                  <SegmentBadge segment={segment} isDark={isDark} size="base" />
+                  <SegmentBadge segment={segment} size="base" />
                   <span className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>
                     Since {fmtDate(customer.created_at)}
                   </span>
@@ -354,7 +353,7 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
         </div>
 
         {/* Quick actions */}
-        <div className="flex-shrink-0 flex gap-2 px-5 py-3 border-b" style={{ borderColor: border }}>
+        <div className="flex-shrink-0 flex gap-2 px-5 py-3 border-b" style={{ borderColor: "var(--bam-border)" }}>
           <button onClick={() => onBook(customer)} className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1.5">
             <CalIcon className="w-3.5 h-3.5" /> Book
           </button>
@@ -385,7 +384,7 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
         </div>
 
         {/* Tabs */}
-        <div className="flex-shrink-0 flex border-b px-5" style={{ borderColor: border }}>
+        <div className="flex-shrink-0 flex border-b px-5" style={{ borderColor: "var(--bam-border)" }}>
           {[['overview', 'Overview'], ['history', 'History'], ['notes', 'Notes']].map(([t, l]) => (
             <button
               key={t}
@@ -617,9 +616,7 @@ function CustomerProfile({ customer, segment, onClose, onUpdated, isDark, onBook
 const ALL_FILTERS = ['all', 'new', 'returning', 'vip', 'high_value', 'at_risk', 'inactive'];
 
 export default function Customers() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const border = 'rgba(0,0,0,0.07)';
 
   const [customers, setCustomers]   = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -787,7 +784,7 @@ export default function Customers() {
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b" style={{ borderColor: border }}>
+                <thead className="border-b" style={{ borderColor: "var(--bam-border)" }}>
                   <tr>
                     {['Customer', 'Contact', 'Segment', 'Bookings', 'Spent', 'Last Visit', 'Next'].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--bam-text-faint)' }}>{h}</th>
@@ -800,7 +797,7 @@ export default function Customers() {
                       key={c.id}
                       onClick={() => setSelected(c)}
                       className="border-b cursor-pointer transition-colors hover:bg-[--bam-surface-hover]"
-                      style={{ borderColor: border }}
+                      style={{ borderColor: "var(--bam-border)" }}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -812,7 +809,7 @@ export default function Customers() {
                         <p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{c.phone || '—'}</p>
                         <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>{c.email || ''}</p>
                       </td>
-                      <td className="px-4 py-3"><SegmentBadge segment={c._segment} isDark={isDark} /></td>
+                      <td className="px-4 py-3"><SegmentBadge segment={c._segment} /></td>
                       <td className="px-4 py-3 font-bold" style={{ color: 'var(--bam-text)' }}>{c.total_bookings || 0}</td>
                       <td className="px-4 py-3 font-bold text-emerald-600">{SYM}{parseFloat(c.lifetime_spend || 0).toFixed(0)}</td>
                       <td className="px-4 py-3 text-xs" style={{ color: 'var(--bam-text-muted)' }}>
@@ -831,17 +828,17 @@ export default function Customers() {
             </div>
 
             {/* Mobile cards */}
-            <div className="md:hidden divide-y" style={{ borderColor: border }}>
+            <div className="md:hidden divide-y" style={{ borderColor: "var(--bam-border)" }}>
               {filtered.map(c => {
                 const ds = daysSince(c.last_booking_date);
                 return (
-                  <div key={c.id} onClick={() => setSelected(c)} className="p-4 cursor-pointer" style={{ borderColor: border }}>
+                  <div key={c.id} onClick={() => setSelected(c)} className="p-4 cursor-pointer" style={{ borderColor: "var(--bam-border)" }}>
                     <div className="flex items-center gap-3">
                       <CustomerAvatar name={c.full_name} size={10} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-bold text-sm truncate" style={{ color: 'var(--bam-text)' }}>{c.full_name}</p>
-                          <SegmentBadge segment={c._segment} isDark={isDark} />
+                          <SegmentBadge segment={c._segment} />
                         </div>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>
                           {c.phone || c.email || 'No contact'}
@@ -871,7 +868,6 @@ export default function Customers() {
           segment={selectedEnriched._segment}
           onClose={() => setSelected(null)}
           onUpdated={handleNotesUpdated}
-          isDark={isDark}
           onBook={openBook}
         />
       )}

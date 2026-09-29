@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { resourcesAPI } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { Armchair, BedDouble, DoorOpen, Lightbulb, Package, Wrench } from 'lucide-react';
 
@@ -26,7 +25,8 @@ function ResourceIcon({ type, className }) {
 
 /* ── ResourceForm ────────────────────────────────────────────────────────── */
 
-function ResourceForm({ initial, onSave, onClose, isDark, border }) {
+function ResourceForm({ initial, onSave, onClose
+}) {
   const [form, setForm] = useState({ ...EMPTY, ...initial });
   const [saving, setSaving] = useState(false);
 
@@ -56,7 +56,7 @@ function ResourceForm({ initial, onSave, onClose, isDark, border }) {
         <div className="grid grid-cols-3 gap-2">
           {RESOURCE_TYPES.map(t => (
             <label key={t.value} className="flex flex-col items-center gap-1 p-3 rounded-xl cursor-pointer transition-all text-center"
-              style={{ background: form.type === t.value ? 'rgba(99,102,241,0.1)' : 'var(--bam-surface-soft)', border: `1px solid ${form.type === t.value ? 'rgba(99,102,241,0.4)' : border}` }}>
+              style={{ background: form.type === t.value ? 'rgba(99,102,241,0.1)' : 'var(--bam-surface-soft)', border: `1px solid ${form.type === t.value ? 'rgba(99,102,241,0.4)' : "var(--bam-border)"}` }}>
               <input type="radio" name="res-type" value={t.value} checked={form.type === t.value} onChange={set('type')} className="sr-only" />
               <t.icon className="w-5 h-5" strokeWidth={1.8} aria-hidden="true" />
               <span className="text-xs font-semibold" style={{ color: form.type === t.value ? '#6366f1' : 'var(--bam-text-muted)' }}>{t.label}</span>
@@ -86,7 +86,7 @@ function ResourceForm({ initial, onSave, onClose, isDark, border }) {
         </label>
       )}
 
-      <div className="flex gap-3 pt-2 border-t" style={{ borderColor: border }}>
+      <div className="flex gap-3 pt-2 border-t" style={{ borderColor: "var(--bam-border)" }}>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
         <button type="submit" disabled={saving} className="btn-primary flex-1">
           {saving ? <Spinner /> : form.id ? 'Save Changes' : 'Add Resource'}
@@ -98,7 +98,7 @@ function ResourceForm({ initial, onSave, onClose, isDark, border }) {
 
 /* ── ResourceCard ────────────────────────────────────────────────────────── */
 
-function ResourceCard({ resource, onEdit, onDelete, border, isDark }) {
+function ResourceCard({ resource, onEdit, onDelete, border$2}) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleDelete = async () => {
@@ -167,9 +167,7 @@ function ResourceCard({ resource, onEdit, onDelete, border, isDark }) {
 /* ── Main page ───────────────────────────────────────────────────────────── */
 
 export default function Resources() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const border = 'rgba(0,0,0,0.07)';
 
   const [resources, setResources] = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -253,7 +251,7 @@ export default function Resources() {
           {/* Active */}
           <div className="grid sm:grid-cols-2 gap-3">
             {active.map(r => (
-              <ResourceCard key={r.id} resource={r} onEdit={openEdit} onDelete={handleDelete} border={border} isDark={isDark} />
+              <ResourceCard key={r.id} resource={r} onEdit={openEdit} onDelete={handleDelete} />
             ))}
           </div>
 
@@ -262,11 +260,11 @@ export default function Resources() {
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--bam-text-faint)' }}>Inactive</h3>
-                <div className="flex-1 h-px" style={{ background: border }} />
+                <div className="flex-1 h-px" style={{ background: "var(--bam-border)" }} />
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 {inactive.map(r => (
-                  <ResourceCard key={r.id} resource={r} onEdit={openEdit} onDelete={handleDelete} border={border} isDark={isDark} />
+                  <ResourceCard key={r.id} resource={r} onEdit={openEdit} onDelete={handleDelete} />
                 ))}
               </div>
             </div>
@@ -300,14 +298,14 @@ export default function Resources() {
               onClick={closeModal} />
             <motion.div key="res-sheet"
               className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[420px] sm:rounded-2xl flex flex-col overflow-hidden"
-              style={{ background: isDark ? '#0c1528' : '#fff', border: `1px solid ${border}`, maxHeight: '95dvh' }}
+              style={{ background: '#fff', border: `1px solid ${border}`, maxHeight: '95dvh' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
               onClick={e => e.stopPropagation()}>
               <div className="flex justify-center pt-3 pb-1 sm:hidden">
                 <div className="w-10 h-1 rounded-full" style={{ background: 'var(--bam-border-medium)' }} />
               </div>
-              <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: border }}>
+              <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: "var(--bam-border)" }}>
                 <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>
                   {modal === 'create' ? 'New Resource' : `Edit: ${modal.name}`}
                 </h2>
@@ -319,8 +317,8 @@ export default function Resources() {
                 initial={modal === 'create' ? EMPTY : modal}
                 onSave={handleSave}
                 onClose={closeModal}
-                isDark={isDark}
-                border={border}
+               
+
               />
             </motion.div>
           </>

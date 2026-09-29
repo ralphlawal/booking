@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loyaltyAPI, membershipAPI, packagesAPI, giftCardsAPI, servicesAPI } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 import { Gift, Gem, Package, Repeat2, UserRound } from 'lucide-react';
@@ -35,7 +34,7 @@ function EmptyState({ icon, title, body, action }) {
   );
 }
 
-function Sheet({ open, onClose, title, children, border, isDark }) {
+function Sheet({ open, onClose, title, children }) {
   return (
     <AnimatePresence>
       {open && (
@@ -45,11 +44,11 @@ function Sheet({ open, onClose, title, children, border, isDark }) {
             onClick={onClose} />
           <motion.div key="sheet-panel"
             className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[500px] sm:rounded-2xl overflow-hidden flex flex-col"
-            style={{ background: isDark ? '#0c1528' : '#fff', border: `1px solid ${border}` }}
+            style={{ background: '#fff', border: `1px solid ${border}` }}
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
             onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: border }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0" style={{ borderColor: "var(--bam-border)" }}>
               <h2 className="font-bold text-base" style={{ color: 'var(--bam-text)' }}>{title}</h2>
               <button onClick={onClose} style={{ color: 'var(--bam-text-muted)' }}>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -74,7 +73,7 @@ const TABS = [
 /*  Tab: LOYALTY                                                               */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function LoyaltyTab({ border, isDark }) {
+function LoyaltyTab({ border }) {
   const [program, setProgram] = useState(null);
   const [rewards, setRewards]  = useState([]);
   const [loading, setLoading]  = useState(true);
@@ -207,7 +206,7 @@ function LoyaltyTab({ border, isDark }) {
       </div>
 
       {/* Reward form sheet */}
-      <Sheet open={showRewardForm} onClose={() => setShowRewardForm(false)} title={editingReward ? 'Edit reward' : 'Add reward'} border={border} isDark={isDark}>
+      <Sheet open={showRewardForm} onClose={() => setShowRewardForm(false)} title={editingReward ? 'Edit reward' : 'Add reward'}>
         <form onSubmit={saveReward} className="space-y-4">
           <div>
             <label className="label">Reward name *</label>
@@ -219,7 +218,7 @@ function LoyaltyTab({ border, isDark }) {
               {['discount','service','addon'].map(t => (
                 <button key={t} type="button" onClick={() => setRForm(p => ({ ...p, type: t }))}
                   className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize border ${rForm.type === t ? 'text-white border-transparent' : ''}`}
-                  style={rForm.type === t ? { background: '#6366f1' } : { borderColor: border, color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+                  style={rForm.type === t ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
                   {t === 'discount' ? '💰 Discount' : t === 'service' ? '✂️ Service' : '➕ Add-on'}
                 </button>
               ))}
@@ -259,7 +258,7 @@ function LoyaltyTab({ border, isDark }) {
 /*  Tab: MEMBERSHIPS                                                           */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function MembershipsTab({ border, isDark }) {
+function MembershipsTab({ border }) {
   const [plans, setPlans] = useState([]);
   const [subs, setSubs] = useState([]);
   const [services, setServices] = useState([]);
@@ -327,7 +326,7 @@ function MembershipsTab({ border, isDark }) {
         {['plans','subscribers'].map(v => (
           <button key={v} onClick={() => setView(v)}
             className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize border transition-all ${view === v ? 'text-white border-transparent' : ''}`}
-            style={view === v ? { background: '#6366f1' } : { borderColor: border, color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+            style={view === v ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
             {v}
           </button>
         ))}
@@ -419,7 +418,7 @@ function MembershipsTab({ border, isDark }) {
       )}
 
       {/* Plan form sheet */}
-      <Sheet open={showForm} onClose={() => setShowForm(false)} title={editing ? 'Edit plan' : 'New membership plan'} border={border} isDark={isDark}>
+      <Sheet open={showForm} onClose={() => setShowForm(false)} title={editing ? 'Edit plan' : 'New membership plan'}>
         <form onSubmit={save} className="space-y-4">
           <div><label className="label">Plan name *</label><input className="input" required placeholder="e.g. Hair Club" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} /></div>
           <div><label className="label">Description</label><textarea className="input resize-none" rows={2} placeholder="What's included?" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
@@ -487,7 +486,7 @@ function MembershipsTab({ border, isDark }) {
 /*  Tab: PACKAGES                                                              */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function PackagesTab({ border, isDark }) {
+function PackagesTab({ border }) {
   const [packages, setPackages] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [services, setServices] = useState([]);
@@ -536,7 +535,7 @@ function PackagesTab({ border, isDark }) {
         {['packages','customers'].map(v => (
           <button key={v} onClick={() => setView(v)}
             className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize border transition-all ${view === v ? 'text-white border-transparent' : ''}`}
-            style={view === v ? { background: '#6366f1' } : { borderColor: border, color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+            style={view === v ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
             {v}
           </button>
         ))}
@@ -609,7 +608,7 @@ function PackagesTab({ border, isDark }) {
         )
       )}
 
-      <Sheet open={showForm} onClose={() => setShowForm(false)} title={editing ? 'Edit package' : 'New package'} border={border} isDark={isDark}>
+      <Sheet open={showForm} onClose={() => setShowForm(false)} title={editing ? 'Edit package' : 'New package'}>
         <form onSubmit={save} className="space-y-4">
           <div><label className="label">Package name *</label><input className="input" required placeholder="e.g. 6 Massages Bundle" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} /></div>
           <div><label className="label">Description</label><input className="input" placeholder="e.g. Save 20% compared to single session price" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} /></div>
@@ -633,7 +632,7 @@ function PackagesTab({ border, isDark }) {
                 return (
                   <button key={s.id} type="button" onClick={() => toggleSvc(s.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${sel ? 'text-white border-transparent' : ''}`}
-                    style={sel ? { background: '#6366f1' } : { borderColor: border, color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+                    style={sel ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
                     {s.name}
                   </button>
                 );
@@ -654,7 +653,7 @@ function PackagesTab({ border, isDark }) {
 /*  Tab: GIFT CARDS                                                            */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function GiftCardsTab({ border, isDark }) {
+function GiftCardsTab({ border }) {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -720,7 +719,7 @@ function GiftCardsTab({ border, isDark }) {
         {['all','active','redeemed','expired','cancelled'].map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize border ${filter === f ? 'text-white border-transparent' : ''}`}
-            style={filter === f ? { background: '#6366f1' } : { borderColor: border, color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+            style={filter === f ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
             {f}
           </button>
         ))}
@@ -781,7 +780,7 @@ function GiftCardsTab({ border, isDark }) {
       )}
 
       {/* Create form */}
-      <Sheet open={showForm} onClose={() => setShowForm(false)} title="Issue gift card" border={border} isDark={isDark}>
+      <Sheet open={showForm} onClose={() => setShowForm(false)} title="Issue gift card">
         <form onSubmit={create} className="space-y-4">
           <div className="rounded-2xl p-3 text-sm" style={{ background: 'rgba(99,102,241,.07)', border: '1px solid rgba(99,102,241,.2)', color: 'var(--bam-text-muted)' }}>
             💡 This creates a complimentary gift card (no customer payment). To let customers buy gift cards online, they can do so from your public booking page once Stripe is connected.
@@ -817,9 +816,7 @@ function GiftCardsTab({ border, isDark }) {
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 export default function RetentionHub() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const border = 'rgba(0,0,0,0.07)';
   const [activeTab, setActiveTab] = useState('loyalty');
 
   return (
@@ -829,7 +826,7 @@ export default function RetentionHub() {
         <p className="text-sm mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>Loyalty, memberships, packages, and gift cards</p>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto pb-1 border-b" style={{ borderColor: border }}>
+      <div className="flex gap-1 overflow-x-auto pb-1 border-b" style={{ borderColor: "var(--bam-border)" }}>
         {TABS.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-all flex-shrink-0 ${activeTab === tab.id ? 'border-indigo-500 text-indigo-600' : 'border-transparent'}`}
@@ -840,10 +837,10 @@ export default function RetentionHub() {
       </div>
 
       <div className="pb-8">
-        {activeTab === 'loyalty'     && <LoyaltyTab border={border} isDark={isDark} />}
-        {activeTab === 'memberships' && <MembershipsTab border={border} isDark={isDark} />}
-        {activeTab === 'packages'    && <PackagesTab border={border} isDark={isDark} />}
-        {activeTab === 'gift-cards'  && <GiftCardsTab border={border} isDark={isDark} />}
+        {activeTab === 'loyalty'     && <LoyaltyTab />}
+        {activeTab === 'memberships' && <MembershipsTab />}
+        {activeTab === 'packages'    && <PackagesTab />}
+        {activeTab === 'gift-cards'  && <GiftCardsTab />}
       </div>
     </div>
   );
