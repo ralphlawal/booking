@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, X, Rocket, Plus } from 'lucide-react';
+import { Check, X, Rocket, ArrowLeft, ArrowRight } from 'lucide-react';
 import { businessAPI, servicesAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
@@ -8,16 +8,36 @@ import { openExternalLink } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
-  'Barber', 'Hair Stylist', 'Nail Tech', 'Makeup Artist', 'Esthetician', 'Tattoo Artist', 'Lash Tech',
-  'Massage Therapist', 'Fitness Trainer', 'Yoga Instructor', 'Personal Coach',
-  'Photographer', 'Videographer',
-  'Tutor', 'Music Teacher', 'Driving Instructor', 'Language Teacher',
-  'Consultant', 'Therapist / Counselor', 'Accountant', 'Lawyer',
-  'Cleaning Service', 'Mechanic', 'Electrician', 'Plumber',
-  'Chef / Cooking Class', 'Event Planner', 'Other',
+  { label: 'Barber',              emoji: '✂️' },
+  { label: 'Hair Stylist',        emoji: '💇' },
+  { label: 'Nail Tech',           emoji: '💅' },
+  { label: 'Makeup Artist',       emoji: '💄' },
+  { label: 'Esthetician',         emoji: '✨' },
+  { label: 'Tattoo Artist',       emoji: '🖋' },
+  { label: 'Lash Tech',           emoji: '👁' },
+  { label: 'Massage Therapist',   emoji: '🤲' },
+  { label: 'Fitness Trainer',     emoji: '💪' },
+  { label: 'Yoga Instructor',     emoji: '🧘' },
+  { label: 'Personal Coach',      emoji: '🎯' },
+  { label: 'Photographer',        emoji: '📸' },
+  { label: 'Videographer',        emoji: '🎬' },
+  { label: 'Tutor',               emoji: '📚' },
+  { label: 'Music Teacher',       emoji: '🎵' },
+  { label: 'Driving Instructor',  emoji: '🚗' },
+  { label: 'Language Teacher',    emoji: '🗣' },
+  { label: 'Consultant',          emoji: '💼' },
+  { label: 'Therapist / Counselor', emoji: '🧠' },
+  { label: 'Accountant',          emoji: '📊' },
+  { label: 'Lawyer',              emoji: '⚖️' },
+  { label: 'Cleaning Service',    emoji: '🧹' },
+  { label: 'Mechanic',            emoji: '🔧' },
+  { label: 'Electrician',         emoji: '⚡' },
+  { label: 'Plumber',             emoji: '🔩' },
+  { label: 'Chef / Cooking Class',emoji: '👨‍🍳' },
+  { label: 'Event Planner',       emoji: '🎉' },
+  { label: 'Other',               emoji: '🌟' },
 ];
 
-// Category-specific starter service menus
 const PRESETS = {
   'barber': [
     { name: 'Haircut', price: 25, duration_minutes: 30 },
@@ -79,41 +99,23 @@ const PRESETS = {
     { name: 'Yoga Assessment', price: 40, duration_minutes: 45 },
     { name: 'Meditation Session', price: 45, duration_minutes: 45 },
   ],
+  'personal coach': [
+    { name: 'Strategy Session', price: 80, duration_minutes: 60 },
+    { name: 'Follow-Up Session', price: 60, duration_minutes: 45 },
+    { name: 'Discovery Call', price: 0, duration_minutes: 30 },
+    { name: 'Goal-Setting Workshop', price: 100, duration_minutes: 90 },
+  ],
   'photographer': [
-    { name: 'Portrait Session (1 hr)', price: 150, duration_minutes: 60 },
-    { name: 'Headshots Session', price: 100, duration_minutes: 45 },
-    { name: 'Event Coverage (2 hrs)', price: 250, duration_minutes: 120 },
-    { name: 'Consultation & Planning', price: 0, duration_minutes: 30 },
+    { name: 'Portrait Session (1 hr)', price: 120, duration_minutes: 60 },
+    { name: 'Headshot Session', price: 80, duration_minutes: 45 },
+    { name: 'Event Photography (2 hr)', price: 250, duration_minutes: 120 },
+    { name: 'Consultation', price: 0, duration_minutes: 30 },
   ],
   'tutor': [
-    { name: '1-on-1 Tutoring (60 min)', price: 45, duration_minutes: 60 },
-    { name: 'Exam Prep Session', price: 55, duration_minutes: 75 },
-    { name: 'Initial Assessment', price: 30, duration_minutes: 45 },
-    { name: 'Group Session (per student)', price: 20, duration_minutes: 60 },
-  ],
-  'music teacher': [
-    { name: '30 Min Lesson', price: 30, duration_minutes: 30 },
-    { name: '60 Min Lesson', price: 55, duration_minutes: 60 },
-    { name: 'First Trial Lesson', price: 20, duration_minutes: 30 },
-    { name: 'Theory & Practice (90 min)', price: 75, duration_minutes: 90 },
-  ],
-  'cleaning service': [
-    { name: 'Regular Clean (2 bed home)', price: 80, duration_minutes: 120 },
-    { name: 'Deep Clean', price: 150, duration_minutes: 180 },
-    { name: 'End of Tenancy Clean', price: 200, duration_minutes: 240 },
-    { name: 'Office Clean (per visit)', price: 60, duration_minutes: 90 },
-  ],
-  'therapist / counselor': [
-    { name: 'Initial Consultation', price: 60, duration_minutes: 50 },
-    { name: 'Individual Therapy Session', price: 80, duration_minutes: 50 },
-    { name: 'Couples Session', price: 100, duration_minutes: 60 },
-    { name: 'Group Session (per person)', price: 35, duration_minutes: 60 },
-  ],
-  'consultant': [
-    { name: 'Discovery Call (30 min)', price: 0, duration_minutes: 30 },
-    { name: 'Strategy Session (60 min)', price: 120, duration_minutes: 60 },
-    { name: 'Half-Day Workshop', price: 400, duration_minutes: 240 },
-    { name: 'Follow-Up Review', price: 80, duration_minutes: 45 },
+    { name: '1-on-1 Tutoring (1 hr)', price: 40, duration_minutes: 60 },
+    { name: 'Group Tutoring (per person)', price: 20, duration_minutes: 60 },
+    { name: 'Assessment Session', price: 35, duration_minutes: 45 },
+    { name: 'Exam Prep Session', price: 45, duration_minutes: 60 },
   ],
 };
 
@@ -128,10 +130,10 @@ function getPresets(category) {
 }
 
 const STEPS = [
-  { label: 'Business',  desc: 'What do you do?' },
-  { label: 'Services',  desc: 'Your starter menu' },
-  { label: 'Contact',   desc: 'How to find you?' },
-  { label: 'Your Page', desc: 'Claim your link' },
+  { label: 'Business',  desc: 'What do you do?',      icon: '🏪' },
+  { label: 'Services',  desc: 'Your starter menu',    icon: '📋' },
+  { label: 'Contact',   desc: 'How to find you?',     icon: '📍' },
+  { label: 'Your Page', desc: 'Claim your link',      icon: '🚀' },
 ];
 
 export default function Onboarding() {
@@ -164,7 +166,6 @@ export default function Onboarding() {
     if (business) navigate('/admin/dashboard', { replace: true });
   }, [business, navigate]);
 
-  // Pre-select all presets when category is chosen
   useEffect(() => {
     if (form.category) {
       const presets = getPresets(form.category);
@@ -202,7 +203,6 @@ export default function Onboarding() {
       try { window.sessionStorage.removeItem('bookam.business.onboarding'); } catch {}
       updateBusiness(biz);
 
-      // Create selected starter services in background
       const presets = getPresets(form.category);
       const toCreate = presets.filter(p => selectedServices.has(p.name));
       if (toCreate.length) {
@@ -223,97 +223,151 @@ export default function Onboarding() {
   };
 
   const presets = getPresets(form.category);
-  const progress = ((step + 1) / STEPS.length) * 100;
+  const categoryObj = CATEGORIES.find(c => c.label.toLowerCase() === form.category);
 
   return (
-    <div className="app-page min-h-[100dvh] bg-gradient-to-b from-primary-50 to-white flex items-center justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <div className="w-full max-w-lg animate-fade-in">
+    <div
+      className="min-h-[100dvh] flex items-start justify-center px-4"
+      style={{
+        background: 'linear-gradient(160deg, #f0edff 0%, #faf9ff 40%, #ffffff 100%)',
+        paddingTop: 'max(1.5rem, env(safe-area-inset-top))',
+        paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))',
+      }}
+    >
+      <div className="w-full max-w-lg">
 
+        {/* Brand header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-5">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-10 w-auto object-contain mx-auto" />
+          <Link to="/" className="inline-block mb-6">
+            <img src={LOGO_BLUE_H} alt="BookAm" className="h-9 w-auto object-contain mx-auto" />
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Set up your business</h1>
-          <p className="text-gray-500 mt-2 text-sm">Your booking page will be live in under 2 minutes.</p>
+
+          {/* Step icon */}
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm"
+            style={{ background: 'rgba(91,63,234,0.08)' }}
+          >
+            {STEPS[step].icon}
+          </div>
+
+          <h1 className="text-2xl font-extrabold" style={{ color: 'var(--bam-text)' }}>
+            {STEPS[step].desc}
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>
+            Step {step + 1} of {STEPS.length} — your booking page goes live in under 2 minutes
+          </p>
         </div>
 
-        {/* Step progress */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            {STEPS.map((s, i) => (
-              <React.Fragment key={s.label}>
-                <div className="flex flex-col items-center gap-1">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                    i < step  ? 'bg-primary-600 text-white scale-95'
-                    : i === step ? 'bg-primary-600 text-white shadow-primary'
-                    : 'bg-gray-100 text-gray-400'
-                  }`}>
-                    {i < step ? <Check className="w-4 h-4" /> : i + 1}
-                  </div>
-                  <span className={`text-xs font-medium hidden sm:block ${i === step ? 'text-primary-600' : 'text-gray-400'}`}>
-                    {s.label}
-                  </span>
+        {/* Progress track */}
+        <div className="flex items-center gap-2 mb-7 px-1">
+          {STEPS.map((s, i) => (
+            <div key={s.label} className="flex items-center gap-2 flex-1 last:flex-none">
+              <div
+                className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
+                style={{
+                  background: i < step ? '#5B3FEA' : i === step ? '#5B3FEA' : 'var(--bam-surface-soft)',
+                  color: i <= step ? '#fff' : 'var(--bam-text-faint)',
+                  boxShadow: i === step ? '0 0 0 4px rgba(91,63,234,0.15)' : 'none',
+                }}
+              >
+                {i < step ? <Check className="w-3.5 h-3.5" /> : i + 1}
+              </div>
+              {i < STEPS.length - 1 && (
+                <div className="flex-1 h-0.5 rounded-full overflow-hidden" style={{ background: 'var(--bam-surface-soft)' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: i < step ? '100%' : '0%', background: '#5B3FEA' }}
+                  />
                 </div>
-                {i < STEPS.length - 1 && (
-                  <div className="flex-1 mx-2 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div className={`h-full bg-primary-600 transition-all duration-500 ${i < step ? 'w-full' : 'w-0'}`} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-          <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
-          </div>
+              )}
+            </div>
+          ))}
         </div>
 
-        <div className="app-panel p-6">
+        {/* Card */}
+        <div
+          className="rounded-3xl p-6 shadow-xl"
+          style={{ background: '#fff', border: '1px solid var(--bam-border)' }}
+        >
           <form onSubmit={submit}>
 
-            {/* Step 0 — Business Info */}
+            {/* ── Step 0: Business Info ── */}
             {step === 0 && (
-              <div className="space-y-4">
-                <div className="mb-5">
-                  <h2 className="font-bold text-lg">{STEPS[0].desc}</h2>
-                  <p className="text-sm text-gray-500 mt-0.5">Tell customers what you offer.</p>
-                </div>
+              <div className="space-y-5">
                 <div>
                   <label className="label">Business Name *</label>
-                  <input className="input" placeholder="e.g. Smooth Cuts Barbershop" required value={form.name} onChange={set('name')} />
+                  <input
+                    className="input"
+                    placeholder="e.g. Smooth Cuts Barbershop"
+                    required
+                    value={form.name}
+                    onChange={set('name')}
+                  />
                 </div>
+
                 <div>
-                  <label className="label">Category *</label>
-                  <select className="input" required value={form.category} onChange={set('category')}>
-                    <option value="">Select your industry…</option>
-                    {CATEGORIES.map(c => <option key={c} value={c.toLowerCase()}>{c}</option>)}
-                  </select>
+                  <label className="label">What do you do? *</label>
+                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1 -mr-1">
+                    {CATEGORIES.map(c => {
+                      const selected = form.category === c.label.toLowerCase();
+                      return (
+                        <button
+                          key={c.label}
+                          type="button"
+                          onClick={() => setForm(p => ({ ...p, category: c.label.toLowerCase() }))}
+                          className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-left transition-all duration-150"
+                          style={{
+                            background: selected ? 'rgba(91,63,234,0.07)' : 'var(--bam-surface-soft)',
+                            borderColor: selected ? '#5B3FEA' : 'transparent',
+                            color: selected ? '#5B3FEA' : 'var(--bam-text)',
+                          }}
+                        >
+                          <span className="text-base leading-none flex-shrink-0">{c.emoji}</span>
+                          <span className="text-xs font-semibold leading-tight">{c.label}</span>
+                          {selected && <Check className="w-3.5 h-3.5 ml-auto flex-shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
                 <div>
                   <label className="label">Short Description</label>
                   <textarea
-                    className="input resize-none" rows={3}
+                    className="input resize-none"
+                    rows={3}
                     placeholder={
                       form.category === 'barber' ? 'e.g. Premium cuts and grooming for men and boys.' :
                       form.category === 'nail tech' ? 'e.g. Gel, acrylics, and nail art in a clean studio.' :
                       form.category === 'fitness trainer' ? 'e.g. Personalised 1-on-1 training for all fitness levels.' :
                       'Tell customers what makes your business great.'
                     }
-                    value={form.description} onChange={set('description')}
+                    value={form.description}
+                    onChange={set('description')}
                   />
                 </div>
-                <button type="button" onClick={next} disabled={!form.name || !form.category} className="btn-primary w-full">
-                  Continue →
+
+                <button
+                  type="button"
+                  onClick={next}
+                  disabled={!form.name || !form.category}
+                  className="btn-primary w-full flex items-center justify-center gap-2"
+                >
+                  Continue <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             )}
 
-            {/* Step 1 — Category-specific service presets */}
+            {/* ── Step 1: Service Presets ── */}
             {step === 1 && (
               <div className="space-y-4">
-                <div className="mb-2">
-                  <h2 className="font-bold text-lg">{STEPS[1].desc}</h2>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    We've pre-loaded typical services for {form.category}. Tick the ones you offer — you can edit prices and add more later.
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--bam-text-muted)' }}>
+                    We pre-loaded typical services for{' '}
+                    <span className="font-bold" style={{ color: 'var(--bam-text)' }}>
+                      {categoryObj?.emoji} {form.category}
+                    </span>
+                    . Select the ones you offer — prices are fully editable after setup.
                   </p>
                 </div>
 
@@ -325,49 +379,58 @@ export default function Onboarding() {
                         key={svc.name}
                         type="button"
                         onClick={() => toggleService(svc.name)}
-                        className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg border text-left transition-all ${
-                          selected
-                            ? 'border-primary-300 bg-primary-50'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border text-left transition-all duration-150"
+                        style={{
+                          background: selected ? 'rgba(91,63,234,0.06)' : 'var(--bam-surface-soft)',
+                          borderColor: selected ? 'rgba(91,63,234,0.3)' : 'transparent',
+                        }}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border-2 transition-colors ${
-                            selected ? 'bg-primary-600 border-primary-600' : 'border-gray-300'
-                          }`}>
-                            {selected && <Check className="w-3 h-3 text-white" />}
-                          </div>
-                          <span className="font-medium text-sm text-gray-900 truncate">{svc.name}</span>
+                        <div
+                          className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-all"
+                          style={{
+                            background: selected ? '#5B3FEA' : 'transparent',
+                            borderColor: selected ? '#5B3FEA' : 'var(--bam-border)',
+                          }}
+                        >
+                          {selected && <Check className="w-3 h-3 text-white" />}
                         </div>
+                        <span className="flex-1 text-sm font-semibold" style={{ color: 'var(--bam-text)' }}>
+                          {svc.name}
+                        </span>
                         <div className="flex-shrink-0 text-right">
-                          <span className="text-sm font-bold text-gray-700">
+                          <span className="text-sm font-bold" style={{ color: 'var(--bam-text)' }}>
                             {svc.price === 0 ? 'Free' : `£${svc.price}`}
                           </span>
-                          <span className="block text-xs text-gray-400">{svc.duration_minutes} min</span>
+                          <span className="block text-xs" style={{ color: 'var(--bam-text-faint)' }}>
+                            {svc.duration_minutes} min
+                          </span>
                         </div>
                       </button>
                     );
                   })}
                 </div>
 
-                <p className="text-xs text-gray-400 text-center">
-                  {selectedServices.size} service{selectedServices.size !== 1 ? 's' : ''} selected · All prices are editable after setup
+                <p className="text-xs text-center py-1" style={{ color: 'var(--bam-text-faint)' }}>
+                  {selectedServices.size} of {presets.length} selected · You can add more after setup
                 </p>
 
-                <div className="flex gap-3 pt-1">
-                  <button type="button" onClick={back} className="btn-secondary flex-1">← Back</button>
-                  <button type="button" onClick={next} className="btn-primary flex-1">Continue →</button>
+                <div className="flex gap-3">
+                  <button type="button" onClick={back} className="btn-secondary flex items-center gap-1.5">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button type="button" onClick={next} className="btn-primary flex-1 flex items-center justify-center gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Step 2 — Contact */}
+            {/* ── Step 2: Contact ── */}
             {step === 2 && (
               <div className="space-y-4">
-                <div className="mb-5">
-                  <h2 className="font-bold text-lg">{STEPS[2].desc}</h2>
-                  <p className="text-sm text-gray-500 mt-0.5">Shown to customers on your booking page.</p>
-                </div>
+                <p className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>
+                  Shown to customers on your public booking page. All fields are optional.
+                </p>
                 <div>
                   <label className="label">Phone Number</label>
                   <input className="input" type="tel" placeholder="+1-555-0100" value={form.phone} onChange={set('phone')} />
@@ -380,26 +443,39 @@ export default function Onboarding() {
                   <label className="label">Location / Address</label>
                   <input className="input" placeholder="123 Main St, City" value={form.location} onChange={set('location')} />
                 </div>
-                <div className="flex gap-3 pt-1">
-                  <button type="button" onClick={back} className="btn-secondary flex-1">← Back</button>
-                  <button type="button" onClick={next} className="btn-primary flex-1">Continue →</button>
+                <div className="flex gap-3">
+                  <button type="button" onClick={back} className="btn-secondary flex items-center gap-1.5">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button type="button" onClick={next} className="btn-primary flex-1 flex items-center justify-center gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Step 3 — Slug */}
+            {/* ── Step 3: Slug ── */}
             {step === 3 && (
-              <div className="space-y-4">
-                <div className="mb-5">
-                  <h2 className="font-bold text-lg">{STEPS[3].desc}</h2>
-                  <p className="text-sm text-gray-500 mt-0.5">Your permanent booking URL — choose carefully.</p>
-                </div>
+              <div className="space-y-5">
+                <p className="text-sm" style={{ color: 'var(--bam-text-muted)' }}>
+                  Your permanent booking URL. Choose something short and memorable — you can't change this later.
+                </p>
+
                 <div>
                   <label className="label">Your Page Name *</label>
-                  <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 bg-white transition-all">
-                    <span className="px-3 py-2.5 bg-gray-50 text-gray-500 text-sm border-r border-gray-200 whitespace-nowrap font-mono">/book/</span>
+                  <div
+                    className="flex items-center rounded-2xl overflow-hidden transition-all"
+                    style={{ border: '1.5px solid var(--bam-border)', background: '#fff' }}
+                  >
+                    <span
+                      className="px-3 py-3 text-sm border-r font-mono"
+                      style={{ background: 'var(--bam-surface-soft)', color: 'var(--bam-text-muted)', borderColor: 'var(--bam-border)' }}
+                    >
+                      /book/
+                    </span>
                     <input
-                      className="flex-1 px-3 py-2.5 text-sm outline-none bg-transparent text-gray-900 placeholder:text-gray-400"
+                      className="flex-1 px-3 py-3 text-sm outline-none bg-transparent font-mono"
+                      style={{ color: 'var(--bam-text)' }}
                       placeholder="smoothcuts"
                       required
                       value={form.slug}
@@ -411,30 +487,42 @@ export default function Onboarding() {
                       }}
                     />
                   </div>
+
                   {form.slug.length > 0 && form.slug.length < 3 && (
-                    <p className="text-xs mt-1 text-gray-400">Minimum 3 characters</p>
+                    <p className="text-xs mt-1.5" style={{ color: 'var(--bam-text-faint)' }}>At least 3 characters</p>
                   )}
                   {form.slug.length >= 3 && (
-                    <p className={`text-xs mt-1.5 font-medium ${slugAvailable === true ? 'text-green-600' : slugAvailable === false ? 'text-red-600' : 'text-gray-400'}`}>
+                    <p className={`text-xs mt-1.5 font-semibold flex items-center gap-1 ${
+                      slugAvailable === true ? 'text-emerald-600' : slugAvailable === false ? 'text-red-500' : ''
+                    }`} style={slugAvailable === null ? { color: 'var(--bam-text-faint)' } : {}}>
                       {slugAvailable === true ? (
-                        <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Available — great choice!</span>
+                        <><Check className="w-3.5 h-3.5" /> Available — great choice!</>
                       ) : slugAvailable === false ? (
-                        <span className="flex items-center gap-1"><X className="w-3.5 h-3.5" /> Already taken — try another name</span>
+                        <><X className="w-3.5 h-3.5" /> Already taken — try another name</>
                       ) : (
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" /> Checking…</span>
+                        <><span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" /> Checking…</>
                       )}
                     </p>
                   )}
-                  {slugAvailable === true && form.slug && (
-                    <div className="mt-3 p-3 bg-primary-50 border border-primary-100 rounded-lg">
-                      <p className="text-xs text-primary-500 font-medium mb-0.5">Your booking page:</p>
-                      <p className="text-sm font-bold text-primary-800 font-mono">{window.location.origin}/book/{form.slug}</p>
-                    </div>
-                  )}
                 </div>
 
+                {slugAvailable === true && form.slug && (
+                  <div
+                    className="rounded-2xl p-4"
+                    style={{ background: 'rgba(91,63,234,0.06)', border: '1px solid rgba(91,63,234,0.15)' }}
+                  >
+                    <p className="text-xs font-semibold mb-1" style={{ color: '#5B3FEA' }}>Your booking page will be live at:</p>
+                    <p className="text-sm font-bold font-mono" style={{ color: '#4c35c5' }}>
+                      {window.location.origin}/book/{form.slug}
+                    </p>
+                  </div>
+                )}
+
                 {selectedServices.size > 0 && (
-                  <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                  <div
+                    className="rounded-2xl p-4"
+                    style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}
+                  >
                     <p className="text-xs font-semibold text-emerald-700 mb-1">
                       {selectedServices.size} service{selectedServices.size !== 1 ? 's' : ''} will be added automatically
                     </p>
@@ -442,20 +530,35 @@ export default function Onboarding() {
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-1">
-                  <button type="button" onClick={back} className="btn-secondary flex-1">← Back</button>
-                  <button type="submit" disabled={loading || !slugAvailable} className="btn-primary flex-1">
-                    {loading ? <Spinner /> : <span className="flex items-center gap-2"><Rocket className="w-4 h-4" /> Launch My Page</span>}
+                <div className="flex gap-3">
+                  <button type="button" onClick={back} className="btn-secondary flex items-center gap-1.5">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || !slugAvailable}
+                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                  >
+                    {loading ? <Spinner /> : <><Rocket className="w-4 h-4" /> Launch My Page</>}
                   </button>
                 </div>
               </div>
             )}
+
           </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-5">
-          © {new Date().getFullYear()} BookAm Business · A{' '}
-          <a href="https://www.ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" onClick={(e) => openExternalLink(e, 'https://www.ralphlawalgroup.com')} className="hover:text-gray-600 transition-colors">Ralph Lawal Group</a> product
+        <p className="text-center text-xs mt-6" style={{ color: 'var(--bam-text-faint)' }}>
+          © {new Date().getFullYear()} BookAm ·{' '}
+          <a
+            href="https://www.ralphlawalgroup.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => openExternalLink(e, 'https://www.ralphlawalgroup.com')}
+            className="hover:underline"
+          >
+            A Ralph Lawal Group product
+          </a>
         </p>
       </div>
     </div>

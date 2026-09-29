@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LOGO_WHITE_H } from '../../config/logos';
+import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
+import { Mail } from 'lucide-react';
 
 export default function ForgotPassword() {
   const { forgotPassword } = useAuth();
@@ -24,37 +25,54 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="app-page bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm animate-slide-up">
+    <div
+      className="min-h-[100dvh] flex items-center justify-center px-4"
+      style={{
+        background: 'linear-gradient(150deg, #eef0ff 0%, #f8f7ff 50%, #fff 100%)',
+        paddingTop: 'max(1.5rem, env(safe-area-inset-top))',
+        paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))',
+      }}
+    >
+      <div className="w-full max-w-sm">
         <Link to="/" className="flex items-center justify-center mb-8">
-          <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
+          <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain" />
         </Link>
 
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 shadow-2xl">
+        <div
+          className="rounded-3xl p-7 shadow-xl"
+          style={{ background: '#fff', border: '1px solid var(--bam-border)' }}
+        >
           {sent ? (
             <div className="text-center py-4">
-              <div className="w-14 h-14 bg-green-500/20 border border-green-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                style={{ background: 'rgba(16,185,129,0.1)' }}
+              >
+                <Mail className="w-7 h-7 text-emerald-500" />
               </div>
-              <p className="font-bold text-white">Check your email</p>
-              <p className="text-sm text-white/50 mt-2">
-                A reset link was sent to <span className="text-white/80">{email}</span>
+              <h2 className="font-extrabold text-lg" style={{ color: 'var(--bam-text)' }}>Check your email</h2>
+              <p className="text-sm mt-2" style={{ color: 'var(--bam-text-muted)' }}>
+                A reset link was sent to <strong>{email}</strong>
               </p>
-              <Link to="/admin/login" className="inline-block mt-6 text-primary-300 text-sm font-medium hover:text-primary-200">
+              <Link
+                to="/admin/login"
+                className="inline-block mt-6 text-sm font-semibold hover:underline"
+                style={{ color: '#5B3FEA' }}
+              >
                 ← Back to sign in
               </Link>
             </div>
           ) : (
             <>
-              <h1 className="text-xl font-bold text-white text-center mb-1">Forgot password?</h1>
-              <p className="text-white/50 text-sm text-center mb-6">Enter your email and we'll send a reset link</p>
+              <h1 className="text-xl font-extrabold mb-1" style={{ color: 'var(--bam-text)' }}>Forgot password?</h1>
+              <p className="text-sm mb-6" style={{ color: 'var(--bam-text-muted)' }}>
+                Enter your email and we'll send a reset link.
+              </p>
               <form onSubmit={submit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">Email address</label>
+                  <label className="label">Email address</label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                    className="input"
                     type="email"
                     placeholder="you@business.com"
                     required
@@ -62,16 +80,14 @@ export default function ForgotPassword() {
                     onChange={e => setEmail(e.target.value)}
                   />
                 </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
+                <button type="submit" disabled={loading} className="btn-primary w-full">
                   {loading ? <Spinner /> : 'Send reset link'}
                 </button>
               </form>
               <p className="text-center mt-4">
-                <Link to="/admin/login" className="text-sm text-white/40 hover:text-white/70 transition-colors">← Back to sign in</Link>
+                <Link to="/admin/login" className="text-sm hover:underline" style={{ color: 'var(--bam-text-muted)' }}>
+                  ← Back to sign in
+                </Link>
               </p>
             </>
           )}
@@ -82,5 +98,5 @@ export default function ForgotPassword() {
 }
 
 function Spinner() {
-  return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />;
+  return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />;
 }

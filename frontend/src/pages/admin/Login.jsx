@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LOGO_WHITE_H } from '../../config/logos';
+import { LOGO_BLUE_H } from '../../config/logos';
 import toast from 'react-hot-toast';
+import { BarChart2, Calendar, MessageSquare } from 'lucide-react';
 
 export default function Login() {
   const { login, sendLoginOtp, verifyEmailOtp } = useAuth();
@@ -73,114 +74,154 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex items-center justify-center px-3 py-6 sm:p-6">
-      <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] items-center animate-fade-in">
+    <div
+      className="min-h-[100dvh] flex items-center justify-center px-4"
+      style={{
+        background: 'linear-gradient(150deg, #eef0ff 0%, #f8f7ff 50%, #fff 100%)',
+        paddingTop: 'max(1.5rem, env(safe-area-inset-top))',
+        paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))',
+      }}
+    >
+      <div className="w-full max-w-5xl grid gap-8 lg:grid-cols-[1fr_420px] items-center">
 
-        {/* Left panel */}
-        <section className="hidden lg:block text-white">
-          <Link to="/" className="inline-flex items-center mb-10">
-            <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-11 w-auto object-contain" />
+        {/* Left hero — desktop */}
+        <div className="hidden lg:flex flex-col">
+          <Link to="/" className="inline-block mb-10">
+            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain" />
           </Link>
-          <span className="inline-flex items-center gap-1.5 bg-primary-500/20 border border-primary-500/30 text-primary-200 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-            <BusinessIcon /> Business Owner Account
-          </span>
-          <h1 className="text-4xl xl:text-5xl font-black leading-tight max-w-xl">Run bookings from a real dashboard.</h1>
-          <p className="text-white/65 mt-5 text-lg max-w-lg">Manage appointments, services, customers, payments, posts, chats, and support from one place.</p>
-          <div className="grid grid-cols-3 gap-3 mt-8 max-w-xl">
-            {['Bookings', 'Payments', 'Messages'].map(item => (
-              <div key={item} className="rounded-lg border border-white/10 bg-white/10 px-4 py-3">
-                <p className="text-sm font-bold">{item}</p>
-                <p className="text-xs text-white/45 mt-1">Built in</p>
+
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-6"
+            style={{ background: 'rgba(91,63,234,0.08)', color: '#5B3FEA' }}
+          >
+            <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+            Business Owner Dashboard
+          </div>
+
+          <h1 className="text-5xl font-black leading-[1.1] text-wrap-balance" style={{ color: 'var(--bam-text)' }}>
+            Your business,<br />fully in control.
+          </h1>
+          <p className="mt-4 text-lg max-w-md" style={{ color: 'var(--bam-text-muted)' }}>
+            Manage bookings, customers, payments, messages and growth — all from one smart dashboard.
+          </p>
+
+          <div className="mt-10 grid grid-cols-3 gap-3 max-w-sm">
+            {[
+              { Icon: Calendar,    label: 'Bookings',  sub: 'Real-time calendar' },
+              { Icon: BarChart2,   label: 'Analytics', sub: 'Growth insights' },
+              { Icon: MessageSquare, label: 'Messages', sub: 'Customer chat' },
+            ].map(({ Icon, label, sub }) => (
+              <div
+                key={label}
+                className="rounded-2xl p-4"
+                style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid var(--bam-border)' }}
+              >
+                <Icon className="w-5 h-5 mb-3" style={{ color: '#5B3FEA' }} strokeWidth={1.8} />
+                <p className="text-sm font-bold" style={{ color: 'var(--bam-text)' }}>{label}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-faint)' }}>{sub}</p>
               </div>
             ))}
           </div>
-        </section>
+        </div>
 
-        {/* Right panel */}
+        {/* Form card */}
         <div className="w-full max-w-sm mx-auto lg:max-w-none">
-          <Link to="/" className="flex items-center justify-center mb-8 lg:hidden">
-            <img src={LOGO_WHITE_H} alt="BookAm Business" className="h-10 w-auto object-contain" />
-          </Link>
 
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4 sm:p-6 shadow-2xl">
-            <h1 className="text-xl font-bold text-white text-center mb-1">Business Sign In</h1>
-            <p className="text-white/50 text-sm text-center mb-5">Sign in to manage your bookings and dashboard</p>
+          {/* Mobile header */}
+          <div className="text-center mb-7 lg:hidden">
+            <Link to="/" className="inline-block mb-5">
+              <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-9 w-auto object-contain mx-auto" />
+            </Link>
+            <h1 className="text-2xl font-extrabold" style={{ color: 'var(--bam-text)' }}>Business sign in</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Manage bookings and your dashboard</p>
+          </div>
+
+          <div
+            className="rounded-3xl p-6 sm:p-8 shadow-xl"
+            style={{ background: '#fff', border: '1px solid var(--bam-border)' }}
+          >
+            <div className="hidden lg:block mb-6">
+              <h2 className="text-xl font-extrabold" style={{ color: 'var(--bam-text)' }}>Sign in</h2>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--bam-text-muted)' }}>For business owners</p>
+            </div>
 
             {/* Tab switcher */}
-            <div className="flex rounded-lg bg-white/10 p-1 mb-5">
+            <div
+              className="flex rounded-xl p-1 mb-6"
+              style={{ background: 'var(--bam-surface-soft)' }}
+            >
               {[['email', 'Password'], ['code', 'Email code']].map(([t, label]) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => { setTab(t); setOtpSent(false); setOtp(''); }}
-                  className={`flex-1 text-xs font-semibold py-1.5 rounded-md transition-all ${tab === t ? 'bg-white text-gray-900 shadow' : 'text-white/60 hover:text-white'}`}
+                  className="flex-1 text-xs font-bold py-2 rounded-lg transition-all"
+                  style={{
+                    background: tab === t ? '#fff' : 'transparent',
+                    color: tab === t ? 'var(--bam-text)' : 'var(--bam-text-muted)',
+                    boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                  }}
                 >
                   {label}
                 </button>
               ))}
             </div>
 
-            {/* Email form */}
             {tab === 'email' && (
               <form onSubmit={submitEmail} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">Email</label>
+                  <label className="label">Email</label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+                    className="input"
                     type="email"
                     placeholder="you@business.com"
                     required
+                    autoComplete="email"
                     value={form.email}
                     onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                   />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-sm font-medium text-white/80">Password</label>
-                    <Link to="/admin/forgot-password" className="text-xs text-primary-300 hover:text-primary-200 transition-colors">
-                      Forgot password?
+                    <span className="label mb-0">Password</span>
+                    <Link to="/admin/forgot-password" className="text-xs font-semibold hover:underline" style={{ color: '#5B3FEA' }}>
+                      Forgot?
                     </Link>
                   </div>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+                    className="input"
                     type="password"
                     placeholder="••••••••"
                     required
+                    autoComplete="current-password"
                     value={form.password}
                     onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                   />
                 </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? <Spinner /> : 'Sign In to Dashboard'}
+                <button type="submit" disabled={loading} className="btn-primary w-full mt-1">
+                  {loading ? <Spinner /> : 'Sign in to Dashboard'}
                 </button>
               </form>
             )}
 
-            {/* Email code form */}
             {tab === 'code' && !otpSent && (
               <form onSubmit={submitSendEmailCode} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">Email address</label>
+                  <label className="label">Email address</label>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+                    className="input"
                     type="email"
                     placeholder="you@business.com"
                     required
                     value={codeEmail}
                     onChange={e => setCodeEmail(e.target.value)}
                   />
-                  <p className="text-xs text-white/40 mt-1.5">We'll email you a 6-digit sign-in code</p>
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--bam-text-faint)' }}>
+                    We'll email you a 6-digit sign-in code — no password needed
+                  </p>
                 </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? <Spinner /> : 'Send code'}
+                <button type="submit" disabled={loading} className="btn-primary w-full">
+                  {loading ? <Spinner /> : 'Send code →'}
                 </button>
               </form>
             )}
@@ -188,11 +229,12 @@ export default function Login() {
             {tab === 'code' && otpSent && (
               <form onSubmit={submitVerifyEmailCode} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5">
-                    6-digit code sent to {codeEmail}
-                  </label>
+                  <label className="label">6-digit code</label>
+                  <p className="text-xs mb-2" style={{ color: 'var(--bam-text-muted)' }}>
+                    Sent to <strong>{codeEmail}</strong>
+                  </p>
                   <input
-                    className="w-full px-3.5 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30 text-xl font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-primary-400"
+                    className="input text-center text-2xl tracking-[0.4em] font-mono"
                     type="text"
                     inputMode="numeric"
                     maxLength={6}
@@ -202,42 +244,54 @@ export default function Login() {
                     value={otp}
                     onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
                   />
-                  <p className="text-white/40 text-xs mt-1.5 text-center">Check your inbox and spam folder</p>
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--bam-text-faint)' }}>Check your inbox and spam folder</p>
                 </div>
-                <button
-                  type="submit"
-                  disabled={loading || otp.length !== 6}
-                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? <Spinner /> : 'Sign In'}
+                <button type="submit" disabled={loading || otp.length !== 6} className="btn-primary w-full">
+                  {loading ? <Spinner /> : 'Sign in'}
                 </button>
-                <button type="button" onClick={() => { setOtpSent(false); setOtp(''); }} className="w-full text-xs text-white/40 hover:text-white/70 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => { setOtpSent(false); setOtp(''); }}
+                  className="w-full text-xs hover:underline"
+                  style={{ color: 'var(--bam-text-muted)' }}
+                >
                   ← Use a different email
                 </button>
               </form>
             )}
 
-            <p className="text-center text-sm text-white/50 mt-5">
-              No business account?{' '}
-              <Link to="/admin/register" className="text-primary-300 font-medium hover:text-primary-200 transition-colors">
-                Register free
-              </Link>
-            </p>
+            <div className="mt-5 pt-4" style={{ borderTop: '1px solid var(--bam-border)' }}>
+              <p className="text-center text-sm" style={{ color: 'var(--bam-text-muted)' }}>
+                No business account?{' '}
+                <Link to="/admin/register" className="font-semibold hover:underline" style={{ color: '#5B3FEA' }}>
+                  Register free
+                </Link>
+              </p>
+            </div>
           </div>
 
-          <div className="mt-5 text-center">
-            <p className="text-white/40 text-xs mb-2">Not a business owner?</p>
+          <div className="mt-4 text-center">
+            <p className="text-xs mb-2" style={{ color: 'var(--bam-text-faint)' }}>Not a business owner?</p>
             <Link
               to="/customer/login"
-              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all hover:shadow-sm"
+              style={{
+                background: 'rgba(255,255,255,0.9)',
+                border: '1px solid var(--bam-border)',
+                color: 'var(--bam-text)',
+              }}
             >
-              <CustomerIcon /> Sign in as Customer
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Sign in as Customer
             </Link>
           </div>
-          <p className="mt-5 text-center text-xs text-white/40">
-            <Link to="/legal/terms" className="hover:text-white/70 underline underline-offset-2">Terms</Link>
-            <span className="px-2">·</span>
-            <Link to="/legal/privacy" className="hover:text-white/70 underline underline-offset-2">Privacy</Link>
+
+          <p className="mt-4 text-center text-xs" style={{ color: 'var(--bam-text-faint)' }}>
+            <Link to="/legal/terms" className="hover:underline">Terms</Link>
+            <span className="mx-2">·</span>
+            <Link to="/legal/privacy" className="hover:underline">Privacy</Link>
           </p>
         </div>
       </div>
@@ -246,19 +300,5 @@ export default function Login() {
 }
 
 function Spinner() {
-  return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />;
-}
-function BusinessIcon() {
-  return (
-    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-    </svg>
-  );
-}
-function CustomerIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-  );
+  return <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />;
 }
