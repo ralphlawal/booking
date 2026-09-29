@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { consumerAPI } from '../services/api';
+import { consumerAPI, consumerChatAPI } from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { LOGO_BLUE_ICON } from '../config/logos';
 import { apiBaseUrl } from '../config/platform';
@@ -46,10 +46,13 @@ const NotificationContext = createContext({
 export function NotificationProvider({ children }) {
   const { consumer } = useCustomerAuth();
   const [notifications, setNotifications] = useState([]);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [browserPermission, setBrowserPermission] = useState(
     typeof window !== 'undefined' && 'Notification' in window ? window.Notification.permission : 'unsupported'
   );
   const intervalRef = useRef(null);
+  const chatIntervalRef = useRef(null);
+  const lastChatVisitRef = useRef(parseInt(localStorage.getItem('bam_chat_last_visit') || '0', 10));
   const knownIdsRef = useRef(new Set());
   const hydratedRef = useRef(false);
 
@@ -88,21 +91,40 @@ export function NotificationProvider({ children }) {
       });
   }, [showBrowserNotification]);
 
+  const fetchChatUnread = useCallback(() => {
+    if (!localStorage.getItem('customerToken')) return;
+    consumerChatAPI.getRooms()
+      .then((rooms) => {
+        const last = lastChatVisitRef.current;
+        const unread = (rooms || []).filter(r =>
+          r.last_message_at && new Date(r.last_message_at).getTime() > last
+        ).length;
+        setChatUnreadCount(unread);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (!consumer) {
       setNotifications([]);
+      setChatUnreadCount(0);
       knownIdsRef.current = new Set();
       hydratedRef.current = false;
       return;
     }
     fetch();
-    intervalRef.current = setInterval(fetch, 5000);
+    fetchChatUnread();
+    intervalRef.current = setInterval(fetch, 15000);
+    chatIntervalRef.current = setInterval(fetchChatUnread, 10000);
     // If push permission already granted, silently subscribe (idempotent)
     if (typeof window !== 'undefined' && window.Notification?.permission === 'granted') {
       subscribeToPush().catch(() => {});
     }
-    return () => clearInterval(intervalRef.current);
-  }, [consumer, fetch]);
+    return () => {
+      clearInterval(intervalRef.current);
+      clearInterval(chatIntervalRef.current);
+    };
+  }, [consumer, fetch, fetchChatUnread]);
 
   const requestBrowserNotifications = useCallback(async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) {
@@ -122,10 +144,17 @@ export function NotificationProvider({ children }) {
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   }, [notifications]);
 
+  const markChatRead = useCallback(() => {
+    const now = Date.now();
+    lastChatVisitRef.current = now;
+    localStorage.setItem('bam_chat_last_visit', String(now));
+    setChatUnreadCount(0);
+  }, []);
+
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, browserPermission, requestBrowserNotifications, markAllRead, refresh: fetch, setNotifications }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, chatUnreadCount, browserPermission, requestBrowserNotifications, markAllRead, markChatRead, refresh: fetch, setNotifications }}>
       {children}
     </NotificationContext.Provider>
   );

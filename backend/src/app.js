@@ -412,6 +412,8 @@ app.post('/api/ai/generate-description', authenticate, attachBusiness, aiCtrl.ge
 app.get('/api/ai/gap-suggestions', authenticate, attachBusiness, aiCtrl.gapSuggestions);
 app.get('/api/ai/reassign-suggestion/:bookingId', authenticate, attachBusiness, aiCtrl.reassignSuggestion);
 app.post('/api/ai/personalise-message', authenticate, attachBusiness, aiCtrl.personaliseMessage);
+app.post('/api/ai/consumer-chat', authenticateConsumer, aiCtrl.consumerChat);
+app.post('/api/ai/smart-reply', authenticate, attachBusiness, aiCtrl.smartReply);
 
 // Web push
 app.get('/api/notifications/vapid-key', (req, res) => {

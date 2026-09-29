@@ -64,57 +64,58 @@ function BusinessCard({ biz, from }) {
     <Link
       to={`/profile/${biz.slug}`}
       state={{ from }}
-      className="group bg-white rounded-lg border border-gray-200/90 overflow-hidden hover:-translate-y-1 transition-all duration-200 hover:shadow-xl flex flex-col min-w-0"
+      className="group overflow-hidden flex flex-col min-w-0 transition-all duration-200 hover:-translate-y-1"
+      style={{ background: '#fff', borderRadius: '1.25rem', border: '1px solid var(--bam-border)', boxShadow: '0 2px 12px rgba(91,63,234,0.04)' }}
     >
-      <div className="h-40 sm:h-44 bg-gray-100 flex items-center justify-center relative">
+      <div className="relative overflow-hidden" style={{ height: 160 }}>
         {biz.logo_url ? (
-          <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover" />
+          <img src={biz.logo_url} alt={biz.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
-          <div className="w-full h-full bg-[radial-gradient(circle_at_30%_20%,#a5f3fc,transparent_32%),linear-gradient(135deg,#f2f2ef,#e5e7eb)] flex items-center justify-center">
-            <Building2 className="w-11 h-11 text-primary-700/55" />
+          <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0edff 0%, #e8f4ff 100%)' }}>
+            <Building2 className="w-12 h-12" style={{ color: 'rgba(91,63,234,0.4)' }} />
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent" />
         {biz.distance_km !== null && biz.distance_km !== undefined && (
-          <span className="absolute top-2 right-2 bg-white/95 text-xs font-semibold px-2.5 py-1 rounded-full text-gray-800 flex items-center gap-1 shadow-sm">
-            <MapPin className="w-3 h-3" />{biz.distance_km} km
+          <span className="absolute top-2.5 left-2.5 bg-white/95 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm" style={{ color: 'var(--bam-text)' }}>
+            <MapPin className="w-3 h-3" style={{ color: '#5B3FEA' }} />{biz.distance_km} km
           </span>
         )}
-        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-          {parseFloat(biz.avg_rating) > 0 ? `${parseFloat(biz.avg_rating).toFixed(1)} rating` : 'New'}
-        </span>
+        {parseFloat(biz.avg_rating) > 0 && (
+          <span className="absolute bottom-2.5 left-2.5 bg-black/65 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            {parseFloat(biz.avg_rating).toFixed(1)}
+          </span>
+        )}
+        {biz.category && (
+          <span className="absolute bottom-2.5 right-2.5 bg-white/90 text-xs font-bold px-2.5 py-1 rounded-full truncate max-w-[48%]" style={{ color: '#5B3FEA' }}>
+            {biz.category}
+          </span>
+        )}
       </div>
-      <div className="p-3 sm:p-4 flex flex-col gap-1 flex-1">
-        <div className="flex items-start justify-between gap-2 min-w-0">
-          <h3 className="font-bold text-gray-900 text-sm leading-tight flex items-center gap-1 min-w-0">
-            <span className="truncate min-w-0">{biz.name}</span>
-            {verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
-          </h3>
-          {biz.category && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 whitespace-nowrap flex-shrink min-w-0 max-w-[45%] truncate font-semibold">
-              {biz.category}
-            </span>
-          )}
-        </div>
-        <StarRating rating={biz.avg_rating} />
+      <div className="p-3.5 flex flex-col gap-1 flex-1">
+        <h3 className="font-bold text-sm leading-tight flex items-center gap-1 min-w-0" style={{ color: 'var(--bam-text)' }}>
+          <span className="truncate min-w-0">{biz.name}</span>
+          {verified && <BadgeCheck title="Verified Business" className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+        </h3>
         {biz.location && (
-          <p className="text-xs text-gray-400 line-clamp-1 flex items-center gap-1">
+          <p className="text-xs line-clamp-1 flex items-center gap-1" style={{ color: 'var(--bam-text-faint)' }}>
             <MapPin className="w-3 h-3 flex-shrink-0" />{biz.location}
           </p>
         )}
         {biz.description && (
-          <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-xs line-clamp-2 mt-0.5 leading-relaxed" style={{ color: 'var(--bam-text-muted)' }}>
             {biz.description}
           </p>
         )}
         <div className="mt-auto pt-3 flex items-center justify-between gap-2 min-w-0">
           {biz.min_price != null ? (
-            <span className="text-sm font-semibold text-gray-800 truncate min-w-0">
+            <span className="text-sm font-bold truncate min-w-0" style={{ color: 'var(--bam-text)' }}>
               From £{parseFloat(biz.min_price).toFixed(0)}
             </span>
           ) : <span />}
-          <span className="flex items-center gap-1 text-xs bg-primary-600 text-white px-3 py-1.5 rounded-lg font-semibold flex-shrink-0">
-            View <ChevronRight className="w-3 h-3" />
+          <span className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl flex-shrink-0 text-white" style={{ background: '#5B3FEA' }}>
+            Book <ChevronRight className="w-3 h-3" />
           </span>
         </div>
       </div>
@@ -308,9 +309,9 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 animate-fade-in">
+    <div className="min-h-screen animate-fade-in" style={{ background: 'var(--bam-bg)' }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'rgba(255,255,255,0.97)', borderColor: 'var(--bam-border)' }}>
         <div className="max-w-6xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-2 sm:gap-4">
           <Link to="/">
             <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain" />
@@ -334,14 +335,15 @@ export default function ExplorePage() {
       </nav>
 
       {/* Hero search */}
-      <div className="bg-white border-b border-gray-100 px-3 sm:px-6 py-6 sm:py-8">
+      <div className="border-b px-3 sm:px-6 py-6 sm:py-8" style={{ background: '#fff', borderColor: 'var(--bam-border)' }}>
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-950 mb-4 tracking-tight">Find services near you</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold mb-4 tracking-tight" style={{ color: 'var(--bam-text)' }}>Find services near you</h1>
           <form onSubmit={handleSearch} className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--bam-text-faint)' }} />
               <input
-                className="w-full pl-10 pr-4 py-3 rounded-lg text-sm outline-none border border-gray-200 focus:border-primary-400 transition-colors bg-white text-gray-950 placeholder:text-gray-400"
+                className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
+                style={{ border: '1.5px solid var(--bam-border)', background: 'var(--bam-surface-soft)', color: 'var(--bam-text)' }}
                 placeholder="Search services or businesses"
                 value={q}
                 onChange={(e) => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', e.target.value); return n; })}
@@ -351,12 +353,13 @@ export default function ExplorePage() {
               type="button"
               onClick={getLocation}
               disabled={locating}
-              className="border border-gray-200 text-gray-600 font-semibold px-3.5 py-3 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+              className="font-semibold px-3.5 py-3 rounded-xl text-sm transition-colors flex items-center gap-1.5"
+              style={{ border: '1.5px solid var(--bam-border)', color: 'var(--bam-text-muted)', background: '#fff' }}
             >
               <Navigation className="w-4 h-4" />
               <span className="hidden sm:inline">{locating ? 'Locating…' : 'Near me'}</span>
             </button>
-            <button type="submit" disabled={aiMatching} className="bg-primary-600 text-white font-bold px-4 py-3 rounded-lg text-sm hover:bg-primary-700 transition-colors flex items-center gap-1.5 disabled:opacity-70">
+            <button type="submit" disabled={aiMatching} className="text-white font-bold px-4 py-3 rounded-xl text-sm transition-colors flex items-center gap-1.5 disabled:opacity-70" style={{ background: '#5B3FEA' }}>
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">{aiMatching ? 'Thinking…' : 'Search'}</span>
             </button>
@@ -387,17 +390,17 @@ export default function ExplorePage() {
       </div>
 
       {/* Category filter */}
-      <div className="bg-white border-b border-gray-100 overflow-x-auto scrollbar-hide">
+      <div className="border-b overflow-x-auto scrollbar-hide" style={{ background: '#fff', borderColor: 'var(--bam-border)' }}>
         <div className="flex items-center gap-2 px-3 sm:px-6 py-3 min-w-max mx-auto max-w-6xl">
           {topCategories.map((c) => (
             <button
               key={c.value}
               onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('category', c.value); return n; })}
-              className={`text-sm px-4 py-1.5 rounded-full font-medium whitespace-nowrap transition-all ${
-                category === c.value
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              className="text-sm px-4 py-1.5 rounded-full font-semibold whitespace-nowrap transition-all"
+              style={{
+                background: category === c.value ? '#5B3FEA' : 'var(--bam-surface-soft)',
+                color: category === c.value ? '#fff' : 'var(--bam-text-muted)',
+              }}
             >
               {c.label}
             </button>
@@ -413,7 +416,8 @@ export default function ExplorePage() {
               <button
                 key={service}
                 onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('q', service); return n; })}
-                className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-800 border border-gray-200 hover:border-primary-300"
+                className="rounded-xl px-3.5 py-2 text-sm font-semibold transition-all"
+                style={{ background: '#fff', border: '1px solid var(--bam-border)', color: 'var(--bam-text)' }}
               >
                 {service}
               </button>
@@ -422,7 +426,8 @@ export default function ExplorePage() {
         </div>
         <Link
           to="/match"
-          className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-primary-700 to-primary-950 text-white hover:opacity-95 transition-opacity shadow-primary"
+          className="flex items-center gap-3 p-4 rounded-2xl text-white transition-opacity hover:opacity-95"
+          style={{ background: 'linear-gradient(135deg, #5B3FEA 0%, #3d2ab5 100%)', boxShadow: '0 4px 24px rgba(91,63,234,0.25)' }}
         >
           <Zap className="w-5 h-5 flex-shrink-0" />
           <div className="flex-1">

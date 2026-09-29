@@ -303,4 +303,54 @@ Only include fields you are confident about. Omit fields you don't know yet. Use
   return { reply, bookingState: updatedState, readyToBook };
 }
 
-module.exports = { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery, chatBooking, generateBusinessDescription, suggestGapFilling, suggestStaffReassignment, personaliseReEngagement };
+/**
+ * General-purpose consumer assistant: answers questions, helps with bookings,
+ * handles support queries. Returns { reply }.
+ */
+async function consumerAssistant({ messages, businessContext }) {
+  const client = getClient();
+  if (!client) return { reply: "I'm not available right now. Please contact support directly." };
+
+  const ctxLines = businessContext
+    ? `The customer is browsing or has booked with: ${businessContext.businessName}${businessContext.services ? `. Services offered: ${businessContext.services.map(s => s.name).join(', ')}` : ''}.`
+    : '';
+
+  const system = `You are Amara, the helpful AI assistant for BookAm — a platform that lets customers discover and book appointments with local businesses. ${ctxLines}
+
+Your role:
+- Help customers find and book services, answer questions about their bookings, and resolve issues
+- Be warm, concise, and action-oriented — you're a smart assistant, not a chatbot
+- If a question needs human support (e.g. payment disputes, technical errors), say so and suggest they tap "Contact Support"
+- Keep replies under 100 words unless detail is genuinely needed
+- Never make up business details, pricing, or availability — direct the customer to check the business page or book via the app`;
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 300,
+    system,
+    messages,
+  });
+
+  return { reply: msg.content[0]?.text?.trim() || '' };
+}
+
+/**
+ * Generate a smart reply suggestion for a business responding to a customer message.
+ */
+async function smartReply({ customerMessage, businessName, category }) {
+  const client = getClient();
+  if (!client) return null;
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 120,
+    messages: [{
+      role: 'user',
+      content: `You are a professional ${category || 'service'} business called "${businessName}". Write one short, friendly reply (under 30 words) to this customer message: "${customerMessage}". Reply only with the message text, no quotes.`,
+    }],
+  });
+
+  return plainText(msg.content[0]?.text?.trim() || '', 200);
+}
+
+module.exports = { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery, chatBooking, generateBusinessDescription, suggestGapFilling, suggestStaffReassignment, personaliseReEngagement, consumerAssistant, smartReply };

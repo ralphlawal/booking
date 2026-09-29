@@ -1,5 +1,5 @@
 const db = require('../config/database');
-const { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery, chatBooking, generateBusinessDescription, suggestGapFilling, suggestStaffReassignment, personaliseReEngagement } = require('../services/aiService');
+const { summarizeReviews, scoreNoShowRisk, suggestRebookTiming, matchServiceQuery, chatBooking, generateBusinessDescription, suggestGapFilling, suggestStaffReassignment, personaliseReEngagement, consumerAssistant, smartReply } = require('../services/aiService');
 
 // GET /api/ai/review-summary/:slug
 // Returns an AI-generated 2–3 sentence summary of all reviews for a business.
@@ -353,6 +353,57 @@ exports.personaliseMessage = async (req, res) => {
   } catch (err) {
     console.error('[ai/personalise-message]', err.message);
     res.status(500).json({ error: 'Failed to personalise message' });
+  }
+};
+
+// POST /api/ai/consumer-chat (consumer-auth)
+// General-purpose AI assistant for consumers. Stateless — takes full message history.
+exports.consumerChat = async (req, res) => {
+  try {
+    const { messages = [], businessSlug } = req.body;
+    if (!messages.length) return res.status(400).json({ error: 'messages required' });
+
+    let businessContext = null;
+    if (businessSlug) {
+      const { rows } = await db.query(
+        `SELECT b.name, ARRAY_AGG(s.name ORDER BY s.created_at) AS service_names
+         FROM businesses b
+         LEFT JOIN services s ON s.business_id = b.id AND s.is_active = TRUE
+         WHERE b.slug = $1 GROUP BY b.id`,
+        [businessSlug]
+      );
+      if (rows[0]) {
+        businessContext = {
+          businessName: rows[0].name,
+          services: (rows[0].service_names || []).filter(Boolean).map(n => ({ name: n })),
+        };
+      }
+    }
+
+    const result = await consumerAssistant({ messages, businessContext });
+    res.json(result);
+  } catch (err) {
+    console.error('[ai/consumer-chat]', err.message);
+    res.status(500).json({ error: 'AI chat failed' });
+  }
+};
+
+// POST /api/ai/smart-reply (business-auth)
+// Returns a one-line reply suggestion based on the last customer message.
+exports.smartReply = async (req, res) => {
+  try {
+    const { customerMessage } = req.body;
+    if (!customerMessage?.trim()) return res.status(400).json({ error: 'customerMessage required' });
+    const reply = await smartReply({
+      customerMessage: customerMessage.trim(),
+      businessName: req.business.name,
+      category: req.business.category,
+    });
+    if (!reply) return res.status(503).json({ error: 'AI not available' });
+    res.json({ reply });
+  } catch (err) {
+    console.error('[ai/smart-reply]', err.message);
+    res.status(500).json({ error: 'Failed to generate reply' });
   }
 };
 

@@ -462,6 +462,11 @@ export const aiAPI = {
   gapSuggestions: () => api.get('/ai/gap-suggestions'),
   reassignSuggestion: (bookingId) => api.get(`/ai/reassign-suggestion/${bookingId}`),
   personaliseMessage: (data) => api.post('/ai/personalise-message', data),
+  smartReply: (customerMessage) => api.post('/ai/smart-reply', { customerMessage }),
+};
+
+export const consumerAiAPI = {
+  chat: (messages, businessSlug) => consumerAxios.post('/ai/consumer-chat', { messages, businessSlug }),
 };
 
 export const growthAPI = {

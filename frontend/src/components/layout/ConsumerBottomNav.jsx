@@ -50,7 +50,7 @@ function NavItem({ to, icon: Icon, label, unreadCount, gradient }) {
 }
 
 export default function ConsumerBottomNav() {
-  const { unreadCount } = useNotifications();
+  const { chatUnreadCount } = useNotifications();
 
   return (
     <>
@@ -68,7 +68,7 @@ export default function ConsumerBottomNav() {
       >
         <div className="max-w-md mx-auto px-1 flex">
           {NAV.map(({ to, icon, label, gradient }) => (
-            <NavItem key={to} to={to} icon={icon} label={label} unreadCount={unreadCount} gradient={gradient} />
+            <NavItem key={to} to={to} icon={icon} label={label} unreadCount={chatUnreadCount} gradient={gradient} />
           ))}
         </div>
       </nav>

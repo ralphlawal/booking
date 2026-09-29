@@ -361,7 +361,7 @@ export default function BusinessProfile() {
                   loading="lazy"
                 />
               ) : (
-                <div className="min-h-28 p-5 flex items-end bg-[radial-gradient(circle_at_72%_24%,rgba(91,62,234,0.28),transparent_18%),linear-gradient(135deg,#eef2ff,#e0e7ff_48%,#f8fafc)]%_24%,rgba(124,92,255,0.35),transparent_18%),linear-gradient(135deg,#101b34,#0c1528_48%,#080f21)]">
+                <div className="min-h-28 p-5 flex items-end" style={{ background: 'radial-gradient(circle at 72% 24%, rgba(91,62,234,0.18) 0%, transparent 60%), linear-gradient(135deg, #eef2ff, #e0e7ff 48%, #f8fafc)' }}>
                   <span className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-bold text-gray-800 shadow-lg">
                     <MapPin className="w-4 h-4 text-primary-600" /> Open directions
                   </span>
