@@ -44,7 +44,7 @@ function Sheet({ open, onClose, title, children }) {
             onClick={onClose} />
           <motion.div key="sheet-panel"
             className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[500px] sm:rounded-2xl overflow-hidden flex flex-col"
-            style={{ background: '#fff', border: `1px solid ${border}` }}
+            style={{ background: '#fff', border: `1px solid var(--bam-border)` }}
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
             onClick={e => e.stopPropagation()}>
@@ -73,7 +73,7 @@ const TABS = [
 /*  Tab: LOYALTY                                                               */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function LoyaltyTab({ border }) {
+function LoyaltyTab({}) {
   const [program, setProgram] = useState(null);
   const [rewards, setRewards]  = useState([]);
   const [loading, setLoading]  = useState(true);
@@ -128,7 +128,7 @@ function LoyaltyTab({ border }) {
   return (
     <div className="space-y-6">
       {/* Program config */}
-      <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+      <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>Program settings</h3>
           <Toggle checked={!!form.is_active} onChange={v => setForm(p => ({ ...p, is_active: v }))} />
@@ -182,7 +182,7 @@ function LoyaltyTab({ border }) {
         ) : (
           <div className="space-y-2">
             {rewards.map(r => (
-              <div key={r.id} className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={r.id} className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>{r.name}</p>
                   <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>
@@ -218,7 +218,7 @@ function LoyaltyTab({ border }) {
               {['discount','service','addon'].map(t => (
                 <button key={t} type="button" onClick={() => setRForm(p => ({ ...p, type: t }))}
                   className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize border ${rForm.type === t ? 'text-white border-transparent' : ''}`}
-                  style={rForm.type === t ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+                  style={rForm.type === t ? { background: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
                   {t === 'discount' ? '💰 Discount' : t === 'service' ? '✂️ Service' : '➕ Add-on'}
                 </button>
               ))}
@@ -258,7 +258,7 @@ function LoyaltyTab({ border }) {
 /*  Tab: MEMBERSHIPS                                                           */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function MembershipsTab({ border }) {
+function MembershipsTab({}) {
   const [plans, setPlans] = useState([]);
   const [subs, setSubs] = useState([]);
   const [services, setServices] = useState([]);
@@ -326,7 +326,7 @@ function MembershipsTab({ border }) {
         {['plans','subscribers'].map(v => (
           <button key={v} onClick={() => setView(v)}
             className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize border transition-all ${view === v ? 'text-white border-transparent' : ''}`}
-            style={view === v ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+            style={view === v ? { background: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
             {v}
           </button>
         ))}
@@ -344,7 +344,7 @@ function MembershipsTab({ border }) {
         ) : (
           <div className="space-y-3">
             {plans.map(p => (
-              <div key={p.id} className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={p.id} className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -387,7 +387,7 @@ function MembershipsTab({ border }) {
         ) : (
           <div className="space-y-3">
             {subs.map(s => (
-              <div key={s.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={s.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{s.customer_name || 'Customer'}</p>
@@ -486,7 +486,7 @@ function MembershipsTab({ border }) {
 /*  Tab: PACKAGES                                                              */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function PackagesTab({ border }) {
+function PackagesTab({}) {
   const [packages, setPackages] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [services, setServices] = useState([]);
@@ -535,7 +535,7 @@ function PackagesTab({ border }) {
         {['packages','customers'].map(v => (
           <button key={v} onClick={() => setView(v)}
             className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize border transition-all ${view === v ? 'text-white border-transparent' : ''}`}
-            style={view === v ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+            style={view === v ? { background: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
             {v}
           </button>
         ))}
@@ -554,7 +554,7 @@ function PackagesTab({ border }) {
         ) : (
           <div className="space-y-3">
             {packages.map(p => (
-              <div key={p.id} className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={p.id} className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold" style={{ color: 'var(--bam-text)' }}>{p.name}</p>
@@ -593,7 +593,7 @@ function PackagesTab({ border }) {
         ) : (
           <div className="space-y-2">
             {customers.map(c => (
-              <div key={c.id} className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={c.id} className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>{c.customer_name || 'Customer'}</p>
                   <p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{c.package_name}</p>
@@ -632,7 +632,7 @@ function PackagesTab({ border }) {
                 return (
                   <button key={s.id} type="button" onClick={() => toggleSvc(s.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${sel ? 'text-white border-transparent' : ''}`}
-                    style={sel ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+                    style={sel ? { background: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
                     {s.name}
                   </button>
                 );
@@ -653,7 +653,7 @@ function PackagesTab({ border }) {
 /*  Tab: GIFT CARDS                                                            */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function GiftCardsTab({ border }) {
+function GiftCardsTab({}) {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -701,15 +701,15 @@ function GiftCardsTab({ border }) {
     <div className="space-y-4">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
           <p className="text-2xl font-extrabold" style={{ color: 'var(--bam-text)' }}>{cards.length}</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-faint)' }}>Total issued</p>
         </div>
-        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
           <p className="text-2xl font-extrabold text-emerald-500">{totalActive}</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-faint)' }}>Active</p>
         </div>
-        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
           <p className="text-2xl font-extrabold" style={{ color: '#6366f1' }}>£{totalOutstanding.toFixed(0)}</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--bam-text-faint)' }}>Outstanding</p>
         </div>
@@ -719,7 +719,7 @@ function GiftCardsTab({ border }) {
         {['all','active','redeemed','expired','cancelled'].map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize border ${filter === f ? 'text-white border-transparent' : ''}`}
-            style={filter === f ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+            style={filter === f ? { background: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
             {f}
           </button>
         ))}
@@ -738,7 +738,7 @@ function GiftCardsTab({ border }) {
       ) : (
         <div className="space-y-2">
           {filtered.map(c => (
-            <div key={c.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+            <div key={c.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -816,7 +816,6 @@ function GiftCardsTab({ border }) {
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 export default function RetentionHub() {
-  const border = 'rgba(0,0,0,0.07)';
   const [activeTab, setActiveTab] = useState('loyalty');
 
   return (

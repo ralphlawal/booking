@@ -251,7 +251,7 @@ function DayView({ bookings, focusDate, onBookingClick, onSlotClick, borderColor
 
 /* ── WEEK VIEW ───────────────────────────────────────────────────────────── */
 
-function WeekView({ bookings, focusDate, onBookingClick, onSlotClick$2 borderColor }) {
+function WeekView({ bookings, focusDate, onBookingClick, onSlotClick, borderColor }) {
   const scrollRef = useRef(null);
   const weekStart = startOfWeek(focusDate, { weekStartsOn: 1 });
   const weekDays  = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -358,7 +358,7 @@ function WeekView({ bookings, focusDate, onBookingClick, onSlotClick$2 borderCol
 
 /* ── MONTH VIEW ──────────────────────────────────────────────────────────── */
 
-function MonthView({ bookings, focusDate, onBookingClick, onDayClick$2 borderColor }) {
+function MonthView({ bookings, focusDate, onBookingClick, onDayClick, borderColor }) {
   const monthStart = startOfMonth(focusDate);
   const monthEnd   = endOfMonth(focusDate);
   const calStart   = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -441,7 +441,7 @@ function MonthView({ bookings, focusDate, onBookingClick, onDayClick$2 borderCol
 
 /* ── Booking Detail Sheet ────────────────────────────────────────────────── */
 
-function BookingDetailSheet({ booking, onClose, onUpdated$2 borderColor }) {
+function BookingDetailSheet({ booking, onClose, onUpdated, borderColor }) {
   const [saving, setSaving]   = useState(false);
   const [mode, setMode]       = useState('view'); // 'view' | 'status' | 'reschedule'
   const [newStatus, setStatus] = useState(booking.status);

@@ -58,7 +58,7 @@ function StatCard({ label, value, sub, trend, color }) {
   );
 }
 
-function InsightCard({ insight, integrations, onAction$2}) {
+function InsightCard({ insight, integrations, onAction }) {
   const InsightIcon = insightIcons[insight.icon] || Sparkles;
   return (
     <div className="rounded-2xl p-4 border-l-4" style={{
@@ -84,7 +84,7 @@ function InsightCard({ insight, integrations, onAction$2}) {
 
 /* ── Campaign Form ───────────────────────────────────────────────────────── */
 
-function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultMessage, border$2}) {
+function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultMessage}) {
   const [form, setForm] = useState({
     name: '', channel: 'email', audience: defaultAudience || 'all',
     subject: '', message: defaultMessage || '',
@@ -192,13 +192,13 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
         </div>
 
         {/* Offer */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--bam-surface-soft)', border: `1px solid var(--bam-border)` }}>
           <label className="label !mb-0">Attached offer</label>
           <div className="flex gap-2">
             {['none','promo_code','free_service'].map(t => (
               <button key={t} type="button" onClick={() => setForm(p => ({ ...p, offer_type: t }))}
                 className={`flex-1 py-1.5 rounded-xl text-xs font-bold capitalize transition-all border ${form.offer_type === t ? 'text-white border-transparent' : ''}`}
-                style={form.offer_type === t ? { background: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+                style={form.offer_type === t ? { background: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
                 {t === 'promo_code' ? 'Promo code' : t === 'free_service' ? 'Free service' : 'None'}
               </button>
             ))}
@@ -220,7 +220,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
         </div>
 
         {/* Send now vs draft */}
-        <label className="flex items-center justify-between p-4 rounded-2xl cursor-pointer" style={{ background: 'var(--bam-surface-soft)', border: `1px solid ${border}` }}>
+        <label className="flex items-center justify-between p-4 rounded-2xl cursor-pointer" style={{ background: 'var(--bam-surface-soft)', border: `1px solid var(--bam-border)` }}>
           <div>
             <p className="font-semibold text-sm" style={{ color: 'var(--bam-text)' }}>Send immediately</p>
             <p className="text-xs" style={{ color: 'var(--bam-text-faint)' }}>Disable to save as draft</p>
@@ -241,7 +241,7 @@ function CampaignForm({ onSave, onClose, integrations, defaultAudience, defaultM
 
 /* ── Tab: Overview ───────────────────────────────────────────────────────── */
 
-function OverviewTab({ integrations, onCreateCampaign$2}) {
+function OverviewTab({ integrations, onCreateCampaign }) {
   const [intel, setIntel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -277,13 +277,13 @@ function OverviewTab({ integrations, onCreateCampaign$2}) {
           {loading && <Spinner size="sm" />}
         </div>
         {!loading && error ? (
-          <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+          <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
             <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>Growth insights are temporarily unavailable</p>
             <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Please try again in a moment.</p>
             <button type="button" onClick={loadIntelligence} className="btn-secondary mt-4 text-sm">Try again</button>
           </div>
         ) : !loading && (!intel?.insights || intel.insights.length === 0) ? (
-          <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+          <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
             <p className="text-3xl mb-2">🌱</p>
             <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No opportunities detected yet</p>
             <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Add more bookings to unlock retention insights</p>
@@ -306,7 +306,7 @@ function OverviewTab({ integrations, onCreateCampaign$2}) {
             const ChannelIcon = ch.icon;
             const ok = !ch.soon && integrations?.[ch.value];
             return (
-              <div key={ch.value} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={ch.value} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex items-center gap-2 mb-1">
                   <ChannelIcon className="w-4 h-4" strokeWidth={1.8} aria-hidden="true" />
                   <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{ch.label}</p>
@@ -333,7 +333,7 @@ function OverviewTab({ integrations, onCreateCampaign$2}) {
 
 /* ── Tab: Campaigns ──────────────────────────────────────────────────────── */
 
-function CampaignsTab({ integrations, prefill, border$2}) {
+function CampaignsTab({ integrations, prefill}) {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(!!prefill);
@@ -390,7 +390,7 @@ function CampaignsTab({ integrations, prefill, border$2}) {
       {loading ? (
         <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded-2xl animate-pulse" style={{ background: 'var(--bam-surface-soft)' }} />)}</div>
       ) : campaigns.length === 0 ? (
-        <div className="rounded-2xl p-12 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-12 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
           <p className="text-4xl mb-3">📣</p>
           <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No campaigns yet</p>
           <p className="text-sm mt-1 mb-5" style={{ color: 'var(--bam-text-muted)' }}>Send targeted messages to your customers to drive more bookings</p>
@@ -402,7 +402,7 @@ function CampaignsTab({ integrations, prefill, border$2}) {
             const badge = STATUS_BADGE[c.status] || STATUS_BADGE.draft;
             const ch = CHANNELS.find(x => x.value === c.channel);
             return (
-              <div key={c.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={c.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'var(--bam-surface-soft)' }}>
                     {ch?.icon ? <ch.icon className="w-4 h-4" style={{ color: 'var(--bam-text-muted)' }} strokeWidth={1.8} /> : <span className="text-lg">📨</span>}
@@ -455,7 +455,7 @@ function CampaignsTab({ integrations, prefill, border$2}) {
               onClick={() => setShowForm(false)} />
             <motion.div key="cf-sheet"
               className="fixed inset-x-0 bottom-0 z-[81] rounded-t-3xl sm:inset-auto sm:right-4 sm:top-4 sm:bottom-4 sm:w-[500px] sm:rounded-2xl overflow-hidden"
-              style={{ background: '#fff', border: `1px solid ${border}`, display: 'flex', flexDirection: 'column' }}
+              style={{ background: '#fff', border: `1px solid var(--bam-border)`, display: 'flex', flexDirection: 'column' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 340, mass: 0.8 }}
               onClick={e => e.stopPropagation()}>
@@ -478,7 +478,7 @@ function CampaignsTab({ integrations, prefill, border$2}) {
 
 /* ── Tab: Automations ────────────────────────────────────────────────────── */
 
-function AutomationsTab({ integrations, border$2}) {
+function AutomationsTab({ integrations}) {
   const [automations, setAutomations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(null);
@@ -517,7 +517,7 @@ function AutomationsTab({ integrations, border$2}) {
             const ch = CHANNELS.find(x => x.value === auto.channel);
             const channelOk = integrations?.[auto.channel];
             return (
-              <div key={auto.trigger_type} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={auto.trigger_type} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex items-start gap-3">
                   <span className="text-2xl flex-shrink-0">{auto.icon}</span>
                   <div className="flex-1 min-w-0">
@@ -562,7 +562,7 @@ function AutomationsTab({ integrations, border$2}) {
 
 /* ── Tab: Promotions ─────────────────────────────────────────────────────── */
 
-function PromotionsTab({ border$2}) {
+function PromotionsTab({}) {
   const [promos, setPromos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -623,7 +623,7 @@ function PromotionsTab({ border$2}) {
       <AnimatePresence>
         {showForm && (
           <motion.div key="promo-form" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+            className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
             <form onSubmit={submit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -669,7 +669,7 @@ function PromotionsTab({ border$2}) {
       {loading ? (
         <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: 'var(--bam-surface-soft)' }} />)}</div>
       ) : promos.length === 0 ? (
-        <div className="rounded-2xl p-10 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-10 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
           <p className="text-4xl mb-2">🏷</p>
           <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>No promo codes yet</p>
           <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Create discount codes to share with customers</p>
@@ -753,7 +753,7 @@ function ReviewsTab({ }) {
     <div className="space-y-4">
       {/* Summary */}
       {!loading && total > 0 && (
-        <div className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
           <div className="flex items-center gap-6">
             <div className="text-center flex-shrink-0">
               <p className="text-5xl font-extrabold leading-none" style={{ color: 'var(--bam-text)' }}>{avg.toFixed(1)}</p>
@@ -792,7 +792,7 @@ function ReviewsTab({ }) {
           {[['all','All'],['needs_reply','Needs reply'],['5','5★'],['4','4★'],['3','3★'],['2','2★'],['1','1★']].map(([v,l]) => (
             <button key={v} onClick={() => setFilter(v)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap flex-shrink-0 transition-all border`}
-              style={filter === v ? { background: '#6366f1', color: '#fff', borderColor: '#6366f1' } : { borderColor: color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
+              style={filter === v ? { background: '#6366f1', color: '#fff', borderColor: '#6366f1' } : { color: 'var(--bam-text-muted)', background: 'var(--bam-surface)' }}>
               {l}
             </button>
           ))}
@@ -802,7 +802,7 @@ function ReviewsTab({ }) {
       {loading ? (
         <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-28 rounded-2xl animate-pulse" style={{ background: 'var(--bam-surface-soft)' }} />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl p-10 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+        <div className="rounded-2xl p-10 text-center" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
           <p className="text-4xl mb-2">⭐</p>
           <p className="font-semibold" style={{ color: 'var(--bam-text)' }}>{total === 0 ? 'No reviews yet' : 'No reviews match this filter'}</p>
           {total === 0 && <p className="text-sm mt-1" style={{ color: 'var(--bam-text-muted)' }}>Reviews from customers appear here after completed bookings</p>}
@@ -815,7 +815,7 @@ function ReviewsTab({ }) {
             const d = new Date(r.created_at);
             const isReplying = replyingTo === r.id;
             return (
-              <div key={r.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={r.id} className="rounded-2xl p-4" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                     style={{ background: `hsl(${hue},60%,45%)` }}>{initials}</div>
@@ -905,7 +905,7 @@ function LoyaltyTab({ }) {
           <h3 className="font-bold text-sm mb-3" style={{ color: 'var(--bam-text)' }}>Top Customers by Spend</h3>
           <div className="space-y-2">
             {stats.top_customers.map((c, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'var(--bam-surface)', border: `1px solid ${border}` }}>
+              <div key={i} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'var(--bam-surface)', border: `1px solid var(--bam-border)` }}>
                 <span className="font-bold text-sm w-6 flex-shrink-0" style={{ color: i < 3 ? '#f59e0b' : 'var(--bam-text-faint)' }}>#{i + 1}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate" style={{ color: 'var(--bam-text)' }}>{c.name}</p>
@@ -924,7 +924,6 @@ function LoyaltyTab({ }) {
 /* ── Main Growth page ────────────────────────────────────────────────────── */
 
 export default function Growth() {
-  const border = 'rgba(0,0,0,0.07)';
 
   const [searchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
