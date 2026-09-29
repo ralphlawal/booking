@@ -858,10 +858,10 @@ export default function CustomerDashboard() {
   return (
     <div className="app-page animate-fade-in">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl" style={{ background: 'rgba(255,255,255,0.92)', borderBottom: '1px solid var(--bam-border)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/">
-            <img src={LOGO_BLUE_H} alt="BookAm Business" className="h-7 w-auto object-contain" />
+            <img src={LOGO_BLUE_H} alt="BookAm" className="h-7 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-1">
 
@@ -869,16 +869,17 @@ export default function CustomerDashboard() {
             <div className="relative" ref={notifRef}>
               <button
                 onClick={openNotifications}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative"
+                className="p-2 rounded-xl transition-colors relative"
+                style={{ color: 'var(--bam-text-muted)' }}
                 title="Notifications"
               >
-                <Bell className="w-4 h-4 text-gray-500" />
+                <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] rounded-2xl shadow-xl z-50 overflow-hidden" style={{ background: '#fff', border: '1px solid var(--bam-border)' }}>
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="font-semibold text-sm text-gray-900">Notifications</p>
                     {browserPermission !== 'granted' && (
@@ -909,12 +910,13 @@ export default function CustomerDashboard() {
               )}
             </div>
 
-            <Link to="/customer/profile" className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Profile settings">
-              <Settings className="w-4 h-4 text-gray-500" />
+            <Link to="/customer/profile" className="p-2 rounded-xl transition-colors" style={{ color: 'var(--bam-text-muted)' }} title="Profile settings">
+              <Settings className="w-4 h-4" />
             </Link>
             <button
               onClick={() => { logout(); navigate('/'); }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-red-500"
+              className="p-2 rounded-xl transition-colors"
+              style={{ color: 'var(--bam-text-muted)' }}
               title="Sign out"
             >
               <LogOut className="w-4 h-4" />
@@ -925,16 +927,16 @@ export default function CustomerDashboard() {
 
       <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 lg:py-8 pb-consumer-nav">
         {/* Welcome header */}
-        <div className="mb-4 sm:mb-6 surface p-3.5 sm:p-5 flex items-center gap-3 sm:gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-primary flex-shrink-0">
+        <div className="mb-4 sm:mb-6 rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4" style={{ background: '#fff', border: '1px solid var(--bam-border)', boxShadow: '0 2px 16px rgba(91,63,234,0.06)' }}>
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold flex-shrink-0" style={{ background: 'linear-gradient(135deg, #5B3FEA 0%, #3d2ab5 100%)', boxShadow: '0 4px 14px rgba(91,63,234,0.3)' }}>
             {consumer.full_name?.[0]?.toUpperCase() || '?'}
           </div>
           <div className="min-w-0">
-            <p className="page-kicker">Customer home</p>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Hi, {consumer.full_name?.split(' ')[0]}</h1>
-            <p className="text-sm text-gray-500 truncate no-underline max-w-[58vw] sm:max-w-none">{consumer.email}</p>
+            <p className="text-xs font-bold uppercase tracking-wide mb-0.5" style={{ color: '#5B3FEA' }}>Welcome back</p>
+            <h1 className="text-lg sm:text-xl font-black truncate" style={{ color: 'var(--bam-text)' }}>Hi, {consumer.full_name?.split(' ')[0]} 👋</h1>
+            <p className="text-sm truncate max-w-[58vw] sm:max-w-none" style={{ color: 'var(--bam-text-muted)' }}>{consumer.email}</p>
             {bookings.length > 0 && (
-              <p className="text-xs text-primary-600 font-medium mt-0.5">
+              <p className="text-xs font-semibold mt-0.5" style={{ color: '#5B3FEA' }}>
                 {bookings.length} booking{bookings.length !== 1 ? 's' : ''} total
               </p>
             )}
@@ -1038,50 +1040,49 @@ export default function CustomerDashboard() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 mb-5 sm:mb-6">
-          <Link to="/match" className="app-list-row p-3 sm:p-4 flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-5 h-5 text-primary-600" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-bold text-sm text-gray-900">Smart Match</p>
-              <p className="text-xs text-gray-400">Best available</p>
-            </div>
-          </Link>
-          <Link to="/explore" className="app-list-row p-3 sm:p-4 flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-              <Search className="w-5 h-5 text-indigo-600" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-bold text-sm text-gray-900">Explore</p>
-              <p className="text-xs text-gray-400">Browse services</p>
-            </div>
-          </Link>
-          <Link to="/customer/messages" className="app-list-row p-3 sm:p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-              <MessageSquare className="w-5 h-5 text-green-600" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-bold text-sm text-gray-900">Messages</p>
-              <p className="text-xs text-gray-400">Chat &amp; support</p>
-            </div>
-          </Link>
+          {[
+            { to: '/match',             Icon: Zap,          label: 'Smart Match', sub: 'Best available',  bg: 'rgba(91,63,234,0.1)',   color: '#5B3FEA' },
+            { to: '/explore',           Icon: Search,       label: 'Explore',     sub: 'Browse services', bg: 'rgba(99,102,241,0.1)',  color: '#6366f1' },
+            { to: '/customer/messages', Icon: MessageSquare,label: 'Messages',    sub: 'Chat & support',  bg: 'rgba(16,185,129,0.1)', color: '#10b981', span: true },
+          ].map(({ to, Icon, label, sub, bg, color, span }) => (
+            <Link
+              key={to}
+              to={to}
+              className={`p-3 sm:p-4 rounded-2xl flex items-center gap-3 transition-all hover:-translate-y-0.5 ${span ? 'col-span-2 lg:col-span-1' : ''}`}
+              style={{ background: '#fff', border: '1px solid var(--bam-border)', boxShadow: '0 1px 8px rgba(91,63,234,0.04)' }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
+                <Icon className="w-5 h-5" style={{ color }} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-sm" style={{ color: 'var(--bam-text)' }}>{label}</p>
+                <p className="text-xs" style={{ color: 'var(--bam-text-muted)' }}>{sub}</p>
+              </div>
+            </Link>
+          ))}
         </div>
 
         {/* Tabs */}
-        <div className="surface p-1 flex mb-5 overflow-x-auto scrollbar-hide">
+        <div className="flex mb-5 overflow-x-auto scrollbar-hide rounded-2xl p-1" style={{ background: 'var(--bam-surface-soft)' }}>
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 min-w-0 py-2.5 px-2 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
-                tab === t.id
-                  ? 'bg-primary-600 text-white shadow-primary'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
+              className="flex-1 min-w-0 py-2.5 px-2 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5"
+              style={tab === t.id
+                ? { background: '#5B3FEA', color: '#fff', boxShadow: '0 2px 8px rgba(91,63,234,0.25)' }
+                : { background: 'transparent', color: 'var(--bam-text-muted)' }
+              }
             >
               {t.label}
               {t.count > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${tab === t.id ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                  style={tab === t.id
+                    ? { background: 'rgba(255,255,255,0.25)', color: '#fff' }
+                    : { background: 'var(--bam-border)', color: 'var(--bam-text-muted)' }
+                  }
+                >
                   {t.count}
                 </span>
               )}
