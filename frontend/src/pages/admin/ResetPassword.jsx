@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { LinkIcon } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { authAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { resetPasswordWithCode } = useAuth();
-  const oobCode = params.get('oobCode');
+  const token = params.get('token');
   const [form, setForm] = useState({ password: '', confirm: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (!oobCode) {
+  if (!token) {
     return (
       <div className="app-page bg-gradient-to-br from-primary-50 to-white dark:bg-none dark:bg-[var(--bam-bg)] flex items-center justify-center p-4">
         <div className="app-panel p-8 text-center max-w-sm w-full">
@@ -37,14 +36,12 @@ export default function ResetPassword() {
     if (form.password.length < 6) return setError('Password must be at least 6 characters');
     setLoading(true);
     try {
-      await resetPasswordWithCode(oobCode, form.password);
+      await authAPI.resetPassword(token, form.password);
       toast.success('Password updated! Please sign in.');
       navigate('/admin/login');
     } catch (err) {
-      const msg = err.code === 'auth/invalid-action-code'
+      const msg = err.status === 400 || err.message?.includes('expired')
         ? 'This reset link has expired or already been used. Request a new one.'
-        : err.code === 'auth/weak-password'
-        ? 'Password is too weak. Use at least 6 characters.'
         : 'Failed to reset password. Try requesting a new link.';
       setError(msg);
     } finally {

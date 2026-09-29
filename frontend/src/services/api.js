@@ -128,7 +128,6 @@ export const businessAPI = {
   getPublic: (slug) => api.get(`/business/${slug}`),
   checkSlug: (slug) => api.get(`/business/${slug}/check`),
   getQR: () => api.get('/business/me/qr'),
-  getAnalytics: () => api.get('/bookings/analytics'),
   requestVerification: () => api.post('/business/me/request-verification'),
   submitVerificationDetails: (data) => api.post('/business/me/verification-details', data),
   saveBankDetails: (data) => api.put('/business/me/bank-details', data),
