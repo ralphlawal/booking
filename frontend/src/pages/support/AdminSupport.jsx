@@ -273,6 +273,167 @@ function DisputesPanel() {
   );
 }
 
+// ── Platform Push Broadcast (developer tool) ─────────────────────────────────
+const ADMIN_API = (() => {
+  const base = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5001/api'
+    : '/api';
+  const token = () => localStorage.getItem('adminSupportToken') || '';
+  const h = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` });
+  return {
+    broadcast: (body) => fetch(`${base}/admin/broadcast`, { method: 'POST', headers: h(), body: JSON.stringify(body) }).then(r => r.json()),
+    pushStats: () => fetch(`${base}/admin/push-stats`, { headers: h() }).then(r => r.json()),
+  };
+})();
+
+function PushBroadcastPanel() {
+  const [stats, setStats] = useState(null);
+  const [audienceType, setAudienceType] = useState('all');
+  const [email, setEmail] = useState('');
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [url, setUrl] = useState('/');
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    ADMIN_API.pushStats().then(setStats).catch(() => {});
+  }, []);
+
+  const totalForAudience = () => {
+    if (!stats) return '…';
+    if (audienceType === 'all') return (stats.consumers.native + stats.consumers.web + stats.businesses.native + stats.businesses.web);
+    if (audienceType === 'consumers') return stats.consumers.native + stats.consumers.web;
+    if (audienceType === 'businesses') return stats.businesses.native + stats.businesses.web;
+    return '?';
+  };
+
+  const send = async () => {
+    if (!title.trim() || !body.trim()) return toast.error('Title and body are required');
+    setSending(true); setResult(null);
+    try {
+      const audience = audienceType === 'email' ? { type: 'email', email } : { type: audienceType };
+      const data = await ADMIN_API.broadcast({ title, body, url, audience });
+      if (data.error) throw new Error(data.error);
+      setResult(data);
+      toast.success(`Sent — ${data.native} native · ${data.web} web push`);
+    } catch (err) {
+      toast.error(err.message || 'Failed to send');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const AUDIENCES = [
+    { id: 'all',        label: 'Everyone',       desc: 'All consumers + business owners' },
+    { id: 'consumers',  label: 'Consumers',       desc: 'All consumer app users' },
+    { id: 'businesses', label: 'Businesses',      desc: 'All business owners' },
+    { id: 'email',      label: 'One user',        desc: 'Find by email address' },
+  ];
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-2xl mx-auto w-full space-y-5">
+      <div>
+        <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+          <Zap className="w-5 h-5 text-primary-600" /> Platform Push Broadcast
+        </h2>
+        <p className="text-sm text-gray-500 mt-0.5">Send a push notification to any subset of BookAm users</p>
+      </div>
+
+      {/* Stats */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { label: 'Consumer devices', value: stats.consumers.native + stats.consumers.web, sub: `${stats.consumers.native} native · ${stats.consumers.web} web` },
+            { label: 'Business devices', value: stats.businesses.native + stats.businesses.web, sub: `${stats.businesses.native} native · ${stats.businesses.web} web` },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-xl p-4 border border-gray-100">
+              <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+              <p className="text-xs font-semibold text-gray-600 mt-0.5">{s.label}</p>
+              <p className="text-[10px] text-gray-400 mt-1">{s.sub}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Compose */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+        {/* Audience */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Audience</p>
+          <div className="grid grid-cols-2 gap-2">
+            {AUDIENCES.map(a => (
+              <button key={a.id} onClick={() => setAudienceType(a.id)}
+                className={`text-left p-3 rounded-xl border text-sm font-semibold transition-all ${audienceType === a.id ? 'bg-primary-600 text-white border-primary-600' : 'bg-gray-50 text-gray-700 border-gray-100 hover:border-primary-200'}`}>
+                {a.label}
+                <p className={`text-[10px] font-normal mt-0.5 ${audienceType === a.id ? 'text-white/70' : 'text-gray-400'}`}>{a.desc}</p>
+              </button>
+            ))}
+          </div>
+          {audienceType === 'email' && (
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="user@example.com"
+              className="mt-2 w-full rounded-xl px-4 py-2.5 text-sm border border-gray-200 outline-none focus:border-primary-400"
+            />
+          )}
+        </div>
+
+        {/* Title */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1.5">Title</label>
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. BookAm is live in your city!"
+            className="w-full rounded-xl px-4 py-2.5 text-sm border border-gray-200 outline-none focus:border-primary-400"
+          />
+        </div>
+
+        {/* Body */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1.5">Message</label>
+          <textarea rows={3} value={body} onChange={e => setBody(e.target.value)} placeholder="e.g. Tap to explore what's new →"
+            className="w-full rounded-xl px-4 py-2.5 text-sm border border-gray-200 outline-none resize-none focus:border-primary-400"
+          />
+        </div>
+
+        {/* Deep link */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1.5">Deep-link URL <span className="text-gray-300 font-normal">(optional)</span></label>
+          <input value={url} onChange={e => setUrl(e.target.value)} placeholder="/explore"
+            className="w-full rounded-xl px-4 py-2.5 text-sm border border-gray-200 outline-none focus:border-primary-400"
+          />
+        </div>
+
+        {/* Preview */}
+        {(title || body) && (
+          <div className="rounded-xl bg-gray-50 border border-gray-100 p-3 flex gap-3 items-start">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">B</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{title || 'Title'}</p>
+              <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{body || 'Message…'}</p>
+            </div>
+            <span className="text-[10px] text-gray-400 flex-shrink-0">now</span>
+          </div>
+        )}
+
+        <button onClick={send} disabled={sending || !title.trim() || !body.trim()}
+          className="w-full py-3 rounded-xl text-sm font-bold transition-all bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {sending ? 'Sending…' : audienceType === 'email' ? 'Send to this user' : `Send to ${AUDIENCES.find(a=>a.id===audienceType)?.label} (${totalForAudience()} devices)`}
+        </button>
+      </div>
+
+      {/* Result */}
+      {result && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+          <p className="font-bold text-green-800">✓ Broadcast sent</p>
+          <p className="text-sm text-green-700 mt-1">
+            {result.native} native push · {result.web} web push · {result.total} total devices
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BroadcastsPanel() {
   const [broadcasts, setBroadcasts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1559,6 +1720,7 @@ export default function AdminSupport() {
                 { id: 'messages', icon: <MessageSquare className="w-3 h-3" />, label: 'Messages' },
                 { id: 'disputes', icon: <AlertTriangle className="w-3 h-3" />, label: 'Disputes' },
                 { id: 'bookings', icon: <CalendarCheck className="w-3 h-3" />, label: 'Bookings' },
+                { id: 'push',       icon: <Zap className="w-3 h-3" />,  label: 'Push' },
                 { id: 'broadcasts', icon: <Bell className="w-3 h-3" />, label: 'Alerts' },
                 { id: 'businesses', icon: <Building2 className="w-3 h-3" />, label: 'Businesses' },
                 { id: 'users', icon: <Users className="w-3 h-3" />, label: 'Users' },
@@ -1597,6 +1759,12 @@ export default function AdminSupport() {
       {mainTab === 'disputes' && (
         <div className="flex-1 overflow-hidden">
           <DisputesPanel />
+        </div>
+      )}
+
+      {mainTab === 'push' && (
+        <div className="flex flex-1 overflow-hidden">
+          <PushBroadcastPanel />
         </div>
       )}
 

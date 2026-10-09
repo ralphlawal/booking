@@ -260,6 +260,99 @@ app.get('/api/admin/manual-payouts', adminCtrl.getManualPayouts);
 app.post('/api/admin/manual-payouts/:businessId/mark-paid', adminCtrl.markManualPaid);
 app.get('/api/admin/audit-logs', adminCtrl.getAuditLogs);
 app.post('/api/admin/reconcile-payments', paymentsCtrl.reconcile);
+// POST /api/admin/broadcast — send push to all users, all consumers, all businesses, or a single user by email
+app.post('/api/admin/broadcast', requireAdmin, async (req, res) => {
+  const db = require('./config/database');
+  const { sendPush, sendWebPush } = require('./services/pushService');
+  const webpush = require('web-push');
+
+  const { title, body, url, audience } = req.body;
+  if (!title?.trim() || !body?.trim()) return res.status(400).json({ error: 'title and body required' });
+  if (!['all', 'consumers', 'businesses', 'email'].includes(audience?.type))
+    return res.status(400).json({ error: 'audience.type must be all | consumers | businesses | email' });
+
+  try {
+    let nativeTokens = [];
+    let webSubs = [];
+
+    if (audience.type === 'all') {
+      const { rows } = await db.query('SELECT token FROM push_tokens');
+      nativeTokens = rows.map(r => r.token);
+      const { rows: cs } = await db.query('SELECT endpoint, p256dh, auth FROM push_subscriptions').catch(() => ({ rows: [] }));
+      const { rows: bs } = await db.query('SELECT endpoint, p256dh, auth FROM business_push_subscriptions').catch(() => ({ rows: [] }));
+      webSubs = [...cs, ...bs];
+
+    } else if (audience.type === 'consumers') {
+      const { rows } = await db.query("SELECT token FROM push_tokens WHERE user_type = 'consumer'");
+      nativeTokens = rows.map(r => r.token);
+      const { rows: cs } = await db.query('SELECT endpoint, p256dh, auth FROM push_subscriptions').catch(() => ({ rows: [] }));
+      webSubs = cs;
+
+    } else if (audience.type === 'businesses') {
+      const { rows } = await db.query("SELECT token FROM push_tokens WHERE user_type = 'business'");
+      nativeTokens = rows.map(r => r.token);
+      const { rows: bs } = await db.query('SELECT endpoint, p256dh, auth FROM business_push_subscriptions').catch(() => ({ rows: [] }));
+      webSubs = bs;
+
+    } else if (audience.type === 'email') {
+      const email = audience.email?.trim().toLowerCase();
+      if (!email) return res.status(400).json({ error: 'audience.email required' });
+      // Try business user
+      const { rows: bizRows } = await db.query('SELECT id FROM users WHERE LOWER(email)=$1', [email]).catch(() => ({ rows: [] }));
+      if (bizRows[0]) {
+        const { rows } = await db.query("SELECT token FROM push_tokens WHERE user_type='business' AND user_id=$1", [bizRows[0].id]);
+        nativeTokens = rows.map(r => r.token);
+        const { rows: ws } = await db.query('SELECT endpoint, p256dh, auth FROM business_push_subscriptions WHERE user_id=$1', [bizRows[0].id]).catch(() => ({ rows: [] }));
+        webSubs = ws;
+      }
+      // Try consumer
+      const { rows: conRows } = await db.query('SELECT id FROM consumer_accounts WHERE LOWER(email)=$1', [email]).catch(() => ({ rows: [] }));
+      if (conRows[0]) {
+        const { rows } = await db.query("SELECT token FROM push_tokens WHERE user_type='consumer' AND user_id=$1", [conRows[0].id]);
+        nativeTokens = [...nativeTokens, ...rows.map(r => r.token)];
+        const { rows: ws } = await db.query('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE consumer_id=$1', [conRows[0].id]).catch(() => ({ rows: [] }));
+        webSubs = [...webSubs, ...ws];
+      }
+      if (!nativeTokens.length && !webSubs.length)
+        return res.status(404).json({ error: `No push tokens found for ${email}` });
+    }
+
+    const payload = { title: title.trim(), body: body.trim(), data: { url: url || '/' }, url: url || '/' };
+    let nativeSent = 0, webSent = 0;
+
+    if (nativeTokens.length) {
+      await sendPush(nativeTokens, payload).catch(() => {});
+      nativeSent = nativeTokens.length;
+    }
+    if (webSubs.length) {
+      await sendWebPush(webSubs, payload).catch(() => {});
+      webSent = webSubs.length;
+    }
+
+    res.json({ ok: true, native: nativeSent, web: webSent, total: nativeSent + webSent });
+  } catch (err) {
+    console.error('[admin/broadcast]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/push-stats — token counts per audience
+app.get('/api/admin/push-stats', requireAdmin, async (req, res) => {
+  const db = require('./config/database');
+  try {
+    const { rows: native } = await db.query("SELECT user_type, COUNT(*) n FROM push_tokens GROUP BY user_type");
+    const { rows: web } = await db.query('SELECT COUNT(*) n FROM push_subscriptions').catch(() => ({ rows: [{ n: 0 }] }));
+    const { rows: bizWeb } = await db.query('SELECT COUNT(*) n FROM business_push_subscriptions').catch(() => ({ rows: [{ n: 0 }] }));
+    const byType = Object.fromEntries(native.map(r => [r.user_type, parseInt(r.n)]));
+    res.json({
+      consumers: { native: byType.consumer || 0, web: parseInt(web[0]?.n || 0) },
+      businesses: { native: byType.business || 0, web: parseInt(bizWeb[0]?.n || 0) },
+    });
+  } catch (err) {
+    res.json({ consumers: { native: 0, web: 0 }, businesses: { native: 0, web: 0 } });
+  }
+});
+
 app.get('/api/admin/push-debug', requireAdmin, async (req, res) => {
   const db = require('./config/database');
   const { rows } = await db.query('SELECT token, user_type, updated_at FROM push_tokens ORDER BY updated_at DESC LIMIT 20');
