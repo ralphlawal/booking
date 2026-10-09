@@ -1,7 +1,7 @@
 const db = require('../config/database');
 
 const TRIAL_DAYS = 14;
-const FREE_CALLS_PER_MONTH = 50;
+const FREE_CALLS_PER_MONTH = 3;
 
 function monthKey() {
   const d = new Date();

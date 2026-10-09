@@ -9,7 +9,7 @@ import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
 import BackButton from '../../components/shared/BackButton';
 import { compressImage } from '../../utils/compressImage';
 import toast from 'react-hot-toast';
-import { getCurrentPosition, publicWebUrl, shareContent } from '../../services/nativeBridge';
+import { getCurrentPosition, publicWebUrl, shareContent, isNativePlatform } from '../../services/nativeBridge';
 
 function StarPicker({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
@@ -262,10 +262,14 @@ export default function ConsumerProfile() {
   };
 
   const enablePush = async () => {
+    if (isNativePlatform()) {
+      toast('Notifications are managed in your device Settings → BookAm', { icon: '📱' });
+      return;
+    }
     const result = await requestBrowserNotifications();
     if (result === 'granted') toast.success('Push notifications enabled');
-    else if (result === 'denied') toast.error('Notifications blocked — enable them in your device Settings');
-    else toast.error('Push notifications are not supported on this browser');
+    else if (result === 'denied') toast.error('Notifications blocked — enable them in your browser settings');
+    else toast.error('Your browser does not support notifications');
   };
 
   const handleDeleteAccount = async () => {

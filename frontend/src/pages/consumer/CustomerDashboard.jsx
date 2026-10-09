@@ -6,7 +6,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { LOGO_BLUE_H } from '../../config/logos';
 import ConsumerBottomNav from '../../components/layout/ConsumerBottomNav';
-import { copyText } from '../../services/nativeBridge';
+import { copyText, isNativePlatform } from '../../services/nativeBridge';
 import toast from 'react-hot-toast';
 
 const STATUS_STYLES = {
@@ -751,10 +751,14 @@ export default function CustomerDashboard() {
   };
 
   const enableBrowserNotifications = async () => {
+    if (isNativePlatform()) {
+      toast('Notifications are managed in your device Settings → BookAm', { icon: '📱' });
+      return;
+    }
     const permission = await requestBrowserNotifications();
-    if (permission === 'granted') toast.success('Phone and browser notifications enabled');
-    else if (permission === 'denied') toast.error('Notifications are blocked in your browser settings');
-    else toast.error('Notifications are not supported on this browser');
+    if (permission === 'granted') toast.success('Notifications enabled');
+    else if (permission === 'denied') toast.error('Notifications are blocked — enable them in your browser settings');
+    else toast.error('Your browser does not support notifications');
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -882,12 +886,12 @@ export default function CustomerDashboard() {
                 <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1rem)] rounded-2xl shadow-xl z-50 overflow-hidden" style={{ background: '#fff', border: '1px solid var(--bam-border)' }}>
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="font-semibold text-sm text-gray-900">Notifications</p>
-                    {browserPermission !== 'granted' && (
+                    {browserPermission !== 'granted' && !isNativePlatform() && (
                       <button
                         onClick={enableBrowserNotifications}
                         className="mt-2 text-xs font-semibold text-primary-600 hover:underline"
                       >
-                        Enable phone/browser alerts
+                        Enable browser alerts
                       </button>
                     )}
                   </div>

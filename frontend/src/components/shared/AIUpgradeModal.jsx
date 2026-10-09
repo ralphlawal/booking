@@ -30,7 +30,7 @@ export default function AIUpgradeModal({ onClose }) {
             AI limit reached
           </h2>
           <p className="text-sm mb-1" style={{ color: 'var(--bam-text-muted)' }}>
-            You've used all 50 free AI calls this month.
+            You've used your 3 free AI calls this month.
           </p>
           <p className="text-sm mb-5" style={{ color: 'var(--bam-text-muted)' }}>
             Upgrade to <strong style={{ color: 'var(--bam-primary)' }}>BookAm Pro</strong> for unlimited AI — smart replies, no-show predictions, gap filling and more.
