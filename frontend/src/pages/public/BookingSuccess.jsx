@@ -49,7 +49,7 @@ export default function BookingSuccess() {
       setBooking(b => ({ ...b, status: 'cancelled' }));
       toast.success('Booking cancelled successfully');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setCancelling(false);
     }

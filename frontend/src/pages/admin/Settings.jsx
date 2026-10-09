@@ -198,7 +198,7 @@ export default function Settings() {
       const updated = await businessAPI.update(bizForm);
       updateBusiness(updated);
       toast.success('Business info saved');
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -212,7 +212,7 @@ export default function Settings() {
     try {
       await availabilityAPI.save(avForm);
       toast.success('Availability saved');
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -229,7 +229,7 @@ export default function Settings() {
       setBlocked(p => [...p, b]);
       setNewBlock({ blocked_date: '', start_time: '', end_time: '', reason: '', is_full_day: false });
       toast.success('Date/time blocked');
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   const removeBlock = async (id) => {
@@ -237,7 +237,7 @@ export default function Settings() {
       await availabilityAPI.unblock(id);
       setBlocked(p => p.filter(b => b.id !== id));
       toast.success('Unblocked');
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   const handleLogoChange = async (e) => {
@@ -301,7 +301,7 @@ export default function Settings() {
       await resendVerificationEmail();
       toast.success('Verification email sent — check your inbox');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setVerifyLoading(false);
     }
@@ -327,7 +327,7 @@ export default function Settings() {
     try {
       await businessAPI.saveBankDetails(bankForm);
       toast.success('Bank details saved');
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setBankSaving(false); }
   };
 
@@ -397,7 +397,7 @@ export default function Settings() {
         toast.success(result.message);
         updateBusiness({ ...business, verification_status: 'pending' });
       }
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setVerSaving(false); }
   };
 
@@ -1409,21 +1409,21 @@ export function StaffTab({ staff, setStaff }) {
         toast.success('Updated');
       }
       setModal(null);
-    } catch(err) { toast.error(err.message); }
+    } catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
   const remove = async (id) => {
     if (!confirm('Remove this staff member?')) return;
     try { await staffAPI.remove(id); setStaff(p => p.filter(x=>x.id!==id)); toast.success('Removed'); }
-    catch(err) { toast.error(err.message); }
+    catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   const toggleActive = async (s) => {
     try {
       const u = await staffAPI.update(s.id, { is_active: !s.is_active });
       setStaff(p => p.map(x => x.id===u.id ? u : x));
-    } catch(err) { toast.error(err.message); }
+    } catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   return (
@@ -1510,14 +1510,14 @@ export function PhotosTab({ photos, setPhotos }) {
       const photo = await photosAPI.upload(compressed);
       setPhotos(p => [...p, photo]);
       toast.success('Photo added');
-    } catch(err) { toast.error(err.message); }
+    } catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setUploading(false); if(inputRef.current) inputRef.current.value=''; }
   };
 
   const remove = async (id) => {
     if (!confirm('Delete this photo?')) return;
     try { await photosAPI.remove(id); setPhotos(p => p.filter(x=>x.id!==id)); toast.success('Deleted'); }
-    catch(err) { toast.error(err.message); }
+    catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   return (
@@ -1573,7 +1573,7 @@ export function IntakeTab({ intakeTitle, setIntakeTitle, intakeQuestions, setInt
     try {
       await intakeAPI.save({ title: intakeTitle, questions: intakeQuestions, is_active: intakeActive });
       toast.success('Intake form saved');
-    } catch(err) { toast.error(err.message); }
+    } catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setIntakeSaving(false); }
   };
 
@@ -1639,7 +1639,7 @@ export function PromoTab({ promos, setPromos }) {
       setPromos(prev => [p, ...prev]);
       setForm({ code:'', type:'percent', value:'', min_order_amount:'', max_uses:'', valid_until:'' });
       toast.success('Promo code created');
-    } catch(err) { toast.error(err.message); }
+    } catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -1647,13 +1647,13 @@ export function PromoTab({ promos, setPromos }) {
     try {
       const u = await promoAPI.update(promo.id, { is_active: !promo.is_active });
       setPromos(p => p.map(x => x.id===u.id ? u : x));
-    } catch(err) { toast.error(err.message); }
+    } catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   const remove = async (id) => {
     if (!confirm('Delete this promo code?')) return;
     try { await promoAPI.remove(id); setPromos(p => p.filter(x=>x.id!==id)); toast.success('Deleted'); }
-    catch(err) { toast.error(err.message); }
+    catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   return (
@@ -1708,12 +1708,12 @@ export function WaitlistTab({ waitlist, setWaitlist }) {
       const u = await waitlistAPI.update(id, status);
       setWaitlist(p => p.map(x => x.id===u.id ? u : x));
       toast.success(status === 'notified' ? 'Marked as notified' : 'Removed');
-    } catch(err) { toast.error(err.message); }
+    } catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   const remove = async (id) => {
     try { await waitlistAPI.remove(id); setWaitlist(p => p.filter(x=>x.id!==id)); }
-    catch(err) { toast.error(err.message); }
+    catch(err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
   };
 
   const STATUS_COLOR = { waiting:'bg-amber-100 text-amber-700', notified:'bg-blue-100 text-blue-700', cancelled:'bg-gray-100 text-gray-400' };

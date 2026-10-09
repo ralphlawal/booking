@@ -28,7 +28,7 @@ export default function CustomerLogin() {
       const consumer = await login(form.email, form.password);
       afterLogin(consumer);
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Incorrect email or password. Please try again.');
     } finally {
       setLoading(false);
     }

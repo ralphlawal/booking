@@ -339,7 +339,7 @@ export default function Bookings() {
       closeModal();
       load();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -354,7 +354,7 @@ export default function Bookings() {
       closeModal();
       load();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSaving(false);
     }

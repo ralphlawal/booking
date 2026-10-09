@@ -362,7 +362,7 @@ function BookingWizard({
       if (piId) {
         toast.error(`Payment was taken but booking failed. Contact ${biz.email || biz.phone} with ref: ${piId}`, { duration: 12000 });
       } else {
-        toast.error(err.message);
+        toast.error(err.message || 'Something went wrong. Please try again.');
         if (err.message?.includes('available')) { setStep(S.TIME); set('time')(null); }
       }
     } finally { setSubmitting(false); }
@@ -630,7 +630,7 @@ function BookingWizard({
               clientSecret,
               appearance: { theme: 'stripe', variables: { colorPrimary: '#6366f1', borderRadius: '12px', fontSizeBase: '15px' } },
             }}>
-              <PaymentForm onSuccess={piId => submit(piId)} submitting={submitting} setSubmitting={setSubmitting} amount={finalPrice} C={C} returnUrl={isNativePlatform() ? publicWebUrl(window.location.pathname + window.location.search) : window.location.href} />
+              <PaymentForm onSuccess={piId => submit(piId)} submitting={submitting} setSubmitting={setSubmitting} amount={finalPrice} C={C} returnUrl={isNativePlatform() ? `bookam://${window.location.pathname.replace(/^\//, '')}${window.location.search}` : window.location.href} />
             </Elements>
           </>
         )}

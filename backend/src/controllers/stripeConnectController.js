@@ -10,6 +10,7 @@ const getStripe = () => {
 };
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://bookam.vercel.app';
+const APP_SCHEME = process.env.APP_SCHEME || 'bookam';
 
 // POST /api/business/me/stripe-connect/onboard
 // Creates (or reuses) a Stripe Express account and returns an onboarding URL.
@@ -41,10 +42,15 @@ exports.onboard = async (req, res) => {
       );
     }
 
+    const isNativeRequest = req.headers['x-app-platform'] === 'native';
+    const baseUrl = isNativeRequest ? `${APP_SCHEME}://` : FRONTEND_URL;
+    const returnPath = isNativeRequest ? 'admin/settings?tab=payouts&stripe=success' : '/admin/settings?tab=payouts&stripe=success';
+    const refreshPath = isNativeRequest ? 'admin/settings?tab=payouts&stripe=refresh' : '/admin/settings?tab=payouts&stripe=refresh';
+
     const link = await stripe.accountLinks.create({
       account:     accountId,
-      refresh_url: `${FRONTEND_URL}/admin/settings?tab=payouts&stripe=refresh`,
-      return_url:  `${FRONTEND_URL}/admin/settings?tab=payouts&stripe=success`,
+      refresh_url: `${baseUrl}${refreshPath}`,
+      return_url:  `${baseUrl}${returnPath}`,
       type:        'account_onboarding',
     });
 

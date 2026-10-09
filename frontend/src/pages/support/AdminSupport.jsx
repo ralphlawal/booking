@@ -452,7 +452,7 @@ function BroadcastsPanel() {
       toast.success(form.send_to_users ? `Broadcast sent to ${result.recipients || 0} users` : 'Banner published');
       setForm({ title: '', message: '', type: 'info', send_to_users: true });
       load();
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setSending(false); }
   };
 

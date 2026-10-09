@@ -216,7 +216,7 @@ export default function Onboarding() {
       toast.success(`Welcome! Your page is live at /book/${biz.slug}`);
       navigate('/admin/dashboard');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -459,7 +459,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, borderColor }) {
       toast.success('Status updated');
       onUpdated?.();
       onClose();
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -470,7 +470,7 @@ function BookingDetailSheet({ booking, onClose, onUpdated, borderColor }) {
       toast.success('Rescheduled ✓');
       onUpdated?.();
       onClose();
-    } catch (err) { toast.error(err.message); }
+    } catch (err) { toast.error(err.message || 'Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 

@@ -25,7 +25,7 @@ export default function CustomerSignup() {
       toast.success('Account created — check your email for a 6-digit code');
       setPhase('otp');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

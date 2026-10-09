@@ -49,7 +49,7 @@ function ReviewModal({ booking, onClose, onSubmitted }) {
       onSubmitted();
       onClose();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -219,7 +219,7 @@ export default function ConsumerProfile() {
       toast.success('Password updated successfully');
       setPwForm({ current: '', next: '', confirm: '' });
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setPwSaving(false);
     }
@@ -233,7 +233,7 @@ export default function ConsumerProfile() {
       toast.success('Email updated — please sign in again');
       logout();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setEmailSaving(false);
     }
@@ -277,7 +277,7 @@ export default function ConsumerProfile() {
       navigate('/');
       toast.success('Account deleted');
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong. Please try again.');
       setDeletingAccount(false);
     }
   };
@@ -729,20 +729,6 @@ export default function ConsumerProfile() {
 
         {tab === 'settings' && (
           <div className="max-w-3xl mx-auto space-y-4">
-
-            {/* Appearance */}
-            <div className="app-panel p-5">
-              <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-                  <Sun className="w-4 h-4 text-amber-500" />
-                </span>
-                Appearance
-              </h3>
-              <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-                <Sun className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <p className="text-sm text-amber-800 font-medium">Light mode — clean and crisp</p>
-              </div>
-            </div>
 
             {/* Notifications */}
             <div className="app-panel p-5">

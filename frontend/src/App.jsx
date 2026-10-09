@@ -12,6 +12,7 @@ import FloatingChatWidget from './components/shared/FloatingChatWidget';
 import CookieConsent from './components/shared/CookieConsent';
 import BrowserNotificationPrompt from './components/shared/BrowserNotificationPrompt';
 import ReviewPromptModal from './components/shared/ReviewPromptModal';
+import AIUpgradeModal from './components/shared/AIUpgradeModal';
 import VerifyRequired from './components/shared/VerifyRequired';
 
 // Public pages
@@ -154,6 +155,17 @@ function ReviewPromptBridge() {
   return <ReviewPromptModal consumer={consumer} />;
 }
 
+function AIUpgradeBridge() {
+  const [show, setShow] = React.useState(false);
+  React.useEffect(() => {
+    const handler = () => setShow(true);
+    window.addEventListener('bookam:ai-limit-reached', handler);
+    return () => window.removeEventListener('bookam:ai-limit-reached', handler);
+  }, []);
+  if (!show) return null;
+  return <AIUpgradeModal onClose={() => setShow(false)} />;
+}
+
 function NativeNavigationBridge() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -180,6 +192,7 @@ function NativeNavigationBridge() {
     let listener;
     let resumeListener;
     let stateListener;
+    let urlListener;
     let disposed = false;
     const addListener = async () => {
       // iOS can drop WKWebView localStorage while backgrounded; pull the auth
@@ -196,6 +209,18 @@ function NativeNavigationBridge() {
         else flushToNative();
       });
       if (disposed) { stateListener.remove(); return; }
+      // Handle bookam:// deep links (e.g. Stripe return URLs after payment)
+      urlListener = await CapacitorApp.addListener('appUrlOpen', ({ url }) => {
+        try {
+          const parsed = new URL(url);
+          // bookam://admin/settings?tab=payouts&stripe=success → /admin/settings?tab=payouts&stripe=success
+          const path = parsed.pathname || parsed.host || '/';
+          const search = parsed.search || '';
+          navigate(`/${path.replace(/^\//, '')}${search}`, { replace: true });
+        } catch {}
+      });
+      if (disposed) { urlListener.remove(); return; }
+
       listener = await CapacitorApp.addListener('backButton', () => {
         // Normal in-app history should always win. Push/deep links can start
         // without history, so send those users to the appropriate home rather
@@ -229,6 +254,7 @@ function NativeNavigationBridge() {
       listener?.remove();
       resumeListener?.remove();
       stateListener?.remove();
+      urlListener?.remove();
     };
   }, [navigate]);
 
@@ -258,6 +284,7 @@ export default function App() {
           <CookieConsent />
           <BrowserNotificationPrompt />
           <ReviewPromptBridge />
+          <AIUpgradeBridge />
           <Suspense fallback={<PageLoader />}>
           <NativeNavigationBridge />
           <Routes>

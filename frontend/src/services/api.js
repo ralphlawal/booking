@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { apiBaseUrl } from '../config/platform';
+import { apiBaseUrl, isNativeApp } from '../config/platform';
 import { shareCsvFile } from './nativeBridge';
 import { getPersistedItem } from './persistentStore';
 
@@ -85,6 +85,10 @@ api.interceptors.response.use(
         setTimeout(() => resolve(api(config)), RETRY_DELAY_MS)
       );
     }
+    // AI limit reached — fire a global event so the upgrade modal can show
+    if (err.response?.status === 402 && err.response?.data?.code === 'AI_LIMIT_REACHED') {
+      window.dispatchEvent(new CustomEvent('bookam:ai-limit-reached'));
+    }
     const message = userFacingApiMessage(err);
     const error = new Error(message);
     error.status = err.response?.status;
@@ -139,7 +143,7 @@ export const businessAPI = {
 };
 
 export const stripeConnectAPI = {
-  onboard: () => api.post('/business/me/stripe-connect/onboard'),
+  onboard: () => api.post('/business/me/stripe-connect/onboard', {}, { headers: isNativeApp() ? { 'x-app-platform': 'native' } : {} }),
   status: () => api.get('/business/me/stripe-connect/status'),
   dashboard: () => api.post('/business/me/stripe-connect/dashboard'),
 };

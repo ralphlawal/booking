@@ -71,16 +71,7 @@ export function NotificationProvider({ children }) {
   const hydratedRef = useRef(false);
 
   const showBrowserNotification = useCallback((notification) => {
-    // Always fire in-app toast (visible to user regardless of page visibility)
-    import('react-hot-toast').then(({ default: toast }) => {
-      toast(notification.title || 'New notification', {
-        id: `notif-${notification.id}`,
-        duration: 5000,
-        icon: '🔔',
-      });
-    }).catch(() => {});
-
-    // Also send native browser notification if permitted and page is backgrounded/mobile
+    // Only fire native OS notification (lock screen / system banner) — no in-app toasts
     if (typeof window === 'undefined' || !('Notification' in window)) return;
     if (window.Notification.permission !== 'granted') return;
     if (document.visibilityState === 'visible' && !/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) return;

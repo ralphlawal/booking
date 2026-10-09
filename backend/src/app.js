@@ -430,6 +430,7 @@ app.delete('/api/reviews/:id/reply', authenticate, attachBusiness, reviewsCtrl.d
 
 // AI features
 const aiCtrl = require('./controllers/aiController');
+const { aiGate } = require('./middleware/aiGate');
 app.get('/api/ai/review-summary/:slug', aiCtrl.reviewSummary);
 
 // ── Growth / Marketing ────────────────────────────────────────────────────
@@ -497,16 +498,16 @@ app.post('/api/gift-cards/purchase-intent',            gcCtrl.purchaseIntent);
 app.post('/api/gift-cards/confirm',                    gcCtrl.confirmPurchase);
 app.get('/api/gift-cards/validate',                    gcCtrl.validate);
 
-app.get('/api/ai/noshow-risk/:bookingId', authenticate, attachBusiness, aiCtrl.noshowRisk);
-app.get('/api/ai/rebook-timing/:consumerId/:slug', authenticate, attachBusiness, aiCtrl.rebookTiming);
+app.get('/api/ai/noshow-risk/:bookingId', authenticate, attachBusiness, aiGate, aiCtrl.noshowRisk);
+app.get('/api/ai/rebook-timing/:consumerId/:slug', authenticate, attachBusiness, aiGate, aiCtrl.rebookTiming);
 app.post('/api/ai/match-service', aiCtrl.matchService);
 app.post('/api/ai/chat-booking/:slug', aiCtrl.chatBooking);
-app.post('/api/ai/generate-description', authenticate, attachBusiness, aiCtrl.generateDescription);
-app.get('/api/ai/gap-suggestions', authenticate, attachBusiness, aiCtrl.gapSuggestions);
-app.get('/api/ai/reassign-suggestion/:bookingId', authenticate, attachBusiness, aiCtrl.reassignSuggestion);
-app.post('/api/ai/personalise-message', authenticate, attachBusiness, aiCtrl.personaliseMessage);
+app.post('/api/ai/generate-description', authenticate, attachBusiness, aiGate, aiCtrl.generateDescription);
+app.get('/api/ai/gap-suggestions', authenticate, attachBusiness, aiGate, aiCtrl.gapSuggestions);
+app.get('/api/ai/reassign-suggestion/:bookingId', authenticate, attachBusiness, aiGate, aiCtrl.reassignSuggestion);
+app.post('/api/ai/personalise-message', authenticate, attachBusiness, aiGate, aiCtrl.personaliseMessage);
 app.post('/api/ai/consumer-chat', authenticateConsumer, aiCtrl.consumerChat);
-app.post('/api/ai/smart-reply', authenticate, attachBusiness, aiCtrl.smartReply);
+app.post('/api/ai/smart-reply', authenticate, attachBusiness, aiGate, aiCtrl.smartReply);
 
 // Web push
 app.get('/api/notifications/vapid-key', (req, res) => {
@@ -687,6 +688,7 @@ function runSqliteMigrations() {
     'bank_holder_name TEXT', 'bank_sort_code TEXT', 'bank_account_number TEXT', 'bank_country TEXT',
     'bank_currency TEXT', 'bank_name TEXT', 'bank_iban TEXT', 'bank_bic TEXT',
     'bank_routing_number TEXT', 'bank_updated_at TEXT',
+    'ai_trial_ends_at TEXT', 'ai_calls_this_month INTEGER DEFAULT 0', 'ai_month_key TEXT', 'ai_plan TEXT DEFAULT "trial"',
   ]) { addColumn('businesses', col); }
   for (const col of ['deposit_required INTEGER DEFAULT 0', 'deposit_amount REAL DEFAULT 0', 'category TEXT',
     'max_group_size INTEGER DEFAULT 1', 'buffer_time INTEGER DEFAULT 0', 'sort_order INTEGER DEFAULT 0',
