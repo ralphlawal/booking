@@ -11,6 +11,7 @@ import LoadingScreen from './components/shared/LoadingScreen';
 import FloatingChatWidget from './components/shared/FloatingChatWidget';
 import CookieConsent from './components/shared/CookieConsent';
 import BrowserNotificationPrompt from './components/shared/BrowserNotificationPrompt';
+import ReviewPromptModal from './components/shared/ReviewPromptModal';
 import VerifyRequired from './components/shared/VerifyRequired';
 
 // Public pages
@@ -147,6 +148,12 @@ const NativeEntry = () => {
   return <NativeWelcome />;
 };
 
+function ReviewPromptBridge() {
+  const { consumer } = useCustomerAuth();
+  if (!consumer) return null;
+  return <ReviewPromptModal consumer={consumer} />;
+}
+
 function NativeNavigationBridge() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -250,6 +257,7 @@ export default function App() {
           <FloatingChatWidget />
           <CookieConsent />
           <BrowserNotificationPrompt />
+          <ReviewPromptBridge />
           <Suspense fallback={<PageLoader />}>
           <NativeNavigationBridge />
           <Routes>

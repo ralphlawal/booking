@@ -3,8 +3,36 @@ import { Bell, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { businessAPI } from '../../services/api';
 import { LOGO_BLUE_ICON } from '../../config/logos';
 import { getCookieConsent } from '../../utils/cookieConsent';
+import { apiBaseUrl } from '../../config/platform';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = window.atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function subscribeBusinessToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) return;
+    let vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+    if (!vapidKey) {
+      const res = await fetch(`${apiBaseUrl}/notifications/vapid-key`);
+      if (!res.ok) return;
+      const d = await res.json();
+      vapidKey = d.vapidPublicKey;
+    }
+    if (!vapidKey) return;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidKey) });
+    await businessAPI.pushSubscribe(sub.toJSON());
+  } catch {}
+}
 
 const keyFor = (role, id) => `bookam_notify_prompt_${role}_${id || 'anon'}`;
 
@@ -73,8 +101,9 @@ export default function BrowserNotificationPrompt() {
         } catch {}
       }
     } else {
-      // For business users: just request permission (native push handles delivery)
-      await window.Notification.requestPermission?.();
+      // For business users: request permission + subscribe to web push
+      const perm = await window.Notification.requestPermission?.();
+      if (perm === 'granted') subscribeBusinessToPush().catch(() => {});
     }
     dismiss();
   };

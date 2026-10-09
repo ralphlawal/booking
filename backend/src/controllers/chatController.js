@@ -136,12 +136,10 @@ async function notifyRecipient({ room, sender_type, sender_name, content }) {
         body: preview,
         link: '/customer/messages',
       });
-      const { notifyUser } = require('../services/pushService');
-      notifyUser('consumer', consumer.id, {
-        title: `New message from ${sender_name}`,
-        body: preview,
-        data: { url: '/customer/messages' },
-      }).catch(() => {});
+      const { notifyUser, notifyConsumerWebPush } = require('../services/pushService');
+      const msgPayload = { title: `New message from ${sender_name}`, body: preview, data: { url: '/customer/messages' }, url: '/customer/messages' };
+      notifyUser('consumer', consumer.id, msgPayload).catch(() => {});
+      notifyConsumerWebPush(consumer.id, msgPayload).catch(() => {});
       // Email too if they haven't been active recently
       if (consumer.email) {
         sendEmail({
@@ -163,12 +161,13 @@ async function notifyRecipient({ room, sender_type, sender_name, content }) {
 
   // Consumer sends to business → in-app + push notification to business
   if (sender_type === 'consumer' && room.business_id) {
-    const { notifyUser } = require('../services/pushService');
-    notifyUser('business', room.business_id, {
-      title: `New message from ${sender_name}`,
-      body: preview,
-      data: { url: '/admin/messages' },
-    }).catch(() => {});
+    const { notifyUser, notifyBusinessWebPush } = require('../services/pushService');
+    const bizMsgPayload = { title: `New message from ${sender_name}`, body: preview, data: { url: '/admin/messages' }, url: '/admin/messages' };
+    notifyUser('business', room.business_id, bizMsgPayload).catch(() => {});
+    // Also get user_id for this business for web push
+    db.query('SELECT user_id FROM businesses WHERE id=$1', [room.business_id])
+      .then(({ rows }) => { if (rows[0]) notifyBusinessWebPush(rows[0].user_id, bizMsgPayload).catch(() => {}); })
+      .catch(() => {});
     BusinessNotification.create({
       business_id: room.business_id,
       type: 'message',

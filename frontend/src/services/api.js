@@ -135,6 +135,7 @@ export const businessAPI = {
   getNotifications: () => api.get('/business/me/notifications'),
   getNotificationCount: () => api.get('/business/me/notifications/count'),
   markNotificationsRead: () => api.post('/business/me/notifications/read'),
+  pushSubscribe: (sub) => api.post('/notifications/business-push-subscribe', sub),
 };
 
 export const stripeConnectAPI = {

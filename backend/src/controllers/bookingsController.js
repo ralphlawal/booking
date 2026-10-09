@@ -7,7 +7,7 @@ const BusinessNotification = require('../models/BusinessNotification');
 const generateReference = require('../utils/generateReference');
 const { sendEmail, sendBookingConfirmation, sendBookingStatusUpdate, sendOwnerNewBooking, sendBookingRescheduled, sendReviewReminder, sendAttendedConfirmationEmail, sendBusinessPaymentReleasedEmail, sendWaitlistNotification } = require('../services/emailService');
 const retentionSvc = require('../services/retentionService');
-const { notifyUser } = require('../services/pushService');
+const { notifyUser, notifyConsumerWebPush, notifyBusinessWebPush } = require('../services/pushService');
 const db = require('../config/database');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -148,16 +148,19 @@ exports.create = async (req, res) => {
     if (customer_email) sendBookingConfirmation({ ...fullBooking, customer_email });
     if (req.business.email) sendOwnerNewBooking(fullBooking, req.business.email);
 
-    notifyUser('business', req.business.id, {
+    const bizPushPayload = {
       title: `New booking — ${fullBooking.service_name}`,
       body: `${fullBooking.customer_name} on ${booking_date} at ${fullBooking.start_time?.slice(0, 5)}`,
       data: { bookingId: fullBooking.id, screen: 'bookings' },
-    }).catch(() => {});
+      url: '/admin/bookings',
+    };
+    notifyUser('business', req.business.id, bizPushPayload).catch(() => {});
+    notifyBusinessWebPush(req.user.id, bizPushPayload).catch(() => {});
     BusinessNotification.create({
       business_id: req.business.id,
       type: 'booking_new',
-      title: `New booking — ${fullBooking.service_name}`,
-      body: `${fullBooking.customer_name} on ${booking_date} at ${fullBooking.start_time?.slice(0, 5)}`,
+      title: bizPushPayload.title,
+      body: bizPushPayload.body,
       link: '/admin/bookings',
     }).catch(() => {});
 
@@ -321,11 +324,14 @@ exports.updateStatus = async (req, res) => {
         link: `/customer/dashboard`,
       }).catch(() => {});
 
-      notifyUser('consumer', fullBooking.consumer_id, {
+      const consumerPushPayload = {
         title: notifTitle,
         body: notifBody,
         data: { bookingId: fullBooking.id, screen: 'dashboard' },
-      }).catch(() => {});
+        url: '/customer/dashboard',
+      };
+      notifyUser('consumer', fullBooking.consumer_id, consumerPushPayload).catch(() => {});
+      notifyConsumerWebPush(fullBooking.consumer_id, consumerPushPayload).catch(() => {});
     }
 
     if (no_show && fullBooking.customer_id) {
@@ -1012,6 +1018,25 @@ exports.attendedAction = async (req, res) => {
       sendBusinessPaymentReleasedEmail(booking).catch(() => {});
     }
     retentionSvc.onBookingCompleted(booking).catch(() => {});
+
+    // Send review push notification to consumer
+    if (payload.consumer_id) {
+      const reviewPayload = {
+        title: `How was your visit to ${booking.business_name}?`,
+        body: `Tap to leave a quick review for ${booking.service_name || 'your session'}.`,
+        url: '/customer/dashboard',
+        tag: `review-${booking.id}`,
+      };
+      notifyUser('consumer', payload.consumer_id, reviewPayload).catch(() => {});
+      notifyConsumerWebPush(payload.consumer_id, reviewPayload).catch(() => {});
+      Notification.create({
+        consumer_id: payload.consumer_id,
+        type: 'review_prompt',
+        title: reviewPayload.title,
+        body: reviewPayload.body,
+        link: '/customer/dashboard',
+      }).catch(() => {});
+    }
 
     return res.json({ message: 'Thank you! Your confirmation has been recorded and payment is being released to the business.' });
   }

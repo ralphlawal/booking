@@ -5,14 +5,14 @@ import { useNotifications } from '../../context/NotificationContext';
 import { nativeTapFeedback } from '../../services/nativeBridge';
 
 const NAV = [
-  { to: '/customer/dashboard', icon: CalendarDays,  label: 'Bookings', gradient: 'from-violet-500 to-primary-600'  },
+  { to: '/customer/dashboard', icon: CalendarDays,  label: 'Bookings', badge: 'notif', gradient: 'from-violet-500 to-primary-600' },
   { to: '/feed',               icon: Rss,           label: 'Feed',     gradient: 'from-rose-500 to-pink-500'       },
   { to: '/explore',            icon: Search,        label: 'Explore',  gradient: 'from-sky-500 to-blue-600'        },
-  { to: '/customer/messages',  icon: MessageSquare, label: 'Chat',     gradient: 'from-emerald-500 to-teal-500'    },
+  { to: '/customer/messages',  icon: MessageSquare, label: 'Chat',     badge: 'chat',  gradient: 'from-emerald-500 to-teal-500'    },
   { to: '/customer/profile',   icon: User,          label: 'Profile',  gradient: 'from-amber-500 to-orange-500'    },
 ];
 
-function NavItem({ to, icon: Icon, label, unreadCount, gradient }) {
+function NavItem({ to, icon: Icon, label, badgeCount, gradient }) {
   return (
     <NavLink
       to={to}
@@ -34,9 +34,9 @@ function NavItem({ to, icon: Icon, label, unreadCount, gradient }) {
               className={`w-5 h-5 transition-all duration-300 ${isActive ? 'text-white' : 'text-gray-400'}`}
               strokeWidth={isActive ? 2.5 : 2}
             />
-            {label === 'Chat' && unreadCount > 0 && (
+            {badgeCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none border-2 border-white">
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {badgeCount > 9 ? '9+' : badgeCount}
               </span>
             )}
           </div>
@@ -50,7 +50,7 @@ function NavItem({ to, icon: Icon, label, unreadCount, gradient }) {
 }
 
 export default function ConsumerBottomNav() {
-  const { chatUnreadCount } = useNotifications();
+  const { chatUnreadCount, unreadCount } = useNotifications();
 
   return (
     <>
@@ -67,8 +67,11 @@ export default function ConsumerBottomNav() {
         }}
       >
         <div className="max-w-md mx-auto px-1 flex">
-          {NAV.map(({ to, icon, label, gradient }) => (
-            <NavItem key={to} to={to} icon={icon} label={label} unreadCount={chatUnreadCount} gradient={gradient} />
+          {NAV.map(({ to, icon, label, badge, gradient }) => (
+            <NavItem
+              key={to} to={to} icon={icon} label={label} gradient={gradient}
+              badgeCount={badge === 'chat' ? chatUnreadCount : badge === 'notif' ? unreadCount : 0}
+            />
           ))}
         </div>
       </nav>
@@ -81,35 +84,43 @@ export default function ConsumerBottomNav() {
           borderColor: 'var(--bam-border)',
         }}
       >
-        {NAV.map(({ to, icon: Icon, label, gradient }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className="flex flex-col items-center justify-center w-14 py-2.5 rounded-xl gap-1 text-[9px] font-bold transition-all tap-highlight-none"
-          >
-            {({ isActive }) => (
-              <>
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                    isActive ? `bg-gradient-to-br ${gradient}` : 'hover:bg-gray-100'
-                  }`}
-                  style={{
-                    transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                    boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
-                  }}
-                >
-                  <Icon
-                    className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400'}`}
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                </div>
-                <span className={`leading-none transition-colors duration-200 ${isActive ? 'text-gray-900' : 'text-gray-400'}`}>
-                  {label}
-                </span>
-              </>
-            )}
-          </NavLink>
-        ))}
+        {NAV.map(({ to, icon: Icon, label, badge, gradient }) => {
+          const bc = badge === 'chat' ? chatUnreadCount : badge === 'notif' ? unreadCount : 0;
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              className="flex flex-col items-center justify-center w-14 py-2.5 rounded-xl gap-1 text-[9px] font-bold transition-all tap-highlight-none"
+            >
+              {({ isActive }) => (
+                <>
+                  <div
+                    className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                      isActive ? `bg-gradient-to-br ${gradient}` : 'hover:bg-gray-100'
+                    }`}
+                    style={{
+                      transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                      boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                    }}
+                  >
+                    <Icon
+                      className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400'}`}
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    {bc > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none border border-white">
+                        {bc > 9 ? '9+' : bc}
+                      </span>
+                    )}
+                  </div>
+                  <span className={`leading-none transition-colors duration-200 ${isActive ? 'text-gray-900' : 'text-gray-400'}`}>
+                    {label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          );
+        })}
       </nav>
     </>
   );

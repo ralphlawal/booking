@@ -10,14 +10,21 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
   let data = {};
   try { data = event.data.json(); } catch { data = { title: 'BookAm', body: event.data.text() }; }
+
+  const icon  = data.icon  || '/icons/icon-192.png';
+  const badge = data.badge || '/icons/icon-96.png';
+  const vibrate = data.vibrate || [200, 100, 200];
+
   event.waitUntil(
-    self.registration.showNotification(data.title || 'BookAm Business', {
-      body: data.body || '',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      data: { url: data.url || '/' },
-      tag: data.tag || 'bookam-notification',
+    self.registration.showNotification(data.title || 'BookAm', {
+      body:    data.body  || '',
+      icon,
+      badge,
+      vibrate,
+      data:    { url: data.url || '/' },
+      tag:     data.tag   || 'bookam-notification',
       renotify: true,
+      requireInteraction: !!data.requireInteraction,
     })
   );
 });
@@ -30,9 +37,9 @@ self.addEventListener('notificationclick', (event) => {
     const origin = self.location.origin;
     const target = new URL(targetUrl, origin).href;
     for (const client of allClients) {
-      if ('focus' in client) {
+      if (client.url.startsWith(origin) && 'focus' in client) {
         await client.focus();
-        if ('navigate' in client) await client.navigate(target);
+        if ('navigate' in client) client.navigate(target).catch(() => {});
         return;
       }
     }

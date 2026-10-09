@@ -120,4 +120,45 @@ async function notifyUser(userType, userId, payload) {
   await sendPush(tokens, payload);
 }
 
-module.exports = { saveToken, removeToken, getTokens, sendPush, notifyUser };
+/* ── Web push (VAPID) helpers ─────────────────────────────────────────────── */
+async function sendWebPush(subscriptions, payload) {
+  if (!subscriptions?.length) return;
+  const pub  = process.env.VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (!pub || !priv) return;
+  const webpush = require('web-push');
+  webpush.setVapidDetails(`mailto:${process.env.ADMIN_EMAIL || 'hello@bookam.business'}`, pub, priv);
+  await Promise.allSettled(
+    subscriptions.map(sub =>
+      webpush.sendNotification(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        JSON.stringify(payload)
+      ).catch(err => {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          db.query('DELETE FROM push_subscriptions WHERE endpoint=$1', [sub.endpoint]).catch(() => {});
+          db.query('DELETE FROM business_push_subscriptions WHERE endpoint=$1', [sub.endpoint]).catch(() => {});
+        }
+      })
+    )
+  );
+}
+
+async function notifyConsumerWebPush(consumerId, payload) {
+  try {
+    const { rows } = await db.query(
+      'SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE consumer_id=$1', [consumerId]
+    );
+    await sendWebPush(rows, payload);
+  } catch {}
+}
+
+async function notifyBusinessWebPush(userId, payload) {
+  try {
+    const { rows } = await db.query(
+      'SELECT endpoint, p256dh, auth FROM business_push_subscriptions WHERE user_id=$1', [userId]
+    ).catch(() => ({ rows: [] }));
+    await sendWebPush(rows, payload);
+  } catch {}
+}
+
+module.exports = { saveToken, removeToken, getTokens, sendPush, notifyUser, notifyConsumerWebPush, notifyBusinessWebPush, sendWebPush };

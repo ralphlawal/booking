@@ -7,31 +7,45 @@ import { navigateWithinApp, openExternalUrl } from '../services/nativeBridge';
 
 const API = apiBaseUrl;
 
-async function subscribeToPush() {
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = window.atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function subscribeToPush(authToken) {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
   try {
     const reg = await navigator.serviceWorker.ready;
     const existing = await reg.pushManager.getSubscription();
     if (existing) return; // already subscribed
 
-    const res = await fetch(`${API}/notifications/vapid-key`);
-    if (!res.ok) return;
-    const { vapidPublicKey } = await res.json();
+    // Prefer baked-in env key; fall back to fetching from server
+    let vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+    if (!vapidPublicKey) {
+      const res = await globalThis.fetch(`${API}/notifications/vapid-key`);
+      if (!res.ok) return;
+      const data = await res.json();
+      vapidPublicKey = data.vapidPublicKey;
+    }
     if (!vapidPublicKey) return;
 
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: vapidPublicKey,
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     });
 
-    const token = localStorage.getItem('customerToken');
+    const token = authToken || localStorage.getItem('customerToken');
     if (!token) return;
-    await fetch(`${API}/notifications/push-subscribe`, {
+    await globalThis.fetch(`${API}/notifications/push-subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(sub.toJSON()),
     });
-  } catch {}
+  } catch (e) {
+    console.warn('[push] subscribe failed:', e?.message);
+  }
 }
 
 const NotificationContext = createContext({
@@ -57,12 +71,22 @@ export function NotificationProvider({ children }) {
   const hydratedRef = useRef(false);
 
   const showBrowserNotification = useCallback((notification) => {
+    // Always fire in-app toast (visible to user regardless of page visibility)
+    import('react-hot-toast').then(({ default: toast }) => {
+      toast(notification.title || 'New notification', {
+        id: `notif-${notification.id}`,
+        duration: 5000,
+        icon: '🔔',
+      });
+    }).catch(() => {});
+
+    // Also send native browser notification if permitted and page is backgrounded/mobile
     if (typeof window === 'undefined' || !('Notification' in window)) return;
     if (window.Notification.permission !== 'granted') return;
     if (document.visibilityState === 'visible' && !/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) return;
     try {
-      const n = new window.Notification(notification.title || 'BookAm Business', {
-        body: notification.body || 'You have a new notification.',
+      const n = new window.Notification(notification.title || 'BookAm', {
+        body: notification.body || '',
         icon: LOGO_BLUE_ICON,
         badge: LOGO_BLUE_ICON,
         tag: notification.id,

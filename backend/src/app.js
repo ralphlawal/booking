@@ -450,6 +450,34 @@ app.delete('/api/notifications/push-subscribe', consumerAuth, async (req, res) =
   } catch { res.json({ ok: true }); }
 });
 
+// Business web push subscription
+app.post('/api/notifications/business-push-subscribe', authenticate, async (req, res) => {
+  try {
+    const { endpoint, keys } = req.body;
+    if (!endpoint || !keys?.p256dh || !keys?.auth) return res.status(400).json({ error: 'Invalid subscription' });
+    const db = require('./config/database');
+    await db.query(
+      `CREATE TABLE IF NOT EXISTS business_push_subscriptions (
+         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+         user_id UUID NOT NULL,
+         endpoint TEXT NOT NULL UNIQUE,
+         p256dh TEXT NOT NULL,
+         auth TEXT NOT NULL,
+         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+       )`,
+    ).catch(() => {});
+    await db.query(
+      `INSERT INTO business_push_subscriptions (user_id, endpoint, p256dh, auth)
+       VALUES ($1,$2,$3,$4)
+       ON CONFLICT (endpoint) DO UPDATE SET user_id=$1, p256dh=$3, auth=$4, updated_at=NOW()`,
+      [req.user.id, endpoint, keys.p256dh, keys.auth]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save subscription' });
+  }
+});
+
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.get('/api/db-ping', async (req, res) => {
