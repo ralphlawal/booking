@@ -9,7 +9,6 @@ const MARKETPLACE_READY = `
   AND NULLIF(TRIM(b.name), '') IS NOT NULL
   AND NULLIF(TRIM(b.slug), '') IS NOT NULL
   AND NULLIF(TRIM(b.category), '') IS NOT NULL
-  AND NULLIF(TRIM(b.location), '') IS NOT NULL
   AND EXISTS (
     SELECT 1 FROM services ready_service
     WHERE ready_service.business_id = b.id AND ready_service.is_active = TRUE
