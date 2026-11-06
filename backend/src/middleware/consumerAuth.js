@@ -18,4 +18,17 @@ const consumerAuth = (req, res, next) => {
   }
 };
 
-module.exports = { consumerAuth };
+// Optional variant: attaches consumerId if a valid consumer token is present,
+// but never blocks the request (unauthenticated users proceed with consumerId=null).
+const optionalConsumerAuth = (req, res, next) => {
+  const header = req.headers.authorization;
+  if (header?.startsWith('Bearer ')) {
+    try {
+      const payload = jwt.verify(header.split(' ')[1], JWT_SECRET);
+      if (payload.type === 'consumer') req.consumerId = payload.consumerId;
+    } catch {}
+  }
+  next();
+};
+
+module.exports = { consumerAuth, optionalConsumerAuth };

@@ -166,21 +166,27 @@ app.delete('/api/photos/:id', authenticate, attachBusiness, photosCtrl.remove);
 app.put('/api/photos/reorder', authenticate, attachBusiness, photosCtrl.reorder);
 
 // Business posts
-app.get('/api/posts/feed', postsCtrl.getFeed);
-app.get('/api/posts/public/:slug', postsCtrl.getPublic);
-app.post('/api/posts/:id/view', postsCtrl.recordView);
-app.post('/api/posts/:id/book-click', postsCtrl.recordBookClick);
-app.get('/api/posts', authenticate, attachBusiness, postsCtrl.list);
-app.post('/api/posts', authenticate, attachBusiness, postsCtrl.uploadMiddleware, postsCtrl.create);
+const { optionalConsumerAuth } = require('./middleware/consumerAuth');
+app.get('/api/posts/saved',             consumerAuth,         postsCtrl.getSaved);
+app.get('/api/posts/feed',              optionalConsumerAuth, postsCtrl.getFeed);
+app.get('/api/posts/public/:slug',      optionalConsumerAuth, postsCtrl.getPublic);
+app.post('/api/posts/:id/view',         postsCtrl.recordView);
+app.post('/api/posts/:id/book-click',   postsCtrl.recordBookClick);
+app.post('/api/posts/:id/like',         consumerAuth, postsCtrl.like);
+app.delete('/api/posts/:id/like',       consumerAuth, postsCtrl.unlike);
+app.post('/api/posts/:id/save',         consumerAuth, postsCtrl.save);
+app.delete('/api/posts/:id/save',       consumerAuth, postsCtrl.unsave);
+app.get('/api/posts',     authenticate, attachBusiness, postsCtrl.list);
+app.post('/api/posts',    authenticate, attachBusiness, postsCtrl.uploadMiddleware, postsCtrl.create);
 app.delete('/api/posts/:id', authenticate, attachBusiness, postsCtrl.remove);
 
 // Follows
 const followsCtrl = require('./controllers/followsController');
 app.get('/api/follows/count/:slug', followsCtrl.count);
 app.get('/api/follows/check/:slug', consumerAuth, followsCtrl.check);
-app.get('/api/follows/feed', consumerAuth, followsCtrl.feed);
-app.post('/api/follows/:slug', consumerAuth, followsCtrl.follow);
-app.delete('/api/follows/:slug', consumerAuth, followsCtrl.unfollow);
+app.get('/api/follows/feed',        consumerAuth, followsCtrl.feed);
+app.post('/api/follows/:slug',      consumerAuth, followsCtrl.follow);
+app.delete('/api/follows/:slug',    consumerAuth, followsCtrl.unfollow);
 
 // Waitlist
 app.post('/api/waitlist/:slug', waitlistCtrl.join);
