@@ -25,7 +25,7 @@ const POST_COLS = `
   b.logo_url, b.category AS business_category, b.is_verified,
   COALESCE(r.avg_rating, 0) AS avg_rating,
   COALESCE(r.review_count, 0) AS review_count,
-  s.name AS service_name, s.price AS service_price, s.duration AS service_duration
+  s.name AS service_name, s.price AS service_price, s.duration_minutes AS service_duration
 `;
 
 const REVIEW_JOIN = `
