@@ -16,7 +16,7 @@ exports.uploadMiddleware = createUpload({
 // Columns returned for every public feed/profile post query.
 // Caller injects consumer engagement columns when consumerId is known.
 const POST_COLS = `
-  p.id, p.type, p.caption, p.image_url, p.cta_label, p.cta_service_id,
+  p.id, p.type, p.caption, p.image_url, p.video_url, p.cta_label, p.cta_service_id,
   p.offer_text, p.offer_expires_at, p.is_active, p.views, p.booking_clicks,
   p.like_count, p.save_count, p.created_at,
   CASE WHEN p.offer_expires_at IS NOT NULL AND p.offer_expires_at < NOW()
@@ -56,23 +56,31 @@ exports.create = async (req, res) => {
     if (!ALLOWED_TYPES.includes(type)) return res.status(400).json({ error: 'Invalid post type' });
     if (!caption?.trim() && !req.file)  return res.status(400).json({ error: 'Caption or image is required' });
 
+    const VIDEO_MIME = ['video/mp4', 'video/webm', 'video/quicktime'];
     let image_url = null;
+    let video_url = null;
     if (req.file) {
       if (!ALLOWED_MIME.includes(req.file.mimetype))
         return res.status(400).json({ error: 'Only JPEG, PNG, WebP, MP4, WebM, or MOV files are allowed' });
-      image_url = await saveUploadedMedia(req.file, 'business-posts');
+      const mediaUrl = await saveUploadedMedia(req.file, 'business-posts');
+      if (VIDEO_MIME.includes(req.file.mimetype)) {
+        video_url = mediaUrl;
+      } else {
+        image_url = mediaUrl;
+      }
     }
 
     const { rows } = await db.query(
       `INSERT INTO business_posts
-         (id, business_id, type, caption, image_url, cta_label, cta_service_id, offer_text, offer_expires_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+         (id, business_id, type, caption, image_url, video_url, cta_label, cta_service_id, offer_text, offer_expires_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
       [
         crypto.randomUUID(),
         req.business.id,
         type,
         caption?.trim() || null,
         image_url,
+        video_url,
         cta_label?.trim() || null,
         cta_service_id || null,
         offer_text?.trim() || null,
